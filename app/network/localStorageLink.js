@@ -98,3 +98,5 @@ Sibilant.impl.LocalStorageLink=function(config) {
 		return JSON.parse(localStorage.getItem('intercom') || "[]").length;
 	});
 };
+
+Sibilant.links.localStorage=new Sibilant.impl.LocalStorageLink();
