@@ -27,7 +27,7 @@ var Sibilant=Sibilant || {};
 				var packet=JSON.parse(localStorage.getItem(event.key));
 
 				if(packet && typeof(packet) === "object") {
-					Sibilant.Metrics.counter(['links',linkId,'packets','receive']).inc();
+					Sibilant.Metrics.counter('links',linkId,'packets.receive').inc();
 					Sibilant.peer.receive(linkId,packet);
 				}
 			}
@@ -49,7 +49,7 @@ var Sibilant=Sibilant || {};
 		},
 		send: function(packet) { 
 			localStorage.setItem(makeKey(),JSON.stringify(packet));
-			Sibilant.Metrics.counter(['links',linkId,'packets','sent']).inc();
+			Sibilant.Metrics.counter('links',linkId,'packets.sent').inc();
 			
 			// clean up in a while
 			window.setTimeout(Sibilant.links.localStorageLink.cleanKeys,Sibilant.links.localStorageLink.myKeysTimeout);
@@ -75,7 +75,7 @@ var Sibilant=Sibilant || {};
 		
 		
 	// METRICS
-	Sibilant.Metrics.external(['links',linkId,"buffer"], function() {
+	Sibilant.Metrics.gauge('links',linkId,"buffer").set(function() {
 		var	stats= {
 					used: 0,
 					max: 5 *1024 * 1024,
@@ -92,7 +92,7 @@ var Sibilant=Sibilant || {};
 		return stats;
 	});
 		
-	Sibilant.Metrics.external(['links',linkId,"queueLength"], function() {
+	Sibilant.Metrics.gauge('links',linkId,"queueLength").set(function() {
 		return JSON.parse(localStorage.getItem('intercom') || "[]").length;
 	});
 })();

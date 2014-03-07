@@ -15,11 +15,11 @@ var Sibilant=Sibilant || {};
 	// bit of candygrammar, since there's a lot of Array.every and Array.some
 	// calls that use this logic
 	Sibilant.assert.areNot=Sibilant.assert.isNot=function(expected)	{ 
-		return function(v) {v!==expected;};
+		return function(v) {return v!==expected;};
 	};
 
 	Sibilant.assert.are=Sibilant.assert.is = function(expected)	{ 
-		return function(v) {v===expected;};
+		return function(v) {return v===expected;};
 	};
 	
 	Sibilant.Event=function() {

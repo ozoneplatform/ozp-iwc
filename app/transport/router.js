@@ -8,7 +8,7 @@ var Sibilant=Sibilant || {};
 	// Stores all local addresses
 	var participants={};
 	
-	Sibilant.Metrics.external(["transport","participants"], function() {
+	Sibilant.Metrics.gauge("transport.participants").set(function() {
 		return Object.keys(participants).length;
 	});
 	var generateMsgId=function() {
@@ -23,7 +23,7 @@ var Sibilant=Sibilant || {};
 			return true;
 		} else {
 			Sibilant.log.log("Invalid packet: " + JSON.stringify(message));
-			Sibilant.Metrics.counter(["transport","packets","invalidFormat"]).inc();
+			Sibilant.Metrics.counter("transport.packets.invalidFormat").inc();
 			return false;
 		}
 	};
@@ -31,7 +31,7 @@ var Sibilant=Sibilant || {};
 	var checkSenderOrigin=function(message,participant) {
 		var knownParticipant=participants[message.src];
 		if(knownParticipant && knownParticipant.origin !== participant.origin) {
-			Sibilant.Metrics.counter(["transport","packets","invalidOrigin"]).inc();
+			Sibilant.Metrics.counter("transport.packets.invalidOrigin").inc();
 			return false;
 		}
 		return true;
@@ -76,17 +76,17 @@ var Sibilant=Sibilant || {};
 			}
 			
 			if(event.trigger("preSend",message,participant).some(Sibilant.assert.are(false))) {
-				Sibilant.Metrics.counter(["transport","packets","rejected"]).inc();
+				Sibilant.Metrics.counter("transport.packets.rejected").inc();
 				return false;
 			}
 
-			Sibilant.Metrics.counter(["transport","packets","sent"]).inc();
+			Sibilant.Metrics.counter("transport.packets.sent").inc();
 
 			// check if the recipient is local.  If so, don't bother broadcasting.
 			var localParticipant=participants[message.dst];
 			if(localParticipant) {
 				// short-cutted local delivery is still a delivery...
-				Sibilant.Metrics.counter(["transport","packets","received"]).inc();
+				Sibilant.Metrics.counter("transport.packets.received").inc();
 				localParticipant.send(message,localParticipant);
 			} else {
 				// otherwise send to the network
@@ -149,7 +149,7 @@ var Sibilant=Sibilant || {};
 		// only do something if it's one of our participants
 		var localParticipant=participants[packet.dst];
 		if(localParticipant) {
-			Sibilant.Metrics.counter(["transport","packets","received"]).inc();
+			Sibilant.Metrics.counter("transport.packets.received").inc();
 			localParticipant.send(packet,localParticipant);
 		}
 		

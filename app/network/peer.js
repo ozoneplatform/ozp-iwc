@@ -24,7 +24,7 @@ var Sibilant=Sibilant || {};
 	var haveSeen=function(packet) {
 		// don't forward our own packets
 		if(packet.src_peer===self_id) {
-			Sibilant.Metrics.counter(['packets','droppedOwnPacket']).inc();
+			Sibilant.Metrics.counter('network.packets.droppedOwnPacket').inc();
 			return true;
 		}
 		var seen=packetsSeen[packet.src_peer] || [];
@@ -61,7 +61,7 @@ var Sibilant=Sibilant || {};
 		 * @returns {undefined}
 		 */
 		send: function(message) {
-      Sibilant.Metrics.counter(['packets','sent']).inc();
+      Sibilant.Metrics.counter('network.packets.sent').inc();
 			var packet={
 					src_peer: self_id,
 					sequence: sequenceCounter++,
@@ -89,10 +89,10 @@ var Sibilant=Sibilant || {};
 		receive: function(linkId,packet) {
 			// drop it if we've seen it before
 			if(haveSeen(packet)) {
-				Sibilant.Metrics.counter(['packets','dropped']).inc();
+				Sibilant.Metrics.counter('network.packets.dropped').inc();
 				return;
 			}
-			Sibilant.Metrics.counter(['packets','received']).inc();
+			Sibilant.Metrics.counter('network.packets.received').inc();
 			
 			events.trigger("receive",packet);
 		},

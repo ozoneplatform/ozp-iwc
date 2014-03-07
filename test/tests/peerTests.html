@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Container</title>
+
+		<link rel="shortcut icon" type="image/png" href="lib/jasmine-2.0.0/jasmine_favicon.png">
+		<link rel="stylesheet" type="text/css" href="lib/jasmine-2.0.0/jasmine.css">
+		<link rel="stylesheet" type="text/css" href="lib/samples/sample.css">
+		<script type="text/javascript" src="lib/jasmine-2.0.0/jasmine.js"></script>
+		<script type="text/javascript" src="lib/jasmine-2.0.0/jasmine-html.js"></script>
+		<script type="text/javascript" src="lib/jasmine-2.0.0/boot.js"></script>
+
+		<script src="lib/jquery-2.1.0.min.js"></script>
+		
+		<script src="js/util.js"></script>
+		<script src="js/metrics.js"></script>
+		<script src="js/network/peer.js"></script>
+		<script src="js/network/localStorageLink.js"></script>
+		<script src="lib/samples/sampleWidget-logging.js"></script> 
+		
+		<!-- include spec files here... -->
+		<script type="text/javascript" src="specs/peer/peerSpec.js"></script>
+  </head>
+<body>
+	<div id="jasmineReport"></div>
+	
+	<p>Stats:<pre id="stats"></pre></p>
+	<p>Messages:<div id="messages"></div></p>
+</body>
+</html>

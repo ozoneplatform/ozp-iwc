@@ -2,97 +2,77 @@ var Sibilant=Sibilant || {};
 
 
 (function() {
-	var Counter=function() {
+	Sibilant.metrics={};
+	
+	Sibilant.metrics.Counter=function() {
 		var value=0;
-		this.set=function(v) { 
-			value=v; 
-		};
 		this.get=function() { 
 			return value; 
 		};
 		this.inc=function(v) { 
 			value+=(v?v:1);
 		};
+		this.dec=function(v) { 
+			value-=(v?v:1);
+		};
 	};
 
-	var Meter=function() {
+	Sibilant.metrics.Meter=function() {
 		var value=0;
-		this.set=function(v) { this.value=v; };
-		this.get=function() { return this.value; };
+		this.set=function(v) { value=v; return this;};
+		this.get=function() { return value; };
 	};
 	
-	var External=function(callback) {
-		var callback=callback;
+	Sibilant.metrics.Gauge=function(metricsCallback) {
+		var callback=metricsCallback;
+		this.set=function(metricsCallback) { 
+			callback=metricsCallback; 
+			return this;
+		};
 		this.get=function() { return callback(); };
 	};
 	
-	var Node=function(fullname,metric) {
-		this.fullname=fullname;
-		this.name=fullname.substr(fullname.lastIndexOf(".")+1);
-		this.metric=metric;
-		this.children={};
+	Sibilant.metrics.Registry=function() {
+		this.metrics={};
 		
-		this.child=function(name) {
-			if(!this.children.hasOwnProperty(name)) {
-				this.children[name]=new Node(this.name+"."+name);
-			}
-			return this.children[name];
-		};
-		var isEmptyObject= function ( obj ) {
-			for ( var name in obj ) 
-				return false;
-			return true;
-		};
-		
-		this.toJson=function(){
-			if(!isEmptyObject(this.children)) {
-				var rv={};
-				if(metric) {
-					rv['$value']=metric.get();
-				}
-				for(var k in this.children) {
-					var child=this.children[k];
-					rv[child.name]=child.toJson();
-				};
-				return rv;
+		this.findOrCreateMetric=function(name,type) {
+			var m= this.metrics[name] = this.metrics[name] || new type();
+			if(m instanceof type){
+					return m;
 			} else {
-				return this.metric?this.metric.get():null;
-			}
-		};
-		
-	};
-	
-	Sibilant.MetricRegistry=function() {
-		this.data=new Node("root");
-
-		var self=this;
-		findOrCreateMetric=function(path,initializer) {
-			var pos=self.data;
-			for(var i=0; i < path.length; ++i) {
-				pos=pos.child(path[i]);
-			}
-			if(!pos.metric) {
-				pos.metric=initializer();
-			}
-			return pos.metric; 
+					return null;
+			}			
 		};
 
-		this.counter=function(path) {
-			return findOrCreateMetric(path,function() { return new Counter();});
+		var makeName=function(args) {
+			return Array.prototype.slice.call(args).join(".");
+		}
+
+		this.counter=function() {
+			return this.findOrCreateMetric(makeName(arguments),Sibilant.metrics.Counter);
 		};
 
 		this.meter=function(path) {
-			return findOrCreateMetric(path,function() { return new Meter();});
+			return this.findOrCreateMetric(makeName(arguments),Sibilant.metrics.Meter);
 		};
 		
-		this.external=function(path,callback) {
-			return findOrCreateMetric(path,function() { return new External(callback);});
-		};
-		
+		this.gauge=function(path) {
+			return this.findOrCreateMetric(makeName(arguments),Sibilant.metrics.Gauge);
+		}
 		this.toJson=function() {
-			return this.data.toJson();
+			var rv={};
+			for(k in this.metrics) {
+				var path=k.split(".");
+				var pos=rv;
+				while(path.length > 1) {
+					var current=path.shift();
+					pos = pos[current]=pos[current] || {};
+				}
+				pos[path[0]]=this.metrics[k].get();
+			}
+			return rv;
 		};
 	};
 	
-	Sibilant.Metrics=new Sibilant.MetricRegistry();
+	Sibilant.Metrics=new Sibilant.metrics.Registry();
 })();
