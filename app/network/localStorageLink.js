@@ -1,13 +1,20 @@
 	
 var Sibilant=Sibilant || {};
-(function() {
-	var linkId='localStorage';
-	var prefix='Sibilant';
-	var selfId=Sibilant.peer.selfId();
-
+Sibilant.impl=Sibilant.impl || {};
+Sibilant.impl.LocalStorageLink=function(config) {
+	var config=config || {};
+	
+	var linkId=config.linkId || 'localStorage';
+	var prefix=config.prefix || 'Sibilant';
+	var peer=config.peer || Sibilant.peer;
+	var selfId=config.selfId || peer.selfId();
+	this.myKeysTimeout = config.myKeysTimeout || 50000; // 5 seconds
+	this.otherKeysTimeout = config.otherKeysTimeout || 2*60000; // 2 minutes
+	
 	var makeKey=function() { 
 		return [prefix,selfId,new Date().getTime()].join('|');
 	};
+	
 	var splitKey=function(k) { 
 		var parts=k.split("|");
 		if(parts.length===3 && parts[0]===prefix) {
@@ -16,59 +23,59 @@ var Sibilant=Sibilant || {};
 		return null;
 	};
 
-	
-	Sibilant.links = Sibilant.links || {};
-	Sibilant.links.localStorageLink={
-		myKeysTimeout:50000, // 5 seconds
-		otherKeysTimeout:2*60000, // 2 minutes
-		receiveStorageEvent: function(event) {
-			var key=splitKey(event.key);
-			if(key) {
-				var packet=JSON.parse(localStorage.getItem(event.key));
+									 
+  this.getNow=function() {
+		return new Date().getTime();
+	}
+	this.cleanKeys=function(myMaxKeyAge,otherMaxKeyAge) {
+		var now=this.getNow();
+		var myKeyExpiration = now - this.myKeysTimeout;
+		var otherKeyExpiration = now - this.otherKeysTimeout;
 
-				if(packet && typeof(packet) === "object") {
-					Sibilant.Metrics.counter('links',linkId,'packets.receive').inc();
-					Sibilant.peer.receive(linkId,packet);
-				}
+		for(var i=0; i < localStorage.length;++i) {
+			var keyName=localStorage.key(i);
+			var k=splitKey(keyName);
+			if(k) {
+				if((k.id===selfId && k.createdAt <= myKeyExpiration) 
+						|| (k.createdAt <= otherKeyExpiration)) {
+					localStorage.removeItem(keyName);
+				}				
 			}
-		},
-	 cleanKeys: function() {
-			var now=new Date().getTime();
-
-			for(var i=0; i < localStorage.length;++i) {
-				var keyName=localStorage.key(i);
-				var k=splitKey(keyName);
-				if(k) {
-					var keyAge=now-k.createdAt;
-					if((k.id===selfId && keyAge > Sibilant.links.localStorageLink.myKeysTimeout) 
-							|| (keyAge > Sibilant.links.localStorageLink.otherKeysTimeout)) {
-						localStorage.removeItem(keyName);
-					}				
-				}
-			};
-		},
-		send: function(packet) { 
-			localStorage.setItem(makeKey(),JSON.stringify(packet));
-			Sibilant.Metrics.counter('links',linkId,'packets.sent').inc();
-			
-			// clean up in a while
-			window.setTimeout(Sibilant.links.localStorageLink.cleanKeys,Sibilant.links.localStorageLink.myKeysTimeout);
-		},
-	};
-	
-	// listen for the events
-	window.addEventListener('storage',Sibilant.links.localStorageLink.receiveStorageEvent , false); 
-	
-	// Clean up now and every two minutes, just to minimize the trash
-	Sibilant.links.localStorageLink.cleanKeys();
-	window.setInterval(Sibilant.links.localStorageLink.cleanKeys,
-									   Sibilant.links.localStorageLink.otherKeysTimeout); // clean up every two minutes
-
-	
-	// TODO:  Should this autoregister or require manual registration?
-	Sibilant.peer.on("send",Sibilant.links.localStorageLink.send);
-	Sibilant.peer.on("beforeShutdown",Sibilant.links.localStorageLink.cleanKeys);
+		};
 		
+		
+	};
+	this.send=function(packet) { 
+		localStorage.setItem(makeKey(),JSON.stringify(packet));
+		Sibilant.Metrics.counter('links',linkId,'packets.sent').inc();
+		
+		window.setTimeout(function() {self.cleanKeys();},this.myKeysTimeout); 
+
+	};
+
+  // Hook into the system
+	var self=this;
+	
+	var receiveStorageEvent=function(event) {
+		var key=splitKey(event.key);
+		if(key) {
+			var packet=JSON.parse(localStorage.getItem(event.key));
+
+			if(packet && typeof(packet) === "object") {
+				Sibilant.Metrics.counter('links',linkId,'packets.receive').inc();
+				peer.receive(linkId,packet);
+			}
+		}
+	};
+	window.addEventListener('storage',receiveStorageEvent , false); 
+	
+	peer.on("send",this.send,this);
+	peer.on("beforeShutdown",function() {
+		self.cleanKeys();
+		window.removeEventListener('storage',receiveStorageEvent);
+	},this);
+	
+
 	// METRICS
 	Sibilant.Metrics.gauge('links',linkId,"buffer").set(function() {
 		var	stats= {
@@ -90,4 +97,4 @@ var Sibilant=Sibilant || {};
 	Sibilant.Metrics.gauge('links',linkId,"queueLength").set(function() {
 		return JSON.parse(localStorage.getItem('intercom') || "[]").length;
 	});
-})();
+};
