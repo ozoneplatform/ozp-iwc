@@ -52,9 +52,11 @@ var Sibilant=Sibilant || {};
 			Sibilant.Metrics.counter(['links',linkId,'packets','sent']).inc();
 			
 			// clean up in a while
-			window.setTimeout(cleanKeys,myKeysTimeout);
+			window.setTimeout(Sibilant.links.localStorageLink.cleanKeys,Sibilant.links.localStorageLink.myKeysTimeout);
 		},
-		shutdown: cleanKeys
+		shutdown: function() {
+			Sibilant.links.localStorageLink.cleanKeys();
+		}
 	};
 	
 
