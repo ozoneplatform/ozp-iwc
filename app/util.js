@@ -24,13 +24,23 @@ var Sibilant=Sibilant || {};
 	
 	Sibilant.Event=function() {
 		this.events={};
-		this.on=function(event,callback) {
-			(this.events[event]=this.events[event]||[]).push(callback);
-			return callback;
+		this.on=function(event,callback,self) {
+			var wrapped=callback;
+			if(self) {
+				wrapped=function() { 
+					callback.apply(self,arguments);
+				};
+			}
+			(this.events[event]=this.events[event]||[]).push(wrapped);
+			return wrapped;
 		};
+		
+		
 		this.off=function(event,callback) {
 			this.events[event]=(this.events[event]||[]).filter(Sibilant.assert.isNot(callback));
 		};
+		
+		
 		this.trigger=function(event) {
 			var handlers=this.events[event] || [];
 			

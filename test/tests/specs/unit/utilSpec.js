@@ -100,5 +100,34 @@ describe("Event",function() {
 		});
 		event.trigger("1","a","b","c","d","e","f");
 	});
-	
+
+	describe("Allows 'this' parameter",function() {
+		it("calls handlers with a 'this' pointer",function() {
+			var obj={x:10};
+			event.on("1",function() {	this.x++;	},obj);
+			event.trigger("1");
+
+			expect(obj.x).toEqual(11);
+		});
+
+		it("calls handles with arguments",function() {
+			var obj={x:10};
+			event.on("1",function(v) { this.x+=v;	},obj);
+			event.trigger("1",5);
+
+			expect(obj.x).toEqual(15);
+		});
+		
+		it("unregisters handlers",function() {
+			var obj={x:10};
+			var handler=event.on("1",function() {	this.x++;	},obj);
+			event.trigger("1");
+			expect(obj.x).toEqual(11);
+			
+			event.off("1",handler);
+			event.trigger("1");
+			expect(obj.x).toEqual(11);
+		});
+		
+	});
 });
