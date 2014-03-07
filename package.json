@@ -1,0 +1,12 @@
+{
+  "author": "me",
+  "name": "sibilant",
+  "version": "0.0.1",
+  "dependencies": {
+  	"grunt" : "0.3.x",
+  	"requirejs" : "*"
+  	},
+  "devDependencies": {
+    "connect" : "*"
+  }
+}

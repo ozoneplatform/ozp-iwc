@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Peer Pinger</title>
+		
+		<link rel="shortcut icon" type="image/png" href="lib/jasmine-2.0.0/jasmine_favicon.png">
+		<link rel="stylesheet" type="text/css" href="lib/jasmine-2.0.0/jasmine.css">
+		<link rel="stylesheet" type="text/css" href="lib/samples/sample.css">
+
+		<script src="lib/jquery-2.1.0.min.js"></script>
+		
+		<script src="js/util.js"></script>
+		<script src="js/metrics.js"></script>
+		<script src="js/network/peer.js"></script>
+		<script src="js/network/localStorageLink.js"></script>
+		<script src="js/transport/router.js"></script>
+		<script src="lib/samples/sampleWidget-logging.js"></script>
+		
+		<script>
+			window.setInterval(function() {
+				Sibilant.peer.send({tick: new Date().getTime()});
+			},100);
+			Sibilant.peer.on("receive",function(packet) {
+				// echo
+				Sibilant.peer.send(packet.data);
+			});
+		</script>
+  </head>
+  <body>
+		Pinging every 100ms.
+		<p>Stats:
+			<pre id="stats"></pre>
+	</p><p>
+		Messages:
+		<div id="messages"></div>
+</p>
+  </body>
+</html>

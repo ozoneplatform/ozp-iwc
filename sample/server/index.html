@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Container</title>
+				<link rel="stylesheet" href="lib/samples/sample.css">
+
+		<script src="lib/jquery-2.1.0.min.js"></script>
+		<script src="lib/intercom.js"></script>
+		
+		<script src="js/util.js"></script>
+		<script src="js/metrics.js"></script>
+		<script src="js/network/peer.js"></script>
+		<script src="js/network/intercomLink.js"></script>
+		
+		<script src="js/transport/router.js"></script>
+		
+		<script src="lib/samples/sampleWidget-logging.js"></script>
+
+  </head>
+  <body>
+		<iframe src="//localhost:13001" class="widgetFrame"></iframe>
+		<iframe src="//localhost:13001" class="widgetFrame"></iframe>
+		<p>Stats:
+			<pre id="stats"></pre>
+	</p><p>
+		Messages:
+		<div id="messages"></div>
+</p>
+  </body>
+</html>
