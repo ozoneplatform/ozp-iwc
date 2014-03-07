@@ -13,21 +13,44 @@
 		<script src="js/metrics.js"></script>
 		<script src="js/network/peer.js"></script>
 		<script src="js/network/localStorageLink.js"></script>
-		<script src="js/transport/router.js"></script>
 		<script src="lib/samples/sampleWidget-logging.js"></script>
 		
 		<script>
-			window.setInterval(function() {
+			var params={
+				echoOn: true,
+				tickOn: true,
+				tickCount: 10,
+				tickDelay: 100
+			};
+			
+			// not a perfect query parser, but good enough for these purposes
+			var regex=/([^&=]+)=?([^&]*)/g;
+			var query=window.location.search.substring(1);
+			var match;
+			while(match=regex.exec()) {
+				params[match[1]]=decodeURIComponent(match[2]);
+			}
+			
+			var sendTick=function() {
 				Sibilant.peer.send({tick: new Date().getTime()});
-			},100);
-			Sibilant.peer.on("receive",function(packet) {
-				// echo
-				Sibilant.peer.send(packet.data);
-			});
+				params.tickCount--;
+				if(params.tickCount) {
+					window.setTimeout(sendTick,params.tickDelay)	
+				}
+			};
+			
+			if(params.tickOn) {
+				sendTick();
+			}
+			
+			if(params.echoOn) {
+				Sibilant.peer.on("receive",function(packet) {
+					Sibilant.peer.send(packet.data);
+				});
+			}
 		</script>
   </head>
   <body>
-		Pinging every 100ms.
 		<p>Stats:
 			<pre id="stats"></pre>
 	</p><p>

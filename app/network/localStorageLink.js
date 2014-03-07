@@ -54,16 +54,11 @@ var Sibilant=Sibilant || {};
 			// clean up in a while
 			window.setTimeout(Sibilant.links.localStorageLink.cleanKeys,Sibilant.links.localStorageLink.myKeysTimeout);
 		},
-		shutdown: function() {
-			Sibilant.links.localStorageLink.cleanKeys();
-		}
 	};
 	
-
+	// listen for the events
 	window.addEventListener('storage',Sibilant.links.localStorageLink.receiveStorageEvent , false); 
 	
-	
-
 	// Clean up now and every two minutes, just to minimize the trash
 	Sibilant.links.localStorageLink.cleanKeys();
 	window.setInterval(Sibilant.links.localStorageLink.cleanKeys,
@@ -71,8 +66,8 @@ var Sibilant=Sibilant || {};
 
 	
 	// TODO:  Should this autoregister or require manual registration?
-	Sibilant.peer.addLink(linkId,Sibilant.links.localStorageLink);
-		
+	Sibilant.peer.on("send",Sibilant.links.localStorageLink.send);
+	Sibilant.peer.on("beforeShutdown",Sibilant.links.localStorageLink.cleanKeys);
 		
 	// METRICS
 	Sibilant.Metrics.gauge('links',linkId,"buffer").set(function() {

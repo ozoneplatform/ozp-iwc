@@ -1,20 +1,20 @@
 
-var pingerWin=window.open("peerPinger.html","pinger","height=200,width=200");;
+
+var peerWin=window.open("peerPinger.html","pinger","height=200,width=200");
 window.addEventListener("beforeunload", function() {
-	pingerWin.close();
+	peerWin.close();
 });
 
 describe("Peer broadcast",function() {
 	var receiveHandler;
-	
-	beforeEach(function() {
-	});
+
+	beforeEach(function() {	});
 	
 	afterEach(function() {
 		Sibilant.peer.off("receive",receiveHandler);
 	});
 	
-	it("receives the ping from the ping listener", function(done) {
+	it("receives the tick from the ping listener", function(done) {
 		receiveHandler=function(packet) {
 			expect(packet.data).toBeDefined();
 			expect(packet.data.tick).toBeDefined();
