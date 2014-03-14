@@ -5,9 +5,9 @@ describe("Peer broadcast",function() {
 	var client;
 	var pinger;
 	beforeEach(function(done) {	
-		client=new Sibilant.Client("http://localhost:13000/js");
+		client=new Sibilant.Client("http://localhost:13000");
 		client.on("connected",function() {
-			pinger=window.open("networkPinger.html?toAddress=" + client.participantId,"pinger","height=200,width=200");
+			pinger=window.open("//localhost:14001/transportPinger.html?toAddress=" + client.participantId,"pinger","height=500,width=500");
 			done()
 //			pinger.addEventListener("load",done);
 		});

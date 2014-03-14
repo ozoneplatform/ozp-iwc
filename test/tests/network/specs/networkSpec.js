@@ -1,6 +1,6 @@
 
 
-var peerWin=window.open("peerPinger.html","pinger","height=200,width=200");
+var peerWin=window.open("networkPinger.html","pinger","height=500,width=500");
 window.addEventListener("beforeunload", function() {
 	peerWin.close();
 });
