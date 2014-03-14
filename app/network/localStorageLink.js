@@ -1,8 +1,8 @@
-	
-var Sibilant=Sibilant || {};
-Sibilant.impl=Sibilant.impl || {};
-Sibilant.impl.LocalStorageLink=function(config) {
-	var config=config || {};
+
+var Sibilant = Sibilant || {};
+Sibilant.impl = Sibilant.impl || {};
+Sibilant.impl.LocalStorageLink = function(config) {
+	config=config || {};
 	
 	var linkId=config.linkId || 'localStorage';
 	var prefix=config.prefix || 'Sibilant';
@@ -26,8 +26,8 @@ Sibilant.impl.LocalStorageLink=function(config) {
 									 
   this.getNow=function() {
 		return new Date().getTime();
-	}
-	this.cleanKeys=function(myMaxKeyAge,otherMaxKeyAge) {
+	};
+	this.cleanKeys=function() {
 		var now=this.getNow();
 		var myKeyExpiration = now - this.myKeysTimeout;
 		var otherKeyExpiration = now - this.otherKeysTimeout;
@@ -98,5 +98,5 @@ Sibilant.impl.LocalStorageLink=function(config) {
 		return JSON.parse(localStorage.getItem('intercom') || "[]").length;
 	});
 };
-
+Sibilant.links = Sibilant.links || {};
 Sibilant.links.localStorage=new Sibilant.impl.LocalStorageLink();

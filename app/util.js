@@ -53,7 +53,7 @@ var Sibilant=Sibilant || {};
 				try{
 					rv.push(h.apply(null,data));
 				} catch(e) {
-					Sibilant.log.warn("Handler error on event" + event + ":" + e + " in callback: " + h);
+					Sibilant.log.warn("Handler error on event '" + event + "':" + e + " in callback: " + h);
 				}
 			});
 			return rv;

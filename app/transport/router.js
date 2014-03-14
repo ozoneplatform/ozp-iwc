@@ -73,6 +73,7 @@ var Sibilant=Sibilant || {};
 			// should this be prevented?
 			if(message.dst === routerControlAddress && message.src==="$nobody") {
 				Sibilant.router.registerParticipant(message,participant);
+				return;
 			}
 			
 			if(event.trigger("preSend",message,participant).some(Sibilant.assert.are(false))) {
@@ -132,11 +133,11 @@ var Sibilant=Sibilant || {};
 			return true;
 		},
 		// Could inherit, but meh
-		on: function(event,callback) { 
-			events.on(event,callback);
+		on: function(e,callback) { 
+			event.on(e,callback);
 		},
-		off: function(event,callback) { 
-			events.off(event,callback);
+		off: function(e,callback) { 
+			event.off(e,callback);
 		}
 	};
 	
@@ -147,12 +148,11 @@ var Sibilant=Sibilant || {};
 			return;
 		}
 		// only do something if it's one of our participants
-		var localParticipant=participants[packet.dst];
+		var localParticipant=participants[packet.data.dst];
 		if(localParticipant) {
 			Sibilant.Metrics.counter("transport.packets.received").inc();
-			localParticipant.send(packet,localParticipant);
+			localParticipant.send(packet.data,localParticipant);
 		}
-		
 	});
 	
 	// PostMessage listener is so fundamental, there's no point
