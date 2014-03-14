@@ -5,11 +5,9 @@ var Sibilant=Sibilant || {};
 	Sibilant.log=Sibilant.log || console;
 	Sibilant.util=Sibilant.util || {};
 	Sibilant.assert=Sibilant.assert || {};
-	// TODO: coordinate ID generation to reduce the potential for 
-	// collisions with large numbers of participants
-
+	// TODO: coordinate ID generation to reduce the potential for collisions with large numbers of participants
 	Sibilant.util.generateId=function() {
-		return (Math.random() * 0xffffffff).toString(16)
+		return Math.floor(Math.random() * 0xffffffffffff).toString(16);
 	};
 	
 	// bit of candygrammar, since there's a lot of Array.every and Array.some
