@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sibilant Debugger</title>
+		<link rel="stylesheet" type="text/css" href="css/debugger.css">
+		<link rel="stylesheet" href="bootstrap-3.1.1/css/bootstrap.min.css">
+
+		<script src="../../js/util.js"></script>
+		<script src="../../js/metrics.js"></script>
+		<script src="../../js/network/peer.js"></script>
+		<script src="../../js/metrics.js"></script>
+		<script src="../../js/network/peer.js"></script>
+		<script src="../../js/network/localStorageLink.js"></script>
+		<script src="../../js/transport/router.js"></script>
+
+		<script src="js/jquery-2.1.0.min.js"></script>
+		<script src="bootstrap-3.1.1/js/bootstrap.min.js"></script>
+		<script src="js/debugger.js"></script>
+  </head>
+  <body>
+	<ul class="nav nav-tabs">
+		<li class="active"><a href="#snooper" data-toggle="tab">Snooper</a></li>
+		<li><a href="#metrics" data-toggle="tab">Metrics</a></li>
+	</ul>
+
+	<div class="tab-content">
+		<div id="snooper" class="tab-pane active">
+			<table id="messages">
+				<thead><tr>
+						<td>Time</td>
+						<td>Peer</td>
+						<td>Sequence</td>
+						<td>Source</td>
+						<td>Destination</td>
+						<td>MessageId</td>
+						<td>ReplyTo</td>
+				</tr></thead>
+			</table>
+		</div>
+		<div id="metrics" class="tab-pane">
+			<pre id="stats"></pre>
+		</div>
+	</div>
+  </body>
+</html>
