@@ -60,7 +60,7 @@ Sibilant.impl.Router=function(config) {
 		return fields;
 	};
 	this.createReply=function(message,fields) {
-		fields=Sibilant.router.createMessage(fields);
+		fields=this.createMessage(fields);
 		fields.reply_to=message.msg_id;
 		fields.src=fields.src || message.dst;
 		fields.dst=fields.dst || message.src;
@@ -83,23 +83,10 @@ Sibilant.impl.Router=function(config) {
 		{
 			// someone vetoed this participant
 			Sibilant.log.log("registeredParticipant[DENIED] origin:"+participant.origin);
-
-			participant.send(Sibilant.router.createReply(message,{
-				dst: this.nobodyAddress,
-				entity: { status: "denied" }
-			}),participant);
 			return null;
 		}
-
 		this.participants[participant_id]=participant;
-
-		participant.send(Sibilant.router.createReply(message,{
-			dst: participant_id,
-			entity: { status: "ok", id: participant_id }
-		}),participant);
-
 		Sibilant.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
-		
 		return participant_id;
 	};
 	
@@ -127,7 +114,16 @@ Sibilant.impl.Router=function(config) {
 		// TODO: if the participant sends 10 handshakes, it'll get ten different registrations.
 		// should this be prevented?
 		if(message.dst === this.routerControlAddress && message.src===this.nobodyAddress) {
-			Sibilant.router.registerParticipant(message,participant);
+			var participantId=this.registerParticipant(message,participant);
+			var reply;
+			if(participantId === null) {
+				reply=this.createReply(message,
+					{	dst: this.nobodyAddress,	entity: { status: "denied" } });
+			} else {
+				reply=this.createReply(message,
+					{dst: participantId,	entity: { status: "ok"}	});
+			}
+			participant.send(reply,participant);
 			return;
 		}
 
@@ -156,12 +152,12 @@ Sibilant.impl.Router=function(config) {
 	};
 
 	
-	this.on=function(e,callback) { 
-			events.on(e,callback);
+	this.on=function() { 
+			events.on.apply(events,arguments);
 	};
 	
-	this.off=function(e,callback) { 
-			events.off(e,callback);
+	this.off=function() { 
+			events.off.apply(events,arguments);
 	};
 	// Wire up to the peer
 	this.peer.on("receive",function(packet) {
