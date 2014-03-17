@@ -46,6 +46,7 @@ Sibilant.impl.Router=function(config) {
 	};
 	
 	var events=new Sibilant.Event();
+	events.mixinOnOff(this);
 	events.on("preSend",checkFormat);
 	events.on("preSend",checkSenderOrigin);
 
@@ -78,8 +79,7 @@ Sibilant.impl.Router=function(config) {
 				participant_id=Sibilant.util.generateId() + "." + this.self_id;
 		} while(this.participants.hasOwnProperty(participant_id));
 
-		if(events.trigger("registerParticipant",participant, message)
-						.some(Sibilant.assert.are(false)))
+		if(events.triggerForObjections("registerParticipant",participant, message))
 		{
 			// someone vetoed this participant
 			Sibilant.log.log("registeredParticipant[DENIED] origin:"+participant.origin);
@@ -151,14 +151,6 @@ Sibilant.impl.Router=function(config) {
 		this.deliverLocal(message.data);
 	};
 
-	
-	this.on=function() { 
-			events.on.apply(events,arguments);
-	};
-	
-	this.off=function() { 
-			events.off.apply(events,arguments);
-	};
 	// Wire up to the peer
 	this.peer.on("receive",function(packet) {
 		self.receiveFromPeer(packet);

@@ -129,5 +129,28 @@ describe("Event",function() {
 			expect(obj.x).toEqual(11);
 		});
 		
+		it("mixes in on() and off() functions to an object",function() {
+			var obj={bar:1};
+
+			event.mixinOnOff(obj);
+			expect(event.on).toBeDefined();
+			expect(event.off).toBeDefined();
+		});
+		
+		it("delegates on() and off() mixins to the event",function() {
+			var obj={bar:1};
+			var count=0;
+			event.mixinOnOff(obj);
+			
+			var callback=obj.on("1",function() { count++;});
+			event.trigger("1");
+			expect(count).toEqual(1);
+
+			obj.off("1",callback);
+			event.trigger("1");
+			expect(count).toEqual(1);
+			
+		});
 	});
+	
 });

@@ -14,7 +14,7 @@
 			var params={
 				echoOn: true,
 				tickOn: true,
-				tickCount: 10000,
+				tickCount: 100,
 				tickDelay: 100
 			};
 			
@@ -26,7 +26,7 @@
 				params[match[1]]=decodeURIComponent(match[2]);
 			}
 			
-			client=new Sibilant.Client("http://localhost:13000");
+			client=new Sibilant.Client({peerUrl:"http://localhost:13000"});
 			client.on("connected",function() {
 				$("#me").text(client.participantId);
 				$("#target").text(params.toAddress);

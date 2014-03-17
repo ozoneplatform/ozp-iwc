@@ -1,83 +1,112 @@
 var Sibilant=Sibilant || {};
 
 
-Sibilant.Client=function(peerUrl) {
+Sibilant.Client=function(config) {
+	config=config || {};
 	this.participantId="$nobody";
-	var replyCallbacks={};
+	this.replyCallbacks={};
+	this.peerUrl=config.peerUrl;
+	this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
+	// TODO: accept a list of peer URLs that are searched in order of preference
 
-	this.send=function(dst,message,callback) {
-		var id=new Date().getTime();
-		var packet={
-			ver: 1,
-			src: this.participantId,
-			dst: dst,
-			msg_id: id,
-			time: new Date().getTime(),
-			entity: message
-		};
+	this.events=new Sibilant.Event();
+	var self=this;
 
-		if(callback) {
-			replyCallbacks[id]=callback;
-		}
-
-		this.peer.postMessage(packet,'*');
-	};
-	var events=new Sibilant.Event();
+	if(this.autoPeer) {
+		this.findPeer();
+	}
 	
-	this.on=function(event,callback) {
-		if(event==="connected" && this.participantId !=="$nobody") {
-			callback(this);
-		}
-		events.on(event,callback);
-	};
-	this.off=function(event,callback) { 
-		events.off(event,callback);
-	};
-	this.disconnect=function() {
-		if(this.iframe) {
-			document.body.removeChild(this.iframe);
-		}
-	};
-
 	// receive postmessage events
 	window.addEventListener("message", function(event) {
-		var message=event.data;
-
-		if(message.reply_to && replyCallbacks[message.reply_to]) {
-			replyCallbacks[message.reply_to](message);
-		} else {
-			events.trigger("receive",message);
+		if(event.origin !== self.peerUrl){
+			return;
 		}
+		self.receive(event.data);
 	}, false);
+};
 
-	var self=this;
-	var getAddress=function(){ 
-		// send connect to get our address
-		self.send("$transport",{},function(message) {
-			self.participantId=message.dst;
-			events.trigger("connected",self);
-		});
+Sibilant.Client.prototype.receive=function(packet) {
+		if(packet.reply_to && this.replyCallbacks[packet.reply_to]) {
+			this.replyCallbacks[packet.reply_to](packet);
+		} else {
+			this.events.trigger("receive",packet);
+		}	
+};
+
+Sibilant.Client.prototype.send=function(dst,entity,callback) {
+	var now=new Date().getTime();
+	var id=now; // makes the code below read better
+
+	var packet={
+		ver: 1,
+		src: this.participantId,
+		dst: dst,
+		msg_id: id,
+		time: now,
+		entity: entity
 	};
 
+	if(callback) {
+		this.replyCallbacks[id]=callback;
+	}
+
+	this.peer.postMessage(packet,'*');
+};
+
+Sibilant.Client.prototype.on=function(event,callback) {
+	if(event==="connected" && this.participantId !=="$nobody") {
+		callback(this);
+		return;
+	}
+	return this.events.on.apply(this.events,arguments);
+};
+
+Sibilant.Client.prototype.off=function(event,callback) { 
+	return this.events.off.apply(this.events,arguments);
+};
+
+Sibilant.Client.prototype.disconnect=function() {
+	if(this.iframe) {
+		document.body.removeChild(this.iframe);
+	}
+};
+
+Sibilant.Client.prototype.createIframePeer=function(peerUrl) {
+	var self=this;
+	var createIframeShim=function() {
+		self.iframe=document.createElement("iframe");
+		self.iframe.src=peerUrl+"/iframe_peer.html";
+		self.iframe.height=1;
+		self.iframe.width=1;
+		self.iframe.style="display:none !important;";
+		self.iframe.addEventListener("load",function() { self.requestAddress(); },false);	
+		document.body.appendChild(self.iframe);
+		self.peer=self.iframe.contentWindow;
+
+	};
+	// need at least the body tag to be loaded, so wait until it's loaded
+	if(document.readyState === 'complete' ) {
+		createIframeShim();
+	} else {
+		window.addEventListener("load",createIframeShim,false);
+}
+};
+
+Sibilant.Client.prototype.findPeer=function() {
+	// check if we have a parent, get address there if so
 	if(window.parent!==window) {
 		this.peer=window.parent;
-		getAddress();
+		this.requestAddress();
 	} else {
-		var createIframeShim=function() {
-			self.iframe=document.createElement("iframe");
-			self.iframe.src=peerUrl+"/iframe_peer.html";
-			self.iframe.height=1;
-			self.iframe.width=1;
-			self.iframe.style="display:none !important;";
-			self.iframe.addEventListener("load",getAddress,false);	
-			document.body.appendChild(self.iframe);
-			self.peer=self.iframe.contentWindow;
-
-		};
-		if(document.readyState === 'complete' ) {
-			createIframeShim();
-		} else {
-			window.addEventListener("load",createIframeShim,false);
-		}
+		this.createIframePeer(this.peerUrl);
 	}
+};
+
+Sibilant.Client.prototype.requestAddress=function(){
+	// send connect to get our address
+	var self=this;
+	this.send("$transport",{},function(message) {
+		self.participantId=message.dst;
+		self.events.trigger("connected",self);
+	});
 };

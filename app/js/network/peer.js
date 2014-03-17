@@ -16,6 +16,7 @@ Sibilant.impl.Peer=function() {
 	var packetsSeen={};
 	
 	var events=new Sibilant.Event();
+	events.mixinOnOff(this);
 
 	// Helper to determine if we've seen this packet before
 	var haveSeen=function(packet) {
@@ -56,10 +57,9 @@ Sibilant.impl.Peer=function() {
 				sequence: sequenceCounter++,
 				data: message
 		};
-		var results=events.trigger("presend",packet);
 		// as long as none of the handers returned the boolean false, send it out
 
-		if(results.every(Sibilant.assert.isNot(false))) {
+		if(!events.triggerForObjections("presend",packet)) {
 			events.trigger("send",packet);
 		}
 	};
@@ -83,15 +83,6 @@ Sibilant.impl.Peer=function() {
 
 		events.trigger("receive",packet,linkId);
 	};
-
-	// Could inherit, but meh
-	this.on=function(event,callback) { 
-		events.on(event,callback);
-	};
-	this.off=function(event,callback) { 
-		events.off(event,callback);
-	};
-
 
 	// Shutdown handling
 	var self=this;
