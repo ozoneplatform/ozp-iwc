@@ -8,7 +8,7 @@ describe("Peer broadcast",function() {
 		client=new Sibilant.Client({peerUrl:"http://localhost:13000"});
 		client.on("connected",function() {
 			pinger=window.open("//localhost:14001/transportPinger.html?toAddress=" + client.participantId,"pinger","height=500,width=500");
-			done()
+			done();
 //			pinger.addEventListener("load",done);
 		});
 	});
@@ -19,7 +19,7 @@ describe("Peer broadcast",function() {
 			client=null;
 		}
 		if(pinger) {
-//			pinger.close();
+			pinger.close();
 		}
 	});
 	
