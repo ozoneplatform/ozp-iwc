@@ -4,13 +4,12 @@ sibilant.links = sibilant.links || {};
 
 /**
  * @class
- * @param {sibilant.peer} [config.peer=sibilant.peer] - The peer to connect to.
+ * @param {sibilant.Peer} [config.peer=sibilant.defaultPeer] - The peer to connect to.
  * @param {Object} [config] - Configuration for this link
  * @param {Number} [config.myKeysTimeout=5000] - Milliseconds to wait before deleting this link's keys.
  * @param {Number} [config.otherKeysTimeout=120000] - Milliseconds to wait before cleaning up other link's keys
  * @param {string} [config.prefix='sibilant'] - Namespace for communicating, must be the same for all peers on the same network.
  * @param {string} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
- * @returns {undefined}
  */
 sibilant.LocalStorageLink = function(config) {
 	config=config || {};
@@ -37,7 +36,10 @@ sibilant.LocalStorageLink = function(config) {
 	};
 	window.addEventListener('storage',receiveStorageEvent , false); 
 	
-	this.peer.on("send",this.send,this);
+	this.peer.on("send",function(event) { 
+		self.send(event.packet); 
+	});
+	
 	this.peer.on("beforeShutdown",function() {
 		self.cleanKeys();
 		window.removeEventListener('storage',receiveStorageEvent);
@@ -136,8 +138,7 @@ sibilant.LocalStorageLink.prototype.cleanKeys=function() {
 };
 /**
  * Publishes a packet to other peers.
- * @param {type} packet
- * @returns {undefined}
+ * @param {sibilant.NetworkPacket} packet
  */
 sibilant.LocalStorageLink.prototype.send=function(packet) { 
 	localStorage.setItem(this.makeKey(),JSON.stringify(packet));

@@ -18,19 +18,19 @@ describe("Peer broadcast",function() {
 	});
 	
 	it("receives the tick from the ping listener", function(done) {
-		receiveHandler=function(packet) {
-			expect(packet.data).toBeDefined();
-			expect(packet.data.tick).toBeDefined();
+		receiveHandler=function(event) {
+			expect(event.packet.data).toBeDefined();
+			expect(event.packet.data.tick).toBeDefined();
 			done();
 		};
 		peer.on("receive",receiveHandler);
 	});
 	
 	it("can send and recieve from the echo listener",function(done) {
-		receiveHandler=function(packet) {
-			expect(packet.src_peer).not.toEqual(peer.selfId());
-			if(packet.data.marco) {
-				expect(packet.data.marco).toEqual("polo");
+		receiveHandler=function(event) {
+			expect(event.packet.src_peer).not.toEqual(peer.selfId());
+			if(event.packet.data.marco) {
+				expect(event.packet.data.marco).toEqual("polo");
 				done();
 			}
 		};

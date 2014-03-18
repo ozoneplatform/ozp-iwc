@@ -3,16 +3,16 @@
   <head>
     <title>Network Pinger</title>
 		
-		<link rel="stylesheet" type="text/css" href="css/sample.css">
+		<link rel="stylesheet" type="text/css" href="../css/sample.css">
 
-		<script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
+		<script type="text/javascript" src="../lib/jquery-2.1.0.min.js"></script>
 		
 		<script type="text/javascript" src="//localhost:13000/js/util.js"></script>
 		<script type="text/javascript" src="//localhost:13000/js/metrics.js"></script>
 		<script type="text/javascript" src="//localhost:13000/js/network/peer.js"></script>
 		<script type="text/javascript" src="//localhost:13000/js/network/localStorageLink.js"></script>
 		
-		<script type="text/javascript" src="js/sampleWidget-logging.js"></script>
+		<script type="text/javascript" src="../lib/samples/sampleWidget-logging.js"></script>
 		
 		<script>
 			var params={
@@ -43,8 +43,8 @@
 			}
 			
 			if(params.echoOn) {
-				sibilant.defaultPeer.on("receive",function(packet) {
-					sibilant.defaultPeer.send(packet.data);
+				sibilant.defaultPeer.on("receive",function(event) {
+					sibilant.defaultPeer.send(event.packet.data);
 				});
 			}
 		</script>

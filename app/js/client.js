@@ -1,6 +1,13 @@
 var sibilant=sibilant || {};
 
-
+/**
+ * @class
+ * This class will be heavily modified in the future.
+ * 
+ * @param {object} config
+ * @param {string} config.peerUrl - Base URL of the peer server
+ * @param {boolean} [config.autoPeer=true] - Whether to automatically find and connect to a peer
+ */
 sibilant.Client=function(config) {
 	config=config || {};
 	this.participantId="$nobody";
@@ -25,6 +32,14 @@ sibilant.Client=function(config) {
 	}, false);
 };
 
+/**
+ * Receive a packet from the connected peer.  If the packet is a reply, then
+ * the callback for that reply is invoked.  Otherwise, it fires a receive event
+ * @fires sibilant.Client#receive
+ * @protected
+ * @param {sibilant.TransportPacket} packet
+ * @returns {undefined}
+ */
 sibilant.Client.prototype.receive=function(packet) {
 		if(packet.reply_to && this.replyCallbacks[packet.reply_to]) {
 			this.replyCallbacks[packet.reply_to](packet);
@@ -32,7 +47,12 @@ sibilant.Client.prototype.receive=function(packet) {
 			this.events.trigger("receive",packet);
 		}	
 };
-
+/**
+ * Used to send a packet
+ * @param {string} dst - where to send the packet
+ * @param {object} entity - payload of the packet
+ * @param {function} callback - callback for any replies
+ */
 sibilant.Client.prototype.send=function(dst,entity,callback) {
 	var now=new Date().getTime();
 	var id=now; // makes the code below read better

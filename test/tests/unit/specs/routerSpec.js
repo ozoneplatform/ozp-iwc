@@ -28,8 +28,8 @@ describe("Router",function() {
 		
 		fakePeer=new sibilant.Event();
 		fakePeer.packets=[];
-		fakePeer.send=function(message) {
-			fakePeer.packets.push(message);
+		fakePeer.send=function(packet) {
+			fakePeer.packets.push(packet);
 		};
 		
 		router=new sibilant.Router({peer: fakePeer});
@@ -64,10 +64,10 @@ describe("Router",function() {
 		it("calls registration handlers",function() {
 			// events.trigger("registerParticipant",participant, message)
 			var called=false;
-			router.on("registerParticipant",function(p,msg) {
-				expect(p).toEqual(participant);
-				expect(msg.src).toEqual("$nobody");
-				expect(msg.dst).toEqual("$transport");
+			router.on("preRegisterParticipant",function(event) {
+				expect(event.participant).toEqual(participant);
+				expect(event.packet.src).toEqual("$nobody");
+				expect(event.packet.dst).toEqual("$transport");
 				called=true;
 			});
 			router.send(createMsg({src:"$nobody",dst:"$transport"}),participant);
@@ -75,7 +75,11 @@ describe("Router",function() {
 		});
 
 		it("registration handlers can block a participant",function() {
-			router.on("registerParticipant",function(p,msg) { return p.origin !== "badguy.com";});
+			router.on("preRegisterParticipant",function(event) { 
+				if(event.participant.origin === "badguy.com") {
+					event.cancel("badguy");
+				}
+			});
 			var badParticipant=createParticipant({origin: "badguy.com"});
 			router.send(createMsg({src:"$nobody",dst:"$transport"}),participant);
 			router.send(createMsg({src:"$nobody",dst:"$transport"}),badParticipant);

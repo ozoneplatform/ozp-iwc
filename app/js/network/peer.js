@@ -1,6 +1,36 @@
 
 var sibilant=sibilant || {};
 
+/**
+* @typedef sibilant.NetworkPacket
+* @property {string} src_peer - The id of the peer who broadcast this packet.
+* @property {string} sequence - A monotonically increasing, unique identifier for this packet
+* @property {object} data - The payload of this packet.
+*/
+
+/**
+ * @event sibilant.Peer#preSend
+ * @property {sibilant.NetworkPacket} packet
+ * @property {boolean} reject
+ * @property {string} rejectReason
+*/
+
+/**
+ * @event sibilant.Peer#receive
+ * @property {sibilant.NetworkPacket} packet
+ * @property {string} linkId
+ */
+
+/**
+ * @event sibilant.Peer#send
+ * @property {sibilant.NetworkPacket} packet
+ */
+
+/**
+ * @event sibilant.Peer#beforeShutdown
+ */
+
+
 sibilant.Peer=function() {
 	
 	// generate a random 4 byte id
@@ -42,34 +72,35 @@ sibilant.Peer=function() {
 		
 	/**
 	 * Sends a message to network
-	 * Events:
-	 *   "presend" => function(packet)
-	 *			Called before sending a packet.  The callback can return
-	 *			false to prevent the sending of the packet.
-	 * @param {type} message
-	 * @returns {undefined}
+	 * @fires sibilant.Peer#preSend
+	 * @fires sibilant.Peer#send
+	 * @param {object} packet
 	 */
-	this.send= function(message) {
+	this.send= function(packet) {
 		sibilant.metrics.counter('network.packets.sent').inc();
 		var packet={
 				src_peer: self_id,
 				sequence: sequenceCounter++,
-				data: message
+				data: packet
 		};
 		// as long as none of the handers returned the boolean false, send it out
-
-		if(!events.triggerForObjections("presend",packet)) {
-			events.trigger("send",packet);
+		var preSendEvent={
+			'packet': packet,
+			'reject': true,
+			'rejectReason' : ""
+		};
+		
+		events.trigger("preSend",preSendEvent);
+		if(preSendEvent.reject) {
+			events.trigger("send",{'packet':packet});
 		}
 	};
 
 	/**
-	 *  Called by the links when a new packet is recieved.
-	 *  Events:
-	 *   "receive" -- whenever is received from another peer
-	 *     Signature: function(packet)
-	 * @param {type} linkId
-	 * @param {type} packet
+	 * Called by the links when a new packet is recieved.
+	 * @fires sibilant.Peer#receive
+	 * @param {string} linkId
+	 * @param {sibilant.NetworkPacket} packet
 	 * @returns {unresolved}
 	 */
 	this.receive=function(linkId,packet) {
@@ -80,7 +111,7 @@ sibilant.Peer=function() {
 		}
 		sibilant.metrics.counter('network.packets.received').inc();
 
-		events.trigger("receive",packet,linkId);
+		events.trigger("receive",{'packet':packet,'linkId': linkId});
 	};
 
 	// Shutdown handling
@@ -90,10 +121,13 @@ sibilant.Peer=function() {
 	};
 	window.addEventListener('beforeunload',unloadListener);
 
+	 /**
+	  * @fires sibilant.Peer#send
+	  */
 	this.shutdown=function() {
 		events.trigger("beforeShutdown");
-		window.removeEventListener('beforeunload',unloadListener)
-	}
+		window.removeEventListener('beforeunload',unloadListener);
+	};
 
 };
 // TODO: move autocreation to a different file

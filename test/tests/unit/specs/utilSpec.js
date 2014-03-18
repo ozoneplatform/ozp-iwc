@@ -11,11 +11,13 @@ describe("Event",function() {
 		event=null;
 	});
 	
-	it("single handlers gets event", function(done) {
+	it("single handlers gets event", function() {
+		var hits=0;
 		event.on("1",function() {
-			done();
+			hits++;
 		});		
-		event.trigger("1");		
+		event.trigger("1");
+		expect(hits).toEqual(1);
 	});
 	
 	it("multiple handlers gets event", function() {
@@ -71,36 +73,35 @@ describe("Event",function() {
 		expect(hits1).toEqual(1);
 		expect(hits2).toEqual(1);
 	});
-	
-	it("returns an array the handler output", function() {
-		for(var i=0; i< 10; ++i) {
-			// wrapped to prevent "i" from referencing the closure scope
-			// and always being 10
-			event.on("1",(function(x) { return function() {	return x;}})(i));		
-		}
-				
-		expect(event.trigger("1")).toEqual([0,1,2,3,4,5,6,7,8,9]);
-	});
-	
+		
 	it("passes single argument to the handler",function() {
-		event.on("1",function(data) {
-			expect(data).toEqual("foo");
+		event.on("1",function(event) {
+			expect(event.foo).toEqual("bar");
 		});
-		event.trigger("1","foo");
+		event.trigger("1",{foo:"bar"});
 	});
 	
-	it("passes several arguments to the handler",function() {
-		event.on("1",function(a,b,c,d,e,f) {
-			expect(a).toEqual("a");
-			expect(b).toEqual("b");
-			expect(c).toEqual("c");
-			expect(d).toEqual("d");
-			expect(e).toEqual("e");
-			expect(f).toEqual("f");
+	describe("trigger returns boolean",function() {
+		var hits;
+		beforeEach(function() {
+			hits=0;
+			event.on("1",function() {hits++;});
 		});
-		event.trigger("1","a","b","c","d","e","f");
-	});
+		
+		it("returns false from trigger by default",function() {
+			expect(event.trigger("1").canceled).toEqual(false);	
+		});
 
+		it("returns false from trigger if the cancelable event is not canceled",function() {
+			expect(event.trigger("1",new sibilant.CancelableEvent()).canceled).toEqual(false);
+		});
+
+		it("returns true from trigger if the event is canceled",function() {
+			event.on("1",function(event) { event.cancel();});
+			expect(event.trigger("1",new sibilant.CancelableEvent()).canceled).toEqual(true);
+		});
+
+	});
 	describe("Allows 'this' parameter",function() {
 		it("calls handlers with a 'this' pointer",function() {
 			var obj={x:10};
@@ -112,15 +113,16 @@ describe("Event",function() {
 
 		it("calls handles with arguments",function() {
 			var obj={x:10};
-			event.on("1",function(v) { this.x+=v;	},obj);
-			event.trigger("1",5);
+			event.on("1",function(e) { this.x+=e.v;	},obj);
+			event.trigger("1",{v:5});
 
 			expect(obj.x).toEqual(15);
 		});
 		
 		it("unregisters handlers",function() {
 			var obj={x:10};
-			var handler=event.on("1",function() {	this.x++;	},obj);
+			var handler=function() {	this.x++;	};
+			event.on("1",handler,obj);
 			event.trigger("1");
 			expect(obj.x).toEqual(11);
 			
@@ -152,5 +154,4 @@ describe("Event",function() {
 			
 		});
 	});
-	
 });

@@ -36,6 +36,7 @@ sibilant.Event.prototype.on=function(event,callback,self) {
 		wrapped=function() { 
 			callback.apply(self,arguments);
 		};
+		wrapped.sibilantDelegateFor=callback;
 	}
 	this.events[event]=this.events[event]||[];
 	this.events[event].push(wrapped);
@@ -43,57 +44,30 @@ sibilant.Event.prototype.on=function(event,callback,self) {
 };
 
 /**
- * Unregisters an event handler previously registered.  Requires the handle
- * returned by [on()]{@link sibilant.Event#on}
+ * Unregisters an event handler previously registered.
  * @param {type} event
  * @param {type} callback
  */	
 sibilant.Event.prototype.off=function(event,callback) {
-	this.events[event]=(this.events[event]||[]).filter(sibilant.assert.isNot(callback));
+	this.events[event]=(this.events[event]||[]).filter( function(h) {
+		return h!==callback && h.sibilantDelegateFor !== callback;
+	});
 };
 
 /**
  * Fires an event that will be received by all handlers.
- * @param {string} event  - Name of the event
- * @param {...*} arguments - Arguments to be passed to each handler.
- * @returns {array} An array of all handler return values.
+ * @param {string} eventName  - Name of the event
+ * @param {object} event - Event object to pass to the handers.
+ * @returns {object} The event after all handlers have processed it
  */
-sibilant.Event.prototype.trigger=function(event) {
-	var handlers=this.events[event] || [];
+sibilant.Event.prototype.trigger=function(eventName,event) {
+	event = event || new sibilant.CancelableEvent();
+	var handlers=this.events[eventName] || [];
 
-	// shave off the first arguments
-	var data=Array.prototype.slice.call(arguments);
-	data.shift(); 
-
-	return handlers.map(function(h) {
-		try{
-			return h.apply(null,data);
-		} catch(e) {
-			sibilant.log.warn("Handler error on event '" + event + "':" + e + " in callback: " + h);
-			return {error: e};
-		}
-	});
-};
-
-sibilant.Event.prototype.triggerForObjections=function(event) {
-	var handlers=this.events[event] || [];
-
-	// shave off the first arguments
-	var data=Array.prototype.slice.call(arguments);
-	data.shift(); 
-	var rv=[];
 	handlers.forEach(function(h) {
-		try{
-			var v=h.apply(null,data);
-			if(typeof(v)!=='undefined' && v !== true) {
-				rv.push(v);
-			}
-		} catch(e) {
-			sibilant.log.warn("Handler error on event '" + event + "':" + e + " in callback: " + h);
-			rv.push({exception: e,handler: h});
-		}
+		h(event);
 	});
-	return rv.length>0? rv: false;
+	return event;
 };
 
 
@@ -106,3 +80,33 @@ sibilant.Event.prototype.mixinOnOff=function(target) {
 	target.on=function() { return self.on.apply(self,arguments);};
 	target.off=function() { return self.off.apply(self,arguments);};
 };
+
+/**
+ * @class
+ * Convenient base for events that can be canceled.  Provides and manages
+ * the properties canceled and cancelReason, as well as the member function
+ * cancel().
+ * @param {object} data - Data that will be copied into the event
+ */
+sibilant.CancelableEvent=function(data) {
+	data = data || {};
+	for(k in data) {
+		this[k]=data[k];
+	}
+	this.canceled=false;
+	this.cancelReason=null;
+};
+
+/**
+ * 
+ * @param {type} reason - A text description of why the event was canceled.
+ * @returns {sibilant.CancelableEvent} Reference to self
+ */
+sibilant.CancelableEvent.prototype.cancel=function(reason) {
+	reason= reason || "Unknown";
+	this.canceled=true;
+	this.cancelReason=reason;
+	return this;
+};
+
+

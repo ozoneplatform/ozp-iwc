@@ -8,8 +8,8 @@ describe("Peer",function() {
 	beforeEach(function() {	
 		sendCount=receiveCount=0;
 		peer=new sibilant.Peer();
-		peer.on("send",function(packet) {sendCount++;});
-		peer.on("receive",function(packet) {receiveCount++;});
+		peer.on("send",function(event) {sendCount++;});
+		peer.on("receive",function(event) {receiveCount++;});
 		
 	});
 	
@@ -18,8 +18,8 @@ describe("Peer",function() {
 	});
 	
 	it("sends a packet to handlers",function() {
-		peer.on("send",function(packet) {
-			expect(packet.data).toEqual("foo");
+		peer.on("send",function(event) {
+			expect(event.packet.data).toEqual("foo");
 		});
 		
 		peer.send("foo");
@@ -27,8 +27,8 @@ describe("Peer",function() {
 	});
 	
 	it("notifies handlers on receive",function() {
-		peer.on("receive",function(packet) {
-			expect(packet.data).toEqual("foo");
+		peer.on("receive",function(event) {
+			expect(event.packet.data).toEqual("foo");
 		});
 		
 		peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo"});
@@ -62,9 +62,9 @@ describe("Peer",function() {
 	
 	describe("filtering",function() {
 		it("allows presend filtering",function() {
-			peer.on("presend",function(packet) {
+			peer.on("preSend",function(event) {
 				// only allow odd numbers for value
-				return (packet.data.value % 2 === 1)
+				event.reject= (event.packet.data.value % 2 === 1);
 			});
 			for(var i=0;i<10;++i) {
 				peer.send({value:i});
