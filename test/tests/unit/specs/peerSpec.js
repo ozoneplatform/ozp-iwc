@@ -7,7 +7,7 @@ describe("Peer",function() {
 	
 	beforeEach(function() {	
 		sendCount=receiveCount=0;
-		peer=new Sibilant.impl.Peer();
+		peer=new sibilant.Peer();
 		peer.on("send",function(packet) {sendCount++;});
 		peer.on("receive",function(packet) {receiveCount++;});
 		
@@ -64,7 +64,7 @@ describe("Peer",function() {
 		it("allows presend filtering",function() {
 			peer.on("presend",function(packet) {
 				// only allow odd numbers for value
-				return (packet.data.value % 2 == 1)
+				return (packet.data.value % 2 === 1)
 			});
 			for(var i=0;i<10;++i) {
 				peer.send({value:i});

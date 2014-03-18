@@ -11,14 +11,14 @@ describe("LocalStorageLink",function() {
 	var makeLink=function(conf) {
 		conf.peer.receive=conf.peer.receive || function(linkId,packet) {};
 		
-		var link=new Sibilant.impl.LocalStorageLink(conf);
+		var link=new sibilant.LocalStorageLink(conf);
 		
 		// mock out some functions to let us run the clock up
 		spyOn(link, "getNow").and.callFake(function() {
       return new Date().getTime() + clockOffset;
     });
 		return link;
-	}
+	};
 	
 	beforeEach(function() {
 		jasmine.addMatchers(customMatchers);
@@ -26,7 +26,7 @@ describe("LocalStorageLink",function() {
 		clockOffset=0;
 		localStorage.clear();
 		
-		event=new Sibilant.Event();
+		event=new sibilant.Event();
 		link=makeLink({
 			peer: event,
 			selfId: "peer"

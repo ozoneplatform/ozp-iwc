@@ -31,7 +31,7 @@
 			}
 			
 			var sendTick=function() {
-				Sibilant.peer.send({tick: new Date().getTime()});
+				sibilant.defaultPeer.send({tick: new Date().getTime()});
 				params.tickCount--;
 				if(params.tickCount) {
 					window.setTimeout(sendTick,params.tickDelay)	
@@ -43,8 +43,8 @@
 			}
 			
 			if(params.echoOn) {
-				Sibilant.peer.on("receive",function(packet) {
-					Sibilant.peer.send(packet.data);
+				sibilant.defaultPeer.on("receive",function(packet) {
+					sibilant.defaultPeer.send(packet.data);
 				});
 			}
 		</script>

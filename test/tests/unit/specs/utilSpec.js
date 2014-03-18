@@ -4,7 +4,7 @@ describe("Event",function() {
 	beforeEach(function() {
 		jasmine.addMatchers(customMatchers);
 		
-		event=new Sibilant.Event();
+		event=new sibilant.Event();
 	});
 	
 	afterEach(function() {
@@ -32,7 +32,7 @@ describe("Event",function() {
 	
 	it("unregisters handlers", function() {
 		var hits=0;
-		var handler=function() { hits++;}
+		var handler=function() { hits++;};
 		event.on("1",handler);		
 		event.trigger("1");		
 		expect(hits).toEqual(1);		
@@ -47,7 +47,7 @@ describe("Event",function() {
 		for(var i=0; i< 10; ++i) {
 			event.on("1",function() {	hits++;});		
 		}
-		var handler=function() { hits++;}
+		var handler=function() { hits++;};
 		// 11 handlers at this point
 		event.on("1",handler);		
 		event.trigger("1");		

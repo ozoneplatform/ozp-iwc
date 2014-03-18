@@ -3,10 +3,10 @@
 (function() {
 
 	var updateStats=function() {
-		$("#stats").text(JSON.stringify(Sibilant.Metrics.toJson(),null,2));
+		$("#stats").text(JSON.stringify(sibilant.metrics.toJson(),null,2));
 	};
 
-	Sibilant.peer.on("receive",function(msg) {
+	sibilant.defaultPeer.on("receive",function(msg) {
 		$("#messages").append('<span>Peer:</span><pre>'+JSON.stringify(msg,null,2)+'</pre>');
 		updateStats();
 	});

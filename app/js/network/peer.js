@@ -1,11 +1,10 @@
 
-var Sibilant=Sibilant || {};
-Sibilant.impl=Sibilant.impl || {};
+var sibilant=sibilant || {};
 
-Sibilant.impl.Peer=function() {
+sibilant.Peer=function() {
 	
 	// generate a random 4 byte id
-	var self_id=Sibilant.util.generateId();
+	var self_id=sibilant.util.generateId();
 	
 	// unique ids for all packets sent by this peer
 	var sequenceCounter=0;
@@ -15,14 +14,14 @@ Sibilant.impl.Peer=function() {
 	// value is an array that contains the last 50 ids seen
 	var packetsSeen={};
 	
-	var events=new Sibilant.Event();
+	var events=new sibilant.Event();
 	events.mixinOnOff(this);
 
 	// Helper to determine if we've seen this packet before
 	var haveSeen=function(packet) {
 		// don't forward our own packets
 		if(packet.src_peer===self_id) {
-			Sibilant.Metrics.counter('network.packets.droppedOwnPacket').inc();
+			sibilant.metrics.counter('network.packets.droppedOwnPacket').inc();
 			return true;
 		}
 		var seen=packetsSeen[packet.src_peer] || [];
@@ -30,7 +29,7 @@ Sibilant.impl.Peer=function() {
 		
 		
 		// abort if we've seen the packet before
-		if(seen.some(Sibilant.assert.are(id))) {
+		if(seen.some(sibilant.assert.are(id))) {
 			return true;
 		}
 		
@@ -51,7 +50,7 @@ Sibilant.impl.Peer=function() {
 	 * @returns {undefined}
 	 */
 	this.send= function(message) {
-		Sibilant.Metrics.counter('network.packets.sent').inc();
+		sibilant.metrics.counter('network.packets.sent').inc();
 		var packet={
 				src_peer: self_id,
 				sequence: sequenceCounter++,
@@ -76,10 +75,10 @@ Sibilant.impl.Peer=function() {
 	this.receive=function(linkId,packet) {
 		// drop it if we've seen it before
 		if(haveSeen(packet)) {
-			Sibilant.Metrics.counter('network.packets.dropped').inc();
+			sibilant.metrics.counter('network.packets.dropped').inc();
 			return;
 		}
-		Sibilant.Metrics.counter('network.packets.received').inc();
+		sibilant.metrics.counter('network.packets.received').inc();
 
 		events.trigger("receive",packet,linkId);
 	};
@@ -97,6 +96,6 @@ Sibilant.impl.Peer=function() {
 	}
 
 };
-
-Sibilant.peer=new Sibilant.impl.Peer();
+// TODO: move autocreation to a different file
+sibilant.defaultPeer=new sibilant.Peer();
 			

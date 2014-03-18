@@ -26,13 +26,13 @@ describe("Router",function() {
 	beforeEach(function() {	
 		sendCount=receiveCount=0;
 		
-		fakePeer=new Sibilant.Event();
+		fakePeer=new sibilant.Event();
 		fakePeer.packets=[];
 		fakePeer.send=function(message) {
 			fakePeer.packets.push(message);
 		};
 		
-		router=new Sibilant.impl.Router({peer: fakePeer});
+		router=new sibilant.Router({peer: fakePeer});
 		participant=createParticipant("foo.com");
 	});
 	

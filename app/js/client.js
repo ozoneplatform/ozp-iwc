@@ -1,7 +1,7 @@
-var Sibilant=Sibilant || {};
+var sibilant=sibilant || {};
 
 
-Sibilant.Client=function(config) {
+sibilant.Client=function(config) {
 	config=config || {};
 	this.participantId="$nobody";
 	this.replyCallbacks={};
@@ -9,7 +9,7 @@ Sibilant.Client=function(config) {
 	this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
 	// TODO: accept a list of peer URLs that are searched in order of preference
 
-	this.events=new Sibilant.Event();
+	this.events=new sibilant.Event();
 	var self=this;
 
 	if(this.autoPeer) {
@@ -25,7 +25,7 @@ Sibilant.Client=function(config) {
 	}, false);
 };
 
-Sibilant.Client.prototype.receive=function(packet) {
+sibilant.Client.prototype.receive=function(packet) {
 		if(packet.reply_to && this.replyCallbacks[packet.reply_to]) {
 			this.replyCallbacks[packet.reply_to](packet);
 		} else {
@@ -33,7 +33,7 @@ Sibilant.Client.prototype.receive=function(packet) {
 		}	
 };
 
-Sibilant.Client.prototype.send=function(dst,entity,callback) {
+sibilant.Client.prototype.send=function(dst,entity,callback) {
 	var now=new Date().getTime();
 	var id=now; // makes the code below read better
 
@@ -53,7 +53,7 @@ Sibilant.Client.prototype.send=function(dst,entity,callback) {
 	this.peer.postMessage(packet,'*');
 };
 
-Sibilant.Client.prototype.on=function(event,callback) {
+sibilant.Client.prototype.on=function(event,callback) {
 	if(event==="connected" && this.participantId !=="$nobody") {
 		callback(this);
 		return;
@@ -61,17 +61,17 @@ Sibilant.Client.prototype.on=function(event,callback) {
 	return this.events.on.apply(this.events,arguments);
 };
 
-Sibilant.Client.prototype.off=function(event,callback) { 
+sibilant.Client.prototype.off=function(event,callback) { 
 	return this.events.off.apply(this.events,arguments);
 };
 
-Sibilant.Client.prototype.disconnect=function() {
+sibilant.Client.prototype.disconnect=function() {
 	if(this.iframe) {
 		document.body.removeChild(this.iframe);
 	}
 };
 
-Sibilant.Client.prototype.createIframePeer=function(peerUrl) {
+sibilant.Client.prototype.createIframePeer=function(peerUrl) {
 	var self=this;
 	var createIframeShim=function() {
 		self.iframe=document.createElement("iframe");
@@ -92,7 +92,7 @@ Sibilant.Client.prototype.createIframePeer=function(peerUrl) {
 }
 };
 
-Sibilant.Client.prototype.findPeer=function() {
+sibilant.Client.prototype.findPeer=function() {
 	// check if we have a parent, get address there if so
 	if(window.parent!==window) {
 		this.peer=window.parent;
@@ -102,7 +102,7 @@ Sibilant.Client.prototype.findPeer=function() {
 	}
 };
 
-Sibilant.Client.prototype.requestAddress=function(){
+sibilant.Client.prototype.requestAddress=function(){
 	// send connect to get our address
 	var self=this;
 	this.send("$transport",{},function(message) {

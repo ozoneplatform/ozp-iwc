@@ -7,11 +7,14 @@ window.addEventListener("beforeunload", function() {
 
 describe("Peer broadcast",function() {
 	var receiveHandler;
-
-	beforeEach(function() {	});
+	var peer=sibilant.defaultPeer;
+	
+	beforeEach(function() {	
+	
+	});
 	
 	afterEach(function() {
-		Sibilant.peer.off("receive",receiveHandler);
+		peer.off("receive",receiveHandler);
 	});
 	
 	it("receives the tick from the ping listener", function(done) {
@@ -20,19 +23,19 @@ describe("Peer broadcast",function() {
 			expect(packet.data.tick).toBeDefined();
 			done();
 		};
-		Sibilant.peer.on("receive",receiveHandler);
+		peer.on("receive",receiveHandler);
 	});
 	
 	it("can send and recieve from the echo listener",function(done) {
 		receiveHandler=function(packet) {
-			expect(packet.src_peer).not.toEqual(Sibilant.peer.selfId());
+			expect(packet.src_peer).not.toEqual(peer.selfId());
 			if(packet.data.marco) {
 				expect(packet.data.marco).toEqual("polo");
 				done();
 			}
 		};
-		Sibilant.peer.on("receive",receiveHandler);
-		Sibilant.peer.send({marco:"polo"});
+		peer.on("receive",receiveHandler);
+		peer.send({marco:"polo"});
 	});
 	
 });

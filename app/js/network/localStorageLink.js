@@ -1,25 +1,25 @@
 
-var Sibilant = Sibilant || {};
-Sibilant.impl = Sibilant.impl || {};
+var sibilant = sibilant || {};
+sibilant.links = sibilant.links || {};
 
 /**
  * @class
- * @param {Sibilant.impl.Peer} [config.peer=Sibilant.peer] - The peer to connect to.
+ * @param {sibilant.peer} [config.peer=sibilant.peer] - The peer to connect to.
+ * @param {Object} [config] - Configuration for this link
  * @param {Number} [config.myKeysTimeout=5000] - Milliseconds to wait before deleting this link's keys.
  * @param {Number} [config.otherKeysTimeout=120000] - Milliseconds to wait before cleaning up other link's keys
- * @param {string} [config.prefix='Sibilant'] - Namespace for communicating, must be the same for all peers on the same network.
+ * @param {string} [config.prefix='sibilant'] - Namespace for communicating, must be the same for all peers on the same network.
  * @param {string} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
  * @returns {undefined}
  */
-Sibilant.impl.LocalStorageLink = function(config) {
+sibilant.LocalStorageLink = function(config) {
 	config=config || {};
-	
-	this.prefix=config.prefix || 'Sibilant';
-	this.peer=config.peer || Sibilant.peer;
+
+	this.prefix=config.prefix || 'sibilant';
+	this.peer=config.peer || sibilant.defaultPeer;
 	this.selfId=config.selfId || this.peer.selfId();
 	this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
 	this.otherKeysTimeout = config.otherKeysTimeout || 2*60000; // 2 minutes
-
 	
   // Hook into the system
 	var self=this;
@@ -30,7 +30,7 @@ Sibilant.impl.LocalStorageLink = function(config) {
 			var packet=JSON.parse(localStorage.getItem(event.key));
 
 			if(packet && typeof(packet) === "object") {
-				Sibilant.Metrics.counter('links.localStorage.packets.receive').inc();
+				sibilant.metrics.counter('links.localStorage.packets.receive').inc();
 				self.peer.receive(self.linkId,packet);
 			}
 		}
@@ -45,7 +45,7 @@ Sibilant.impl.LocalStorageLink = function(config) {
 	
 
 	// METRICS
-	Sibilant.Metrics.gauge('links.localStorage.buffer').set(function() {
+	sibilant.metrics.gauge('links.localStorage.buffer').set(function() {
 		var	stats= {
 					used: 0,
 					max: 5 *1024 * 1024,
@@ -83,7 +83,7 @@ Sibilant.impl.LocalStorageLink = function(config) {
  * Creates a key for the message in localStorage
  * @returns {string} a new key
  */
-Sibilant.impl.LocalStorageLink.prototype.makeKey=function() { 
+sibilant.LocalStorageLink.prototype.makeKey=function() { 
 	return [this.prefix,this.selfId,new Date().getTime()].join('|');
 };
 
@@ -93,7 +93,7 @@ Sibilant.impl.LocalStorageLink.prototype.makeKey=function() {
  * @param {type} k The key to split
  * @returns {object} The id and createdAt for the key if it's valid, otherwise null.
  */
-Sibilant.impl.LocalStorageLink.prototype.splitKey=function(k) { 
+sibilant.LocalStorageLink.prototype.splitKey=function(k) { 
 	var parts=k.split("|");
 	if(parts.length===3 && parts[0]===this.prefix) {
 		return { id: parts[1], createdAt: parseInt(parts[2]) };
@@ -106,7 +106,7 @@ Sibilant.impl.LocalStorageLink.prototype.splitKey=function(k) {
  * it can be overriden in the unit tests to check expiration.
  * @returns {Number}
  */
-Sibilant.impl.LocalStorageLink.prototype.getNow=function() {
+sibilant.LocalStorageLink.prototype.getNow=function() {
 	return new Date().getTime();
 };
 
@@ -116,7 +116,7 @@ Sibilant.impl.LocalStorageLink.prototype.getNow=function() {
  * keys are cleaned if they are older than otherKeysTimeout.
  * @returns {undefined}
  */
-Sibilant.impl.LocalStorageLink.prototype.cleanKeys=function() {
+sibilant.LocalStorageLink.prototype.cleanKeys=function() {
 	var now=this.getNow();
 	var myKeyExpiration = now - this.myKeysTimeout;
 	var otherKeyExpiration = now - this.otherKeysTimeout;
@@ -139,13 +139,12 @@ Sibilant.impl.LocalStorageLink.prototype.cleanKeys=function() {
  * @param {type} packet
  * @returns {undefined}
  */
-Sibilant.impl.LocalStorageLink.prototype.send=function(packet) { 
+sibilant.LocalStorageLink.prototype.send=function(packet) { 
 	localStorage.setItem(this.makeKey(),JSON.stringify(packet));
-	Sibilant.Metrics.counter('links.localStorage.packets.sent').inc();
+	sibilant.metrics.counter('links.localStorage.packets.sent').inc();
 	var self=this;
 	window.setTimeout(function() {self.cleanKeys();},this.myKeysTimeout); 
 
 };
 
-Sibilant.links = Sibilant.links || {};
-Sibilant.links.localStorage=new Sibilant.impl.LocalStorageLink();
+sibilant.links.localStorage=new sibilant.LocalStorageLink();	

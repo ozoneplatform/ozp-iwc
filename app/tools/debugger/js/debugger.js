@@ -2,10 +2,10 @@
 (function() {
 
 	var updateStats=function() {
-		$("#stats").text(JSON.stringify(Sibilant.Metrics.toJson(),null,2));
+		$("#stats").text(JSON.stringify(sibilant.Metrics.toJson(),null,2));
 	};
 
-	Sibilant.peer.on("receive",function(msg) {
+	sibilant.peer.default.on("receive",function(msg) {
 		var date=new Date(msg.data.time);
 		var dateString=date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + " " +
 						date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "." + date.getMilliseconds();

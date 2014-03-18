@@ -1,10 +1,9 @@
 
-var Sibilant=Sibilant || {};
-Sibilant.impl=Sibilant.impl || {};
+var sibilant=sibilant || {};
 
-Sibilant.impl.Router=function(config) {
+sibilant.Router=function(config) {
 	config=config || {};
-	this.peer=config.peer || Sibilant.peer;
+	this.peer=config.peer || sibilant.defaultPeer;
 	this.forwardAll=config.forwardAll || false;
 
 	this.nobodyAddress="$nobody";
@@ -15,7 +14,7 @@ Sibilant.impl.Router=function(config) {
 	// Stores all local addresses
 	this.participants={};
 	
-	Sibilant.Metrics.gauge("transport.participants").set(function() {
+	sibilant.metrics.gauge("transport.participants").set(function() {
 		return Object.keys(self.participants).length;
 	});
 	
@@ -30,8 +29,8 @@ Sibilant.impl.Router=function(config) {
 		{
 			return true;
 		} else {
-			Sibilant.log.log("Invalid packet: " + JSON.stringify(message));
-			Sibilant.Metrics.counter("transport.packets.invalidFormat").inc();
+			sibilant.log.log("Invalid packet: " + JSON.stringify(message));
+			sibilant.metrics.counter("transport.packets.invalidFormat").inc();
 			return false;
 		}
 	};
@@ -39,20 +38,20 @@ Sibilant.impl.Router=function(config) {
 	var checkSenderOrigin=function(message,participant) {
 		var knownParticipant=self.participants[message.src];
 		if(knownParticipant && knownParticipant.origin !== participant.origin) {
-			Sibilant.Metrics.counter("transport.packets.invalidOrigin").inc();
+			sibilant.metrics.counter("transport.packets.invalidOrigin").inc();
 			return false;
 		}
 		return true;
 	};
 	
-	var events=new Sibilant.Event();
+	var events=new sibilant.Event();
 	events.mixinOnOff(this);
 	events.on("preSend",checkFormat);
 	events.on("preSend",checkSenderOrigin);
 
 	events.on("preRoute",checkFormat);
 	
-	this.self_id=Sibilant.util.generateId();
+	this.self_id=sibilant.util.generateId();
 	
 	this.createMessage=function(fields) {
 		fields.ver = fields.ver || 1;
@@ -76,17 +75,17 @@ Sibilant.impl.Router=function(config) {
 	this.registerParticipant=function(message,participant) {
 		var participant_id;
 		do {
-				participant_id=Sibilant.util.generateId() + "." + this.self_id;
+				participant_id=sibilant.util.generateId() + "." + this.self_id;
 		} while(this.participants.hasOwnProperty(participant_id));
 
 		if(events.triggerForObjections("registerParticipant",participant, message))
 		{
 			// someone vetoed this participant
-			Sibilant.log.log("registeredParticipant[DENIED] origin:"+participant.origin);
+			sibilant.log.log("registeredParticipant[DENIED] origin:"+participant.origin);
 			return null;
 		}
 		this.participants[participant_id]=participant;
-		Sibilant.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
+		sibilant.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
 		return participant_id;
 	};
 	
@@ -95,7 +94,7 @@ Sibilant.impl.Router=function(config) {
 		var localParticipant=this.participants[message.dst];
 		if(localParticipant) {
 			// short-cutted local delivery is still a delivery...
-			Sibilant.Metrics.counter("transport.packets.received").inc();
+			sibilant.metrics.counter("transport.packets.received").inc();
 			localParticipant.send(message,localParticipant);
 			return true;
 		}
@@ -127,12 +126,12 @@ Sibilant.impl.Router=function(config) {
 			return;
 		}
 
-		if(events.trigger("preSend",message,participant).some(Sibilant.assert.are(false))) {
-			Sibilant.Metrics.counter("transport.packets.rejected").inc();
+		if(events.trigger("preSend",message,participant).some(sibilant.assert.are(false))) {
+			sibilant.metrics.counter("transport.packets.rejected").inc();
 			return false;
 		}
 
-		Sibilant.Metrics.counter("transport.packets.sent").inc();
+		sibilant.metrics.counter("transport.packets.sent").inc();
 		if(!this.deliverLocal(message) || this.forwardAll) {
 			events.trigger("send",message);
 			this.peer.send(message);
@@ -145,7 +144,7 @@ Sibilant.impl.Router=function(config) {
 	 * @param message {object} the packet to receive
 	 */
 	this.receiveFromPeer=function(message) {
-		if(events.trigger("preRoute",message.data, message).some(Sibilant.assert.are(false))){
+		if(events.trigger("preRoute",message.data, message).some(sibilant.assert.are(false))){
 			return;
 		}
 		this.deliverLocal(message.data);
@@ -171,4 +170,5 @@ Sibilant.impl.Router=function(config) {
 	}, false);
 };
 
-Sibilant.router=new Sibilant.impl.Router();
+//TODO: move autocreation elsewhere
+sibilant.defaultRouter=new sibilant.Router();
