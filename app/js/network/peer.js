@@ -78,21 +78,21 @@ sibilant.Peer=function() {
 	 */
 	this.send= function(packet) {
 		sibilant.metrics.counter('network.packets.sent').inc();
-		var packet={
+		var networkPacket={
 				src_peer: self_id,
 				sequence: sequenceCounter++,
 				data: packet
 		};
 		// as long as none of the handers returned the boolean false, send it out
 		var preSendEvent={
-			'packet': packet,
+			'packet': networkPacket,
 			'reject': true,
 			'rejectReason' : ""
 		};
 		
 		events.trigger("preSend",preSendEvent);
 		if(preSendEvent.reject) {
-			events.trigger("send",{'packet':packet});
+			events.trigger("send",{'packet':networkPacket});
 		}
 	};
 
