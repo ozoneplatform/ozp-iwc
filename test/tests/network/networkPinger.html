@@ -19,9 +19,9 @@
 				echoOn: true,
 				tickOn: true,
 				tickCount: 100,
-				tickDelay: 100
+				tickDelay: 100,
+				priority: 50
 			};
-			
 			// not a perfect query parser, but good enough for these purposes
 			var regex=/([^&=]+)=?([^&]*)/g;
 			var query=window.location.search.substring(1);
@@ -29,6 +29,9 @@
 			while(match=regex.exec(query)) {
 				params[match[1]]=decodeURIComponent(match[2]);
 			}
+			
+			sibilant.defaultPeer.setPriority(params.priority);
+			
 			
 			var sendTick=function() {
 				sibilant.defaultPeer.send({tick: new Date().getTime()});

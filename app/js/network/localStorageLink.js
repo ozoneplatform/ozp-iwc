@@ -16,7 +16,7 @@ sibilant.LocalStorageLink = function(config) {
 
 	this.prefix=config.prefix || 'sibilant';
 	this.peer=config.peer || sibilant.defaultPeer;
-	this.selfId=config.selfId || this.peer.selfId();
+	this.selfId=config.selfId || this.peer.selfId;
 	this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
 	this.otherKeysTimeout = config.otherKeysTimeout || 2*60000; // 2 minutes
 	
@@ -67,8 +67,8 @@ sibilant.LocalStorageLink = function(config) {
 			
 			var key=self.splitKey(k);
 			if(key) {
-				stats.peerUsage[stats.id] = stats.peerUsage[stats.id]?(stats.peerUsage[stats.id]+size):size;
-				stats.peerPackets[stats.id] = stats.peerPackets[stats.id]?(stats.peerPackets[stats.id]+1):1;
+				stats.peerUsage[key.id] = stats.peerUsage[key.id]?(stats.peerUsage[key.id]+size):size;
+				stats.peerPackets[key.id] = stats.peerPackets[key.id]?(stats.peerPackets[key.id]+1):1;
 				stats.bufferLen++;
 				if(key.createdAt < oldKeyTime) {
 					stats.oldKeysCount++;

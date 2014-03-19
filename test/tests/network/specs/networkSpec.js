@@ -28,7 +28,7 @@ describe("Peer broadcast",function() {
 	
 	it("can send and recieve from the echo listener",function(done) {
 		receiveHandler=function(event) {
-			expect(event.packet.src_peer).not.toEqual(peer.selfId());
+			expect(event.packet.src_peer).not.toEqual(peer.selfId);
 			if(event.packet.data.marco) {
 				expect(event.packet.data.marco).toEqual("polo");
 				done();
@@ -37,5 +37,5 @@ describe("Peer broadcast",function() {
 		peer.on("receive",receiveHandler);
 		peer.send({marco:"polo"});
 	});
-	
+		
 });
