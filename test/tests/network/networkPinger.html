@@ -30,9 +30,6 @@
 				params[match[1]]=decodeURIComponent(match[2]);
 			}
 			
-			sibilant.defaultPeer.setPriority(params.priority);
-			
-			
 			var sendTick=function() {
 				sibilant.defaultPeer.send({tick: new Date().getTime()});
 				params.tickCount--;

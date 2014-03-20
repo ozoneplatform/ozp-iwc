@@ -7,7 +7,6 @@ var sibilant=sibilant || {};
 * @typedef sibilant.NetworkPacket
 * @property {string} src_peer - The id of the peer who broadcast this packet.
 * @property {string} sequence - A monotonically increasing, unique identifier for this packet.
-* @property {string} [protocol="user"] - Describes whether this is a user or system packet.
 * @property {object} data - The payload of this packet.
 */
 
@@ -50,23 +49,8 @@ sibilant.Peer=function() {
 	
 	this.events=new sibilant.Event();
 	this.events.mixinOnOff(this);
-	
-	this.leaderPriority=50;
 		
 	var self=this;
-	this.heartBeatFunction=function() {
-		self.events.trigger("send",{'packet':{
-			src_peer: self.selfId,
-			sequence: self.sequenceCounter++,
-			protocol: "heartbeat",
-			data: {
-				'selfId': self.selfId,
-				'priority': self.leaderPriority
-			}
-		}});
-	};
-
-	//this.setHeartBeatFrequency(5000);  // every 5 seconds by default
 	
 	// Shutdown handling
 	this.unloadListener=function() {
@@ -96,19 +80,6 @@ sibilant.Peer.prototype.haveSeen=function(packet) {
 	return false;
 };
 
-sibilant.Peer.prototype.setPriority=function(priority) {
-	this.leaderPriority=priority;
-	this.setHeartBeatFrequency(this.heartBeatFrequency);
-};
-
-sibilant.Peer.prototype.setHeartBeatFrequency=function(delayMs) {
-	this.heartBeatFrequency=delayMs;
-	if(this.heartBeatTimer) {
-		window.clearInterval(this.heartBeatTimer);
-	}
-	this.heartBeatTimer=window.setInterval(this.heartBeatFunction,this.heartBeatFrequency);
-};
-
 /**
  * Sends a message to network
  * @fires sibilant.Peer#preSend
@@ -120,8 +91,7 @@ sibilant.Peer.prototype.send= function(packet) {
 	var networkPacket={
 			src_peer: this.selfId,
 			sequence: this.sequenceCounter++,
-			data: packet,
-			protocol: "user"
+			data: packet
 	};
 	// as long as none of the handers returned the boolean false, send it out
 	var preSendEvent=new sibilant.CancelableEvent({'packet': networkPacket});
@@ -146,9 +116,7 @@ sibilant.Peer.prototype.receive=function(linkId,packet) {
 		return;
 	}
 	sibilant.metrics.counter('network.packets.received').inc();
-	if(packet.protocol==="user") {
-		this.events.trigger("receive",{'packet':packet,'linkId': linkId});
-	}
+	this.events.trigger("receive",{'packet':packet,'linkId': linkId});
 };
 
  /**

@@ -31,31 +31,31 @@ describe("Peer",function() {
 			expect(event.packet.data).toEqual("foo");
 		});
 		
-		peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo",protocol:"user"});
+		peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo"});
 		expect(receiveCount).toEqual(1);
 	});
 	
 	describe("deduplicates packets", function() {
 		it("receive ignores duplicate src_peer & sequence pairs",function() {
-			peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo",protocol:"user"});
-			peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo",protocol:"user"});
+			peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo"});
+			peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo"});
 			expect(receiveCount).toEqual(1);
 		});
 		it("receive ignores duplicate src_peer & sequence pairs from different links",function() {
-			peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo",protocol:"user"});
-			peer.receive("aDifferentLink",{src_peer:"me",sequence:1,data: "foo",protocol:"user"});
+			peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo"});
+			peer.receive("aDifferentLink",{src_peer:"me",sequence:1,data: "foo"});
 			expect(receiveCount).toEqual(1);
 		});
 		
 		it("does not ignore packets with the same sequence but different source",function() {
-			peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo",protocol:"user"});
-			peer.receive("testLinkId",{src_peer:"you",sequence:1,data: "foo",protocol:"user"});
+			peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo"});
+			peer.receive("testLinkId",{src_peer:"you",sequence:1,data: "foo"});
 			expect(receiveCount).toEqual(2);
 		});
 		
 		it("does not ignore packets with the same source but different sequence",function() {
-			peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo",protocol:"user"});
-			peer.receive("testLinkId",{src_peer:"me",sequence:2,data: "foo",protocol:"user"});
+			peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo"});
+			peer.receive("testLinkId",{src_peer:"me",sequence:2,data: "foo"});
 			expect(receiveCount).toEqual(2);
 		});
 	});

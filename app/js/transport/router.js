@@ -171,7 +171,7 @@ sibilant.Router=function(config) {
 		if(localParticipant) {
 			var preDeliverEvent=new sibilant.CancelableEvent({
 				'packet': packet,
-				'dstParticipant': localParticipant,
+				'dstParticipant': localParticipant
 			});
 			events.trigger("preDeliver",preDeliverEvent);
 			if(preDeliverEvent.canceled) {
@@ -189,8 +189,8 @@ sibilant.Router=function(config) {
 	 * Used by participant listeners to route a message to other participants.
 	 * @fires sibilant.Router#preSend
  	 * @fires sibilant.Router#send
- 	 * @param {object} packet The packet to route.
-	 * @param {object} participant Information about the participant that is attempting to send
+ 	 * @param {sibilant.TransportPacket} packet The packet to route.
+	 * @param {sibilant.Participant} participant Information about the participant that is attempting to send
 	 *   the packet.
 	 * @returns {undefined}
 	 */
@@ -214,13 +214,13 @@ sibilant.Router=function(config) {
 		
 		var preSendEvent=new sibilant.CancelableEvent({
 			'packet': packet,
-			'participant': participant,
+			'participant': participant
 		});
 		events.trigger("preSend",preSendEvent);
 
 		if(preSendEvent.canceled) {
 			sibilant.metrics.counter("transport.packets.sendCanceled");
-			return
+			return;
 		} 
 		sibilant.metrics.counter("transport.packets.sent").inc();
 		if(!this.deliverLocal(packet,participant) || this.forwardAll) {
