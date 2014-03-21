@@ -14,7 +14,7 @@ describe("Router",function() {
 	var createParticipant=function(config) {
 		return {
 			origin: config.origin || "foo.com", 
-			send: config.send || function(msg){ this.packets.push(msg);},
+			send: config.send || function(msg){ this.packets.push(msg); return true;},
 			packets: []
 		};
 	};
@@ -125,6 +125,68 @@ describe("Router",function() {
 			router.send(msg,participant);
 			expect(fakePeer.packets.length).toEqual(1);
 		});		
+	});
+	
+	describe("multicast",function() {
+		var registeredParticipant=function(config,multicastGroups) {
+			var p=createParticipant(config);
+			router.send(createMsg({
+				src:"$nobody",
+				dst:"$transport",
+				entity: {
+					multicast: multicastGroups
+				}
+			}),p);
+			p.id=p.packets[0].dst;
+			return p;		
+		};
 		
+		beforeEach(function() {
+			router.send(createMsg({src:"$nobody",dst:"$transport"}),participant);
+			participant.id=participant.packets[0].dst;
+		});
+		
+		it("allows multicast registration",function() {
+			router.send(createMsg({
+				src:participant.id,
+				dst:"$transport",
+				entity: {
+					multicast: ["m1"]
+				}
+			}),participant);
+			
+			expect(participant.packets[1]).toBeDefined();
+		});
+		it("allows multicast registration in the connection",function() {
+			var p=registeredParticipant({origin:"bar.com"},["foo"]);
+			
+			expect(p.packets[0].multicastAdded[0]).toEqual("foo");
+		});
+
+		it("multicast works locally",function() {
+			var p1=registeredParticipant({origin:"bar1.com"},["foo"]);
+			var p2=registeredParticipant({origin:"bar2.com"},["foo"]);
+			var p3=registeredParticipant({origin:"bar3.com"},["foo"]);
+			var p4=registeredParticipant({origin:"bar4.com"},["foo"]);
+			
+			var msg=createMsg({src: p1.id,dst:"foo",entity: { a: 1}});
+			router.send(msg,p1);
+			
+			expect(p2.packets[1].entity.a).toEqual(1);
+			expect(p3.packets[1].entity.a).toEqual(1);
+			expect(p4.packets[1].entity.a).toEqual(1);
+		});
+
+		it("multicast always forwards to peer",function() {
+			var p1=registeredParticipant({origin:"bar1.com"},["foo"]);
+			var p2=registeredParticipant({origin:"bar2.com"},["foo"]);
+			var p3=registeredParticipant({origin:"bar3.com"},["foo"]);
+			var p4=registeredParticipant({origin:"bar4.com"},["foo"]);
+			
+			var msg=createMsg({src: p1.id,dst:"foo",entity: { a: 1}});
+			router.send(msg,p1);
+			
+			expect(fakePeer.packets.length).toEqual(1);
+		});
 	});
 });

@@ -55,6 +55,24 @@ var sibilant=sibilant || {};
 
 /**
  * @class
+ * @param {type} name
+ */
+sibilant.MulticastParticipant=function(name) {
+	this.name=name;
+	this.members=[];
+};
+
+sibilant.MulticastParticipant.prototype.send=function(packet) {
+	this.members.forEach(function(m) { m.send(packet);});
+	return false;
+};
+
+sibilant.MulticastParticipant.prototype.addMember=function(m) {
+	this.members.push(m);
+}
+
+/**
+ * @class
  * @param {object} [config]
  * @param {sibilant.Peer} [config.peer=sibilant.defaultPeer]
  * @param {boolean} [config.forwardAll=false]
@@ -165,7 +183,7 @@ sibilant.Router=function(config) {
 	 * @param {sibilant.TransportPacket} packet
 	 * @return {boolean} True if the message was delivered locally
 	 */
-	this.deliverLocal=function(packet) {
+	this.deliverLocal=function(packet,sendingParticipant) {
 		// check if the recipient is local.  If so, don't bother broadcasting.
 		var localParticipant=this.participants[packet.dst];
 		if(localParticipant) {
@@ -179,10 +197,48 @@ sibilant.Router=function(config) {
 				return false;
 			}
 			sibilant.metrics.counter("transport.packets.delivered").inc();
-			localParticipant.send(packet,localParticipant);
-			return true;
+			return localParticipant.send(packet,sendingParticipant);
 		}
 		return false;
+	};
+	
+	var self=this;
+	this.participants[this.routerControlAddress] = {
+		send: function(packet,sendingParticipant) {
+			var reply=self.createReply(packet,{	entity: {status: "ok"} });
+			// if from nobody, register them
+			if(packet.src===self.nobodyAddress) {
+				var participantId=self.registerParticipant(packet,sendingParticipant);
+				if(participantId === null) {
+					reply.entity.status="denied";
+				} else {
+					reply.dst=participantId;
+				}
+			}
+			
+			if(packet.entity) {
+				if(packet.entity.multicast) {
+					reply.multicastAdded=self.registerMulticast(sendingParticipant,packet.entity.multicast);
+				}
+			}
+			sendingParticipant.send(reply);
+			return true;
+		},
+		origin: ""
+	};
+	/**
+	 * Registers a participant for a multicast group
+	 */
+	this.registerMulticast=function(participant,multicastGroups) {
+		var self=this;
+		multicastGroups.forEach(function(groupName) {
+			var g=self.participants[groupName];
+			if(!g) {
+				g=self.participants[groupName]=new sibilant.MulticastParticipant(groupName);
+			}
+			g.addMember(participant);
+		});
+		return multicastGroups;
 	};
 	
 	/**
@@ -190,31 +246,15 @@ sibilant.Router=function(config) {
 	 * @fires sibilant.Router#preSend
  	 * @fires sibilant.Router#send
  	 * @param {sibilant.TransportPacket} packet The packet to route.
-	 * @param {sibilant.Participant} participant Information about the participant that is attempting to send
+	 * @param {sibilant.Participant} sendingParticipant Information about the participant that is attempting to send
 	 *   the packet.
 	 * @returns {undefined}
 	 */
-	this.send=function(packet,participant) {
-		// if this is the handshake, register the participant
-		// TODO: if the participant sends 10 handshakes, it'll get ten different registrations.
-		// TODO: break this out of send and make it a named participant
-		if(packet.dst === this.routerControlAddress && packet.src===this.nobodyAddress) {
-			var participantId=this.registerParticipant(packet,participant);
-			var reply;
-			if(participantId === null) {
-				reply=this.createReply(packet,
-					{	dst: this.nobodyAddress,	entity: { status: "denied" } });
-			} else {
-				reply=this.createReply(packet,
-					{dst: participantId,	entity: { status: "ok"}	});
-			}
-			participant.send(reply);
-			return;
-		}
-		
+	this.send=function(packet,sendingParticipant) {
+
 		var preSendEvent=new sibilant.CancelableEvent({
 			'packet': packet,
-			'participant': participant
+			'participant': sendingParticipant
 		});
 		events.trigger("preSend",preSendEvent);
 
@@ -223,7 +263,7 @@ sibilant.Router=function(config) {
 			return;
 		} 
 		sibilant.metrics.counter("transport.packets.sent").inc();
-		if(!this.deliverLocal(packet,participant) || this.forwardAll) {
+		if(!this.deliverLocal(packet,sendingParticipant) || this.forwardAll) {
 			sibilant.metrics.counter("transport.packets.sentToPeer").inc();
 			events.trigger("send",{'packet': packet});
 			this.peer.send(packet);
@@ -258,6 +298,7 @@ sibilant.Router=function(config) {
 	var sendPostMessage=function(message) {
 		if(!message) { throw "CANNOT SEND NULL"; }
 		this.sourceWindow.postMessage(message,this.origin);
+		return true;
 	};
 	
 	// Listen for the post messages, treat them as participants
