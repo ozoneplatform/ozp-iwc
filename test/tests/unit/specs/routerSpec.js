@@ -14,7 +14,7 @@ describe("Router",function() {
 	var createParticipant=function(config) {
 		return {
 			origin: config.origin || "foo.com", 
-			send: config.send || function(msg){ this.packets.push(msg); return true;},
+			receive: config.receive || function(msg){ this.packets.push(msg); return true;},
 			packets: []
 		};
 	};

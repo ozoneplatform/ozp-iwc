@@ -45,6 +45,11 @@ sibilant.Leader.prototype.sendMessage=function(type) {
 	}));
 }
 
+/**
+ * 
+ * @returns {undefined}@fire sibilant.Leader#startElection
+ * @fire sibilant.Leader#becameLeader
+ */
 sibilant.Leader.prototype.startElection=function() {
 	// don't start a new election if we are in one
 	if(this.inElection()) {
@@ -65,6 +70,9 @@ sibilant.Leader.prototype.startElection=function() {
 	this.sendMessage("election");
 };
 
+/**
+ * @fire sibilant.Leader#endElection
+ */
 sibilant.Leader.prototype.cancelElection=function() {
 	if(this.electionTimer) {	
 		window.clearTimeout(this.electionTimer);
@@ -94,7 +102,9 @@ sibilant.Leader.prototype.handleElectionMessage=function(electionMessage) {
 		this.cancelElection();
 	}
 };
-
+/**
+ * @fire sibilant.Leader#newLeader
+ */
 sibilant.Leader.prototype.handleVictoryMessage=function(victoryMessage) {
 	if(this.priorityLessThan(victoryMessage.entity.priority,this.priority)) {
 		// someone usurped our leadership! start an election!

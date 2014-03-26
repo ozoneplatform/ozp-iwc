@@ -15,7 +15,7 @@ var sibilant=sibilant || {};
 /**
  * @typedef sibilant.Participant
  * @property origin - The origin of this participant, confirmed via trusted sources.
- * @function send - A callback to send a message to this participant.  Will be called with participant as "this".
+ * @function receive - Callback for this participant to receive a packet.  Will be called with participant as "this".
  */
 
 /**
@@ -62,8 +62,8 @@ sibilant.MulticastParticipant=function(name) {
 	this.members=[];
 };
 
-sibilant.MulticastParticipant.prototype.send=function(packet) {
-	this.members.forEach(function(m) { m.send(packet);});
+sibilant.MulticastParticipant.prototype.receive=function(packet) {
+	this.members.forEach(function(m) { m.receive(packet);});
 	return false;
 };
 
@@ -197,7 +197,7 @@ sibilant.Router=function(config) {
 				return false;
 			}
 			sibilant.metrics.counter("transport.packets.delivered").inc();
-			return localParticipant.send(packet,sendingParticipant);
+			return localParticipant.receive(packet,sendingParticipant);
 		}
 		return false;
 	};
@@ -221,7 +221,7 @@ sibilant.Router=function(config) {
 					reply.multicastAdded=self.registerMulticast(sendingParticipant,packet.entity.multicast);
 				}
 			}
-			sendingParticipant.send(reply);
+			sendingParticipant.receive(reply);
 			return true;
 		},
 		origin: ""
@@ -307,7 +307,7 @@ sibilant.Router=function(config) {
 		self.send(event.data,{
 			origin: event.origin,
 			sourceWindow: event.source,
-			send: sendPostMessage
+			receive: sendPostMessage
 		});
 	}, false);
 };
