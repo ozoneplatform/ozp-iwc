@@ -19,21 +19,22 @@ describe("Leader",function() {
 				var packet=packetQueue.shift();
 				console.log("PACKET(" + packet.src + "): " + packet.entity.type);
 				leaders.forEach(function(l) {
-					if(l.address != packet.src) {
+					if(l.address !== packet.src) {
 						l.receive(packet);
 					}
 				});
 			}
 			return processed;
 		},
-		createMessage: function(m) { return m;}
+		createMessage: function(m) { return m;},
+		registerMulticast: function() {}
 	};
 	
 	var tick=function(t) {
 		fakeRouter.pump();
 		jasmine.clock().tick(t);
 		fakeRouter.pump();
-	}
+	};
 	
 	var moveTime=function(step) {
 		var elected=false;
@@ -46,28 +47,35 @@ describe("Leader",function() {
 			
 			elected=leaders.some(function(l) { return l.isLeader();});
 		}
-	}
+	};
 	
 	var makeLeader=function(priority) {
-		var l=new sibilant.Leader({
+		var l=new sibilant.LeaderApiBase({
 			electionAddress:"ea",
+			name: "foo"+leaders.length,
 			address: leaders.length,
 			'priority': priority,
 			router: fakeRouter
 			
 		});
+		
 		l.on("startElection", function() {
-			console.log("startElection: " + l.address);
+			console.log("startElection[" + l.address + "]");
 		});
 		l.on("endElection",function() {
-			console.log("endElection: " + l.address);
+			console.log("endElection[" + l.address + "]");
 		});
 		l.on("newLeader",function() {
-			console.log("newLeader: " + l.address);
+			console.log("newLeader[" + l.address + "]");
 		});
 		l.on("becameLeader",function() {
-			console.log("becameLeader: " + l.address);
+			console.log("becameLeader[" + l.address + "]");
 		});
+		
+		l.TEST_nonElectionPackets=[];
+		l.target={ receive: function(event) {
+			l.TEST_nonElectionPackets.push(event);
+		}};
 		leaders.push(l);
 		return l;
 	};
@@ -83,14 +91,27 @@ describe("Leader",function() {
 		packetQueue=[];
 	});
 
+	it("validates that a name is present", function() {
+		
+	})
 
 	it("is not leader when created",function() {
 		var leader=makeLeader(1);
 		expect(leader.isLeader()).toEqual(false);
 	});
+
 	
 	it("is leader after one member election",function() {
 		var leader=makeLeader(1);
+		leader.startElection();
+		tick(1000);
+		expect(leader.isLeader()).toEqual(true);
+	});
+
+	it("changes state on startElection packet",function() {
+		var leader=makeLeader(1);
+		var calls=0;
+		leader.on("startElection",function() { calls=true;});
 		leader.startElection();
 		tick(1000);
 		expect(leader.isLeader()).toEqual(true);
@@ -171,4 +192,21 @@ describe("Leader",function() {
 
 		});
 	}
+	
+	it("sends event on non-election packet", function() {
+			var leader=makeLeader(1);
+			leader.receive({
+				src: "foo",
+				dst: "bar",
+				msg_id: 1,
+				ver: 1,
+				entity: { foo: "bar" }
+			});
+			expect(leader.TEST_nonElectionPackets.length).toBe(1);
+		
+	});
+
+	
+	
+	
 });

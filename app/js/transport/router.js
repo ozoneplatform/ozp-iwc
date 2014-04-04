@@ -204,7 +204,7 @@ sibilant.Router=function(config) {
 	
 	var self=this;
 	this.participants[this.routerControlAddress] = {
-		send: function(packet,sendingParticipant) {
+		receive: function(packet,sendingParticipant) {
 			var reply=self.createReply(packet,{	entity: {status: "ok"} });
 			// if from nobody, register them
 			if(packet.src===self.nobodyAddress) {
@@ -224,7 +224,7 @@ sibilant.Router=function(config) {
 			sendingParticipant.receive(reply);
 			return true;
 		},
-		origin: ""
+		origin: "routerControlAddress.$router"
 	};
 	/**
 	 * Registers a participant for a multicast group
