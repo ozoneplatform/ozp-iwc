@@ -62,6 +62,10 @@ sibilant.MulticastParticipant=function(name) {
 	this.members=[];
 };
 
+sibilant.MulticastParticipant.prototype.origin=function(o) {
+	return this.members.some(function(m) { return m.origin === o;});
+};
+
 sibilant.MulticastParticipant.prototype.receive=function(packet) {
 	this.members.forEach(function(m) { m.receive(packet);});
 	return false;
@@ -69,7 +73,8 @@ sibilant.MulticastParticipant.prototype.receive=function(packet) {
 
 sibilant.MulticastParticipant.prototype.addMember=function(m) {
 	this.members.push(m);
-}
+};
+
 
 /**
  * @class
@@ -105,9 +110,9 @@ sibilant.Router=function(config) {
 		if(!message.dst) {
 			event.cancel("nullDestination");
 		}
-		if(!message.entity) {
-			event.cancel("nullEntity");
-		}
+//		if(!message.entity) {
+//			event.cancel("nullEntity");
+//		}
 		
 		if(event.canceled) {
 			sibilant.metrics.counter("transport.packets.invalidFormat").inc();
@@ -117,7 +122,12 @@ sibilant.Router=function(config) {
 	var checkSenderOrigin=function(event) {
 		// TODO: allow nobodyAddress to talk to control addresses
 		var knownParticipant=self.participants[event.packet.src];
-		if(knownParticipant && knownParticipant.origin !== event.participant.origin) {
+		if(!knownParticipant || !knownParticipant.origin) {
+			return;
+		}
+		if((typeof(knownParticipant.origin) === 'string' && knownParticipant.origin !== event.participant.origin)
+		  || (typeof(knownParticipant.origin) === 'function' && !knownParticipant.origin(event.participant.origin))
+		) {
 			event.cancel("senderOriginMismatch");
 			sibilant.metrics.counter("transport.packets.invalidSenderOrigin").inc();
 		}
@@ -139,6 +149,7 @@ sibilant.Router=function(config) {
 		fields.msg_id = fields.msg_id || now;
 		return fields;
 	};
+	
 	this.createReply=function(message,fields) {
 		fields=this.createMessage(fields);
 		fields.reply_to=message.msg_id;
@@ -146,6 +157,7 @@ sibilant.Router=function(config) {
 		fields.dst=fields.dst || message.src;
 		return fields;
 	};
+	
 	/**
 	 * Allows a listener to add a new participant.  
 	 * @fires sibilant.Router#registerParticipant
@@ -166,8 +178,7 @@ sibilant.Router=function(config) {
 		});
 		events.trigger("preRegisterParticipant",registerEvent);
 
-		if(registerEvent.canceled)
-		{
+		if(registerEvent.canceled){
 			// someone vetoed this participant
 			sibilant.log.log("registeredParticipant[DENIED] origin:"+participant.origin+ 
 							" because " + registerEvent.cancelReason);
@@ -181,6 +192,7 @@ sibilant.Router=function(config) {
 	/**
 	 * @fires sibilant.Router#preSend
 	 * @param {sibilant.TransportPacket} packet
+	 * @param {sibilant.Participant} sendingParticipant
 	 * @return {boolean} True if the message was delivered locally
 	 */
 	this.deliverLocal=function(packet,sendingParticipant) {

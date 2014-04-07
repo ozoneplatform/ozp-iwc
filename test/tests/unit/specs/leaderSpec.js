@@ -91,10 +91,6 @@ describe("Leader",function() {
 		packetQueue=[];
 	});
 
-	it("validates that a name is present", function() {
-		
-	})
-
 	it("is not leader when created",function() {
 		var leader=makeLeader(1);
 		expect(leader.isLeader()).toEqual(false);

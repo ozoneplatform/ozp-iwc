@@ -27,71 +27,46 @@ sibilant.DataApiBase = function(config) {
 	config.target=this;
 	sibilant.LeaderApiBase.call(this,config);
 	
-	this.contentTree={
-		data: {},
-		metadata: {}
-	};
-	
+	this.dataTree=new sibilant.DataTree();	
 	
 };
 sibilant.DataApiBase.prototype = Object.create(sibilant.LeaderApiBase.prototype); 
 sibilant.DataApiBase.prototype.constructor = sibilant.DataApiBase;
 
-sibilant.DataApiBase.prototype.findNode=function(pathString) {
-	var path=pathString.split("/");
-	var node={
-		data: this.contentTree.data,
-		metadata: this.contentTree.metadata
-	};
-	
-	for(var i=0;i<path.length;++i) {
-		node.data=node.data[path[i]];
-		node.metadata=node.metadata[path[i]];
-	}
-	
-};
-
-
 /**
  * @param {sibilant.TransportPacket} packet
  */
 sibilant.DataApiBase.prototype.handleGetAsLeader=function(packet) {
-	var node=this.getNode(packet.resource);
-	
+	return {
+		'entity': this.dataTree.get(packet.resource)
+	};
 };
 
 /**
  * @param {sibilant.TransportPacket} packet
  */
-sibilant.DataApiBase.prototype.handlePutAsLeader=function(packet) {
-
-};
-
-/**
- * @param {sibilant.TransportPacket} packet
- */
-sibilant.DataApiBase.prototype.handlePostAsLeader=function(packet) {
-
+sibilant.DataApiBase.prototype.handleSetAsLeader=function(packet) {
+	this.dataTree.set(packet.resource,packet.entity);
 };
 
 /**
  * @param {sibilant.TransportPacket} packet
  */
 sibilant.DataApiBase.prototype.handleDeleteAsLeader=function(packet) {
-
+	this.dataTree.delete(packet.resource);
 };
 
 /**
  * @param {sibilant.TransportPacket} packet
  */
 sibilant.DataApiBase.prototype.handleWatchAsLeader=function(packet) {
-
+	
 };
 
 /**
  * @param {sibilant.TransportPacket} packet
  */
-sibilant.DataApiBase.prototype.handleWatchAsLeader=function(packet) {
+sibilant.DataApiBase.prototype.handleUnwatchAsLeader=function(packet) {
 
 };
 
@@ -127,9 +102,12 @@ sibilant.DataApiBase.prototype.receive=function(packet) {
 				'handler' : checkdown[i],
 				'dataApi' : this
 			});
-			this.events.trigger("receive",evt);
-			if(!evt.canceled) {
-				handler.call(this,packet);
+			if(!this.events.trigger("receive",evt).canceled) {
+				var reply=handler.call(this,packet);
+				if(reply) {
+					reply=this.router.createReply(packet,reply);
+					this.router.send(reply,this);
+				}
 			}
 			return;
 		}

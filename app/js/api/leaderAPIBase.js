@@ -60,7 +60,7 @@ sibilant.LeaderApiBase=function(config) {
 	if("address" in config) {
 		this.address=config.address;
 	} else {
-		this.address=this.router.registerParticipant(this);
+		this.address=this.router.registerParticipant({},this);
 	}
 	this.router.registerMulticast(this,[this.electionAddress,this.apiAddress]);
 };

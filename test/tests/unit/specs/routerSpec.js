@@ -33,7 +33,7 @@ describe("Router",function() {
 		};
 		
 		router=new sibilant.Router({peer: fakePeer});
-		participant=createParticipant("foo.com");
+		participant=createParticipant({origin:"foo.com"});
 	});
 	
 	afterEach(function() {
@@ -188,5 +188,27 @@ describe("Router",function() {
 			
 			expect(fakePeer.packets.length).toEqual(1);
 		});
+		
+		it("allows members to send as the multicast address",function() {
+			var p1=registeredParticipant({origin:"bar1.com"},["foo"]);
+			var p2=registeredParticipant({origin:"bar2.com"},["foo"]);
+			
+			var msg=createMsg({src: "foo",dst:p2.id,entity: { a: 1}});
+			router.send(msg,p1);
+			
+			expect(p2.packets[1].entity.a).toEqual(1);
+		});
+		
+		it("prevents non-members from sending as the multicast address",function() {
+			var p1=registeredParticipant({origin:"bar1.com"});
+			var p2=registeredParticipant({origin:"bar2.com"},["foo"]);
+			
+			var msg=createMsg({src: "foo",dst:p1.id,entity: { a: 1}});
+			router.send(msg,p1);
+			
+			// just the registration packet
+			expect(p2.packets.length).toEqual(1);
+		});
+		
 	});
 });
