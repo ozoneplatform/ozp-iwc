@@ -27,14 +27,3 @@ Peer Network
 The network consists of one or more peers that automatically discover and broadcast to each other.
 
 
-Initial Feature Set/TODO
-========================
-
-- [x] Broadcast network at peer.
-- [x] Point-to-point transport layer.
-- [x] LocalStorage for message passing out of iframes
-- [ ] SharedWorker peer
-- [ ] Creating peer via invisible iframe
-- [ ] Broadcast at transport layer
-- [ ] Network mutex service (not public interface)
-- [ ] Naming service for participant aliases, APIs
