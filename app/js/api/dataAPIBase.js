@@ -1,4 +1,14 @@
 var sibilant=sibilant || {};
+
+
+/*
+ * @typedef {object} sibilant.DataApiNode
+ * @property {object} data
+ * @property {string} contentType
+ * @property {object} permissions
+ * @property {object} watchers
+ */
+
 /*
  * @class
  * @param {string} config.name - The name of this API.
@@ -27,18 +37,40 @@ sibilant.DataApiBase = function(config) {
 	config.target=this;
 	sibilant.LeaderApiBase.call(this,config);
 	
-	this.dataTree=new sibilant.DataTree();	
-	
+	this.dataTree=new sibilant.DataTree({
+		defaultData: function() { 
+			return { 
+				data: undefined,
+				contentType:"application/json",
+				permissions:[],
+				watchers:[]
+			};
+		}
+	});		
 };
 sibilant.DataApiBase.prototype = Object.create(sibilant.LeaderApiBase.prototype); 
 sibilant.DataApiBase.prototype.constructor = sibilant.DataApiBase;
+
+sibilant.DataApiBase.prototype.triggerChange=function(evt) {
+	evt.node.watchers.forEach(function(packet) {
+		var reply=this.router.createReply(packet,{
+			'action': 'changed',
+			'entity': {
+				'newValue': evt.newData,
+				'oldValue': evt.oldData
+			}
+		},this);
+		this.router.send(reply,this);
+	},this);
+};
+
 
 /**
  * @param {sibilant.TransportPacket} packet
  */
 sibilant.DataApiBase.prototype.handleGetAsLeader=function(packet) {
 	return {
-		'entity': this.dataTree.get(packet.resource)
+		'entity': this.dataTree.get(packet.resource).data
 	};
 };
 
@@ -46,28 +78,60 @@ sibilant.DataApiBase.prototype.handleGetAsLeader=function(packet) {
  * @param {sibilant.TransportPacket} packet
  */
 sibilant.DataApiBase.prototype.handleSetAsLeader=function(packet) {
-	this.dataTree.set(packet.resource,packet.entity);
+	var node=this.dataTree.get(packet.resource);
+	var oldData=node.data;
+	node.data=packet.entity;
+	this.dataTree.set(packet.resource,node);
+	
+	this.triggerChange({
+		'path':packet.resource,
+		'node': node,
+		'oldData' : oldData,
+		'newData' : node.data
+	});
 };
 
 /**
  * @param {sibilant.TransportPacket} packet
  */
 sibilant.DataApiBase.prototype.handleDeleteAsLeader=function(packet) {
+	var node=this.dataTree.get(packet.resource);
 	this.dataTree.delete(packet.resource);
+	
+	this.triggerChange({
+		'path': packet.resource,
+		'node': node,
+		'oldData' : node.data,
+		'newData' : undefined
+	});
 };
 
 /**
  * @param {sibilant.TransportPacket} packet
  */
 sibilant.DataApiBase.prototype.handleWatchAsLeader=function(packet) {
-	
+	var node=this.dataTree.get(packet.resource);
+	node.watchers.push(packet);
+	this.dataTree.set(packet.resource,node);
+	return {
+		'action': 'success',
+		'entity': {}
+	};
 };
 
 /**
  * @param {sibilant.TransportPacket} packet
  */
 sibilant.DataApiBase.prototype.handleUnwatchAsLeader=function(packet) {
-
+	var node=this.dataTree.get(packet.resource);
+	node.watchers=node.watchers.filter(function(w) {
+		return packet.reply_to !== w.msg_id && packet.src !==w.src;
+	});
+	this.dataTree.set(packet.resource,node);
+	return {
+		'action': 'success',
+		'entity': {}
+	};
 };
 
 /**

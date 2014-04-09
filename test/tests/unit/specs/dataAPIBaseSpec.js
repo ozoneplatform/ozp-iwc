@@ -23,7 +23,7 @@ describe("Data API Base class",function() {
 				entity={};
 			}
 			
-			participant.send({
+			return participant.send({
 				'dst' : "testData.api",
 				'action' : action,
 				'resource' : path,
@@ -83,15 +83,86 @@ describe("Data API Base class",function() {
 			participant.sendDataApi("set","/node",{foo:1});
 		});
 		
-		it("sends message on data set",function() {
+		it("a watch applies to a node",function() {
 			var called=0;
-			participant.sendDataAPI("watch","/node",function() {
-				called++;
+			participant.sendDataApi("watch","/node",function(packet) {
+				if(packet.action==="changed") {
+					expect(packet.entity.newValue.foo).toEqual(called+2);
+					called++;
+				}
 			});
 			
 			participant.sendDataApi("set","/node",{foo:2});
 			participant.sendDataApi("set","/node",{foo:3});
 			participant.sendDataApi("set","/node",{foo:4});
+			
+			expect(called).toEqual(3);
+		});
+
+		it("a watch triggers on delete",function() {
+			var called=0;
+			participant.sendDataApi("watch","/node",function(packet) {
+				if(packet.action==="changed") {
+					expect(packet.entity.newValue).toBeUndefined();
+					expect(packet.entity.oldValue.foo).toEqual(1);
+					called++;
+				}
+			});
+			
+			participant.sendDataApi("delete","/node");
+			
+			expect(called).toEqual(1);
+		});
+	
+		it("a watch on one node is isolated from other changes",function() {
+			var nodeCalled=0,node2Called=0;
+			participant.sendDataApi("watch","/node",function(packet) {
+				if(packet.action==="changed") {
+					expect(packet.entity.newValue.foo).toEqual(nodeCalled+2);
+					nodeCalled++;
+				}
+			});
+			
+			participant.sendDataApi("watch","/node2",function(packet) {
+				if(packet.action==="changed") {
+					expect(packet.entity.newValue.foo).toEqual(node2Called+2);
+					node2Called++;
+				}
+			});
+			
+			participant.sendDataApi("set","/node",{foo:2});
+			participant.sendDataApi("set","/node",{foo:3});
+			participant.sendDataApi("set","/node",{foo:4});
+
+			participant.sendDataApi("set","/node2",{foo:2});
+			participant.sendDataApi("set","/node2",{foo:3});
+
+			expect(nodeCalled).toEqual(3);
+			expect(node2Called).toEqual(2);
+		});
+		
+		it("can unregister a watch",function() {
+			var called=0;
+			var registrationPacket=participant.sendDataApi("watch","/node",function(packet) {
+				if(packet.action==="changed") {
+					expect(packet.entity.newValue.foo).toEqual(called+2);
+					called++;
+				}
+			});
+			
+			participant.sendDataApi("set","/node",{foo:2});
+			participant.sendDataApi("set","/node",{foo:3});
+			participant.sendDataApi("set","/node",{foo:4});
+			
+			participant.send({
+				'dst' : "testData.api",
+				'action': "unwatch",
+				'resource': "/node",
+				'reply_to': registrationPacket.msg_id,
+				'entity': {}
+			});
+			participant.sendDataApi("set","/node",{foo:13});
+			participant.sendDataApi("set","/node",{foo:14});
 			
 			expect(called).toEqual(3);
 		});

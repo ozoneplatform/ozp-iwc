@@ -59,6 +59,26 @@ var TestParticipant=function(config) {
 			this.callbacks[packet.msg_id]=callback;
 		}
 		this.router.send(packet,this);
+		return packet;
+	};
+	
+	this.reply=function(originalPacket,packet,callback) {
+		packet.ver=packet.ver || originalPacket.ver || 1;
+		packet.src=packet.src || originalPacket.dst || this.address;
+		packet.dst=packet.dst || originalPacket.src || config.dst;
+		packet.msg_id= packet.msg_id || this.messageId++;
+		packet.time=packet.time || new Date().getTime();
+		
+		packet.reply_to=originalPacket.msg_id;
+
+		packet.action=packet.action || originalPacket.action;
+		packet.resource=packet.resource || originalPacket.resource;
+
+		if(callback) {
+			this.callbacks[packet.msg_id]=callback;
+		}
+		this.router.send(packet,this);
+		return packet;	
 	};
 };
 

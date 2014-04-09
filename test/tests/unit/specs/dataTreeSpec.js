@@ -74,7 +74,7 @@ describe("Data Tree",function() {
 		
 		it("after setting",function() {
 			var called=0;
-			dataTree.on("postSet",function(e) {
+			dataTree.on("set",function(e) {
 				called++;
 			});
 			
@@ -84,16 +84,16 @@ describe("Data Tree",function() {
 			expect(dataTree.get("/node")).toEqual({foo:1});
 		});
 		
-		it("has a non-cancelable postSet event",function() {
-			dataTree.on("postSet",function(e) {
+		it("has a non-cancelable set event",function() {
+			dataTree.on("set",function(e) {
 				expect(e.cancel).toBeUndefined();
 			});
 			dataTree.set("/node",{foo:1});
 		});
 		
-		it("has the path,newValue, and oldValue in the postSet event",function() {
+		it("has the path,newValue, and oldValue in the set event",function() {
 			dataTree.set("/node",{foo:1});
-			dataTree.on("postSet",function(e) {
+			dataTree.on("set",function(e) {
 				expect(e.path).toEqual("/node");
 				expect(e.oldValue).toEqual({foo:1});
 				expect(e.newValue).toEqual({foo:2});
@@ -101,6 +101,8 @@ describe("Data Tree",function() {
 			dataTree.set("/node",{foo:2});
 		});		
 	});
+	
+	
 	describe("fires events on get",function() {
 		
 		beforeEach(function() {
@@ -131,6 +133,7 @@ describe("Data Tree",function() {
 			expect(dataTree.get("/node")).toBeUndefined();	
 		});
 	});
+	
 	describe("fires events on delete",function() {
 		
 		beforeEach(function() {
@@ -162,5 +165,14 @@ describe("Data Tree",function() {
 
 			expect(dataTree.get("/node")).toEqual({foo:1});	
 		});
+	});
+	
+	it("has a default value setter",function() {
+		dataTree.defaultData=function() {
+			return { foo: 1};
+		};
+		
+		expect(dataTree.get("/node")).toEqual({foo:1});
+		expect(dataTree.get("/node2")).toEqual({foo:1});
 	});
 });
