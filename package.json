@@ -2,9 +2,11 @@
   "author": "me",
   "name": "sibilant",
   "version": "0.0.1",
+	"repository": "https://github.com/nialscorva/Sibilant",
   "dependencies": {
-  	"grunt" : "0.3.x",
-  	"requirejs" : "*"
+  	"grunt" : "0.4.x",
+		"grunt-contrib-uglify": "~0.2.2",
+		"grunt-jsdoc": "*"
   	},
   "devDependencies": {
     "connect" : "*"
