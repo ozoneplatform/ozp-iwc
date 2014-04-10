@@ -155,3 +155,72 @@ describe("Event",function() {
 		});
 	});
 });
+
+
+describe("Async Action",function() {
+	var action;
+	beforeEach(function() {
+		action=new sibilant.AsyncAction();
+	});
+	
+	it("resolve calls the handler",function() {
+		var called=0;
+		action.when("success",function(result) {
+			expect(result).toEqual({foo:1});
+			called++; 
+		});
+		expect(called).toEqual(0);
+		action.resolve("success",{foo:1});
+		expect(called).toEqual(1);
+	});
+
+	it("resolve calls the right handler",function() {
+		var called=0;
+		action.when("success",function(result) {
+			expect("Should not have succeeded").toEqual("but it did");
+		}).when("fail",function(result) {
+			expect(result).toEqual({foo:1});
+			called++; 
+		});
+		
+		action.resolve("fail",{foo:1});
+		expect(called).toEqual(1);
+	});
+	
+	it("has candy grammar",function() {
+		var called=0;
+		action.success(function(result) {
+			expect("Should not have succeeded").toEqual("but it did");
+		}).fail(function(result) {
+			expect(result).toEqual({foo:1});
+			called++; 
+		});
+		
+		action.resolve("fail",{foo:1});
+		expect(called).toEqual(1);
+	});
+	
+	it("calls a handler immediately if it has already been resolved",function() {
+		var called=0;
+		action.resolve("fail",{foo:1});
+
+		action.fail(function(result) {
+			expect(result).toEqual({foo:1});
+			called++; 
+		});
+		
+		expect(called).toEqual(1);
+	});
+
+	it("throws an exception if it's already resolved",function() {
+		action.resolve("fail",{foo:1});
+
+		try {
+			action.resolve("fail",{foo:1});
+			expect("Exception should prevent this from being run").toEqual("but it didn't");
+		} catch(e) {
+			// success!
+		}
+	});
+	
+});
