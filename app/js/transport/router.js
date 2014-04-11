@@ -304,24 +304,6 @@ sibilant.Router=function(config) {
 	this.peer.on("receive",function(event) {
 		self.receiveFromPeer(event.packet);
 	});
-		
-	// PostMessage listener is so fundamental, there's no point
-	// in breaking it out.
-	var sendPostMessage=function(message) {
-		if(!message) { throw "CANNOT SEND NULL"; }
-		this.sourceWindow.postMessage(message,this.origin);
-		return true;
-	};
-	
-	// Listen for the post messages, treat them as participants
-	// sending packets.  The origin check is done within the send itself.
-	window.addEventListener("message", function(event) {
-		self.send(event.data,{
-			origin: event.origin,
-			sourceWindow: event.source,
-			receive: sendPostMessage
-		});
-	}, false);
 };
 
 //TODO: move autocreation elsewhere
