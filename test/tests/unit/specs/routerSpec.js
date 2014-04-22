@@ -5,7 +5,7 @@ describe("Router",function() {
 				ver: 1,
 				src: config.src || "$nobody",
 				dst: config.dst,
-				msg_id: config.msg_id || new Date().getTime(),
+				msgId: config.msgId || new Date().getTime(),
 				time: new Date().getTime(),
 				entity: config.entity || {}
 			};

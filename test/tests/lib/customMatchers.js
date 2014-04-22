@@ -41,8 +41,8 @@ var TestParticipant=function(config) {
 	}
 	
 	this.receive=function(packet){ 
-		if(this.callbacks[packet.reply_to]) {
-			this.callbacks[packet.reply_to](packet);
+		if(this.callbacks[packet.replyTo]) {
+			this.callbacks[packet.replyTo](packet);
 		}
 		this.packets.push(packet); 
 		return true;
@@ -52,11 +52,11 @@ var TestParticipant=function(config) {
 		packet.ver=packet.ver || 1;
 		packet.src=packet.src || this.address;
 		packet.dst=packet.dst || config.dst;
-		packet.msg_id= packet.msg_id || this.messageId++;
+		packet.msgId= packet.msgId || this.messageId++;
 		packet.time=packet.time || new Date().getTime();
 
 		if(callback) {
-			this.callbacks[packet.msg_id]=callback;
+			this.callbacks[packet.msgId]=callback;
 		}
 		this.router.send(packet,this);
 		return packet;
@@ -66,16 +66,16 @@ var TestParticipant=function(config) {
 		packet.ver=packet.ver || originalPacket.ver || 1;
 		packet.src=packet.src || originalPacket.dst || this.address;
 		packet.dst=packet.dst || originalPacket.src || config.dst;
-		packet.msg_id= packet.msg_id || this.messageId++;
+		packet.msgId= packet.msgId || this.messageId++;
 		packet.time=packet.time || new Date().getTime();
 		
-		packet.reply_to=originalPacket.msg_id;
+		packet.replyTo=originalPacket.msgId;
 
 		packet.action=packet.action || originalPacket.action;
 		packet.resource=packet.resource || originalPacket.resource;
 
 		if(callback) {
-			this.callbacks[packet.msg_id]=callback;
+			this.callbacks[packet.msgId]=callback;
 		}
 		this.router.send(packet,this);
 		return packet;	

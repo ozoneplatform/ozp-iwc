@@ -65,14 +65,27 @@ sibilant.LeaderApiBase=function(config) {
 	this.router.registerMulticast(this,[this.electionAddress,this.apiAddress]);
 };
 
+/**
+ * Checks to see if the leadership group is in an election
+ * @returns {Boolean} True if in an election state, otherwise false
+ */
 sibilant.LeaderApiBase.prototype.inElection=function() {
 	return !!this.electionTimer;
 };
 
+/**
+ * Checks to see if this instance is the leader of it's group.
+ * @returns {Boolean}
+ */
 sibilant.LeaderApiBase.prototype.isLeader=function() {
 	return this.leader === this.address;
 };
 
+/**
+ * Sends a message to the leadership group.
+ * @private
+ * @param {string} type - the type of message-- "election" or "victory"
+ */
 sibilant.LeaderApiBase.prototype.sendMessage=function(type) {
 	this.router.send(this.router.createMessage({
 			dst: this.electionAddress,
@@ -85,7 +98,8 @@ sibilant.LeaderApiBase.prototype.sendMessage=function(type) {
 };
 
 /**
- * 
+ * Attempt to start a new election.
+ * @protected
  * @returns {undefined}
  * @fire sibilant.LeaderApiBase#startElection
  * @fire sibilant.LeaderApiBase#becameLeader
@@ -113,6 +127,8 @@ sibilant.LeaderApiBase.prototype.startElection=function() {
 };
 
 /**
+ * Cancels an in-progress election that we started.
+ * @protected
  * @fire sibilant.LeaderApiBase#endElection
  */
 sibilant.LeaderApiBase.prototype.cancelElection=function() {
@@ -123,6 +139,12 @@ sibilant.LeaderApiBase.prototype.cancelElection=function() {
 	}
 };
 
+/**
+ * Receives a packet on the election control group or forwards it to the target implementation
+ * that of this leadership group.
+ * @param {sibilant.TransportPacket} packet
+ * @returns {undefined}
+ */
 sibilant.LeaderApiBase.prototype.receive=function(packet) {
 	// forward non-election packets to the current state
 	if(packet.dst !== this.electionAddress) {
@@ -139,6 +161,12 @@ sibilant.LeaderApiBase.prototype.receive=function(packet) {
 	}
 };
 
+/**
+ * Respond to someone else starting an election.
+ * @private
+ * @param {sibilant.TransportPacket} electionMessage
+ * @returns {undefined}
+ */
 sibilant.LeaderApiBase.prototype.handleElectionMessage=function(electionMessage) {
 	// is the new election lower priority than us?
 	if(this.priorityLessThan(electionMessage.entity.priority,this.priority)) {
@@ -149,7 +177,9 @@ sibilant.LeaderApiBase.prototype.handleElectionMessage=function(electionMessage)
 		this.cancelElection();
 	}
 };
+
 /**
+ * Handle someone else declaring victory.
  * @fire sibilant.LeaderApiBase#newLeader
  */
 sibilant.LeaderApiBase.prototype.handleVictoryMessage=function(victoryMessage) {

@@ -5,7 +5,7 @@ var sibilant=sibilant || {};
  * @typedef sibilant.Participant
  * @property {string} origin - The origin of this participant, confirmed via trusted sources.
  * @property {string} address - The assigned address to this address.
- * @function receive - Callback for this participant to receive a packet.  Will be called with participant as "this".
+ * @property {function} receive - Callback for this participant to receive a packet.  Will be called with participant as "this".
  */
 
 /**
@@ -13,10 +13,10 @@ var sibilant=sibilant || {};
  * @property {string} src - The participant address that sent this packet
  * @property {string} dst - The intended recipient of this packet
  * @property {Number} ver - Protocol Version.  Should be 1
- * @property {Number} msg_id - A unique id for this packet.
+ * @property {Number} msgId - A unique id for this packet.
  * @property {object} entity - The payload of this packet.
  * @property {Number} [time] - The time in milliseconds since epoch that this packet was created.
- * @property {Number} [reply_to] - Reference to the msg_id that this is in reply to.
+ * @property {Number} [replyTo] - Reference to the msgId that this is in reply to.
  * @property {string} [action] - Action to be performed.
  * @property {string} [resource] - Resource to perform the action upon.
  */
@@ -105,6 +105,7 @@ sibilant.Router=function(config) {
 	};
 	this.events.on("preSend",checkFormat);
 
+	// TODO: move all of this to the "names" service
 	this.participants[this.routerControlAddress] = {
 		receive: function(packet,sendingParticipant) {
 			var reply=self.createReply(packet,{	entity: {status: "ok"} });
@@ -136,14 +137,14 @@ sibilant.Router.prototype.createMessage=function(fields) {
 	fields.ver = fields.ver || 1;
 	fields.time = fields.time || now;
 	// TODO: track the last used timestamp and make sure we don't send a duplicate messageId
-	// default the msg_id to the current timestamp
-	fields.msg_id = fields.msg_id || now;
+	// default the msgId to the current timestamp
+	fields.msgId = fields.msgId || now;
 	return fields;
 };
 
 sibilant.Router.prototype.createReply=function(message,fields) {
 	fields=this.createMessage(fields);
-	fields.reply_to=message.msg_id;
+	fields.replyTo=message.msgId;
 	fields.src=fields.src || message.dst;
 	fields.dst=fields.dst || message.src;
 	return fields;
@@ -255,7 +256,7 @@ sibilant.Router.prototype.send=function(packet,sendingParticipant) {
 /**
  * Recieve a packet from the peer
  * @fires sibilant.Router#peerReceive
- * @param packet {object} the packet to receive
+ * @param packet {sibilant.TransportPacket} the packet to receive
  */
 sibilant.Router.prototype.receiveFromPeer=function(packet) {
 	sibilant.metrics.counter("transport.packets.receivedFromPeer").inc();

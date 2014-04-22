@@ -1,7 +1,7 @@
 var sibilant=sibilant || {};
 
 
-/*
+/**
  * @typedef {object} sibilant.DataApiNode
  * @property {object} data
  * @property {string} contentType
@@ -9,8 +9,9 @@ var sibilant=sibilant || {};
  * @property {object} watchers
  */
 
-/*
- * @class
+/**
+ * @class sibilant.DataApiBase
+ * @augments sibilant.LeaderApiBase
  * @param {string} config.name - The name of this API.
  * @param {sibilant.Router} [config.router=sibilant.defaultRouter] 
  *        The router to use for communications.
@@ -125,7 +126,7 @@ sibilant.DataApiBase.prototype.handleWatchAsLeader=function(packet) {
 sibilant.DataApiBase.prototype.handleUnwatchAsLeader=function(packet) {
 	var node=this.dataTree.get(packet.resource);
 	node.watchers=node.watchers.filter(function(w) {
-		return packet.reply_to !== w.msg_id && packet.src !==w.src;
+		return packet.replyTo !== w.msgId && packet.src !==w.src;
 	});
 	this.dataTree.set(packet.resource,node);
 	return {

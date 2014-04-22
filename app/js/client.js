@@ -41,8 +41,8 @@ sibilant.Client=function(config) {
  * @returns {undefined}
  */
 sibilant.Client.prototype.receive=function(packet) {
-		if(packet.reply_to && this.replyCallbacks[packet.reply_to]) {
-			this.replyCallbacks[packet.reply_to](packet);
+		if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
+			this.replyCallbacks[packet.replyTo](packet);
 		} else {
 			this.events.trigger("receive",packet);
 		}	
@@ -61,7 +61,7 @@ sibilant.Client.prototype.send=function(dst,entity,callback) {
 		ver: 1,
 		src: this.participantId,
 		dst: dst,
-		msg_id: id,
+		msgId: id,
 		time: now,
 		entity: entity
 	};

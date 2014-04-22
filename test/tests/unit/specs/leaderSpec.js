@@ -194,7 +194,7 @@ describe("Leader",function() {
 			leader.receive({
 				src: "foo",
 				dst: "bar",
-				msg_id: 1,
+				msgId: 1,
 				ver: 1,
 				entity: { foo: "bar" }
 			});

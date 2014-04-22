@@ -1,8 +1,9 @@
-
+/** @namespace */
 var sibilant=sibilant || {};
 
 /**
- * @class
+ * @class sibilant.PostMessageParticipant
+ * @augments sibilant.Participant
  * @param {object} config
  * @param {string} config.origin
  * @param {object} config.sourceWindow
@@ -14,6 +15,10 @@ sibilant.PostMessageParticipant=function(config) {
 	this.credentials=config.credentials;
 };
 
+/**
+ * Receives a packet on behalf of this participant and forwards it via PostMessage.
+ * @param {sibilant.TransportPacket} packet 
+ */
 sibilant.PostMessageParticipant.prototype.receive=function(packet) {
 	if(!packet) { throw "CANNOT SEND NULL"; }
 	this.sourceWindow.postMessage(packet,this.origin);
@@ -37,22 +42,39 @@ sibilant.PostMessageParticipantListener=function(config) {
 	}, false);	
 };
 
+/**
+ * Finds the participant associated with the given window.  Unfortunately, this is an
+ * o(n) algorithm, since there doesn't seem to be any way to hash, order, or any other way to
+ * compare windows other than equality.
+ * @param {object} sourceWindow - the participant window handle from message's event.source 
+ */
 sibilant.PostMessageParticipantListener.prototype.findParticipant=function(sourceWindow) {
 	return this.participants.find(function(p) { 
 			return p.sourceWindow === sourceWindow;
 	});
 };
 
+/**
+ * Register a new participant.
+ * @param {object} config
+ * @param {string} config.origin
+ * @param {object} config.sourceWindow
+ * @param {object} config.credentials
+ */
 sibilant.PostMessageParticipantListener.prototype.registerParticipant=function(config) {
 	var participant=new sibilant.PostMessageParticipant(config);
 	this.participants.push(participant);
-	
-	this.router.registerParticipant(participant);
-	
 	return participant;
 };
 
-sibilant.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(config) {
+/**
+ * Process a post message that is received from a peer
+ * @param {object} event - The event received from the "message" event handler
+ * @param {string} event.origin
+ * @param {object} event.source
+ * @param {sibilant.TransportPacket} event.data
+ */
+sibilant.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(event) {
 	var participant=this.findParticipant(event.sourceWindow);
 	if(!participant) {
 		participant=this.registerParticipant({
@@ -71,6 +93,7 @@ sibilant.PostMessageParticipantListener.prototype.receiveFromPostMessage=functio
 
 /**
  * @class
+ * @augments sibilant.Participant
  * @param {string} name
  */
 sibilant.MulticastParticipant=function(name) {
@@ -78,15 +101,20 @@ sibilant.MulticastParticipant=function(name) {
 	this.members=[];
 };
 
-sibilant.MulticastParticipant.prototype.origin=function(o) {
-	return this.members.some(function(m) { return m.origin === o;});
-};
-
+/**
+ * Receives a packet on behalf of the multicast group.
+ * @param {sibilant.TransportPacket} packet
+ * @returns {Boolean}
+ */
 sibilant.MulticastParticipant.prototype.receive=function(packet) {
 	this.members.forEach(function(m) { m.receive(packet);});
 	return false;
 };
 
-sibilant.MulticastParticipant.prototype.addMember=function(m) {
-	this.members.push(m);
+/**
+ * 
+ * @param {sibilant.Participant} participant
+ */
+sibilant.MulticastParticipant.prototype.addMember=function(participant) {
+	this.members.push(participant);
 };

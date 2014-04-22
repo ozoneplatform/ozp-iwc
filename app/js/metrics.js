@@ -2,13 +2,8 @@ var sibilant=sibilant || {};
 sibilant.metricTypes=sibilant.metricTypes || {};
 
 /**
- * @typedef {(number | sibilant.metricTypes.MetricsTree)} sibilant.metricTypes.MetricsNode
- * @typedef {Object.<string,sibilant.metricTypes.MetricsNode>} sibilant.metricTypes.MetricsTree
- */
-
-/**
- * @type sibilant.MetricType 
- * @function get - returns the current value of the metric
+ * @typedef {object} sibilant.MetricType 
+ * @property {function} get - returns the current value of the metric
  */
 
 /**
@@ -21,12 +16,14 @@ sibilant.metricTypes=sibilant.metricTypes || {};
 sibilant.metricTypes.Counter=function() {
 	this.value=0;
 };
+
 /**
  * @returns {Number} Current value of the counter
  */
 sibilant.metricTypes.Counter.prototype.get=function() { 
 	return this.value; 
 };
+
 /**
  * @param {Number} [delta=1] - Increment by this value
  * @returns {Number} - Value of the counter after increment
@@ -34,6 +31,7 @@ sibilant.metricTypes.Counter.prototype.get=function() {
 sibilant.metricTypes.Counter.prototype.inc=function(delta) { 
 	return this.value+=(delta?delta:1);
 };
+
 /**
  * @param {Number} [delta=1] - Decrement by this value
  * @returns {Number} - Value of the counter after decrement

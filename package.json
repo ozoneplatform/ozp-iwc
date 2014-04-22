@@ -3,12 +3,11 @@
   "name": "sibilant",
   "version": "0.0.1",
 	"repository": "https://github.com/nialscorva/Sibilant",
-  "dependencies": {
+  "devDependencies": {
   	"grunt" : "0.4.x",
 		"grunt-contrib-uglify": "~0.2.2",
-		"grunt-jsdoc": "*"
-  	},
-  "devDependencies": {
+		"grunt-jsdoc": "*",
+		"grunt-contrib-watch": "*",
     "connect" : "*"
   }
 }

@@ -16,8 +16,8 @@
 				  '<td>'+msg.sequence+'</td>'+
 				  '<td>'+msg.data.src+'</td>'+
 				  '<td>'+msg.data.dst+'</td>'+
-				  '<td>'+msg.data.msg_id+'</td>'+
-				  '<td>'+msg.data.reply_to+'</td>'+
+				  '<td>'+msg.data.msgId+'</td>'+
+				  '<td>'+msg.data.replyTo+'</td>'+
 				'</tr><tr class="packet">'+
 				  '<td colspan="7"><pre>' + JSON.stringify(msg,null,2) + '</pre></td>'+
 				'</tr>'

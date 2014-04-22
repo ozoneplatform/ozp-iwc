@@ -158,7 +158,7 @@ describe("Data API Base class",function() {
 				'dst' : "testData.api",
 				'action': "unwatch",
 				'resource': "/node",
-				'reply_to': registrationPacket.msg_id,
+				'replyTo': registrationPacket.msgId,
 				'entity': {}
 			});
 			participant.sendDataApi("set","/node",{foo:13});
