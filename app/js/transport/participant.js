@@ -2,14 +2,76 @@
 var sibilant=sibilant || {};
 
 /**
- * @typedef sibilant.Participant
- * @property origin - The origin of this participant, confirmed via trusted sources.
- * @function receive - Callback for this participant to receive a packet.  Will be called with participant as "this".
+ * @class
+ * @param {object} config
+ * @param {string} config.origin
+ * @param {object} config.sourceWindow
+ * @param {object} config.credentials
  */
+sibilant.PostMessageParticipant=function(config) {
+	this.origin=config.origin;
+	this.sourceWindow=config.sourceWindow;
+	this.credentials=config.credentials;
+};
+
+sibilant.PostMessageParticipant.prototype.receive=function(packet) {
+	if(!packet) { throw "CANNOT SEND NULL"; }
+	this.sourceWindow.postMessage(packet,this.origin);
+	return true;
+};
+
 
 /**
  * @class
- * @param {type} name
+ * @param {object} config
+ * @param {sibilant.Router} config.router
+ */
+sibilant.PostMessageParticipantListener=function(config) {
+	this.participants={};
+	this.router=config.router || sibilant.defaultRouter;
+	
+	var self=this;
+	
+	window.addEventListener("message", function(event) {
+		self.receiveFromPostMessage(event);
+	}, false);	
+};
+
+sibilant.PostMessageParticipantListener.prototype.findParticipant=function(sourceWindow) {
+	return this.participants.find(function(p) { 
+			return p.sourceWindow === sourceWindow;
+	});
+};
+
+sibilant.PostMessageParticipantListener.prototype.registerParticipant=function(config) {
+	var participant=new sibilant.PostMessageParticipant(config);
+	this.participants.push(participant);
+	
+	this.router.registerParticipant(participant);
+	
+	return participant;
+};
+
+sibilant.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(config) {
+	var participant=this.findParticipant(event.sourceWindow);
+	if(!participant) {
+		participant=this.registerParticipant({
+			'origin': event.origin,
+			'sourceWindow': event.source,
+			'credentials': event.data.entity
+		});
+	}
+
+	if(event.origin === participant.origin) {
+		this.router.send(event.data,participant);
+	} else {
+		sibilant.metrics.counter("transport."+participant.address+".invalidSenderOrigin").inc();
+	}
+};
+
+/**
+ * @class
+ * @param {string} name
  */
 sibilant.MulticastParticipant=function(name) {
 	this.name=name;
@@ -27,55 +89,4 @@ sibilant.MulticastParticipant.prototype.receive=function(packet) {
 
 sibilant.MulticastParticipant.prototype.addMember=function(m) {
 	this.members.push(m);
-};
-
-
-sibilant.PostMessageParticipant=function(config) {
-	this.origin=config.origin;
-	this.sourceWindow=config.sourceWindow;
-	this.credentials=config.credentials;
-};
-
-sibilant.PostMessageParticipant.prototype.receive=function(packet) {
-	if(!packet) { throw "CANNOT SEND NULL"; }
-	this.sourceWindow.postMessage(packet,this.origin);
-	return true;
-};
-
-sibilant.PostMessageParticipantListener=function(config) {
-	this.participants={};
-	this.router=config.router || sibilant.defaultRouter;
-	
-	window.addEventListener("message", function(event) {
-		var participant=this.findParticipant(event.origin,event.sourceWindow);
-		if(!participant) {
-			participant=self.registerParticipant({
-				'origin': event.origin,
-				'sourceWindow': event.source,
-				'credentials': event.data.entity
-			});
-		}
-		participant.send(event.data,participant);
-	}, false);
-	
-};
-
-sibilant.PostMessageParticipantListener.prototype.findParticipant=function(origin,sourceWindow) {
-	var byOrigin=this.participants[origin];
-	if(byOrigin) {
-		return byOrigin.find(function(p) { 
-			return p.sourceWindow === sourceWindow;
-		});
-	}
-	return null;
-};
-
-sibilant.PostMessageParticipantListener.prototype.registerParticipant=function(config) {
-	this.participants[origin]=this.participants[origin] || [];
-	var participant=new sibilant.PostMessageParticipant(config);
-	this.participants[origin].push(participant);
-	
-	this.router.registerParticipant(participant);
-	
-	return participant;
 };
