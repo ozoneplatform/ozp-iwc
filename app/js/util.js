@@ -1,10 +1,19 @@
 var sibilant=sibilant || {};
 sibilant.log=sibilant.log || console;
 
-sibilant.util=sibilant.util || {
-	generateId: function() {
+sibilant.util=sibilant.util || {};
+
+sibilant.util.generateId=function() {
 		return Math.floor(Math.random() * 0xffffffffffff).toString(16);
-	}
+};
+
+/**
+ * Used to get the current epoch time.  Tests overrides this
+ * to allow a fast-forward on time-based actions.
+ * @returns {Number}
+ */
+sibilant.util.now=function() {
+		return new Date().getTime();
 };
 
 /**

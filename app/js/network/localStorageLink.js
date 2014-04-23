@@ -1,11 +1,44 @@
-
+/** @namespace **/
 var sibilant = sibilant || {};
-sibilant.links = sibilant.links || {};
 
 /**
+ * <p>This link connects peers using the HTML5 localstorage API.  It handles cleaning up
+ * the buffer, depduplication of sends, and other trivia.
+ * 
+ * <p>Individual local storage operations are atomic, but there are no consistency
+ * gaurantees between multiple calls.  This means a read, modify, write operation may
+ * create race conditions.  The LocalStorageLink addresses the concurrency problem without
+ * locks by only allowing creation, read, and delete operations.
+ * 
+ * <p>Each packet is written to it's own key/value pair in local storage.  The key is the
+ * of the form "${prefix}|${selfId}|${timestamp}".  Each LocalStorageLink owns the lifecycle
+ * of packets it creates.
+ * 
+ * For senders:
+ * <ol>
+ *   <li> Write a new packet.
+ *   <li> Wait config.myKeysTimeout milliseconds.
+ *   <li> Delete own packets where the timestamp is expired.
+ * </ol>
+ * 
+ * For receivers:
+ * <ol>
+ *   <li> Receive a "storage" event containing the new key.
+ *   <li> Reads the packets from local storage.
+ * </ol>
+ * 
+ * <p>The potential race condition is if the packet is deleted before the receiver
+ * can read it.  In this case, the packet is simply considered lost, but no inconsistent
+ * data will be read.
+ * 
+ * <p>Links are responsible for their own packets, but each will clean up other link's packets
+ * on a much larger expiration window (config.otherKeysTimeout).  Race conditions between
+ * multiple links interleaving the lockless "list keys" and "delete item" sequence generates
+ * a consistent postcondition-- the key will not exist.
+ * 
  * @class
- * @param {sibilant.Peer} [config.peer=sibilant.defaultPeer] - The peer to connect to.
  * @param {Object} [config] - Configuration for this link
+ * @param {sibilant.Peer} [config.peer=sibilant.defaultPeer] - The peer to connect to.
  * @param {Number} [config.myKeysTimeout=5000] - Milliseconds to wait before deleting this link's keys.
  * @param {Number} [config.otherKeysTimeout=120000] - Milliseconds to wait before cleaning up other link's keys
  * @param {string} [config.prefix='sibilant'] - Namespace for communicating, must be the same for all peers on the same network.
@@ -31,6 +64,8 @@ sibilant.LocalStorageLink = function(config) {
 			if(packet && typeof(packet) === "object") {
 				sibilant.metrics.counter('links.localStorage.packets.receive').inc();
 				self.peer.receive(self.linkId,packet);
+			} else {
+				sibilant.metrics.counter('links.localStorage.packets.timedOut').inc();
 			}
 		}
 	};
@@ -61,7 +96,7 @@ sibilant.LocalStorageLink = function(config) {
 			var v=localStorage.getItem(k);
 			
 			var size=v.length*2;
-			var oldKeyTime = new Date().getTime() - this.myKeysTimeout;
+			var oldKeyTime = sibilant.util.now() - this.myKeysTimeout;
 
 			stats.used+=size;
 			
@@ -83,10 +118,11 @@ sibilant.LocalStorageLink = function(config) {
 
 /**
  * Creates a key for the message in localStorage
+ * @todo Is timestamp granular enough that no two packets can come in at the same time?
  * @returns {string} a new key
  */
 sibilant.LocalStorageLink.prototype.makeKey=function() { 
-	return [this.prefix,this.selfId,new Date().getTime()].join('|');
+	return [this.prefix,this.selfId,sibilant.util.now()].join('|');
 };
 
 /**
@@ -104,22 +140,14 @@ sibilant.LocalStorageLink.prototype.splitKey=function(k) {
 };
 
 /**
- * Returns the time since epoch in milliseconds.  Only exists so that
- * it can be overriden in the unit tests to check expiration.
- * @returns {Number}
- */
-sibilant.LocalStorageLink.prototype.getNow=function() {
-	return new Date().getTime();
-};
-
-/**
  * Goes through localStorage and looks for expired packets.  Packets owned
  * by this link are removed if they are older than myKeysTimeout.  Other
  * keys are cleaned if they are older than otherKeysTimeout.
+ * @todo Coordinate expiration windows.
  * @returns {undefined}
  */
 sibilant.LocalStorageLink.prototype.cleanKeys=function() {
-	var now=this.getNow();
+	var now=sibilant.util.now();
 	var myKeyExpiration = now - this.myKeysTimeout;
 	var otherKeyExpiration = now - this.otherKeysTimeout;
 
@@ -138,6 +166,7 @@ sibilant.LocalStorageLink.prototype.cleanKeys=function() {
 };
 /**
  * Publishes a packet to other peers.
+ * @todo Handle local storage being full.
  * @param {sibilant.NetworkPacket} packet
  */
 sibilant.LocalStorageLink.prototype.send=function(packet) { 
@@ -148,4 +177,5 @@ sibilant.LocalStorageLink.prototype.send=function(packet) {
 
 };
 
+sibilant.links = sibilant.links || {};
 sibilant.links.localStorage=new sibilant.LocalStorageLink();	

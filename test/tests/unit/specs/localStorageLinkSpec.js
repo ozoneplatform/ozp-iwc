@@ -8,15 +8,16 @@ describe("LocalStorageLink",function() {
 		jasmine.clock().tick(t);
 	};
 	
+	// mock out the now function to let us fast forward time
+	sibilant.util.now=function() {
+		return new Date().getTime() + clockOffset;
+	};
+
 	var makeLink=function(conf) {
 		conf.peer.receive=conf.peer.receive || function(linkId,packet) {};
 		
 		var link=new sibilant.LocalStorageLink(conf);
 		
-		// mock out some functions to let us run the clock up
-		spyOn(link, "getNow").and.callFake(function() {
-      return new Date().getTime() + clockOffset;
-    });
 		return link;
 	};
 	
