@@ -178,12 +178,12 @@ describe("Async Action",function() {
 		var called=0;
 		action.when("success",function(result) {
 			expect("Should not have succeeded").toEqual("but it did");
-		}).when("fail",function(result) {
+		}).when("failure",function(result) {
 			expect(result).toEqual({foo:1});
 			called++; 
 		});
 		
-		action.resolve("fail",{foo:1});
+		action.resolve("failure",{foo:1});
 		expect(called).toEqual(1);
 	});
 	
@@ -191,20 +191,20 @@ describe("Async Action",function() {
 		var called=0;
 		action.success(function(result) {
 			expect("Should not have succeeded").toEqual("but it did");
-		}).fail(function(result) {
+		}).failure(function(result) {
 			expect(result).toEqual({foo:1});
 			called++; 
 		});
 		
-		action.resolve("fail",{foo:1});
+		action.resolve("failure",{foo:1});
 		expect(called).toEqual(1);
 	});
 	
 	it("calls a handler immediately if it has already been resolved",function() {
 		var called=0;
-		action.resolve("fail",{foo:1});
+		action.resolve("failure",{foo:1});
 
-		action.fail(function(result) {
+		action.failure(function(result) {
 			expect(result).toEqual({foo:1});
 			called++; 
 		});
@@ -213,10 +213,10 @@ describe("Async Action",function() {
 	});
 
 	it("throws an exception if it's already resolved",function() {
-		action.resolve("fail",{foo:1});
+		action.resolve("failure",{foo:1});
 
 		try {
-			action.resolve("fail",{foo:1});
+			action.resolve("failure",{foo:1});
 			expect("Exception should prevent this from being run").toEqual("but it didn't");
 		} catch(e) {
 			// success!

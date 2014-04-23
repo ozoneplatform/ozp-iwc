@@ -8,9 +8,10 @@ module.exports = function(grunt) {
 			'app/js/common/**/*.js',
 			'app/js/server/es5-sham.min.js',
 			'app/js/server/metrics.js',
+			'app/js/server/security/**/*.js',
 			'app/js/server/network/**/*.js',
 			'app/js/server/transport/**/*.js',
-			'app/js/server/api/**/*.js',
+			'app/js/server/api/**/*.js'
 			],
 			client: [
 				'app/js/common/**/*.js',

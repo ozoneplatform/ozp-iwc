@@ -1,8 +1,20 @@
+/** @namespace */
 var sibilant=sibilant || {};
+
+/** 
+ * @type {object}
+ * @property {function} log - Normal log output.
+ * @property {function} error - Error output.
+ */
 sibilant.log=sibilant.log || console;
 
+/** @namespace */
 sibilant.util=sibilant.util || {};
 
+/**
+ * Generates a large hexidecimal string to serve as a unique ID.  Not a guid.
+ * @returns {String}
+ */
 sibilant.util.generateId=function() {
 		return Math.floor(Math.random() * 0xffffffffffff).toString(16);
 };
@@ -82,10 +94,10 @@ sibilant.Event.prototype.mixinOnOff=function(target) {
 };
 
 /**
- * @class
  * Convenient base for events that can be canceled.  Provides and manages
  * the properties canceled and cancelReason, as well as the member function
  * cancel().
+ * @class
  * @param {object} data - Data that will be copied into the event
  */
 sibilant.CancelableEvent=function(data) {
@@ -98,7 +110,7 @@ sibilant.CancelableEvent=function(data) {
 };
 
 /**
- * 
+ * Marks the event as canceled.
  * @param {type} reason - A text description of why the event was canceled.
  * @returns {sibilant.CancelableEvent} Reference to self
  */
@@ -109,6 +121,10 @@ sibilant.CancelableEvent.prototype.cancel=function(reason) {
 	return this;
 };
 
+/**
+ * A deferred action, but not in the sense of the Javascript standard.
+ * @class
+ */
 sibilant.AsyncAction=function() {
 	this.callbacks={};
 };
@@ -145,6 +161,6 @@ sibilant.AsyncAction.prototype.success=function(callback,self) {
 	return this.when("success",callback,self);
 };
 
-sibilant.AsyncAction.prototype.fail=function(callback,self) {
-	return this.when("fail",callback,self);
+sibilant.AsyncAction.prototype.failure=function(callback,self) {
+	return this.when("failure",callback,self);
 };
