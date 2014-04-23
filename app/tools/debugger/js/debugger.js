@@ -2,22 +2,23 @@
 (function() {
 
 	var updateStats=function() {
-		$("#stats").text(JSON.stringify(sibilant.Metrics.toJson(),null,2));
+		$("#stats").text(JSON.stringify(sibilant.metrics.toJson(),null,2));
 	};
 
-	sibilant.peer.default.on("receive",function(msg) {
-		var date=new Date(msg.data.time);
+	sibilant.defaultPeer.on("receive",function(msg) {
+		var packet=msg.packet;
+		var date=new Date(packet.data.time);
 		var dateString=date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + " " +
 						date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "." + date.getMilliseconds();
 		$("#messages").append( 
 				'<tr class="summary">'+
 				  '<td>'+dateString+'</td>'+
-				  '<td>'+msg.src_peer+'</td>'+
-				  '<td>'+msg.sequence+'</td>'+
-				  '<td>'+msg.data.src+'</td>'+
-				  '<td>'+msg.data.dst+'</td>'+
-				  '<td>'+msg.data.msgId+'</td>'+
-				  '<td>'+msg.data.replyTo+'</td>'+
+				  '<td>'+packet.src_peer+'</td>'+
+				  '<td>'+packet.sequence+'</td>'+
+				  '<td>'+packet.data.src+'</td>'+
+				  '<td>'+packet.data.dst+'</td>'+
+				  '<td>'+packet.data.msgId+'</td>'+
+				  '<td>'+packet.data.replyTo+'</td>'+
 				'</tr><tr class="packet">'+
 				  '<td colspan="7"><pre>' + JSON.stringify(msg,null,2) + '</pre></td>'+
 				'</tr>'

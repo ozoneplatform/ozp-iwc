@@ -121,6 +121,3 @@ sibilant.MulticastParticipant.prototype.receive=function(packet) {
 sibilant.MulticastParticipant.prototype.addMember=function(participant) {
 	this.members.push(participant);
 };
-
-sibilant.listeners=sibilant.listeners || {};
-sibilant.listeners.postMessageParticipantListeners=new sibilant.PostMessageParticipantListener();

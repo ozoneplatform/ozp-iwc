@@ -5,9 +5,10 @@
 	"repository": "https://github.com/nialscorva/Sibilant",
   "devDependencies": {
   	"grunt" : "0.4.x",
-		"grunt-contrib-uglify": "~0.2.2",
+		"grunt-contrib-uglify": "*",
+		"grunt-contrib-concat": "*",
 		"grunt-jsdoc": "*",
 		"grunt-contrib-watch": "*",
-    "connect" : "*"
+		"grunt-contrib-connect": "*"
   }
 }

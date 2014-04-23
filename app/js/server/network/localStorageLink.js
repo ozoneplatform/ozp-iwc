@@ -177,5 +177,3 @@ sibilant.LocalStorageLink.prototype.send=function(packet) {
 
 };
 
-sibilant.links = sibilant.links || {};
-sibilant.links.localStorage=new sibilant.LocalStorageLink();	

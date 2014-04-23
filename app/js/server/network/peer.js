@@ -1,7 +1,4 @@
-
 var sibilant=sibilant || {};
-
-
 
 /**
 * @typedef sibilant.NetworkPacket
@@ -127,6 +124,4 @@ sibilant.Peer.prototype.shutdown=function() {
 	window.removeEventListener('beforeunload',unloadListener);
 };
 
-// TODO: move autocreation to a different file
-sibilant.defaultPeer=new sibilant.Peer();
 			

@@ -271,6 +271,3 @@ sibilant.Router.prototype.receiveFromPeer=function(packet) {
 	}
 };
 
-
-//TODO: move autocreation elsewhere
-sibilant.defaultRouter=new sibilant.Router();

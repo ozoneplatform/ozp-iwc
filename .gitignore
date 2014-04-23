@@ -1,3 +1,7 @@
 /nbproject
 /node_modules
 doc
+app/js/sibilant-client.js
+app/js/sibilant-client.min.js
+app/js/sibilant-server.js
+app/js/sibilant-server.min.js
