@@ -32,7 +32,8 @@ sibilant.PostMessageParticipant.prototype.receive=function(packet) {
  * @param {sibilant.Router} config.router
  */
 sibilant.PostMessageParticipantListener=function(config) {
-	this.participants={};
+	config = config || {};
+	this.participants=[];
 	this.router=config.router || sibilant.defaultRouter;
 	
 	var self=this;
@@ -49,9 +50,11 @@ sibilant.PostMessageParticipantListener=function(config) {
  * @param {object} sourceWindow - the participant window handle from message's event.source 
  */
 sibilant.PostMessageParticipantListener.prototype.findParticipant=function(sourceWindow) {
-	return this.participants.find(function(p) { 
-			return p.sourceWindow === sourceWindow;
-	});
+	for(var i=0; i< this.participants.length; ++i) {
+		if(this.participants[i].sourceWindow === sourceWindow) {
+			return this.participants[i];
+		}
+	};
 };
 
 /**
@@ -118,3 +121,6 @@ sibilant.MulticastParticipant.prototype.receive=function(packet) {
 sibilant.MulticastParticipant.prototype.addMember=function(participant) {
 	this.members.push(participant);
 };
+
+sibilant.listeners=sibilant.listeners || {};
+sibilant.listeners.postMessageParticipantListeners=new sibilant.PostMessageParticipantListener();
