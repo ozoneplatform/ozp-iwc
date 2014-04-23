@@ -8,27 +8,40 @@ var sibilant=sibilant || {};
 */
 
 /**
- * @event sibilant.Peer#preSend
- * @property {sibilant.NetworkPacket} packet
- * @property {boolean} reject
- * @property {string} rejectReason
-*/
-
-/**
  * @event sibilant.Peer#receive
+ * The peer has received a packet from other peers.
  * @property {sibilant.NetworkPacket} packet
  * @property {string} linkId
  */
 
+
+/**
+ * @event sibilant.Peer#preSend
+ * A cancelable event that allows listeners to override the forwarding of 
+ * a given packet to other peers.
+ * @extends sibilant.CancelableEvent
+ * @property {sibilant.NetworkPacket} packet
+*/
+
 /**
  * @event sibilant.Peer#send
+ * Notifies that a packet is being sent to other peers.  Links should use this
+ * event to forward packets to other peers. 
  * @property {sibilant.NetworkPacket} packet
  */
 
 /**
  * @event sibilant.Peer#beforeShutdown
+ * Fires when the peer is being explicitly or implicitly shut down.
  */
 
+/**
+ * The peer handles low-level broadcast communications between multiple browser contexts.
+ * Links do the actual work of moving the packet to other browser contexts.  The links
+ * call @{link sibilant.Peer#receive} when they need to deliver a packet to this peer and hook
+ * the @{link event:sibilant.Peer#send} event in order to send packets.
+ * @class
+ */
 sibilant.Peer=function() {
 	
 	// generate a random 4 byte id
@@ -57,7 +70,11 @@ sibilant.Peer=function() {
 
 };
 
-// Helper to determine if we've seen this packet before
+/**
+ * Helper to determine if we've seen this packet before
+ * @param {sibilant.NetworkPacket} packet
+ * @returns {boolean}
+ */
 sibilant.Peer.prototype.haveSeen=function(packet) {
 	// don't forward our own packets
 	if(packet.src_peer===this.selfId) {
@@ -78,7 +95,7 @@ sibilant.Peer.prototype.haveSeen=function(packet) {
 };
 
 /**
- * Sends a message to network
+ * Used by routers to broadcast a packet to network
  * @fires sibilant.Peer#preSend
  * @fires sibilant.Peer#send
  * @param {sibilant.NetworkPacket} packet
@@ -117,6 +134,7 @@ sibilant.Peer.prototype.receive=function(linkId,packet) {
 };
 
  /**
+	* Explicitly shuts down the peer.
 	* @fires sibilant.Peer#send
 	*/
 sibilant.Peer.prototype.shutdown=function() {
