@@ -3,47 +3,94 @@ var sibilant=sibilant || {};
 
 /** 
  * A basic authorization module loosely inspired by Apache Shiro.
- * Subjects are a string or array of subjects representing an actor
- * within the network (i.e. a participant).  
+ * <ul>
+ *   <li> Principal - an individual bundle of authority, represesented by a string.
+ *   <li> Subject - an array of principals representing the authorities of an actor.
+ *   <li> Permission - a string representing the authority to perform one discrete action.
+ * </ul>
  * 
- * <p> Permissions are a string of the form "${domain}:${action}:${instance}".  
- * Wildcard matching is not currently supported, and all permissions are
- * cached for the duration of the browsing session.
+ * <p> Principals have permissions.  Subjects have one or more principals.  A check
+ * is a subject asking if any of it's principals have a set of permissions. 
+ * 
+ * <p> The isPermitted() operation simply asks "for all permissions in the list, does the
+ * subject have at least one principal with that permission". 
+ * 
+ * <p> All operations are potentially asynchronous, though if the request can
+ * be answered immediately, it will be.
+ * 
+ * <h2>Sibilant's usage of authorization</h2>
+ * 
+ * <p> Principals are strings of the form "${domain}:${id}".  The domain
+ * identifies the type of principal, where the ID indentifies the specific instance.
+ * 
+ * <p>Supported Principals:
+ * <ul>
+ *   <li>participant:${address}
+ *   <li>origin:${origin}
+ * </ul>
+ * 
+ * <p> Sibilant uses permissions of the form "${domain}:${action}:${instance}".
+ * The domain is the type of the object being acted upon, the action
+ * corresponds to the action being taken, and the instance is an optional
+ * ID for the specific instance of the domain being acted upon.
+ * 
+ * @todo Permissions are local to each peer.  Does this need to be synced?
  * 
  * @class
  */
 sibilant.BasicAuthorization=function() {
-	this.subjects={};	
+	this.principals={};	
 };
 
-sibilant.BasicAuthorization.prototype.grant=function(subject,permissions) {
-	var a=this.subjects[subject] || [];
+/**
+ * Grants permissions to a principal.
+ * @param {string} principal
+ * @param {string | [string]} permissions
+ * @returns {undefined}
+ */
+sibilant.BasicAuthorization.prototype.grant=function(principal,permissions) {
+	var a=this.principals[principal] || [];
 	
-	this.subjects[subject]=a.concat(permissions);
+	this.principals[principal]=a.concat(permissions);
 	
 };
 	
 /**
- * @param {type} subject
- * @param {type} permissions
+ * Confirms that the subject has all of the permissions requested.
+ * @param {string | [string]} subject
+ * @param {string | [string]} permissions
  * @returns {sibilant.AsyncAction}
  */
 sibilant.BasicAuthorization.prototype.isPermitted=function(subject,permissions) {
+	var permMap={};
 	if(typeof(permissions) === "string") {
-		permissions=[permissions];
-	}
-	var action=new sibilant.AsyncAction();
-	var perms=this.subjects[subject];
-	
-	if(!perms) {
-		return action.resolve('failure');
-	}
-	
-	for(var i=0;i<permissions.length;++i) {
-		if(perms.indexOf(permissions[i]) === -1) {
-			return action.resolve('failure');
+		permMap[permissions]=1;
+	} else {
+		for(var i=0;i<permissions.length;++i) {
+			permMap[permissions[i]]=1;
 		}
 	}
 	
-	return action.resolve('success');
+	if(typeof(subject) === "string") {
+		subject=[subject];
+	}	
+	
+	var action=new sibilant.AsyncAction();
+
+	for(var i=0;i<subject.length;++i) {
+		var perms=this.principals[subject[i]];
+		if(!perms) {
+			continue;
+		}
+		for(var k in permMap) {
+			if(perms.indexOf(k) !== -1) {
+				delete permMap[k];
+				if(Object.keys(permMap).length === 0) {
+					return action.resolve('success');
+				}
+			}
+		}
+	}
+	
+	return action.resolve('failure');
 };

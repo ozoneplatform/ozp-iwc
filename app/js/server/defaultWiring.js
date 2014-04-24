@@ -21,3 +21,7 @@ if(sibilant.PostMessageParticipantListener) {
 		router: sibilant.defaultRouter
 	});
 }
+
+if(sibilant.BasicAuthorization) {
+	sibilant.authorization=new sibilant.BasicAuthorization();
+}
