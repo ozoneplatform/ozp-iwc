@@ -1,35 +1,12 @@
 describe("Data API Base class",function() {
 
-	var router;
 	var dataApi;
-	var participant;
 	
 	beforeEach(function() {	
 		jasmine.addMatchers(customMatchers);
 		jasmine.clock().install();
 
-		router=new sibilant.Router({peer:new FakePeer()});
-		
-		dataApi=new sibilant.DataApiBase({
-			'name': 'testData',
-			'router': router
-		});
-		
-		participant=new TestParticipant({'router':router});
-		
-		participant.sendDataApi=function(action,path,entity,callback) {
-			if(typeof(entity) === 'function') {
-				callback=entity;
-				entity={};
-			}
-			
-			return participant.send({
-				'dst' : "testData.api",
-				'action' : action,
-				'resource' : path,
-				'entity': entity
-			},callback);
-		};
+		dataApi=new sibilant.DataApiBase();
 	});
 	
 	afterEach(function() {
@@ -38,64 +15,71 @@ describe("Data API Base class",function() {
 	});
 
 	describe("operation as Leader", function() {
-		beforeEach(function() {
-			dataApi.leaderState="Leader";
-		});
-		
 		it("responds to a get", function() {
-			var called=0;
-			participant.sendDataApi("get","/node",function(value) {
-				called++;
-				expect(value).toBeDefined();
-				expect(value.src).toEqual("testData.api");
-			});
+			var r=dataApi.handleGetAsLeader({packet:{
+				resource: "foo",
+				entity: "bar"
+			}});
 			
-			expect(called).toEqual(1);
-			
+			expect(r.action).toEqual("success");
 		});
 		
 		it("gets and puts data", function() {
-			var called=0;
-			participant.sendDataApi("set","/node",{foo:1});
+			dataApi.handleSetAsLeader({packet:{
+				resource: "/node",
+				entity: {foo:1}
+			}});
 
-			participant.sendDataApi("get","/node",function(value) {
-				expect(value.entity).toBeDefined();
-				expect(value.entity).toEqual({foo:1});
-				called++;
-			});
-			expect(called).toEqual(1);
+			var r=dataApi.handleGetAsLeader({packet:{
+					resource: "/node",
+					entity: {}
+				}});
+			expect(r.entity).toEqual({foo:1});
 		});
 		
 		it("deletes data", function() {
-			participant.sendDataApi("set","/node",{foo:1});
-			participant.sendDataApi("delete","/node");
+			dataApi.handleSetAsLeader({packet:{
+				resource: "/node",
+				entity: {foo:1}
+			}});
+			dataApi.handleDeleteAsLeader({packet:{
+				resource: "/node",
+			}});
 
-			participant.sendDataApi("get","/node",function(value) {
-				expect(value.entity).toBeUndefined();
-			});
+			var r=dataApi.handleGetAsLeader({packet:{
+					resource: "/node"
+			}});
+			expect(r.entity).toBeUndefined();
 		});
 		
 	});	
 	
 	describe("watch data",function() {
 		beforeEach(function() {
-			dataApi.leaderState="Leader";
-			participant.sendDataApi("set","/node",{foo:1});
+			dataApi.handleSetAsLeader({packet:{
+				resource: "/node",
+				entity: {foo:1}
+			}});		
 		});
 		
 		it("a watch applies to a node",function() {
 			var called=0;
-			participant.sendDataApi("watch","/node",function(packet) {
-				if(packet.action==="changed") {
-					expect(packet.entity.newValue.foo).toEqual(called+2);
-					called++;
+			dataApi.handleWatchAsLeader({
+				packet: {resource:"/node"},
+				reply: function(packet) {
+					if(packet.action==="changed") {
+						expect(packet.entity.newValue.foo).toEqual(called+2);
+						called++;
+					}
 				}
 			});
 			
-			participant.sendDataApi("set","/node",{foo:2});
-			participant.sendDataApi("set","/node",{foo:3});
-			participant.sendDataApi("set","/node",{foo:4});
+			dataApi.handleSetAsLeader({packet:{resource:"/node",entity:{foo:2}}});
+			dataApi.handleSetAsLeader({packet:{resource:"/node",entity:{foo:3}}});
+			dataApi.handleSetAsLeader({packet:{resource:"/node",entity:{foo:4}}});
 			
+			//var r=dataApi.handleGetAsLeader({packet:{resource:"/node"}});
+
 			expect(called).toEqual(3);
 		});
 

@@ -11,12 +11,15 @@ describe("Router",function() {
 			};
 	};
 	
+	var FakeParticipant=sibilant.util.extend(sibilant.Participant,function(config) {
+		sibilant.Participant.apply(this,arguments);
+		this.origin = config.origin || "foo.com";
+		this.receiveFromRouter = config.receiveFromRouter || function(msg){ this.packets.push(msg.packet); return true;};
+		this.packets =[];
+	});
+	
 	var createParticipant=function(config) {
-		return {
-			origin: config.origin || "foo.com", 
-			receive: config.receive || function(msg){ this.packets.push(msg); return true;},
-			packets: []
-		};
+		return new FakeParticipant(config);
 	};
 	
 	var router;
@@ -43,11 +46,35 @@ describe("Router",function() {
 	});
 	
 	it("accepts a participant registration", function() {
-		var participantId=router.registerParticipant({},participant);
+		var participantId=router.registerParticipant(participant,{});
 		expect(participantId).toBeDefined();
 	});
 	
+	it("calls registration handlers",function() {
+		// events.trigger("registerParticipant",participant, message)
+		var called=false;
+		router.on("preRegisterParticipant",function(event) {
+			expect(event.participant).toEqual(participant);
+			called=true;
+		});
+		router.registerParticipant(participant,{});
+		expect(called).toEqual(true);
+	});
 
+	it("registration handlers can block a participant",function() {
+		router.on("preRegisterParticipant",function(event) { 
+			if(event.participant.origin === "badguy.com") {
+				event.cancel("badguy");
+			}
+		});
+		var badParticipant=createParticipant({origin: "badguy.com"});
+
+		router.registerParticipant(participant,{});
+		router.registerParticipant(badParticipant,{});
+
+		expect(participant.address).not.toBeNull("ok");
+		expect(badParticipant.address).toBeUndefined();
+	});
 	
 	describe("Participant registration via send", function() {
 		it("sends a registration response to a new participant", function() {
@@ -60,67 +87,38 @@ describe("Router",function() {
 			expect(reply.dst).not.toEqual("$nobody");
 			expect(reply.entity.status).toEqual("ok");
 		});	
-		
-		it("calls registration handlers",function() {
-			// events.trigger("registerParticipant",participant, message)
-			var called=false;
-			router.on("preRegisterParticipant",function(event) {
-				expect(event.participant).toEqual(participant);
-				expect(event.packet.src).toEqual("$nobody");
-				expect(event.packet.dst).toEqual("$transport");
-				called=true;
-			});
-			router.send(createMsg({src:"$nobody",dst:"$transport"}),participant);
-			expect(called).toEqual(true);
-		});
-
-		it("registration handlers can block a participant",function() {
-			router.on("preRegisterParticipant",function(event) { 
-				if(event.participant.origin === "badguy.com") {
-					event.cancel("badguy");
-				}
-			});
-			var badParticipant=createParticipant({origin: "badguy.com"});
-			router.send(createMsg({src:"$nobody",dst:"$transport"}),participant);
-			router.send(createMsg({src:"$nobody",dst:"$transport"}),badParticipant);
-			
-			expect(participant.packets[0].entity.status).toEqual("ok");
-			expect(badParticipant.packets[0].entity.status).toEqual("denied");
-		});
 	});
 
 	describe("Sending packets",function() {
 		var participant2;
 		
 		beforeEach(function() {
-			router.send(createMsg({src:"$nobody",dst:"$transport"}),participant);
-			participant.id=participant.packets[0].dst;
-			
 			participant2=createParticipant({origin:"bar.com"});
-			router.send(createMsg({src:"$nobody",dst:"$transport"}),participant2);
-			participant2.id=participant2.packets[0].dst;
+
+			router.registerParticipant(participant);
+			router.registerParticipant(participant2);
 		});
 		
 		it("forwards to peer",function() {
-			var msg=createMsg({src: participant.id,dst:"fakeName"});
+			var msg=createMsg({src: participant.address,dst:"fakeName"});
 			router.send(msg,participant);
 			expect(fakePeer.packets[0]).toEqual(msg);
 		});
 		
 		it("routes locally", function() {
-			var msg=createMsg({src: participant.id,dst:participant2.id});
+			var msg=createMsg({src: participant.address,dst:participant2.address});
 			router.send(msg,participant);
-			expect(participant2.packets[1]).toEqual(msg);
+			expect(participant2.packets[0]).toEqual(msg);
 		});
 		
 		it("doesn't send to peer when routing locally", function() {
-			var msg=createMsg({src: participant.id,dst:participant2.id});
+			var msg=createMsg({src: participant.address,dst:participant2.address});
 			router.send(msg,participant);
 			expect(fakePeer.packets.length).toEqual(0);
 		});
 		
 		it("sends to peer when routing locally and forwardAll is true ", function() {
-			var msg=createMsg({src: participant.id,dst:participant2.id});
+			var msg=createMsg({src: participant.address,dst:participant2.address});
 			router.forwardAll=true;
 			router.send(msg,participant);
 			expect(fakePeer.packets.length).toEqual(1);
@@ -137,25 +135,25 @@ describe("Router",function() {
 					multicast: multicastGroups
 				}
 			}),p);
-			p.id=p.packets[0].dst;
+			p.address=p.packets[0].dst;
 			return p;		
 		};
 		
 		beforeEach(function() {
 			router.send(createMsg({src:"$nobody",dst:"$transport"}),participant);
-			participant.id=participant.packets[0].dst;
+			participant.address=participant.packets[0].dst;
 		});
 		
 		it("allows multicast registration",function() {
 			router.send(createMsg({
-				src:participant.id,
+				src:participant.address,
 				dst:"$transport",
 				entity: {
 					multicast: ["m1"]
 				}
 			}),participant);
 			
-			expect(participant.packets[1]).toBeDefined();
+			expect(participant.packets[0]).toBeDefined();
 		});
 		it("allows multicast registration in the connection",function() {
 			var p=registeredParticipant({origin:"bar.com"},["foo"]);
@@ -169,7 +167,7 @@ describe("Router",function() {
 			var p3=registeredParticipant({origin:"bar3.com"},["foo"]);
 			var p4=registeredParticipant({origin:"bar4.com"},["foo"]);
 			
-			var msg=createMsg({src: p1.id,dst:"foo",entity: { a: 1}});
+			var msg=createMsg({src: p1.address,dst:"foo",entity: { a: 1}});
 			router.send(msg,p1);
 			
 			expect(p2.packets[1].entity.a).toEqual(1);
@@ -183,7 +181,7 @@ describe("Router",function() {
 			var p3=registeredParticipant({origin:"bar3.com"},["foo"]);
 			var p4=registeredParticipant({origin:"bar4.com"},["foo"]);
 			
-			var msg=createMsg({src: p1.id,dst:"foo",entity: { a: 1}});
+			var msg=createMsg({src: p1.address,dst:"foo",entity: { a: 1}});
 			router.send(msg,p1);
 			
 			expect(fakePeer.packets.length).toEqual(1);
@@ -193,7 +191,7 @@ describe("Router",function() {
 			var p1=registeredParticipant({origin:"bar1.com"},["foo"]);
 			var p2=registeredParticipant({origin:"bar2.com"},["foo"]);
 			
-			var msg=createMsg({src: "foo",dst:p2.id,entity: { a: 1}});
+			var msg=createMsg({src: "foo",dst:p2.address,entity: { a: 1}});
 			router.send(msg,p1);
 			
 			expect(p2.packets[1].entity.a).toEqual(1);
@@ -203,7 +201,7 @@ describe("Router",function() {
 			var p1=registeredParticipant({origin:"bar1.com"});
 			var p2=registeredParticipant({origin:"bar2.com"},["foo"]);
 			
-			var msg=createMsg({src: "foo",dst:p1.id,entity: { a: 1}});
+			var msg=createMsg({src: "foo",dst:p1.address,entity: { a: 1}});
 			router.send(msg,p1);
 			
 			// just the registration packet

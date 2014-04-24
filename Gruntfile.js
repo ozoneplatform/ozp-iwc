@@ -10,6 +10,8 @@ module.exports = function(grunt) {
 			'app/js/server/metrics.js',
 			'app/js/server/security/**/*.js',
 			'app/js/server/network/**/*.js',
+			'app/js/server/transport/participant.js',
+			'app/js/server/transport/router.js',
 			'app/js/server/transport/**/*.js',
 			'app/js/server/api/**/*.js'
 			],

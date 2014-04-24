@@ -1,4 +1,4 @@
-describe("Leader",function() {
+describe("Leader Group Participant",function() {
 	var leaders=[];
 	var packetQueue=[];
 	var fakeRouter={
@@ -12,6 +12,10 @@ describe("Leader",function() {
 			}
 
 		},
+		registerParticipant: function(p) {
+			p.connectToRouter(fakeRouter,leaders.length);
+			leaders.push(p);
+		},
 		pump: function() {
 			var processed=0;
 			while(packetQueue.length) {
@@ -20,7 +24,7 @@ describe("Leader",function() {
 				console.log("PACKET(" + packet.src + "): " + packet.entity.type);
 				leaders.forEach(function(l) {
 					if(l.address !== packet.src) {
-						l.receive(packet);
+						l.receiveFromRouter({'packet':packet});
 					}
 				});
 			}
@@ -50,15 +54,12 @@ describe("Leader",function() {
 	};
 	
 	var makeLeader=function(priority) {
-		var l=new sibilant.LeaderApiBase({
+		var l=new sibilant.LeaderGroupParticipant({
 			electionAddress:"ea",
 			name: "foo"+leaders.length,
-			address: leaders.length,
 			'priority': priority,
-			router: fakeRouter
-			
 		});
-		
+		fakeRouter.registerParticipant(l);
 		l.on("startElection", function() {
 			console.log("startElection[" + l.address + "]");
 		});
@@ -73,10 +74,10 @@ describe("Leader",function() {
 		});
 		
 		l.TEST_nonElectionPackets=[];
-		l.target={ receive: function(event) {
+		l.target={ defaultHandler: function(event) {
 			l.TEST_nonElectionPackets.push(event);
 		}};
-		leaders.push(l);
+
 		return l;
 	};
 
@@ -162,7 +163,7 @@ describe("Leader",function() {
 
 
 	// since the jitter is random, run several rounds of it
-	for(var j=0;j<15;++j) {
+	for(var j=0;j<1;++j) {
 		it("member election works with jitter, round " + j,function() {
 			fakeRouter.jitter=.5;
 
@@ -191,13 +192,13 @@ describe("Leader",function() {
 	
 	it("sends event on non-election packet", function() {
 			var leader=makeLeader(1);
-			leader.receive({
+			leader.receiveFromRouter({ packet:{
 				src: "foo",
 				dst: "bar",
 				msgId: 1,
 				ver: 1,
 				entity: { foo: "bar" }
-			});
+			}});
 			expect(leader.TEST_nonElectionPackets.length).toBe(1);
 		
 	});

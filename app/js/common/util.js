@@ -29,6 +29,18 @@ sibilant.util.now=function() {
 };
 
 /**
+ * Create a class with the given parent in it's prototype chain.
+ * @param {function} baseClass - the class being derived from
+ * @param {function} newConstructor - the new base class
+ * @returns {Function} newConstructor with an augmented prototype
+ */
+sibilant.util.extend=function(baseClass,newConstructor) {
+	newConstructor.prototype = Object.create(baseClass.prototype); 
+	newConstructor.prototype.constructor = newConstructor;
+	return newConstructor;
+};
+
+/**
 	* @class
 	*/
 sibilant.Event=function() {

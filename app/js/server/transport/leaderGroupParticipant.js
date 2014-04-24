@@ -4,33 +4,24 @@ var sibilant=sibilant || {};
  * Baseclass for APIs that need leader election.  Uses the Bully algorithm for leader election.
  * @class
  * @param {object} config
- * @param {string} config.name 
+ * @param {String} config.name 
  *        The name of this API.
- * @param {object} config.target
+ * @param {Object} config.target
  *				The packet receiver that gets non-election messages.
- * @param {sibilant.Router} [config.router=sibilant.defaultRouter] 
- *        The router to use for communications.
- * @param {string} [config.address]
- *        Base address for this participant.  If supplied, the user is responsible for
- *        directing all election related packets to the route() function.  If not supplied, 
- *        the leader will register with the router, make that address available under the "address"
- *        property.
- * @param {string} [config.apiAddress=config.name+".api"] 
- *        The address of this API.  The leader will register to receive multicast on this channel.
- * @param {string} [config.electionAddress="election."+config.apiAddress] 
+ * @param {string} [config.electionAddress=config.name+".election"] 
  *        The multicast channel for running elections.  
  *        The leader will register to receive multicast on this channel.
- * @param {string} [config.origin=""] 
- *        The origin for this participant.
  * @param {number} [config.priority=Math.Random] 
  *        How strongly this node feels it should be leader.
  * @param {function} [config.priorityLessThan] 
  *        Function that provides a strict total ordering on the priority.  Default is "<".
- * @param {number} [config.electionTimeout=500] 
+ * @param {number} [config.electionTimeout=250] 
  *        Number of milliseconds to wait before declaring victory on an election. 
  
  */
-sibilant.LeaderApiBase=function(config) {
+sibilant.LeaderGroupParticipant=sibilant.util.extend(sibilant.Participant,function(config) {
+	sibilant.Participant.apply(this,arguments);
+
 	if(!config.name) {
 		throw "Config must contain a name value";
 	}
@@ -39,10 +30,7 @@ sibilant.LeaderApiBase=function(config) {
 	this.name=config.name;
 	this.target=config.target || { receive: function() {}};
 	
-	this.router= config.router || sibilant.defaultRouter;
-	this.apiAddress=config.apiAddress || (this.name + ".api");
-	this.electionAddress=config.electionAddress || ("election." + this.apiAddress);
-	this.origin= config.origin || "";
+	this.electionAddress=config.electionAddress || (this.name + ".election");
 
 	// Election times and how to score them
 	this.priority = config.priority || Math.random();
@@ -55,21 +43,18 @@ sibilant.LeaderApiBase=function(config) {
 	this.leaderPriority=null;
 	this.events=new sibilant.Event();
 	this.events.mixinOnOff(this);
-	
-	// Register with the peer
-	if("address" in config) {
-		this.address=config.address;
-	} else {
-		this.address=this.router.registerParticipant({},this);
-	}
-	this.router.registerMulticast(this,[this.electionAddress,this.apiAddress]);
+});
+
+sibilant.LeaderGroupParticipant.prototype.connectToRouter=function(router,address) {
+	sibilant.Participant.prototype.connectToRouter.apply(this,arguments);
+	this.router.registerMulticast(this,[this.electionAddress]);
 };
 
 /**
  * Checks to see if the leadership group is in an election
  * @returns {Boolean} True if in an election state, otherwise false
  */
-sibilant.LeaderApiBase.prototype.inElection=function() {
+sibilant.LeaderGroupParticipant.prototype.inElection=function() {
 	return !!this.electionTimer;
 };
 
@@ -77,7 +62,7 @@ sibilant.LeaderApiBase.prototype.inElection=function() {
  * Checks to see if this instance is the leader of it's group.
  * @returns {Boolean}
  */
-sibilant.LeaderApiBase.prototype.isLeader=function() {
+sibilant.LeaderGroupParticipant.prototype.isLeader=function() {
 	return this.leader === this.address;
 };
 
@@ -86,7 +71,7 @@ sibilant.LeaderApiBase.prototype.isLeader=function() {
  * @private
  * @param {string} type - the type of message-- "election" or "victory"
  */
-sibilant.LeaderApiBase.prototype.sendMessage=function(type) {
+sibilant.LeaderGroupParticipant.prototype.sendElectionMessage=function(type) {
 	this.router.send(this.router.createMessage({
 			dst: this.electionAddress,
 			src: this.address,
@@ -101,10 +86,10 @@ sibilant.LeaderApiBase.prototype.sendMessage=function(type) {
  * Attempt to start a new election.
  * @protected
  * @returns {undefined}
- * @fire sibilant.LeaderApiBase#startElection
- * @fire sibilant.LeaderApiBase#becameLeader
+ * @fire sibilant.LeaderGroupParticipant#startElection
+ * @fire sibilant.LeaderGroupParticipant#becameLeader
  */
-sibilant.LeaderApiBase.prototype.startElection=function() {
+sibilant.LeaderGroupParticipant.prototype.startElection=function() {
 	// don't start a new election if we are in one
 	if(this.inElection()) {
 		return;
@@ -119,19 +104,19 @@ sibilant.LeaderApiBase.prototype.startElection=function() {
 		self.leader=self.address;
 		self.leaderPriority=self.priority;
 		this.leaderState="leader";
-		self.sendMessage("victory");	
+		self.sendElectionMessage("victory");	
 		self.events.trigger("becameLeader");
 	},this.electionTimeout);
 
-	this.sendMessage("election");
+	this.sendElectionMessage("election");
 };
 
 /**
  * Cancels an in-progress election that we started.
  * @protected
- * @fire sibilant.LeaderApiBase#endElection
+ * @fire sibilant.LeaderGroupParticipant#endElection
  */
-sibilant.LeaderApiBase.prototype.cancelElection=function() {
+sibilant.LeaderGroupParticipant.prototype.cancelElection=function() {
 	if(this.electionTimer) {	
 		window.clearTimeout(this.electionTimer);
 		this.electionTimer=null;
@@ -143,12 +128,14 @@ sibilant.LeaderApiBase.prototype.cancelElection=function() {
  * Receives a packet on the election control group or forwards it to the target implementation
  * that of this leadership group.
  * @param {sibilant.TransportPacket} packet
- * @returns {undefined}
+ * @returns {boolean}
  */
-sibilant.LeaderApiBase.prototype.receive=function(packet) {
+sibilant.LeaderGroupParticipant.prototype.receiveFromRouter=function(packetContext) {
+	var packet=packetContext.packet;
+	packetContext.leaderState=this.leaderState;
 	// forward non-election packets to the current state
 	if(packet.dst !== this.electionAddress) {
-		this.target.receive(packet,this.leaderState);
+		this.forwardToTarget(packetContext);
 	} else {
 		if(packet.src === this.address) {
 			// even if we see our own messages, we shouldn't act upon them
@@ -160,14 +147,46 @@ sibilant.LeaderApiBase.prototype.receive=function(packet) {
 		}
 	}
 };
-
+/**
+ * Convention based routing.  Routes to a functions in order of
+ * <ol>
+ *   <li>handle${action}As${leaderState}</li>
+ *   <li>handle${action}</li>
+ *   <li>defaultHandlerAs${leaderState}</li>
+ *   <li>defaultHandler</li>
+ * </ol>
+ * The variable action is the packet's action and leaderstate is the current leadership state.
+ * If there's no packet action, then the handle* functions will not be invoked.
+ * @param {sibilant.TransportPacketContext} packetContext
+ */
+sibilant.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) {
+	var packet=packetContext.packet;
+	var handler="handle";
+	var stateSuffix="As" + this.leaderState.charAt(0).toUpperCase() + this.leaderState.slice(1).toLowerCase();
+	var checkdown=[];
+	
+	if(packet.action) {
+		var handler="handle" + packet.action.charAt(0).toUpperCase() + packet.action.slice(1).toLowerCase();
+		checkdown.push(handler+stateSuffix);
+		checkdown.push(handler);
+	}
+	checkdown.push("defaultHandler" + stateSuffix);
+	checkdown.push("defaultHandler");
+	
+	for(var i=0; i< checkdown.length; ++i) {
+		handler=this.target[checkdown[i]];
+		if(typeof(handler) === 'function') {
+			handler.call(this.target,packetContext);
+		}
+	}
+};
 /**
  * Respond to someone else starting an election.
  * @private
  * @param {sibilant.TransportPacket} electionMessage
  * @returns {undefined}
  */
-sibilant.LeaderApiBase.prototype.handleElectionMessage=function(electionMessage) {
+sibilant.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionMessage) {
 	// is the new election lower priority than us?
 	if(this.priorityLessThan(electionMessage.entity.priority,this.priority)) {
 		// Quell the rebellion!
@@ -180,9 +199,9 @@ sibilant.LeaderApiBase.prototype.handleElectionMessage=function(electionMessage)
 
 /**
  * Handle someone else declaring victory.
- * @fire sibilant.LeaderApiBase#newLeader
+ * @fire sibilant.LeaderGroupParticipant#newLeader
  */
-sibilant.LeaderApiBase.prototype.handleVictoryMessage=function(victoryMessage) {
+sibilant.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMessage) {
 	if(this.priorityLessThan(victoryMessage.entity.priority,this.priority)) {
 		// someone usurped our leadership! start an election!
 		this.startElection();

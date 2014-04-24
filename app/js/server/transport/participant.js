@@ -1,116 +1,53 @@
-/** @namespace */
 var sibilant=sibilant || {};
 
 /**
- * @class sibilant.PostMessageParticipant
- * @augments sibilant.Participant
- * @param {object} config
- * @param {string} config.origin
- * @param {object} config.sourceWindow
- * @param {object} config.credentials
- */
-sibilant.PostMessageParticipant=function(config) {
-	this.origin=config.origin;
-	this.sourceWindow=config.sourceWindow;
-	this.credentials=config.credentials;
-};
-
-/**
- * Receives a packet on behalf of this participant and forwards it via PostMessage.
- * @param {sibilant.TransportPacket} packet 
- */
-sibilant.PostMessageParticipant.prototype.receive=function(packet) {
-	if(!packet) { throw "CANNOT SEND NULL"; }
-	this.sourceWindow.postMessage(packet,this.origin);
-	return true;
-};
-
-
-/**
  * @class
- * @param {object} config
- * @param {sibilant.Router} config.router
+ * @mixes sibilant.security.Actor
+ * @property {string} address - The assigned address to this address.
+ * @property {sibilant.security.Subject} securitySubject - The subject for this principal.
  */
-sibilant.PostMessageParticipantListener=function(config) {
-	config = config || {};
-	this.participants=[];
-	this.router=config.router || sibilant.defaultRouter;
-	
-	var self=this;
-	
-	window.addEventListener("message", function(event) {
-		self.receiveFromPostMessage(event);
-	}, false);	
+sibilant.Participant=function() {
+	this.securitySubject=[];
 };
 
 /**
- * Finds the participant associated with the given window.  Unfortunately, this is an
- * o(n) algorithm, since there doesn't seem to be any way to hash, order, or any other way to
- * compare windows other than equality.
- * @param {object} sourceWindow - the participant window handle from message's event.source 
+ * @param {sibilant.PacketContext} packetContext
+ * @returns {boolean} true if this packet could have additional recipients
  */
-sibilant.PostMessageParticipantListener.prototype.findParticipant=function(sourceWindow) {
-	for(var i=0; i< this.participants.length; ++i) {
-		if(this.participants[i].sourceWindow === sourceWindow) {
-			return this.participants[i];
-		}
+sibilant.Participant.prototype.receiveFromRouter=function(packetContext) { 
+	// doesn't really do anything other than return a bool and prevent "unused param" warnings
+	return !packetContext;
 	};
-};
 
 /**
- * Register a new participant.
- * @param {object} config
- * @param {string} config.origin
- * @param {object} config.sourceWindow
- * @param {object} config.credentials
+ * @param {sibilant.Router} router
+ * @param {string} address
+ * @returns {boolean} true if this packet could have additional recipients
  */
-sibilant.PostMessageParticipantListener.prototype.registerParticipant=function(config) {
-	var participant=new sibilant.PostMessageParticipant(config);
-	this.participants.push(participant);
-	return participant;
-};
-
-/**
- * Process a post message that is received from a peer
- * @param {object} event - The event received from the "message" event handler
- * @param {string} event.origin
- * @param {object} event.source
- * @param {sibilant.TransportPacket} event.data
- */
-sibilant.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(event) {
-	var participant=this.findParticipant(event.sourceWindow);
-	if(!participant) {
-		participant=this.registerParticipant({
-			'origin': event.origin,
-			'sourceWindow': event.source,
-			'credentials': event.data.entity
-		});
-	}
-
-	if(event.origin === participant.origin) {
-		this.router.send(event.data,participant);
-	} else {
-		sibilant.metrics.counter("transport."+participant.address+".invalidSenderOrigin").inc();
-	}
+sibilant.Participant.prototype.connectToRouter=function(router,address) {
+	this.address=address;
+	this.router=router;
+	this.securitySubject=this.securitySubject || [];
+	this.securitySubject.push("participant:"+address);
 };
 
 /**
  * @class
- * @augments sibilant.Participant
+ * @extends sibilant.Participant
  * @param {string} name
  */
-sibilant.MulticastParticipant=function(name) {
+sibilant.MulticastParticipant=sibilant.util.extend(sibilant.Participant,function(name) {
 	this.name=name;
 	this.members=[];
-};
+});
 
 /**
  * Receives a packet on behalf of the multicast group.
  * @param {sibilant.TransportPacket} packet
  * @returns {Boolean}
  */
-sibilant.MulticastParticipant.prototype.receive=function(packet) {
-	this.members.forEach(function(m) { m.receive(packet);});
+sibilant.MulticastParticipant.prototype.receiveFromRouter=function(packet) {
+	this.members.forEach(function(m) { m.receiveFromRouter(packet);});
 	return false;
 };
 

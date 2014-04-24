@@ -1,12 +1,4 @@
-
 var sibilant=sibilant || {};
-
-/**
- * @typedef sibilant.Participant
- * @property {string} origin - The origin of this participant, confirmed via trusted sources.
- * @property {string} address - The assigned address to this address.
- * @property {function} receive - Callback for this participant to receive a packet.  Will be called with participant as "this".
- */
 
 /**
  * @typedef sibilant.TransportPacket
@@ -22,12 +14,41 @@ var sibilant=sibilant || {};
  */
 
 /**
+ * @class 
+ * @param {object} config
+ * @param {sibilant.TransportPacket} config.packet
+ * @param {sibilant.Router} config.router
+ * @param {sibilant.Participant} [config.sendingParticipant]
+ * @property {sibilant.TransportPacket} packet
+ * @property {sibilant.Router} router
+ * @property {sibilant.Participant} [sendingParticipant]
+ */
+sibilant.TransportPacketContext=function(config) {
+	this.packet=config.packet;
+	this.router=config.router;
+	this.sendingParticipant=config.sendingParticipant;
+};
+
+/**
+ * 
+ * @param {sibilant.TransportPacket} response
+ * @returns {sibilant.TransportPacket} the packet that was sent
+ */
+sibilant.TransportPacketContext.prototype.replyTo=function(response) {
+	response=this.router.createMessage(response);
+	response.replyTo=this.packet.msgId;
+	response.src=response.src || this.packet.dst;
+	response.dst=response.dst || this.packet.src;
+	this.router.send(response);
+	return response;
+};
+
+/**
  * @event sibilant.Router#preRegisterParticipant
  * @mixes sibilant.CancelableEvent
  * @property {sibilant.TransportPacket} [packet] - The packet to be delivered
  * @property {object} registration - Information provided by the participant about it's registration
  * @property {sibilant.Participant} participant - The participant that will receive the packet
-
  */
 
 /**
@@ -105,13 +126,14 @@ sibilant.Router=function(config) {
 	};
 	this.events.on("preSend",checkFormat);
 
-	// TODO: move all of this to the "names" service
+	/** @TODO move all of this to the "names" service */
 	this.participants[this.routerControlAddress] = {
-		receive: function(packet,sendingParticipant) {
-			var reply=self.createReply(packet,{	entity: {status: "ok"} });
+		receiveFromRouter: function(packetContext) {
+			var reply={	entity: {status: "ok"} };
+			var packet=packetContext.packet;
 			// if from nobody, register them
 			if(packet.src===self.nobodyAddress) {
-				var participantId=self.registerParticipant(packet,sendingParticipant);
+				var participantId=self.registerParticipant(packetContext.sendingParticipant,packet);
 				if(participantId === null) {
 					reply.entity.status="denied";
 				} else {
@@ -121,10 +143,10 @@ sibilant.Router=function(config) {
 			
 			if(packet.entity) {
 				if(packet.entity.multicast) {
-					reply.multicastAdded=self.registerMulticast(sendingParticipant,packet.entity.multicast);
+					reply.multicastAdded=self.registerMulticast(packetContext.sendingParticipant,packet.entity.multicast);
 				}
 			}
-			sendingParticipant.receive(reply);
+			packetContext.replyTo(reply);
 			return true;
 		},
 		origin: "routerControlAddress.$router"
@@ -142,22 +164,15 @@ sibilant.Router.prototype.createMessage=function(fields) {
 	return fields;
 };
 
-sibilant.Router.prototype.createReply=function(message,fields) {
-	fields=this.createMessage(fields);
-	fields.replyTo=message.msgId;
-	fields.src=fields.src || message.dst;
-	fields.dst=fields.dst || message.src;
-	return fields;
-};
-
 /**
  * Allows a listener to add a new participant.  
  * @fires sibilant.Router#registerParticipant
- * @param {object} packet The handshake requesting registration.
  * @param {object} participant the participant object that contains a send() function.
+ * @param {object} packet The handshake requesting registration.
  * @returns {string} returns participant id
  */
-sibilant.Router.prototype.registerParticipant=function(packet,participant) {
+sibilant.Router.prototype.registerParticipant=function(participant,packet) {
+	packet = packet || {};
 	var participant_id;
 	do {
 			participant_id=sibilant.util.generateId() + "." + this.self_id;
@@ -177,7 +192,7 @@ sibilant.Router.prototype.registerParticipant=function(packet,participant) {
 		return null;
 	}
 	this.participants[participant_id]=participant;
-	participant.address=participant_id;
+	participant.connectToRouter(this,participant_id);
 	
 	sibilant.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
 	return participant_id;
@@ -203,7 +218,11 @@ sibilant.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
 			return false;
 		}
 		sibilant.metrics.counter("transport.packets.delivered").inc();
-		return localParticipant.receive(packet,sendingParticipant);
+		return localParticipant.receiveFromRouter(new sibilant.TransportPacketContext({
+			'packet':packet,
+			'router': this,
+			'sendingParticipant': sendingParticipant
+		}));
 	}
 	return false;
 };

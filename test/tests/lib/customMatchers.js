@@ -25,15 +25,15 @@ var FakePeer=function() {
 };
 
 
-var TestParticipant=function(config) {
+var TestParticipant=sibilant.util.extend(sibilant.Participant,function(config) {
+	sibilant.Participant.apply(this,arguments);
 	this.origin=config.origin || "foo.com";
 	
 	this.packets=[];
 	this.messageId=1;
 	this.callbacks={};
 	this.connect=function(router) {
-		this.router=router;
-		this.address=router.registerParticipant({},this);
+		router.registerParticipant(this);
 	};
 	
 	if(config.router) {
@@ -80,5 +80,5 @@ var TestParticipant=function(config) {
 		this.router.send(packet,this);
 		return packet;	
 	};
-};
+});
 

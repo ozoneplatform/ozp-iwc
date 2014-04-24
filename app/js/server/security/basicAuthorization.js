@@ -1,5 +1,16 @@
 var sibilant=sibilant || {};
 
+/** @typedef {string} sibilant.security.Principal */
+
+/** @typedef {string} sibilant.security.Permission */
+
+/** @typedef { sibilant.security.Principal[] } sibilant.security.Subject */
+
+/** 
+ * @typedef {object} sibilant.security.Actor 
+ * @property {sibilant.security.Subject} securitySubject
+ */
+
 
 /** 
  * A basic authorization module loosely inspired by Apache Shiro.
@@ -44,8 +55,8 @@ sibilant.BasicAuthorization=function() {
 
 /**
  * Grants permissions to a principal.
- * @param {string} principal
- * @param {string | [string]} permissions
+ * @param {sibilant.security.Principal} principal
+ * @param {sibilant.security.Permission[]} permissions
  * @returns {undefined}
  */
 sibilant.BasicAuthorization.prototype.grant=function(principal,permissions) {
@@ -57,8 +68,8 @@ sibilant.BasicAuthorization.prototype.grant=function(principal,permissions) {
 	
 /**
  * Confirms that the subject has all of the permissions requested.
- * @param {string | [string]} subject
- * @param {string | [string]} permissions
+ * @param {sibilant.security.Subject} subject
+ * @param {sibilant.security.Permission[]} permissions
  * @returns {sibilant.AsyncAction}
  */
 sibilant.BasicAuthorization.prototype.isPermitted=function(subject,permissions) {
