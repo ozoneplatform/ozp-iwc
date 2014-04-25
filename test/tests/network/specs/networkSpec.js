@@ -1,5 +1,4 @@
 
-
 var peerWin=window.open("networkPinger.html","pinger","height=500,width=500");
 window.addEventListener("beforeunload", function() {
 	peerWin.close();
@@ -10,7 +9,6 @@ describe("Peer broadcast",function() {
 	var peer=sibilant.defaultPeer;
 	
 	beforeEach(function() {	
-	
 	});
 	
 	afterEach(function() {

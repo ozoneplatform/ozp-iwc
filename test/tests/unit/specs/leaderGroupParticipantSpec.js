@@ -189,20 +189,20 @@ describe("Leader Group Participant",function() {
 
 		});
 	}
-	
-	it("sends event on non-election packet", function() {
-			var leader=makeLeader(1);
-			leader.receiveFromRouter({ packet:{
-				src: "foo",
-				dst: "bar",
-				msgId: 1,
-				ver: 1,
-				entity: { foo: "bar" }
-			}});
-			expect(leader.TEST_nonElectionPackets.length).toBe(1);
-		
-	});
+	describe("dispatch to the target",function() {
+		it("sends event on non-election packet", function() {
+				var leader=makeLeader(1);
+				leader.receiveFromRouter({ packet:{
+					src: "foo",
+					dst: "bar",
+					msgId: 1,
+					ver: 1,
+					entity: { foo: "bar" }
+				}});
+				expect(leader.TEST_nonElectionPackets.length).toBe(1);
 
+		});
+	});
 	
 	
 	

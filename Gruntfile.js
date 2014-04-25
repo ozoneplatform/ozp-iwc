@@ -5,15 +5,15 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
 		src: {
 			server: [
-			'app/js/common/**/*.js',
-			'app/js/server/es5-sham.min.js',
-			'app/js/server/metrics.js',
-			'app/js/server/security/**/*.js',
-			'app/js/server/network/**/*.js',
-			'app/js/server/transport/participant.js',
-			'app/js/server/transport/router.js',
-			'app/js/server/transport/**/*.js',
-			'app/js/server/api/**/*.js'
+				'app/js/common/**/*.js',
+				'app/js/server/es5-sham.min.js',
+				'app/js/server/util/**/*.js',
+				'app/js/server/security/**/*.js',
+				'app/js/server/network/**/*.js',
+				'app/js/server/transport/participant.js',
+				'app/js/server/transport/router.js',
+				'app/js/server/transport/**/*.js',
+				'app/js/server/*/**/*.js'
 			],
 			client: [
 				'app/js/common/**/*.js',
