@@ -4,6 +4,7 @@ var sibilant=sibilant || {};
  * @class
  * This class will be heavily modified in the future.
  * 
+ * @todo accept a list of peer URLs that are searched in order of preference
  * @param {object} config
  * @param {string} config.peerUrl - Base URL of the peer server
  * @param {boolean} [config.autoPeer=true] - Whether to automatically find and connect to a peer
@@ -14,7 +15,6 @@ sibilant.Client=function(config) {
 	this.replyCallbacks={};
 	this.peerUrl=config.peerUrl;
 	this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
-	// TODO: accept a list of peer URLs that are searched in order of preference
 
 	this.events=new sibilant.Event();
 	var self=this;
@@ -41,11 +41,11 @@ sibilant.Client=function(config) {
  * @returns {undefined}
  */
 sibilant.Client.prototype.receive=function(packet) {
-		if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
-			this.replyCallbacks[packet.replyTo](packet);
-		} else {
-			this.events.trigger("receive",packet);
-		}	
+	if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
+		this.replyCallbacks[packet.replyTo](packet);
+	} else {
+		this.events.trigger("receive",packet);
+	}	
 };
 /**
  * Used to send a packet

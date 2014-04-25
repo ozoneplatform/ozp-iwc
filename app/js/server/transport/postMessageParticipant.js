@@ -19,22 +19,64 @@ sibilant.PostMessageParticipant=sibilant.util.extend(sibilant.Participant,functi
 
 /**
  * Receives a packet on behalf of this participant and forwards it via PostMessage.
- * @param {sibilant.TransportPacket} packet 
+ * @param {sibilant.TransportPacketContext} packetContext 
  */
-sibilant.PostMessageParticipant.prototype.receiveFromRouter=function(packet) {
-	if(!packet) { throw "CANNOT SEND NULL"; }
-	this.sourceWindow.postMessage(packet,this.origin);
+sibilant.PostMessageParticipant.prototype.receiveFromRouter=function(packetContext) {
+	this.sourceWindow.postMessage(packetContext.packet,this.origin);
 	return true;
 };
 
+/**
+ * The participant hijacks anything addressed to "$transport" and serves it
+ * directly.  This isolates basic connection checking from the router, itself.
+ * @param {object} packet
+ * @returns {undefined}
+ */
+sibilant.PostMessageParticipant.prototype.handleTransportPacket=function(packet) {
+	this.sourceWindow.postMessage({
+		'ver': 1,
+		'dst': this.address,
+		'src': '$transport',
+		'replyTo': packet.msgId,
+		'msgId': sibilant.util.now(),
+		'entity': {
+			"address": this.address
+		}
+	});
+};
 
+
+/**
+ * 
+ * @todo track the last used timestamp and make sure we don't send a duplicate messageId
+ * @param {type} event
+ * @returns {undefined}
+ */
 sibilant.PostMessageParticipant.prototype.forwardFromPostMessage=function(event) {
+	var packet=event.data;
+
 	if(event.origin === this.origin) {
-		var packet=event.data;
-		packet.src=packet.src || this.address;
-		
-		this.router.send(event.data,this);
+		// if it's addressed to $transport, hijack it
+		if(packet.dst === "$transport") {
+			this.handleTransportPacket(packet);
+		} else {
+			// clean up the packet a bit on behalf of the sender
+			packet.src=packet.src || this.address;
+			packet.ver = packet.ver || 1;
+
+			// if the packet doesn't have a msgId, use a timestamp
+			if(!packet.msgId) {
+				var now=sibilant.util.now();
+				packet.msgId = packet.msgId || now;
+
+				// might as well be helpful and set the time, too
+				packet.time = packet.time || now;
+			}
+
+			this.router.send(packet,this);
+		}
 	} else {
+		/** @todo participant changing origins should set off more alarms, probably */
 		sibilant.metrics.counter("transport."+participant.address+".invalidSenderOrigin").inc();
 	}
 };
@@ -93,7 +135,6 @@ sibilant.PostMessageParticipantListener.prototype.receiveFromPostMessage=functio
 	}
 	
 	participant.forwardFromPostMessage(event);
-	
 };
 
 

@@ -88,8 +88,8 @@ sibilant.Router=function(config) {
 	this.peer=config.peer || sibilant.defaultPeer;
 	this.forwardAll=config.forwardAll || false;
 
-	this.nobodyAddress="$nobody";
-	this.routerControlAddress='$transport';
+//	this.nobodyAddress="$nobody";
+//	this.routerControlAddress='$transport';
 	var self=this;	
 
 	this.self_id=sibilant.util.generateId();
@@ -126,31 +126,31 @@ sibilant.Router=function(config) {
 	};
 	this.events.on("preSend",checkFormat);
 
-	/** @TODO move all of this to the "names" service */
-	this.participants[this.routerControlAddress] = {
-		receiveFromRouter: function(packetContext) {
-			var reply={	entity: {status: "ok"} };
-			var packet=packetContext.packet;
-			// if from nobody, register them
-			if(packet.src===self.nobodyAddress) {
-				var participantId=self.registerParticipant(packetContext.sendingParticipant,packet);
-				if(participantId === null) {
-					reply.entity.status="denied";
-				} else {
-					reply.dst=participantId;
-				}
-			}
-			
-			if(packet.entity) {
-				if(packet.entity.multicast) {
-					reply.multicastAdded=self.registerMulticast(packetContext.sendingParticipant,packet.entity.multicast);
-				}
-			}
-			packetContext.replyTo(reply);
-			return true;
-		},
-		origin: "routerControlAddress.$router"
-	};
+//	/** @TODO move all of this to the "names" service */
+//	this.participants[this.routerControlAddress] = {
+//		receiveFromRouter: function(packetContext) {
+//			var reply={	entity: {status: "ok"} };
+//			var packet=packetContext.packet;
+//			// if from nobody, register them
+//			if(packet.src===self.nobodyAddress) {
+//				var participantId=self.registerParticipant(packetContext.sendingParticipant,packet);
+//				if(participantId === null) {
+//					reply.entity.status="denied";
+//				} else {
+//					reply.dst=participantId;
+//				}
+//			}
+//			
+//			if(packet.entity) {
+//				if(packet.entity.multicast) {
+//					reply.multicastAdded=self.registerMulticast(packetContext.sendingParticipant,packet.entity.multicast);
+//				}
+//			}
+//			packetContext.replyTo(reply);
+//			return true;
+//		},
+//		origin: "routerControlAddress.$router"
+//	};
 
 };
 
