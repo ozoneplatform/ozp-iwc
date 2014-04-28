@@ -33,7 +33,7 @@ sibilant.PostMessageParticipant.prototype.receiveFromRouter=function(packetConte
  * @returns {undefined}
  */
 sibilant.PostMessageParticipant.prototype.handleTransportPacket=function(packet) {
-	this.sourceWindow.postMessage({
+	var reply={
 		'ver': 1,
 		'dst': this.address,
 		'src': '$transport',
@@ -42,7 +42,9 @@ sibilant.PostMessageParticipant.prototype.handleTransportPacket=function(packet)
 		'entity': {
 			"address": this.address
 		}
-	});
+	};
+	
+	this.sourceWindow.postMessage(reply,this.origin);
 };
 
 

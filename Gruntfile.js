@@ -90,5 +90,5 @@ module.exports = function(grunt) {
 	
   // Default task(s).
   grunt.registerTask('default', ['uglify','jsdoc']);
-  grunt.registerTask('test', ['uglify','connect','watch']);
+  grunt.registerTask('test', ['concat','uglify','connect','watch']);
 };
