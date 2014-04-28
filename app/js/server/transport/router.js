@@ -18,15 +18,17 @@ var sibilant=sibilant || {};
  * @param {object} config
  * @param {sibilant.TransportPacket} config.packet
  * @param {sibilant.Router} config.router
- * @param {sibilant.Participant} [config.sendingParticipant]
+ * @param {sibilant.Participant} [config.srcParticpant]
+ * @param {sibilant.Participant} [config.dstParticpant]
  * @property {sibilant.TransportPacket} packet
  * @property {sibilant.Router} router
- * @property {sibilant.Participant} [sendingParticipant]
+ * @property {sibilant.Participant} [srcParticpant]
+ * @property {sibilant.Participant} [dstParticpant]
  */
 sibilant.TransportPacketContext=function(config) {
-	this.packet=config.packet;
-	this.router=config.router;
-	this.sendingParticipant=config.sendingParticipant;
+	for(var i in config) {
+		this[i]=config[i];
+	}
 };
 
 /**
@@ -126,14 +128,14 @@ sibilant.Router=function(config) {
 	};
 	this.events.on("preSend",checkFormat);
 
-//	/** @TODO move all of this to the "names" service */
+	/** @TODO move all of this to the "names" service */
 //	this.participants[this.routerControlAddress] = {
 //		receiveFromRouter: function(packetContext) {
 //			var reply={	entity: {status: "ok"} };
 //			var packet=packetContext.packet;
 //			// if from nobody, register them
 //			if(packet.src===self.nobodyAddress) {
-//				var participantId=self.registerParticipant(packetContext.sendingParticipant,packet);
+//				var participantId=self.registerParticipant(packetContext.srcParticpant,packet);
 //				if(participantId === null) {
 //					reply.entity.status="denied";
 //				} else {
@@ -143,7 +145,7 @@ sibilant.Router=function(config) {
 //			
 //			if(packet.entity) {
 //				if(packet.entity.multicast) {
-//					reply.multicastAdded=self.registerMulticast(packetContext.sendingParticipant,packet.entity.multicast);
+//					reply.multicastAdded=self.registerMulticast(packetContext.srcParticpant,packet.entity.multicast);
 //				}
 //			}
 //			packetContext.replyTo(reply);
@@ -208,21 +210,26 @@ sibilant.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
 	// check if the recipient is local.  If so, don't bother broadcasting.
 	var localParticipant=this.participants[packet.dst];
 	if(localParticipant) {
-		var preDeliverEvent=new sibilant.CancelableEvent({
-			'packet': packet,
+		var packetContext=new sibilant.TransportPacketContext({
+			'packet':packet,
+			'router': this,
+			'srcParticipant': sendingParticipant,
 			'dstParticipant': localParticipant
 		});
-		this.events.trigger("preDeliver",preDeliverEvent);
-		if(preDeliverEvent.canceled) {
+		
+		var preDeliverEvent=new sibilant.CancelableEvent({
+			'packet': packet,
+			'dstParticipant': localParticipant,
+			'srcParticipant': sendingParticipant			
+		});
+		
+		if(this.events.trigger("preDeliver",preDeliverEvent).canceled) {
 			sibilant.metrics.counter("transport.packets.rejected").inc();
 			return false;
 		}
+		
 		sibilant.metrics.counter("transport.packets.delivered").inc();
-		return localParticipant.receiveFromRouter(new sibilant.TransportPacketContext({
-			'packet':packet,
-			'router': this,
-			'sendingParticipant': sendingParticipant
-		}));
+		return localParticipant.receiveFromRouter(packetContext);
 	}
 	return false;
 };
@@ -230,6 +237,8 @@ sibilant.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
 
 /**
  * Registers a participant for a multicast group
+ * @param {sibilant.Participant} participant
+ * @param {String[]} multicastGroups
  */
 sibilant.Router.prototype.registerMulticast=function(participant,multicastGroups) {
 	var self=this;
