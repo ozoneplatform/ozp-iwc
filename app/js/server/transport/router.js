@@ -7,6 +7,7 @@ var sibilant=sibilant || {};
  * @property {Number} ver - Protocol Version.  Should be 1
  * @property {Number} msgId - A unique id for this packet.
  * @property {object} entity - The payload of this packet.
+ * @property {object} [permissions] - Permissions required to see the payload of this packet.
  * @property {Number} [time] - The time in milliseconds since epoch that this packet was created.
  * @property {Number} [replyTo] - Reference to the msgId that this is in reply to.
  * @property {string} [action] - Action to be performed.
@@ -83,12 +84,10 @@ sibilant.TransportPacketContext.prototype.replyTo=function(response) {
  * @class
  * @param {object} [config]
  * @param {sibilant.Peer} [config.peer=sibilant.defaultPeer]
- * @param {boolean} [config.forwardAll=false]
  */
 sibilant.Router=function(config) {
 	config=config || {};
 	this.peer=config.peer || sibilant.defaultPeer;
-	this.forwardAll=config.forwardAll || false;
 
 //	this.nobodyAddress="$nobody";
 //	this.routerControlAddress='$transport';
@@ -204,34 +203,43 @@ sibilant.Router.prototype.registerParticipant=function(participant,packet) {
  * @fires sibilant.Router#preSend
  * @param {sibilant.TransportPacket} packet
  * @param {sibilant.Participant} sendingParticipant
- * @return {boolean} True if the message was delivered locally
  */
 sibilant.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
-	// check if the recipient is local.  If so, don't bother broadcasting.
-	var localParticipant=this.participants[packet.dst];
-	if(localParticipant) {
-		var packetContext=new sibilant.TransportPacketContext({
-			'packet':packet,
-			'router': this,
-			'srcParticipant': sendingParticipant,
-			'dstParticipant': localParticipant
-		});
-		
-		var preDeliverEvent=new sibilant.CancelableEvent({
-			'packet': packet,
-			'dstParticipant': localParticipant,
-			'srcParticipant': sendingParticipant			
-		});
-		
-		if(this.events.trigger("preDeliver",preDeliverEvent).canceled) {
-			sibilant.metrics.counter("transport.packets.rejected").inc();
-			return false;
-		}
-		
-		sibilant.metrics.counter("transport.packets.delivered").inc();
-		return localParticipant.receiveFromRouter(packetContext);
+	if(!packet) {
+		throw "Cannot deliver a null packet!";
 	}
-	return false;
+	var localParticipant=this.participants[packet.dst];
+	if(!localParticipant) {
+		return;
+	}
+	var packetContext=new sibilant.TransportPacketContext({
+		'packet':packet,
+		'router': this,
+		'srcParticipant': sendingParticipant,
+		'dstParticipant': localParticipant
+	});
+
+	var preDeliverEvent=new sibilant.CancelableEvent({
+		'packet': packet,
+		'dstParticipant': localParticipant,
+		'srcParticipant': sendingParticipant			
+	});
+
+	if(this.events.trigger("preDeliver",preDeliverEvent).canceled) {
+		sibilant.metrics.counter("transport.packets.rejected").inc();
+		return;
+	}
+
+	sibilant.authorization.isPermitted(localParticipant.securitySubject,packet.permissions)
+		.success(function() {
+			sibilant.metrics.counter("transport.packets.delivered").inc();
+			localParticipant.receiveFromRouter(packetContext);
+		})
+		.failure(function() {
+			/** @todo do we send a "denied" message to the destination?  drop?  who knows? */
+			sibilant.metrics.counter("transport.packets.forbidden").inc();
+		});
+	
 };
 
 
@@ -274,11 +282,9 @@ sibilant.Router.prototype.send=function(packet,sendingParticipant) {
 		return;
 	} 
 	sibilant.metrics.counter("transport.packets.sent").inc();
-	if(!this.deliverLocal(packet,sendingParticipant) || this.forwardAll) {
-		sibilant.metrics.counter("transport.packets.sentToPeer").inc();
-		this.events.trigger("send",{'packet': packet});
-		this.peer.send(packet);
-	}
+	this.deliverLocal(packet,sendingParticipant);
+	this.events.trigger("send",{'packet': packet});
+	this.peer.send(packet);
 };
 
 /**

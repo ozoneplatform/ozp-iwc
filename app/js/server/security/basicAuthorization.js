@@ -74,6 +74,11 @@ sibilant.BasicAuthorization.prototype.grant=function(principal,permissions) {
  */
 sibilant.BasicAuthorization.prototype.isPermitted=function(subject,permissions) {
 	var permMap={};
+	
+	var action=new sibilant.AsyncAction();
+	if(!permissions) {
+		return action.resolve('success');
+	}
 	if(typeof(permissions) === "string") {
 		permMap[permissions]=1;
 	} else {
@@ -86,7 +91,6 @@ sibilant.BasicAuthorization.prototype.isPermitted=function(subject,permissions) 
 		subject=[subject];
 	}	
 	
-	var action=new sibilant.AsyncAction();
 
 	for(var i=0;i<subject.length;++i) {
 		var perms=this.principals[subject[i]];
@@ -105,3 +109,5 @@ sibilant.BasicAuthorization.prototype.isPermitted=function(subject,permissions) 
 	
 	return action.resolve('failure');
 };
+
+sibilant.authorization=new sibilant.BasicAuthorization();

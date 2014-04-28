@@ -40,7 +40,7 @@ var TestParticipant=sibilant.util.extend(sibilant.Participant,function(config) {
 		this.connect(config.router);
 	}
 	
-	this.receive=function(packet){ 
+	this.receiveFromRouter=function(packet){ 
 		if(this.callbacks[packet.replyTo]) {
 			this.callbacks[packet.replyTo](packet);
 		}

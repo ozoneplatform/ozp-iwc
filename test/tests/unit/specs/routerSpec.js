@@ -1,30 +1,22 @@
 
 describe("Router",function() {
 	var createMsg=function(config) {
-		return {
+		var msg={
 				ver: 1,
-				src: config.src || "$nobody",
+				src: "$nobody",
 				dst: config.dst,
-				msgId: config.msgId || new Date().getTime(),
-				time: new Date().getTime(),
-				entity: config.entity || {}
+				msgId: sibilant.util.now(),
+				time: sibilant.util.now(),
+				entity: {}
 			};
-	};
-	
-	var FakeParticipant=sibilant.util.extend(sibilant.Participant,function(config) {
-		sibilant.Participant.apply(this,arguments);
-		this.origin = config.origin || "foo.com";
-		this.receiveFromRouter = config.receiveFromRouter || function(msg){ this.packets.push(msg.packet); return true;};
-		this.packets =[];
-	});
-	
-	var createParticipant=function(config) {
-		return new FakeParticipant(config);
+		for(var k in config) {
+			msg[k]=config[k];
+		}
+		return msg;
 	};
 	
 	var router;
 	var fakePeer;
-	var participant;
 	
 	beforeEach(function() {	
 		sendCount=receiveCount=0;
@@ -36,80 +28,142 @@ describe("Router",function() {
 		};
 		
 		router=new sibilant.Router({peer: fakePeer});
-		participant=createParticipant({origin:"foo.com"});
 	});
 	
 	afterEach(function() {
 		router=null;
 		fakePeer=null;
-		participant=null;
 	});
 	
-	it("accepts a participant registration", function() {
-		var participantId=router.registerParticipant(participant,{});
-		expect(participantId).toBeDefined();
-	});
-	
-	it("calls registration handlers",function() {
-		// events.trigger("registerParticipant",participant, message)
-		var called=false;
-		router.on("preRegisterParticipant",function(event) {
-			expect(event.participant).toEqual(participant);
-			called=true;
+	describe("Participant registration", function() {
+		var participant;
+		beforeEach(function() {
+			participant=new TestParticipant({origin:"foo.com"});
 		});
-		router.registerParticipant(participant,{});
-		expect(called).toEqual(true);
-	});
-
-	it("registration handlers can block a participant",function() {
-		router.on("preRegisterParticipant",function(event) { 
-			if(event.participant.origin === "badguy.com") {
-				event.cancel("badguy");
-			}
+		
+		it("returns and assigns a participant id", function() {
+			var participantId=router.registerParticipant(participant,{});
+			expect(participantId).toBeDefined();
+			expect(participant.address).toEqual(participantId);
 		});
-		var badParticipant=createParticipant({origin: "badguy.com"});
+		
+		it("assigns a participant id derived from the router id", function() {
+			var participantId=router.registerParticipant(participant,{});
 
-		router.registerParticipant(participant,{});
-		router.registerParticipant(badParticipant,{});
+			expect(participantId).toMatch(new RegExp("(.*)\."+router.self_id));
+		});
 
-		expect(participant.address).not.toBeNull("ok");
-		expect(badParticipant.address).toBeUndefined();
+		it("calls registration handlers",function() {
+			var called=false;
+
+			router.on("preRegisterParticipant",function(event) {
+				expect(event.participant).toEqual(participant);
+				called=true;
+			});
+			
+			router.registerParticipant(participant,{});
+			expect(called).toEqual(true);
+		});
+
+		it("blocks a participant if the handler cancels",function() {
+			router.on("preRegisterParticipant",function(event) { 
+				if(event.participant.origin === "badguy.com") {
+					event.cancel("badguy");
+				}
+			});
+
+			var badParticipant=new TestParticipant({origin: "badguy.com"});
+
+			router.registerParticipant(participant,{});
+			router.registerParticipant(badParticipant,{});
+
+			expect(participant.address).not.toBeNull();
+			expect(badParticipant.address).toBeUndefined();
+		});
 	});
 	
 	describe("Sending packets",function() {
+		var participant;
 		var participant2;
-		
+
 		beforeEach(function() {
-			participant2=createParticipant({origin:"bar.com"});
+			participant=new TestParticipant({origin:"foo.com"});
+			participant2=new TestParticipant({origin:"bar.com"});
 
 			router.registerParticipant(participant);
 			router.registerParticipant(participant2);
 		});
 		
 		it("forwards to peer",function() {
-			var msg=createMsg({src: participant.address,dst:"fakeName"});
+			var msg=participant.send({dst:"fakeName"});
 			router.send(msg,participant);
 			expect(fakePeer.packets[0]).toEqual(msg);
 		});
 		
 		it("routes locally", function() {
-			var msg=createMsg({src: participant.address,dst:participant2.address});
+			var msg=participant.send({dst:participant2.address});
 			router.send(msg,participant);
-			expect(participant2.packets[0]).toEqual(msg);
+			expect(participant2.packets[0].packet).toEqual(msg);
+			expect(participant2.packets[0].srcParticipant).toBe(participant);
+			expect(participant2.packets[0].dstParticipant).toBe(participant2);
+		});
+	});
+	
+	describe("Secure routing",function() {
+		var participant;
+		var participant2;
+
+		beforeEach(function() {
+			participant=new TestParticipant({origin:"foo.com"});
+			participant2=new TestParticipant({origin:"bar.com"});
+
+			router.registerParticipant(participant);
+			router.registerParticipant(participant2);
+			
+			sibilant.authorization.grant("participant:"+participant.address,["perm:shared","color:blue"]);
+			sibilant.authorization.grant("participant:"+participant2.address,["perm:shared","color:red"]);
 		});
 		
-		it("doesn't send to peer when routing locally", function() {
-			var msg=createMsg({src: participant.address,dst:participant2.address});
-			router.send(msg,participant);
-			expect(fakePeer.packets.length).toEqual(0);
+		it("allows receipt of shared permissions",function() {
+			var packet=participant.send({
+				dst:participant2.address,
+				permissions: ["perm:shared"],
+				entity: { foo: "bar" }
+			});
+			
+			expect(participant2.packets[0].packet).toEqual(packet);
+		});
+
+		it("denies receipt of unshared permissions",function() {
+			participant.send({
+				dst:participant2.address,
+				permissions: ["color:blue"],
+				entity: { foo: "bar" }
+			});
+			
+			expect(participant2.packets.length).toEqual(0);
 		});
 		
-		it("sends to peer when routing locally and forwardAll is true ", function() {
-			var msg=createMsg({src: participant.address,dst:participant2.address});
-			router.forwardAll=true;
-			router.send(msg,participant);
-			expect(fakePeer.packets.length).toEqual(1);
-		});		
+		it("denies if the recipient doesn't have all permissions",function() {
+			participant.send({
+				dst:participant2.address,
+				permissions: ["perm:shared","color:blue"],
+				entity: { foo: "bar" }
+			});
+			
+			expect(participant2.packets.length).toEqual(0);
+		});
+		
+		it("allows a participant to send a packet to require permissions that it doesn't have, itself",function() {
+			var packet=participant.send({
+				dst:participant2.address,
+				permissions: ["color:red"],
+				entity: { foo: "bar" }
+			});
+			
+			expect(participant2.packets[0].packet).toEqual(packet);
+		});
+		
 	});
 
 });
