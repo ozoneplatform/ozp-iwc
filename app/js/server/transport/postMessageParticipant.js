@@ -22,8 +22,19 @@ sibilant.PostMessageParticipant=sibilant.util.extend(sibilant.Participant,functi
  * @param {sibilant.TransportPacketContext} packetContext 
  */
 sibilant.PostMessageParticipant.prototype.receiveFromRouter=function(packetContext) {
-	this.sourceWindow.postMessage(packetContext.packet,this.origin);
+	this.sendToRecipient(packetContext.packet);
 	return true;
+};
+
+/**
+ * Sends a message to the other end of our connection.  Wraps any string mangling
+ * necessary by the postMessage implementation of the browser.
+ * @param {sibilant.TransportPacket} packet
+ * @todo Only IE requires the packet to be stringified before sending, should use feature detection?
+ * @returns {undefined}
+ */
+sibilant.PostMessageParticipant.prototype.sendToRecipient=function(packet) {
+	this.sourceWindow.postMessage(JSON.stringify(packet),this.origin);
 };
 
 /**
@@ -43,43 +54,45 @@ sibilant.PostMessageParticipant.prototype.handleTransportPacket=function(packet)
 			"address": this.address
 		}
 	};
-	
-	this.sourceWindow.postMessage(reply,this.origin);
+	this.sendToRecipient(reply);
 };
 
 
 /**
  * 
  * @todo track the last used timestamp and make sure we don't send a duplicate messageId
+ * @param {sibilant.TransportPacket} packet
  * @param {type} event
  * @returns {undefined}
  */
-sibilant.PostMessageParticipant.prototype.forwardFromPostMessage=function(event) {
-	var packet=event.data;
-
-	if(event.origin === this.origin) {
-		// if it's addressed to $transport, hijack it
-		if(packet.dst === "$transport") {
-			this.handleTransportPacket(packet);
-		} else {
-			// clean up the packet a bit on behalf of the sender
-			packet.src=packet.src || this.address;
-			packet.ver = packet.ver || 1;
-
-			// if the packet doesn't have a msgId, use a timestamp
-			if(!packet.msgId) {
-				var now=sibilant.util.now();
-				packet.msgId = packet.msgId || now;
-
-				// might as well be helpful and set the time, too
-				packet.time = packet.time || now;
-			}
-
-			this.router.send(packet,this);
-		}
-	} else {
+sibilant.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,event) {
+	if(typeof(packet) !== "object") {
+		sibilant.log.error("Unknown packet received: " + JSON.stringify(packet));
+		return;
+	}
+	if(event.origin !== this.origin) {
 		/** @todo participant changing origins should set off more alarms, probably */
 		sibilant.metrics.counter("transport."+participant.address+".invalidSenderOrigin").inc();
+		return;
+	}
+	// clean up the packet a bit on behalf of the sender
+	packet.src=packet.src || this.address;
+	packet.ver = packet.ver || 1;
+
+	// if the packet doesn't have a msgId, use a timestamp
+	if(!packet.msgId) {
+		var now=sibilant.util.now();
+		packet.msgId = packet.msgId || now;
+
+		// might as well be helpful and set the time, too
+		packet.time = packet.time || now;
+	}
+	
+	// if it's addressed to $transport, hijack it
+	if(packet.dst === "$transport") {
+		this.handleTransportPacket(packet);
+	} else {
+		this.router.send(packet,this);
 	}
 };
 
@@ -124,19 +137,23 @@ sibilant.PostMessageParticipantListener.prototype.findParticipant=function(sourc
 sibilant.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(event) {
 	var participant=this.findParticipant(event.source);
 	var packet=event.data;
+
+	if(typeof(event.data)==="string") {
+		packet=JSON.parse(event.data);
+	}
 	
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
 		participant=new sibilant.PostMessageParticipant({
 			'origin': event.origin,
 			'sourceWindow': event.source,
-			'credentials': event.data.entity
+			'credentials': packet.entity
 		});
 		this.router.registerParticipant(participant,packet);
 		this.participants.push(participant);
 	}
 	
-	participant.forwardFromPostMessage(event);
+	participant.forwardFromPostMessage(packet,event);
 };
 
 

@@ -139,7 +139,7 @@ sibilant.Peer.prototype.receive=function(linkId,packet) {
 	*/
 sibilant.Peer.prototype.shutdown=function() {
 	this.events.trigger("beforeShutdown");
-	window.removeEventListener('beforeunload',unloadListener);
+	window.removeEventListener('beforeunload',this.unloadListener);
 };
 
 			

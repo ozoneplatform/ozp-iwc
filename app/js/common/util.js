@@ -6,7 +6,18 @@ var sibilant=sibilant || {};
  * @property {function} log - Normal log output.
  * @property {function} error - Error output.
  */
-sibilant.log=sibilant.log || console;
+sibilant.log={
+	log: function() {
+		if(window.console && typeof(window.console.log)==="function") {
+			window.console.log.apply(window.console,arguments);
+		}
+	},
+	error: function() {
+		if(window.console && typeof(window.console.error)==="error") {
+			window.console.error.apply(window.console,arguments);
+		}
+	}
+};
 
 /** @namespace */
 sibilant.util=sibilant.util || {};

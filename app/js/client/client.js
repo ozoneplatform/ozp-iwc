@@ -28,7 +28,7 @@ sibilant.Client=function(config) {
 		if(event.origin !== self.peerUrl){
 			return;
 		}
-		self.receive(event.data);
+		self.receive(JSON.parse(event.data));
 	}, false);
 };
 
@@ -70,7 +70,7 @@ sibilant.Client.prototype.send=function(dst,entity,callback) {
 		this.replyCallbacks[id]=callback;
 	}
 
-	this.peer.postMessage(packet,'*');
+	this.peer.postMessage(JSON.stringify(packet),'*');
 };
 
 sibilant.Client.prototype.on=function(event,callback) {
