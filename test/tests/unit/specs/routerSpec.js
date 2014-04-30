@@ -1,20 +1,5 @@
 
 describe("Router",function() {
-	var createMsg=function(config) {
-		var msg={
-				ver: 1,
-				src: "$nobody",
-				dst: config.dst,
-				msgId: sibilant.util.now(),
-				time: sibilant.util.now(),
-				entity: {}
-			};
-		for(var k in config) {
-			msg[k]=config[k];
-		}
-		return msg;
-	};
-	
 	var router;
 	var fakePeer;
 	

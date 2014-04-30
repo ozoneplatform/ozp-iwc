@@ -149,4 +149,57 @@ describe("KV API Base class",function() {
 		});
 	});
 	
+	describe("stacklike operations",function() {
+		it("supports push on an empty array",function() {
+			kvApi.handleSetAsLeader(nodePacket("/node",[]));
+			
+			var r=kvApi.handlePushAsLeader(nodePacket("/node",{foo:2}));
+			
+			expect(r.length).toEqual(1);
+			expect(r[0].action).toEqual("success");
+			expect(r[0].entity.oldValue).toEqual([]);
+			expect(r[0].entity.newValue).toEqual([{foo:2}]);
+		});
+
+		it("supports push on a pre-existing array",function() {
+			kvApi.handleSetAsLeader(nodePacket("/node",[{foo:1},{foo:2}]));
+			
+			var r=kvApi.handlePushAsLeader(nodePacket("/node",{foo:3}));
+			
+			expect(r.length).toEqual(1);
+			expect(r[0].action).toEqual("success");
+			expect(r[0].entity.newValue).toEqual([{foo:1},{foo:2},{foo:3}]);
+		});
+		
+		it("supports push on an empty value",function() {
+			var r=kvApi.handlePushAsLeader(nodePacket("/node",{foo:2}));
+			
+			expect(r.length).toEqual(1);
+			expect(r[0].action).toEqual("success");
+			expect(r[0].entity.oldValue).not.toBeDefined();
+			expect(r[0].entity.newValue).toEqual([{foo:2}]);
+		});
+		
+		it("pushes an array value as the last member, rather than concatenation",function() {
+			kvApi.handleSetAsLeader(nodePacket("/node",[{foo:1},{foo:2}]));
+			
+			var r=kvApi.handlePushAsLeader(nodePacket("/node",[{foo:3}]));
+			
+			expect(r.length).toEqual(1);
+			expect(r[0].action).toEqual("success");
+			expect(r[0].entity.newValue).toEqual([{foo:1},{foo:2},[{foo:3}]]);
+		});
+		
+		it("fails on a non-array value",function() {
+			kvApi.handleSetAsLeader(nodePacket("/node",{foo:1}));
+			var r=kvApi.handlePushAsLeader(nodePacket("/node",{foo:2}));
+			
+			expect(r.length).toEqual(1);
+			expect(r[0].action).toEqual("invalidOperation");
+		});
+		
+
+		
+	});
+	
 });

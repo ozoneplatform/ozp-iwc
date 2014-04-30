@@ -85,6 +85,52 @@ sibilant.KeyValueApi.prototype.handleSetAsLeader=function(packetContext) {
 /**
  * @param {sibilant.TransportPacketContext} packetContext
  */
+sibilant.KeyValueApi.prototype.handlePushAsLeader=function(packetContext) {
+	var packet=packetContext.packet;
+	var node=this.kvStore.get(packet.resource);
+
+	// save a copy of the old data
+	var oldData=node.data;
+	
+	// if not set, initialize to an array
+	if(node.data===undefined) {
+		node.data=[];
+	} 	
+	
+	// can only operate on an array
+	if(!Array.isArray(node.data)) {
+		return [{
+				'action': 'invalidOperation'
+		}];
+	}
+	
+	// copy the old data and push the value onto it
+	node.data=node.data.slice();
+	node.data.push(packet.entity);
+	this.kvStore.set(packet.resource,node);
+	
+	var responses=this.triggerChange({
+		'path':packet.resource,
+		'node': node,
+		'oldData' : oldData,
+		'newData' : node.data
+	});
+	
+	responses.push({
+		'action': 'success',
+		'entity': {
+			'oldValue' : oldData,
+			'newValue' : node.data
+		}
+	});
+	return responses;
+};
+
+
+
+/**
+ * @param {sibilant.TransportPacketContext} packetContext
+ */
 sibilant.KeyValueApi.prototype.handleDeleteAsLeader=function(packetContext) {
 	var packet=packetContext.packet;
 	var node=this.kvStore.get(packet.resource);
@@ -137,4 +183,6 @@ sibilant.KeyValueApi.prototype.handleUnwatchAsLeader=function(packetContext) {
 		'action': 'success',
 		'entity': {}
 	};
+	
+	
 };
