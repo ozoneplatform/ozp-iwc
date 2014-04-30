@@ -30,7 +30,10 @@
 				$("#me").text(client.participantId);
 				$("#target").text(params.toAddress);
 				var sendTick=function() {
-					client.send(params.toAddress,{tick: new Date().getTime()});
+					client.send({
+						dst: params.toAddress,
+						entity: {tick: new Date().getTime()}
+					});
 					$("#count").text(--params.tickCount);
 					if(params.tickCount) {
 						window.setTimeout(sendTick,params.tickDelay);
@@ -43,7 +46,10 @@
 			
 				if(params.echoOn) {
 					client.on("receive",function(packet) {
-						client.send(packet.src,packet.data);
+						client.send({
+							dst: packet.src,
+							entity: packet.data
+						});
 					});
 				}
 			});

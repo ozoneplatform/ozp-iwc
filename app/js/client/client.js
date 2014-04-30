@@ -53,24 +53,27 @@ sibilant.Client.prototype.receive=function(packet) {
  * @param {object} entity - payload of the packet
  * @param {function} callback - callback for any replies
  */
-sibilant.Client.prototype.send=function(dst,entity,callback) {
+sibilant.Client.prototype.send=function(fields,callback) {
 	var now=new Date().getTime();
 	var id=now; // makes the code below read better
 
 	var packet={
 		ver: 1,
 		src: this.participantId,
-		dst: dst,
 		msgId: id,
-		time: now,
-		entity: entity
+		time: now
 	};
+
+	for(var k in fields) {
+		packet[k]=fields[k];
+	}
 
 	if(callback) {
 		this.replyCallbacks[id]=callback;
 	}
 
 	this.peer.postMessage(JSON.stringify(packet),'*');
+	return packet;
 };
 
 sibilant.Client.prototype.on=function(event,callback) {
@@ -125,7 +128,7 @@ sibilant.Client.prototype.findPeer=function() {
 sibilant.Client.prototype.requestAddress=function(){
 	// send connect to get our address
 	var self=this;
-	this.send("$transport",{},function(message) {
+	this.send({dst:"$transport"},function(message) {
 		self.participantId=message.dst;
 		self.events.trigger("connected",self);
 	});

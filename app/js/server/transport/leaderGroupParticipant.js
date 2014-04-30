@@ -37,17 +37,34 @@ sibilant.LeaderGroupParticipant=sibilant.util.extend(sibilant.Participant,functi
 	this.priorityLessThan = config.priorityLessThan || function(l,r) { return l < r; };
 	this.electionTimeout=config.electionTimeout || 250; // quarter second
 	this.leaderState="connecting";
+	this.electionQueue=[];
 	
 	// tracking the current leader
 	this.leader=null;
 	this.leaderPriority=null;
 	this.events=new sibilant.Event();
 	this.events.mixinOnOff(this);
+	
+	this.on("startElection",function() {
+			this.electionQueue=[];
+	},this);
+	
+	this.on("becameLeader",function() {
+		this.electionQueue.forEach(function(p) {
+			this.forwardToTarget(p);
+		},this);
+		this.electionQueue=[];
+	},this);
+
+	this.on("newLeader",function() {
+		this.electionQueue=[];
+	},this);	
 });
 
 sibilant.LeaderGroupParticipant.prototype.connectToRouter=function(router,address) {
 	sibilant.Participant.prototype.connectToRouter.apply(this,arguments);
 	this.router.registerMulticast(this,[this.electionAddress]);
+	this.startElection();
 };
 
 /**
@@ -103,7 +120,7 @@ sibilant.LeaderGroupParticipant.prototype.startElection=function() {
 		self.cancelElection();
 		self.leader=self.address;
 		self.leaderPriority=self.priority;
-		this.leaderState="leader";
+		self.leaderState="leader";
 		self.sendElectionMessage("victory");	
 		self.events.trigger("becameLeader");
 	},this.electionTimeout);
@@ -160,6 +177,10 @@ sibilant.LeaderGroupParticipant.prototype.receiveFromRouter=function(packetConte
  * @param {sibilant.TransportPacketContext} packetContext
  */
 sibilant.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) {
+	if(this.leaderState === "election" || this.leaderState === "connecting") {
+		this.electionQueue.push(packetContext);
+		return;
+	}
 	var packet=packetContext.packet;
 	var handler="handle";
 	var stateSuffix="As" + this.leaderState.charAt(0).toUpperCase() + this.leaderState.slice(1).toLowerCase();
@@ -176,10 +197,15 @@ sibilant.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext
 	for(var i=0; i< checkdown.length; ++i) {
 		handler=this.target[checkdown[i]];
 		if(typeof(handler) === 'function') {
-			handler.call(this.target,packetContext);
+			var replies=handler.call(this.target,packetContext);
+			for(var j=0;j<replies.length;++j) {
+				packetContext.replyTo(replies[j]);
+			}
 		}
 	}
 };
+	
+	
 /**
  * Respond to someone else starting an election.
  * @private

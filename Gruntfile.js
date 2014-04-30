@@ -77,6 +77,18 @@ module.exports = function(grunt) {
 			},
 			doc: {
 				options: { port: 13001, base: "doc" }
+			},			
+			demo1: {
+				options: { port: 15000, base: "demo" }
+			},
+			demo2: {
+				options: { port: 15001, base: "demo" }
+			},
+			demo3: {
+				options: { port: 15002, base: "demo" }
+			},
+			demo4: {
+				options: { port: 15003, base: "demo" }
 			}
 		}
 

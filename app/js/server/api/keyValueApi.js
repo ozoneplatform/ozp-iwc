@@ -183,6 +183,6 @@ sibilant.KeyValueApi.prototype.handleUnwatchAsLeader=function(packetContext) {
 		'action': 'success',
 		'entity': {}
 	};
-	
-	
 };
+
+	

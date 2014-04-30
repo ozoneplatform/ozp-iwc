@@ -25,3 +25,13 @@ if(sibilant.PostMessageParticipantListener) {
 if(sibilant.BasicAuthorization) {
 	sibilant.authorization=new sibilant.BasicAuthorization();
 }
+
+if(sibilant.KeyValueApi) {
+	sibilant.keyValueApi=new sibilant.LeaderGroupParticipant({
+		name: "keyValue.api",
+		target: new sibilant.KeyValueApi()
+	});
+	
+	sibilant.defaultRouter.registerParticipant(sibilant.keyValueApi);
+	sibilant.defaultRouter.registerMulticast(sibilant.keyValueApi,["keyValue.api"])
+}
