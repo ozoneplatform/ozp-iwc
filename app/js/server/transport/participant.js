@@ -17,7 +17,7 @@ sibilant.Participant=function() {
 sibilant.Participant.prototype.receiveFromRouter=function(packetContext) { 
 	// doesn't really do anything other than return a bool and prevent "unused param" warnings
 	return !packetContext;
-	};
+};
 
 /**
  * @param {sibilant.Router} router

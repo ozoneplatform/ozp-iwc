@@ -185,4 +185,6 @@ sibilant.KeyValueApi.prototype.handleUnwatchAsLeader=function(packetContext) {
 	};
 };
 
-	
+sibilant.KeyValueApi.prototype.handleListAsLeader=function(packetContext) {
+	return [{'action': 'success','entity': this.kvStore.keys()}];
+};	

@@ -16,24 +16,36 @@
 	<ul class="nav nav-tabs">
 		<li class="active"><a href="#snooper" data-toggle="tab">Snooper</a></li>
 		<li><a href="#metrics" data-toggle="tab">Metrics</a></li>
+		<li><a href="#keyValue" data-toggle="tab">KeyValue API</a></li>
 	</ul>
 
 	<div class="tab-content">
 		<div id="snooper" class="tab-pane active">
 			<table id="messages">
 				<thead><tr>
-						<td>Time</td>
-						<td>Peer</td>
-						<td>Sequence</td>
-						<td>Source</td>
-						<td>Destination</td>
-						<td>MessageId</td>
-						<td>ReplyTo</td>
+					<td class="dateString">Time</td>
+				  <td class="srcPeer">Src Peer</td>
+				  <td class="sequence">Sequence</td>
+				  <td class="dst">Destination</td>
+				  <td class="src">Source</td>
+				  <td class="msgId">Message ID</td>
+				  <td class="replyTo">Reply To</td>
+				  <td class="action">Action</td>
+				  <td class= class="resource">Resource</td>
+				  <td class="contentType">Content Type</td>
 				</tr></thead>
 			</table>
 		</div>
 		<div id="metrics" class="tab-pane">
 			<pre id="stats"></pre>
+		</div>
+		<div id="keyValue" class="tab-pane">
+			<table id="messages">
+				<thead><tr>
+					<td class="kvKey">Key</td>
+				  <td class="kvValue">Value</td>
+				</tr></thead>
+			</table>
 		</div>
 	</div>
   </body>
