@@ -15,8 +15,9 @@ sibilant.Client=function(config) {
 	this.replyCallbacks={};
 	this.peerUrl=config.peerUrl;
 	this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
-
+	this.msgIdSequence=0;
 	this.events=new sibilant.Event();
+	this.events.mixinOnOff(this);
 	var self=this;
 
 	if(this.autoPeer) {
@@ -55,7 +56,7 @@ sibilant.Client.prototype.receive=function(packet) {
  */
 sibilant.Client.prototype.send=function(fields,callback) {
 	var now=new Date().getTime();
-	var id=now; // makes the code below read better
+	var id="p:"+this.msgIdSequence++; // makes the code below read better
 
 	var packet={
 		ver: 1,

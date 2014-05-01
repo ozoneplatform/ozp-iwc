@@ -25,14 +25,14 @@ describe("KV API Base class",function() {
 		it("responds to a get", function() {
 			var r=kvApi.handleGetAsLeader(nodePacket("/node","bar"));
 			
-			expect(r.action).toEqual("success");
+			expect(r[0].action).toEqual("success");
 		});
 		
 		it("gets and puts data", function() {
 			kvApi.handleSetAsLeader(nodePacket("/node",{foo:1}));
 
 			var r=kvApi.handleGetAsLeader(nodePacket("/node"));
-			expect(r.entity).toEqual({foo:1});
+			expect(r[0].entity).toEqual({foo:1});
 		});
 		
 		it("deletes data", function() {

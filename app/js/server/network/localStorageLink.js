@@ -52,7 +52,7 @@ sibilant.LocalStorageLink = function(config) {
 	this.selfId=config.selfId || this.peer.selfId;
 	this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
 	this.otherKeysTimeout = config.otherKeysTimeout || 2*60000; // 2 minutes
-	
+
   // Hook into the system
 	var self=this;
 	
@@ -61,13 +61,15 @@ sibilant.LocalStorageLink = function(config) {
 		if(key) {
 			var packet=JSON.parse(localStorage.getItem(event.key));
 
-			if(packet && typeof(packet) === "object") {
+			if(!packet) {
+				sibilant.metrics.counter('links.localStorage.packets.vanished').inc();
+			} else if(typeof(packet) !== "object") {
+				sibilant.metrics.counter('links.localStorage.packets.notAnObject').inc();
+			} else {
 				sibilant.metrics.counter('links.localStorage.packets.receive').inc();
 				self.peer.receive(self.linkId,packet);
-			} else {
-				sibilant.metrics.counter('links.localStorage.packets.timedOut').inc();
-			}
-		}
+			} 
+		};
 	};
 	window.addEventListener('storage',receiveStorageEvent , false); 
 	
@@ -80,6 +82,10 @@ sibilant.LocalStorageLink = function(config) {
 		window.removeEventListener('storage',receiveStorageEvent);
 	},this);
 	
+	window.setInterval(function() {
+		self.cleanKeys();
+	},250); 
+
 
 	// METRICS
 	sibilant.metrics.gauge('links.localStorage.buffer').set(function() {
@@ -121,8 +127,8 @@ sibilant.LocalStorageLink = function(config) {
  * @todo Is timestamp granular enough that no two packets can come in at the same time?
  * @returns {string} a new key
  */
-sibilant.LocalStorageLink.prototype.makeKey=function() { 
-	return [this.prefix,this.selfId,sibilant.util.now()].join('|');
+sibilant.LocalStorageLink.prototype.makeKey=function(sequence) { 
+	return [this.prefix,this.selfId,sibilant.util.now(),sequence].join('|');
 };
 
 /**
@@ -133,7 +139,7 @@ sibilant.LocalStorageLink.prototype.makeKey=function() {
  */
 sibilant.LocalStorageLink.prototype.splitKey=function(k) { 
 	var parts=k.split("|");
-	if(parts.length===3 && parts[0]===this.prefix) {
+	if(parts.length===4 && parts[0]===this.prefix) {
 		return { id: parts[1], createdAt: parseInt(parts[2]) };
 	}	
 	return null;
@@ -170,10 +176,9 @@ sibilant.LocalStorageLink.prototype.cleanKeys=function() {
  * @param {sibilant.NetworkPacket} packet
  */
 sibilant.LocalStorageLink.prototype.send=function(packet) { 
-	localStorage.setItem(this.makeKey(),JSON.stringify(packet));
+	localStorage.setItem(this.makeKey(packet.sequence),JSON.stringify(packet));
 	sibilant.metrics.counter('links.localStorage.packets.sent').inc();
 	var self=this;
-	window.setTimeout(function() {self.cleanKeys();},this.myKeysTimeout); 
 
 };
 

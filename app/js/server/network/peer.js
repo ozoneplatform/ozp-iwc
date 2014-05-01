@@ -81,16 +81,17 @@ sibilant.Peer.prototype.haveSeen=function(packet) {
 		sibilant.metrics.counter('network.packets.droppedOwnPacket').inc();
 		return true;
 	}
-	var seen=this.packetsSeen[packet.src_peer] || [];
-	var id=packet.sequence;
+	var seen=this.packetsSeen[packet.src_peer];
+	if(!seen) {
+		seen=this.packetsSeen[packet.src_peer]={};
+	}
 
 	// abort if we've seen the packet before
-	if(seen.indexOf(id) !== -1) {
+	if(packet.sequence in seen) {
 		return true;
 	}
 
-	seen.push(id);
-	this.packetsSeen[packet.src_peer]=seen;
+	seen[packet.sequence]=true;
 	return false;
 };
 
@@ -101,18 +102,20 @@ sibilant.Peer.prototype.haveSeen=function(packet) {
  * @param {sibilant.NetworkPacket} packet
  */
 sibilant.Peer.prototype.send= function(packet) {
-	sibilant.metrics.counter('network.packets.sent').inc();
 	var networkPacket={
 			src_peer: this.selfId,
 			sequence: this.sequenceCounter++,
 			data: packet
 	};
-	// as long as none of the handers returned the boolean false, send it out
+	
 	var preSendEvent=new sibilant.CancelableEvent({'packet': networkPacket});
 
 	this.events.trigger("preSend",preSendEvent);
 	if(!preSendEvent.canceled) {
+		sibilant.metrics.counter('network.packets.sent').inc();
 		this.events.trigger("send",{'packet':networkPacket});
+	} else {
+		sibilant.metrics.counter('network.packets.sendRejected').inc();
 	}
 };
 

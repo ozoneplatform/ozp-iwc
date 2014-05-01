@@ -49,7 +49,7 @@ sibilant.PostMessageParticipant.prototype.handleTransportPacket=function(packet)
 		'dst': this.address,
 		'src': '$transport',
 		'replyTo': packet.msgId,
-		'msgId': sibilant.util.now(),
+		'msgId': this.generateMsgId(),
 		'entity': {
 			"address": this.address
 		}
@@ -75,18 +75,8 @@ sibilant.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet
 		sibilant.metrics.counter("transport."+participant.address+".invalidSenderOrigin").inc();
 		return;
 	}
-	// clean up the packet a bit on behalf of the sender
-	packet.src=packet.src || this.address;
-	packet.ver = packet.ver || 1;
-
-	// if the packet doesn't have a msgId, use a timestamp
-	if(!packet.msgId) {
-		var now=sibilant.util.now();
-		packet.msgId = packet.msgId || now;
-
-		// might as well be helpful and set the time, too
-		packet.time = packet.time || now;
-	}
+	
+	packet=this.fixPacket(packet);
 	
 	// if it's addressed to $transport, hijack it
 	if(packet.dst === "$transport") {

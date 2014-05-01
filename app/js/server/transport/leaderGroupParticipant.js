@@ -58,7 +58,17 @@ sibilant.LeaderGroupParticipant=sibilant.util.extend(sibilant.Participant,functi
 
 	this.on("newLeader",function() {
 		this.electionQueue=[];
-	},this);	
+	},this);
+	var self=this;
+	
+	// handoff when we shut down
+	window.addEventListener("beforeunload",function() {
+		self.leaderPriority=0;
+		self.sendSync();
+		self.startElection();
+		
+	});
+	
 });
 
 sibilant.LeaderGroupParticipant.prototype.connectToRouter=function(router,address) {
@@ -89,14 +99,13 @@ sibilant.LeaderGroupParticipant.prototype.isLeader=function() {
  * @param {string} type - the type of message-- "election" or "victory"
  */
 sibilant.LeaderGroupParticipant.prototype.sendElectionMessage=function(type) {
-	this.router.send(this.router.createMessage({
+	this.send({
 			dst: this.electionAddress,
-			src: this.address,
 			action: type,
 			entity: {
 				'priority': this.priority
 			}
-	}));
+	});
 };
 
 /**
@@ -161,6 +170,8 @@ sibilant.LeaderGroupParticipant.prototype.receiveFromRouter=function(packetConte
 			this.handleElectionMessage(packet);
 		} else if(packet.action === "victory") {
 			this.handleVictoryMessage(packet);
+		} else if(packet.action === "sync") {
+			this.handleSyncMessage(packet);
 		}
 	}
 };
@@ -199,7 +210,11 @@ sibilant.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext
 		if(typeof(handler) === 'function') {
 			var replies=handler.call(this.target,packetContext);
 			for(var j=0;j<replies.length;++j) {
-				packetContext.replyTo(replies[j]);
+				var reply=this.fixPacket(replies[j]);
+				reply.dst = reply.dst || packet.src;
+				reply.replyTo = reply.replyTo || packet.msgId;
+				reply.resource = reply.resource || packet.resource;
+				this.send(reply);
 			}
 		}
 	}
@@ -213,6 +228,9 @@ sibilant.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext
  * @returns {undefined}
  */
 sibilant.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionMessage) {
+	if(this.isLeader()) {
+		this.sendSync();
+	}
 	// is the new election lower priority than us?
 	if(this.priorityLessThan(electionMessage.entity.priority,this.priority)) {
 		// Quell the rebellion!
@@ -226,6 +244,7 @@ sibilant.LeaderGroupParticipant.prototype.handleElectionMessage=function(electio
 /**
  * Handle someone else declaring victory.
  * @fire sibilant.LeaderGroupParticipant#newLeader
+ * @param {sibilant.TransportPacket} victoryMessage
  */
 sibilant.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMessage) {
 	if(this.priorityLessThan(victoryMessage.entity.priority,this.priority)) {
@@ -238,5 +257,22 @@ sibilant.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryM
 		this.cancelElection();
 		this.leaderState="member";
 		this.events.trigger("newLeader");
+	}
+};
+
+sibilant.LeaderGroupParticipant.prototype.handleSyncMessage=function(packet) {
+	if(typeof(this.target.receiveSync)==="function") {
+		this.target.receiveSync(packet.entity);
+	}
+};
+
+sibilant.LeaderGroupParticipant.prototype.sendSync=function() {
+	if('generateSync' in this.target) {
+		var syncData=this.target.generateSync();
+		this.send({
+			dst: this.electionAddress,
+			action: 'sync',
+			entity: syncData
+		});
 	}
 };

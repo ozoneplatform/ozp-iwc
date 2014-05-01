@@ -1,12 +1,17 @@
-table#messages {
+table {
   border-collapse: collapse;
   border: 1px solid black;
+	width: 100%;
 }
-table#messages td{
+table td{
   border: 1px solid black;
 }
 
-table#messages tr:nth-child(4n+1),tr:nth-child(4n+2) {
+table#messages tr:nth-child(4n+1),table#messages tr:nth-child(4n+2) {
+	background-color: #F3F5F7;
+}
+
+table#keyValueTable tr:nth-child(2n+1) {
 	background-color: #F3F5F7;
 }
 
@@ -24,4 +29,8 @@ table#messages tr:nth-child(4n+1),tr:nth-child(4n+2) {
 
 tr.packet {
 	display:none;
+}
+
+.hidden {
+	display: none;
 }

@@ -38,8 +38,13 @@ sibilant.TransportPacketContext=function(config) {
  * @returns {sibilant.TransportPacket} the packet that was sent
  */
 sibilant.TransportPacketContext.prototype.replyTo=function(response) {
-	response=this.router.createMessage(response);
-	response.replyTo=this.packet.msgId;
+	var now=new Date().getTime();
+	response.ver = response.ver || 1;
+	response.time = response.time || now;
+	// TODO: track the last used timestamp and make sure we don't send a duplicate messageId
+	// default the msgId to the current timestamp
+	response.msgId = response.msgId || now;
+	response.replyTo=response.replyTo || this.packet.msgId;
 	response.src=response.src || this.packet.dst;
 	response.dst=response.dst || this.packet.src;
 	this.router.send(response);
@@ -153,16 +158,6 @@ sibilant.Router=function(config) {
 //		origin: "routerControlAddress.$router"
 //	};
 
-};
-
-sibilant.Router.prototype.createMessage=function(fields) {
-	var now=new Date().getTime();
-	fields.ver = fields.ver || 1;
-	fields.time = fields.time || now;
-	// TODO: track the last used timestamp and make sure we don't send a duplicate messageId
-	// default the msgId to the current timestamp
-	fields.msgId = fields.msgId || now;
-	return fields;
 };
 
 /**

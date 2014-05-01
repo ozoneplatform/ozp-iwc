@@ -76,6 +76,7 @@ describe("Leader Group Participant",function() {
 		l.TEST_nonElectionPackets=[];
 		l.target={ defaultHandler: function(event) {
 			l.TEST_nonElectionPackets.push(event);
+			return [];
 		}};
 
 		return l;
@@ -192,6 +193,7 @@ describe("Leader Group Participant",function() {
 	describe("dispatch to the target",function() {
 		it("sends event on non-election packet", function() {
 				var leader=makeLeader(1);
+				leader.leaderState="leader";
 				leader.receiveFromRouter({ packet:{
 					src: "foo",
 					dst: "bar",

@@ -55,10 +55,10 @@ sibilant.KeyValueApi.prototype.triggerChange=function(evt) {
  * @param {sibilant.TransportPacketContext} packetContext
  */
 sibilant.KeyValueApi.prototype.handleGetAsLeader=function(packetContext) {
-	return {
+	return [{
 		'action': 'success',
 		'entity': this.kvStore.get(packetContext.packet.resource).data
-	};
+	}];
 };
 
 /**
@@ -161,10 +161,10 @@ sibilant.KeyValueApi.prototype.handleWatchAsLeader=function(packetContext) {
 	});
 		
 	this.kvStore.set(packet.resource,node);
-	return {
+	return [{
 		'action': 'success',
 		'entity': {}
-	};
+	}];
 };
 
 /**
@@ -179,12 +179,21 @@ sibilant.KeyValueApi.prototype.handleUnwatchAsLeader=function(packetContext) {
 	
 	this.kvStore.set(packet.resource,node);
 	
-	return {
+	return [{
 		'action': 'success',
 		'entity': {}
-	};
+	}];
 };
 
 sibilant.KeyValueApi.prototype.handleListAsLeader=function(packetContext) {
 	return [{'action': 'success','entity': this.kvStore.keys()}];
 };	
+
+
+sibilant.KeyValueApi.prototype.generateSync=function() {
+	return this.kvStore.data;
+};
+
+sibilant.KeyValueApi.prototype.receiveSync=function(data) {
+	this.kvStore.data=data;
+};

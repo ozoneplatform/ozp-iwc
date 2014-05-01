@@ -66,5 +66,5 @@ sibilant.KeyValueStore.prototype.delete=function(path,value) {
 };
 
 sibilant.KeyValueStore.prototype.keys=function() {
-	return data.keys();
+	return Object.keys(this.data);
 };

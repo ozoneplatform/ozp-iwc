@@ -24,13 +24,14 @@ describe("Peer broadcast",function() {
 	});
 	
 	it("has a client id", function() {
-		expect(client.participantId).not.toBe("$nobody");
+		expect(client.address).not.toBe("$nobody");
 	});
 	
 	it("hears the ping",function(done) {
 		client.on("receive",function(msg) {
-			expect(msg.entity.tick).toBeDefined();
-			done();
+			if(msg.entity.tick) {
+				done();
+			}
 		});
 	});
 	

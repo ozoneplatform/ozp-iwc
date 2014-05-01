@@ -6,6 +6,10 @@
 		<link rel="stylesheet" href="bootstrap-3.1.1/css/bootstrap.min.css">
 
 		<script src="../../js/sibilant-server.js"></script>
+		<script type="text/javascript">
+			sibilant.dontProvideApis=true;
+		</script>
+		
 		<script src="../../js/server/defaultWiring.js"></script>
 
 		<script src="js/jquery-2.1.0.min.js"></script>
@@ -14,13 +18,20 @@
   </head>
   <body>
 	<ul class="nav nav-tabs">
-		<li class="active"><a href="#snooper" data-toggle="tab">Snooper</a></li>
+		<li class="active"><a href="#snooper" data-toggle="tab">Traffic</a></li>
 		<li><a href="#metrics" data-toggle="tab">Metrics</a></li>
 		<li><a href="#keyValue" data-toggle="tab">KeyValue API</a></li>
+		<li><a href="#leaderInfo" data-toggle="tab">Leadership Groups</a></li>
+		<li><a href="#localStorageTab" data-toggle="tab">LocalStorage</a></li>
+		<li class="disabled"><a href="#unusedTab" data-toggle="tab">Address: <span id="debuggerAddress"></span></a></li>
+		
 	</ul>
 
 	<div class="tab-content">
 		<div id="snooper" class="tab-pane active">
+			<button id="togglePacketCapture" onclick="togglePacketCapture();">Start Capture</button>
+			<button id="clearPacketCapture" onclick="clearPacketCapture();">Clear</button>
+			<div id="packetLogToggles"></div>
 			<table id="messages">
 				<thead><tr>
 					<td class="dateString">Time</td>
@@ -31,20 +42,45 @@
 				  <td class="msgId">Message ID</td>
 				  <td class="replyTo">Reply To</td>
 				  <td class="action">Action</td>
-				  <td class= class="resource">Resource</td>
+				  <td class="resource">Resource</td>
 				  <td class="contentType">Content Type</td>
 				</tr></thead>
+				<tbody></tbody>
 			</table>
 		</div>
 		<div id="metrics" class="tab-pane">
+			<button id="toggleUpdateMetrics" onclick="toggleUpdateMetrics();">Enable Update</button>
 			<pre id="stats"></pre>
 		</div>
 		<div id="keyValue" class="tab-pane">
-			<table id="messages">
+			<button id="kvRefresh" onclick="refreshKV();">Refresh</button>
+			<table id="keyValueTable">
 				<thead><tr>
 					<td class="kvKey">Key</td>
 				  <td class="kvValue">Value</td>
 				</tr></thead>
+			</table>
+		</div>
+		<div id="leaderInfo" class="tab-pane">
+			<table>
+				<thead><tr>
+						<td>LeaderGroup</td>
+						<td>Last Election</td>
+						<td>Current Leader</td>
+						<td>Known Members</td>
+						<td>Last Sync</td>
+						<td>History</td>
+					</tr></thead>
+			</table>
+		</div>
+		<div id="localStorageTab" class="tab-pane">
+			<button onclick="drawLocalStorage();">Refresh</button>
+			<button style="margin-left: 150px" onclick="wipeLocalStorage();">Wipe Local Storage</button>
+			<table>
+				<thead><tr>
+						<td>Key</td>
+						<td>Value</td>
+					</tr></thead>
 			</table>
 		</div>
 	</div>
