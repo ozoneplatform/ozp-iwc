@@ -43,6 +43,7 @@ sibilant.KeyValueApi.prototype.triggerChange=function(evt) {
 		  'replyTo' : packet.msgId,
 			'resource': evt.path,
 			'entity': {
+				'watchers': evt.node.watchers,
 				'newValue': evt.newData,
 				'oldValue': evt.oldData
 			}
@@ -191,9 +192,12 @@ sibilant.KeyValueApi.prototype.handleListAsLeader=function(packetContext) {
 
 
 sibilant.KeyValueApi.prototype.generateSync=function() {
+	sibilant.log.log("KeyValueApi.generateSync: " + JSON.stringify(this.kvStore.data,null,2));
 	return this.kvStore.data;
 };
 
 sibilant.KeyValueApi.prototype.receiveSync=function(data) {
+	sibilant.log.log("KeyValueApi.receiveSync existing data: " + JSON.stringify(this.kvStore.data,null,2));
+	sibilant.log.log("KeyValueApi.receiveSync new data: " + JSON.stringify(data,null,2));
 	this.kvStore.data=data;
 };

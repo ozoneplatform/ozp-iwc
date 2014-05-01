@@ -29,7 +29,11 @@ sibilant.Client=function(config) {
 		if(event.origin !== self.peerUrl){
 			return;
 		}
-		self.receive(JSON.parse(event.data));
+		try {
+			self.receive(JSON.parse(event.data));
+		} catch(e) {
+			// ignore!
+		}
 	}, false);
 };
 

@@ -40,11 +40,49 @@ function updateLogColumns() {
 	}
 }
 
+function filterPacket(packet) {
+	var filter=$('#packetCaptureFilter').val();
+	var clauses=filter.split("&&");
+	var regex=/^\s*([\w\.]+)(.*)"(.*)"\s*$/;
+
+	for(var i=0; i< clauses.length; ++i) {
+		var match=regex.exec(clauses[i]);
+		if(!match) {
+			$('#packetCaptureFilter').css("background-color","lightred");
+		} else {
+			var path=match[1].split(".");
+			var value=packet;
+			while(path.length) {
+				var p=path.shift();
+				if(typeof(value[p]) === "undefined") {
+					return false;
+				}
+				value=value[p];
+			}
+			switch(match[2]) {
+				case "==":
+					if(match[3]!==value) {
+						return false;
+					}
+					break;
+				default:
+					break;
+			}
+		}
+	}
+	return true;
+}
+
 function logPacket(msg) {
 	if(!packetCapture) {
 		return;
 	}
 	var packet=msg.packet;
+	
+	if(!filterPacket(packet)) {
+		return;
+	}	
+	
 	var date=new Date(packet.data.time);
 	var dateString=date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + " " +
 					date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "." + date.getMilliseconds();
@@ -118,6 +156,9 @@ function updateValue(packet) {
 		val=packet.entity;
 	}
 	el.find('.kvValue').text(JSON.stringify(val,null,2));
+	if(packet.entity.watchers) {
+		el.find('.kvWatchers').text(JSON.stringify(packet.entity.watchers,null,2));
+	}
 }
 
 function updateKeys(packet) {
@@ -134,7 +175,10 @@ function updateKeys(packet) {
 				resource: k
 			},updateValue);
 		}
-		knownKVKeys[k]=$('<tr class="KVRow"><td class="KVKey">'+k+'</td><td><pre class="kvValue"></pre></td></tr>');
+		knownKVKeys[k]=$('<tr class="KVRow"><td class="KVKey">'+k+'</td>'
+					+'<td><pre class="kvValue"></pre></td>'
+					+'<td><pre class="kvWatchers"></pre></td>'
+				  +'</tr>');
 		table.append(knownKVKeys[k]);
 		
 		client.send({

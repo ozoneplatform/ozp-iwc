@@ -47,7 +47,7 @@ var client=new sibilant.Client({peerUrl:"http://localhost:13000"});
 
 client.on("connected",function() {
 	var viewPort=$('#viewport');
-
+	$('#myAddress').text(client.participantId);
 	var ballResource="/balls/" + client.participantId;
 
 	var colors=[

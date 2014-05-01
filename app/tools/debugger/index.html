@@ -31,6 +31,7 @@
 		<div id="snooper" class="tab-pane active">
 			<button id="togglePacketCapture" onclick="togglePacketCapture();">Start Capture</button>
 			<button id="clearPacketCapture" onclick="clearPacketCapture();">Clear</button>
+			Filter: <input id="packetCaptureFilter" type="text" style="width:75%"></input>
 			<div id="packetLogToggles"></div>
 			<table id="messages">
 				<thead><tr>
@@ -58,6 +59,7 @@
 				<thead><tr>
 					<td class="kvKey">Key</td>
 				  <td class="kvValue">Value</td>
+				  <td class="kvWatchers">Watchers</td>
 				</tr></thead>
 			</table>
 		</div>
