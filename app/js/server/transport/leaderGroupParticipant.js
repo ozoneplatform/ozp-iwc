@@ -261,7 +261,7 @@ sibilant.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryM
 };
 
 sibilant.LeaderGroupParticipant.prototype.handleSyncMessage=function(packet) {
-	if(typeof(this.target.receiveSync)==="function") {
+	if(typeof(this.target.receiveSync)==="function" && !this.isLeader()) {
 		this.target.receiveSync(packet.entity);
 	}
 };

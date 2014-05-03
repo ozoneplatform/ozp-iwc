@@ -35,6 +35,6 @@ if(!sibilant.dontProvideApis) {
 		});
 
 		sibilant.defaultRouter.registerParticipant(sibilant.keyValueApi);
-		sibilant.defaultRouter.registerMulticast(sibilant.keyValueApi,["keyValue.api"])
+		sibilant.defaultRouter.registerMulticast(sibilant.keyValueApi,["keyValue.api"]);
 	}
 }

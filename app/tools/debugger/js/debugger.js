@@ -1,4 +1,14 @@
 
+sibilant.keyValueApi=new sibilant.LeaderGroupParticipant({
+	name: "keyValue.api",
+	target: new sibilant.KeyValueApi(),
+	priority: 100
+});
+
+sibilant.defaultRouter.registerParticipant(sibilant.keyValueApi);
+sibilant.defaultRouter.registerMulticast(sibilant.keyValueApi,["keyValue.api"]);
+		
+
 var client=new sibilant.InternalParticipant();
 sibilant.defaultRouter.registerParticipant(client);
 
@@ -149,6 +159,9 @@ var knownKVKeys={};
 
 function updateValue(packet) {
 	var el=knownKVKeys[packet.resource];
+	if(!el) {
+		el=createKeyRow(packet.resource);
+	}
 	var val;
 	if(packet.action==="changed") {
 		val=packet.entity.newValue;
@@ -156,9 +169,19 @@ function updateValue(packet) {
 		val=packet.entity;
 	}
 	el.find('.kvValue').text(JSON.stringify(val,null,2));
-	if(packet.entity.watchers) {
+	if(packet.entity && packet.entity.watchers) {
 		el.find('.kvWatchers').text(JSON.stringify(packet.entity.watchers,null,2));
 	}
+}
+
+function createKeyRow(k) {
+	var table=$('#keyValueTable');
+	knownKVKeys[k]=$('<tr class="KVRow"><td class="KVKey">'+k+'</td>'
+				+'<td><pre class="kvValue"></pre></td>'
+				+'<td><pre class="kvWatchers"></pre></td>'
+				+'</tr>');
+	table.append(knownKVKeys[k]);
+	return knownKVKeys[k];
 }
 
 function updateKeys(packet) {
@@ -175,11 +198,7 @@ function updateKeys(packet) {
 				resource: k
 			},updateValue);
 		}
-		knownKVKeys[k]=$('<tr class="KVRow"><td class="KVKey">'+k+'</td>'
-					+'<td><pre class="kvValue"></pre></td>'
-					+'<td><pre class="kvWatchers"></pre></td>'
-				  +'</tr>');
-		table.append(knownKVKeys[k]);
+
 		
 		client.send({
 			dst: 'keyValue.api',

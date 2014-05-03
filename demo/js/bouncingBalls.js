@@ -3,8 +3,19 @@ var balls={};
 
 var Ball=function(ballRef,svgElement) {
 	this.svg=svgElement;
-	this.el=document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+	this.el=document.createElementNS("http://www.w3.org/2000/svg", 'g');
+	this.el.setAttribute("class","ball");
+
+	this.circle=document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+	this.el.appendChild(this.circle);
+	
+	this.label=document.createElementNS("http://www.w3.org/2000/svg", 'text');
+	this.label.setAttribute("class","svgHidden");
+	this.el.appendChild(this.label);
+	
 	this.svg.append(this.el);
+
+	
 	this.ballResource=ballRef;
 
 	var watchRequest={
@@ -16,9 +27,17 @@ var Ball=function(ballRef,svgElement) {
 	var packet=client.send(watchRequest,function(packet) {
 		if(packet.action==="changed") {
 			self.draw(packet.entity.newValue);
+			self.label.textContent=packet.resource;
 		}
 	});
 	
+	$(this.el).click(function() {
+		if(self.label.getAttribute("class").match("svgHidden")) {
+			self.label.setAttribute("class","");
+		}else {
+			self.label.setAttribute("class","svgHidden");
+		}
+	});	
 	this.watchId=packet.msgId;	
 };
 
@@ -26,10 +45,12 @@ Ball.prototype.draw=function(info) {
 	if(!info) {
 		this.remove();
 	}
-	this.el.setAttribute("cx",info.x);
-	this.el.setAttribute("cy",info.y);
-	this.el.setAttribute("r",info.r);
-  this.el.setAttribute("fill",info.color);
+	
+	this.el.setAttribute("transform","translate(" + info.x +","+ info.y + ")");
+//	this.el.setAttribute("y",info.y);
+	this.circle.setAttribute("r",info.r);
+  this.circle.setAttribute("fill",info.color);
+	this.label.setAttribute("x",info.r  + 5);
 };
 
 Ball.prototype.remove=function() {
@@ -43,62 +64,30 @@ Ball.prototype.remove=function() {
 };
 
 
-var client=new sibilant.Client({peerUrl:"http://localhost:13000"});
+var extents={
+	minX: 0,
+	minY: 0,
+	maxX: 1000,
+	maxY: 1000
+};
 
-client.on("connected",function() {
-	var viewPort=$('#viewport');
-	$('#myAddress').text(client.participantId);
-	var ballResource="/balls/" + client.participantId;
-
-	var colors=[
-		'red',
-		'blue',
-		'black',
-		'green',
-		'brown',		
-		'#BADA55'
-	];
-	var thisColor=colors[Math.floor(Math.random() * colors.length)];
-	$('#viewport rect')[0].setAttribute("fill",thisColor);
-
-	var ball={
+var AnimatedBall=function(config) {
+	config = config || {};
+	this.state={
 		x: 100+Math.floor(Math.random()*100),
 		y: 100+Math.floor(Math.random()*100),
-		vx: -5+Math.floor(Math.random()*11),
-		vy: -5+Math.floor(Math.random()*11),
-		r: 5+Math.floor(Math.random()*15),
-		color: thisColor
+		vx: -100+Math.floor(Math.random()*200),
+		vy: -100+Math.floor(Math.random()*200),
+		r: 25+Math.floor(Math.random()*50),
+		color: 'black',
+		owner: config.owner
 	};
+	this.resource=config.resource;
 	
-	var extents={
-		minX: 0,
-		minY: 0,
-		maxX: 1000,
-		maxY: 1000
-	};
-
-	var updateBall=function() {
-		client.send({
-			dst: "keyValue.api",
-			action: "set",
-			resource: ballResource,
-			entity: ball
-		});		
-	};
-	
-	updateBall();
-	window.addEventListener("beforeunload",function() {
-		client.send({
-			dst: "keyValue.api",
-			action: "delete",
-			resource: ballResource
-		});
-		
-	});
-	//animation timer
-	window.setInterval(function() {
-		ball.x+=ball.vx;
-		ball.y+=ball.vy;
+	this.tick=function(delta) {
+		var ball=this.state;
+		ball.x+=delta*ball.vx;
+		ball.y+=delta*ball.vy;
 
 		if(ball.x-ball.r <= extents.minX || ball.x+ball.r >= extents.maxX) {
 			ball.vx=-ball.vx;
@@ -106,18 +95,58 @@ client.on("connected",function() {
 		if(ball.y-ball.r <= extents.minY || ball.y+ball.r >= extents.maxY) {
 			ball.vy=-ball.vy;
 		}
-		updateBall();
-	},250);
-	
 
-	var updateBalls=function(newBalls) {
-		for(var i=0;i<newBalls.length;++i) {
-			if(!(newBalls[i] in balls)) {
-				balls[newBalls[i]]=new Ball(newBalls[i],viewPort);
-			}
-		}
+		client.send({
+			dst: "keyValue.api",
+			action: "set",
+			resource: this.resource,
+			entity: this.state
+		});
 	};
+	this.cleanup=function() {
+		client.send({
+			dst: "keyValue.api",
+			action: "delete",
+			resource: this.resource
+		});		
+	};
+};
+
+var ourBall=new AnimatedBall();
+
+$(document).ready(function(){
+	var colors=$("#ballColor option");
+	var thisColor=colors[Math.floor(Math.random() * colors.length)].value;
+	$("#ballColor").val(thisColor);
+		ourBall.state.color=thisColor;
 	
+	$("#ballColor").change(function(e) {
+		var color=e.target.value;
+		$('#viewport rect')[0].setAttribute("fill",color);
+		ourBall.state.color=color;
+	});
+});
+
+var client=new sibilant.Client({peerUrl:"http://localhost:13000"});
+
+client.on("connected",function() {
+	var viewPort=$('#viewport');
+	$('#myAddress').text(client.participantId);
+	ourBall.resource="/balls/" + client.participantId;
+	
+	window.addEventListener("beforeunload",function() {
+		ourBall.cleanup();
+	});
+
+	//animation timer
+	var lastUpdate=new Date().getTime();
+	window.setInterval(function() {
+		var now=new Date().getTime();
+		var delta=(now-lastUpdate)/1000.0;
+		ourBall.tick(delta);
+		lastUpdate=now;
+	},50);
+		
 	var watchRequest={
 		dst: "keyValue.api",
 		action: "watch",
@@ -126,7 +155,12 @@ client.on("connected",function() {
 
 	client.send(watchRequest,function(reply) {
 		if(reply.action==="changed") {
-			updateBalls(reply.entity.newValue);
+			var newBalls=reply.entity.newValue;
+			for(var i=0;i<newBalls.length;++i) {
+				if(!(newBalls[i] in balls)) {
+					balls[newBalls[i]]=new Ball(newBalls[i],viewPort);
+				}
+			}
 		}
 	});
 	
@@ -135,9 +169,6 @@ client.on("connected",function() {
 		dst: "keyValue.api",
 		action: "push",
 		resource: "/balls",
-		entity: ballResource
+		entity: ourBall.resource
 	});
-
-
-
 });

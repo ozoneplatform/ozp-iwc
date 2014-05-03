@@ -22,10 +22,11 @@ sibilant.InternalParticipant.prototype.receiveFromRouter=function(packetContext)
 
 
 sibilant.InternalParticipant.prototype.send=function(packet,callback) {
-	var packet=sibilant.Participant.prototype.send.apply(this,arguments);
-	
+	var packet=this.fixPacket(packet);
 	if(callback) {
 		this.replyCallbacks[packet.msgId]=callback;
 	}
+	sibilant.Participant.prototype.send.apply(this,arguments);
+	
 	return packet;
 };
