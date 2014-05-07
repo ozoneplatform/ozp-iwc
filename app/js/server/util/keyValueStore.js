@@ -38,6 +38,10 @@ sibilant.KeyValueStore.prototype.set=function(path,newValue) {
 	}
 };
 
+sibilant.KeyValueStore.prototype.hasKey=function(path) {
+	return path in this.data;
+};
+
 sibilant.KeyValueStore.prototype.get=function(path) {
 	if(!(path in this.data)) {
 		this.data[path]=this.defaultData();

@@ -19,7 +19,8 @@ sibilant.KeyValueApi = function() {
 				data: undefined,
 				contentType:"application/json",
 				permissions:[],
-				watchers:[]
+				watchers:[],
+				children: []
 			};
 		}
 	});
@@ -37,17 +38,24 @@ sibilant.KeyValueApi = function() {
  */
 sibilant.KeyValueApi.prototype.triggerChange=function(evt) {
 	return evt.node.watchers.map(function(packet) {
-		return {
+		var packet={
 			'dst'   : packet.src,
 			'action': 'changed',
 		  'replyTo' : packet.msgId,
 			'resource': evt.path,
-			'entity': {
-				'watchers': evt.node.watchers,
-				'newValue': evt.newData,
-				'oldValue': evt.oldData
-			}
+			'entity': {	}
 		};
+		if(evt.newData || evt.oldData) {
+			packet.entity.newValue=evt.newData;
+			packet.entity.oldValue=evt.oldData;
+		}
+		if(evt.addChild) {
+			packet.entity.addChild=evt.addChild;
+		}
+		if(evt.removeChild) {
+			packet.entity.removeChild=evt.removeChild;
+		}
+		return packet;
 	});
 };
 
@@ -82,52 +90,6 @@ sibilant.KeyValueApi.prototype.handleSetAsLeader=function(packetContext) {
 	responses.push({'action': 'success'});
 	return responses;
 };
-
-/**
- * @param {sibilant.TransportPacketContext} packetContext
- */
-sibilant.KeyValueApi.prototype.handlePushAsLeader=function(packetContext) {
-	var packet=packetContext.packet;
-	var node=this.kvStore.get(packet.resource);
-
-	// save a copy of the old data
-	var oldData=node.data;
-	
-	// if not set, initialize to an array
-	if(node.data===undefined) {
-		node.data=[];
-	} 	
-	
-	// can only operate on an array
-	if(!Array.isArray(node.data)) {
-		return [{
-				'action': 'invalidOperation'
-		}];
-	}
-	
-	// copy the old data and push the value onto it
-	node.data=node.data.slice();
-	node.data.push(packet.entity);
-	this.kvStore.set(packet.resource,node);
-	
-	var responses=this.triggerChange({
-		'path':packet.resource,
-		'node': node,
-		'oldData' : oldData,
-		'newData' : node.data
-	});
-	
-	responses.push({
-		'action': 'success',
-		'entity': {
-			'oldValue' : oldData,
-			'newValue' : node.data
-		}
-	});
-	return responses;
-};
-
-
 
 /**
  * @param {sibilant.TransportPacketContext} packetContext
@@ -187,9 +149,120 @@ sibilant.KeyValueApi.prototype.handleUnwatchAsLeader=function(packetContext) {
 };
 
 sibilant.KeyValueApi.prototype.handleListAsLeader=function(packetContext) {
-	return [{'action': 'success','entity': this.kvStore.keys()}];
-};	
+	var packet=packetContext.packet;
+	var node=this.kvStore.get(packet.resource);
+	
+	return [{'action': 'success','entity': node.children}];
+};
 
+/**
+ * @param {sibilant.TransportPacketContext} packetContext
+ */
+sibilant.KeyValueApi.prototype.handlePushAsLeader=function(packetContext) {
+	var packet=packetContext.packet;
+	var node=this.kvStore.get(packet.resource);
+
+	var key;
+	do {
+		key=packet.resource +"/"+ sibilant.util.generateId();
+	} while(this.kvStore.hasKey(key));
+
+	// save the new child
+	var childNode=this.kvStore.get(key);
+	childNode.data=packet.entity;
+	this.kvStore.set(key,childNode);
+	
+	// save a copy of the old data
+	node.children.push(key);
+	this.kvStore.set(packet.resource,node);	
+	
+	var responses=this.triggerChange({
+		'path': packet.resource,
+		'node': node,
+		'addChild' : key
+	});
+	responses.push({'action': 'success','entity': {'resource':key}});
+	return responses;
+};
+
+/**
+ * @param {sibilant.TransportPacketContext} packetContext
+ */
+sibilant.KeyValueApi.prototype.handleUnshiftAsLeader=function(packetContext) {
+	var packet=packetContext.packet;
+	var node=this.kvStore.get(packet.resource);
+
+	var key;
+	do {
+		key=packet.resource +"/"+ sibilant.util.generateId();
+	} while(this.kvStore.hasKey(key));
+
+	// save the new child
+	var childNode=this.kvStore.get(key);
+	childNode.data=packet.entity;
+	this.kvStore.set(key,childNode);
+	
+	// save a copy of the old data
+	node.children.unshift(key);
+	this.kvStore.set(packet.resource,node);	
+	
+	var responses=this.triggerChange({
+		'path': packet.resource,
+		'node': node,
+		'addChild' : key
+	});
+	responses.push({'action': 'success','entity': {'resource':key}});
+	return responses;
+};
+
+/**
+ * @param {sibilant.TransportPacketContext} packetContext
+ */
+sibilant.KeyValueApi.prototype.handlePopAsLeader=function(packetContext) {
+	var packet=packetContext.packet;
+	var node=this.kvStore.get(packet.resource);
+	
+	if(!node.children.length) {
+		return [{action:'noChild'}];
+	}
+	var key=node.children.pop();
+	
+	this.kvStore.set(packet.resource,node);
+	// save the new child
+	var childNode=this.kvStore.get(key);
+	
+	var responses=this.triggerChange({
+		'path': packet.resource,
+		'node': node,
+		'removeChild' : key
+	});
+	responses.push({action: 'success',entity: childNode.data});
+	return responses;
+};
+
+/**
+ * @param {sibilant.TransportPacketContext} packetContext
+ */
+sibilant.KeyValueApi.prototype.handleShiftAsLeader=function(packetContext) {
+	var packet=packetContext.packet;
+	var node=this.kvStore.get(packet.resource);
+	
+	if(!node.children.length) {
+		return [{action:'noChild'}];
+	}
+	var key=node.children.shift();
+	
+	this.kvStore.set(packet.resource,node);
+	// save the new child
+	var childNode=this.kvStore.get(key);
+	var responses=this.triggerChange({
+		'path': packet.resource,
+		'node': node,
+		'removeChild' : key
+	});
+	responses.push({action: 'success',entity: childNode.data});
+	return responses;
+};
 
 sibilant.KeyValueApi.prototype.generateSync=function() {
 	return this.kvStore.data;
