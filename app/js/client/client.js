@@ -122,12 +122,12 @@ sibilant.Client.prototype.createIframePeer=function(peerUrl) {
 
 sibilant.Client.prototype.findPeer=function() {
 	// check if we have a parent, get address there if so
-	if(window.parent!==window) {
-		this.peer=window.parent;
-		this.requestAddress();
-	} else {
+//	if(window.parent!==window) {
+//		this.peer=window.parent;
+//		this.requestAddress();
+//	} else {
 		this.createIframePeer(this.peerUrl);
-	}
+//	}
 };
 
 sibilant.Client.prototype.requestAddress=function(){
