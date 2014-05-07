@@ -1,16 +1,125 @@
 
-sibilant.keyValueApi=new sibilant.LeaderGroupParticipant({
-	name: "keyValue.api",
-	target: new sibilant.KeyValueApi(),
-	priority: 100
+
+var client=new sibilant.InternalParticipant({name: "debuggerClient"});
+sibilant.defaultRouter.registerParticipant(client);
+//===============================================================================================
+// Topology tab
+//===============================================================================================
+var TopologyMap=function(config) {
+	this.tableEl=config.tableEl;
+	this.routerRows={};
+	this.participantRows={};
+	this.multicastMembers={};
+};
+
+TopologyMap.prototype.findRouterRow=function(k) {
+	if(!this.routerRows[k]) {
+		this.routerRows[k]=$('<tr class="routerRow"><td class="RouterKey">'+k+'</td>'
+					+'<td class="routerValue"><table class="participantTable"><thead><tr>'
+					+ '<td>Address</td>'
+					+ '<td>Type</td>'
+					+ '<td>Name</td>'
+					+ '</tr></thead></table></td>');
+		this.tableEl.append(this.routerRows[k]);
+	};
+	return this.routerRows[k];
+};
+
+TopologyMap.prototype.findParticipantRow=function(k,routerRow) {
+	if(!this.participantRows[k]) {
+		this.participantRows[k]=$('<tr>'
+						+'<td><span class="address"></span></td>'
+						+'<td class="type"></td>'
+						+'<td class="name"></td>'
+						);
+		routerRow.find(".participantTable").append(this.participantRows[k]);
+	}
+	return this.participantRows[k];
+};
+
+TopologyMap.prototype.updateRouter=function(packet) {
+	var el=this.findRouterRow(packet.resource);
+
+	var val;
+	if(packet.action==="changed") {
+		val=packet.entity.newValue;
+	} else {
+		val=packet.entity;
+	}
+	if(val.participants) {
+		for(var p in val.participants) {
+			var pEl;
+			var data=val.participants[p];
+			
+			if(data.type==="multicast") {
+				var pEl=this.findParticipantRow(p,this.tableEl.find(".routerMulticast"));
+				pEl.find(".address").text(p);
+				pEl.find(".type").text(data.type);
+				this.multicastMembers[p]=this.multicastMembers[p] || {};
+				for(var memberI=0; memberI < data.members.length; ++memberI) {
+					this.multicastMembers[p][data.members[memberI]]=1;
+				}
+				
+				pEl.find(".name").html(Object.keys(this.multicastMembers[p]).join("<br>"));
+			} else {
+				var pEl=this.findParticipantRow(p,el);
+				pEl.find(".address").text(p);
+				pEl.find(".type").text(data.type);
+				pEl.find(".name").text(data.name);
+			}
+			delete data.address;
+			delete data.type;
+			delete data.name;
+			$(pEl).find(".address").popover({
+				html: true,
+				title: "otherData",
+				content: "<pre>"+JSON.stringify(data,null,2) +"</pre>",
+				container: $('#topologyTab')
+			});
+		}
+	}
+};
+
+
+TopologyMap.prototype.updateKeys=function(packet) {
+	var keys=packet.entity;
+	var self=this;
+	
+	for(var i=0; i< keys.length; ++i) {
+		var k=keys[i];
+		if(!this.routerRows[k]) {
+			client.send({
+				dst: 'names.api',
+				action: 'watch',
+				resource: k
+			},function(p) { self.updateRouter(p);});
+		}
+
+		
+		client.send({
+			dst: 'names.api',
+			action: 'get',
+			resource: k
+		},function(p) { self.updateRouter(p);});
+	}
+};
+
+TopologyMap.prototype.refresh=function() {
+	var self=this;
+	client.send({
+		dst: 'names.api',
+		action: 'list'
+	},function(p) { self.updateKeys(p); });
+};
+
+var topologyMap;
+
+$(document).ready(function() {
+	topologyMap=new TopologyMap({tableEl:$("#topologyTable")});
+	topologyMap.refresh();
 });
 
-sibilant.defaultRouter.registerParticipant(sibilant.keyValueApi);
-sibilant.defaultRouter.registerMulticast(sibilant.keyValueApi,["keyValue.api"]);
-		
 
-var client=new sibilant.InternalParticipant();
-sibilant.defaultRouter.registerParticipant(client);
 
 //===============================================================================================
 // Log tab

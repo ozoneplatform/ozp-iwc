@@ -2,7 +2,8 @@
 sibilant.InternalParticipant=sibilant.util.extend(sibilant.Participant,function(config) {
 	sibilant.Participant.apply(this,arguments);
 	this.replyCallbacks={};
-	
+	this.participantType="internal";
+	this.name=config.name;
 	this.events=new sibilant.Event();
 	this.events.mixinOnOff(this);
 });

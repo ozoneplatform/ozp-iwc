@@ -84,6 +84,42 @@ sibilant.TransportPacketContext.prototype.replyTo=function(response) {
  * @property {sibilant.TransportPacket} packet
  * @property {sibilant.NetworkPacket} rawPacket
  */
+/**
+ * @class
+ */
+sibilant.RouterWatchdog=sibilant.util.extend(sibilant.InternalParticipant,function(config) {
+	sibilant.InternalParticipant.apply(this,arguments);
+	
+	this.participantType="routerWatchdog";
+	this.on("connected",function() {
+		this.name=this.router.self_id;
+	},this);
+	
+	this.heartbeatFrequency=config.heartbeatFrequency || 10000;
+	var self=this;
+	
+	this.timer=window.setInterval(function() {
+		var heartbeat={
+			dst: "names.api",
+			action: "set",
+			resource: "/router/" + self.router.self_id,
+			entity: { participants: {} }
+		};
+		for(var k in self.router.participants) {
+			heartbeat.entity.participants[k]=self.router.participants[k].heartbeatStatus();
+		}
+		self.send(heartbeat);
+	},this.heartbeatFrequency);
+});
+
+sibilant.RouterWatchdog.prototype.connectToRouter=function(router,address) {
+	sibilant.Participant.prototype.connectToRouter.apply(this,arguments);
+	this.name=router.self_id;
+};
+
+sibilant.RouterWatchdog.prototype.shutdown=function() {
+	window.clearInterval(this.timer);
+};
 
 /**
  * @class
@@ -131,7 +167,8 @@ sibilant.Router=function(config) {
 		}
 	};
 	this.events.on("preSend",checkFormat);
-
+	this.watchdog=new sibilant.RouterWatchdog({router: this});
+	this.registerParticipant(this.watchdog);
 	/** @TODO move all of this to the "names" service */
 //	this.participants[this.routerControlAddress] = {
 //		receiveFromRouter: function(packetContext) {

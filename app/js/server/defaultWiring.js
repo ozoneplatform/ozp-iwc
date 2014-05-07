@@ -26,15 +26,18 @@ if(sibilant.BasicAuthorization) {
 	sibilant.authorization=new sibilant.BasicAuthorization();
 }
 
-if(!sibilant.dontProvideApis) {
+if(sibilant.KeyValueApi) {
+	sibilant.keyValueApi=new sibilant.LeaderGroupParticipant({
+		name: "keyValue.api",
+		target: new sibilant.KeyValueApi()
+	});
 
-	if(sibilant.KeyValueApi) {
-		sibilant.keyValueApi=new sibilant.LeaderGroupParticipant({
-			name: "keyValue.api",
-			target: new sibilant.KeyValueApi()
-		});
-
-		sibilant.defaultRouter.registerParticipant(sibilant.keyValueApi);
-		sibilant.defaultRouter.registerMulticast(sibilant.keyValueApi,["keyValue.api"]);
-	}
+	sibilant.defaultRouter.registerParticipant(sibilant.keyValueApi);
+}
+if(sibilant.NamesApi) {
+	sibilant.namesApi=new sibilant.LeaderGroupParticipant({
+		name: "names.api",
+		target: new sibilant.NamesApi()
+	});
+	sibilant.defaultRouter.registerParticipant(sibilant.namesApi);
 }

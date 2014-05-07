@@ -70,3 +70,12 @@ sibilant.Participant.prototype.send=function(packet) {
 sibilant.Participant.prototype.generateMsgId=function() {
 	return "i:" + this.msgId++;
 };
+
+sibilant.Participant.prototype.heartbeatStatus=function() {
+	return {
+		address: this.address,
+		subjects: this.securitySubject,
+		type: this.participantType || this.constructor.name,
+		name: this.name
+	};
+};

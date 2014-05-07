@@ -34,3 +34,12 @@ tr.packet {
 .hidden {
 	display: none;
 }
+
+span.address {
+	text-decoration: underline;
+	color: blue;
+}
+
+.participantTable td {
+	width: 33%;
+}

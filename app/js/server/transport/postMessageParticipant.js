@@ -11,9 +11,10 @@ var sibilant=sibilant || {};
  */
 sibilant.PostMessageParticipant=sibilant.util.extend(sibilant.Participant,function(config) {
 	sibilant.Participant.apply(this,arguments);
-	this.origin=config.origin;
+	this.origin=this.name=config.origin;
 	this.sourceWindow=config.sourceWindow;
 	this.credentials=config.credentials;
+	this.participantType="postMessageProxy";
 	this.securitySubject.push("origin:"+this.origin);
 });
 
@@ -86,6 +87,7 @@ sibilant.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet
 	}
 };
 
+
 /**
  * @class
  * @param {object} config
@@ -145,5 +147,4 @@ sibilant.PostMessageParticipantListener.prototype.receiveFromPostMessage=functio
 	
 	participant.forwardFromPostMessage(packet,event);
 };
-
 

@@ -33,7 +33,7 @@ sibilant.LeaderGroupParticipant=sibilant.util.extend(sibilant.Participant,functi
 	this.electionAddress=config.electionAddress || (this.name + ".election");
 
 	// Election times and how to score them
-	this.priority = config.priority || Math.random();
+	this.priority = config.priority || sibilant.defaultLeaderPriority || Math.random();
 	this.priorityLessThan = config.priorityLessThan || function(l,r) { return l < r; };
 	this.electionTimeout=config.electionTimeout || 250; // quarter second
 	this.leaderState="connecting";
@@ -44,6 +44,9 @@ sibilant.LeaderGroupParticipant=sibilant.util.extend(sibilant.Participant,functi
 	this.leaderPriority=null;
 	this.events=new sibilant.Event();
 	this.events.mixinOnOff(this);
+
+	this.participantType="leaderGroupMember";
+	this.name=config.name;
 	
 	this.on("startElection",function() {
 			this.electionQueue=[];
@@ -73,7 +76,7 @@ sibilant.LeaderGroupParticipant=sibilant.util.extend(sibilant.Participant,functi
 
 sibilant.LeaderGroupParticipant.prototype.connectToRouter=function(router,address) {
 	sibilant.Participant.prototype.connectToRouter.apply(this,arguments);
-	this.router.registerMulticast(this,[this.electionAddress]);
+	this.router.registerMulticast(this,[this.electionAddress,this.name]);
 	this.startElection();
 };
 
@@ -211,6 +214,7 @@ sibilant.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext
 			var replies=handler.call(this.target,packetContext);
 			for(var j=0;j<replies.length;++j) {
 				var reply=this.fixPacket(replies[j]);
+				reply.src = this.name;
 				reply.dst = reply.dst || packet.src;
 				reply.replyTo = reply.replyTo || packet.msgId;
 				reply.resource = reply.resource || packet.resource;
@@ -275,4 +279,11 @@ sibilant.LeaderGroupParticipant.prototype.sendSync=function() {
 			entity: syncData
 		});
 	}
+};
+
+sibilant.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
+	var status= sibilant.Participant.prototype.heartbeatStatus.apply(this,arguments);
+	status.leaderState=this.leaderState;
+	status.leaderPriority=this.priority;
+	return status;
 };

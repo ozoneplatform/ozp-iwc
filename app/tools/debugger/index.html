@@ -7,7 +7,7 @@
 
 		<script src="../../js/sibilant-server.js"></script>
 		<script type="text/javascript">
-			sibilant.dontProvideApis=true;
+			sibilant.defaultLeaderPriority=100;
 		</script>
 		
 		<script src="../../js/server/defaultWiring.js"></script>
@@ -18,17 +18,32 @@
   </head>
   <body>
 	<ul class="nav nav-tabs">
-		<li class="active"><a href="#snooper" data-toggle="tab">Traffic</a></li>
-		<li><a href="#metrics" data-toggle="tab">Metrics</a></li>
-		<li><a href="#keyValue" data-toggle="tab">KeyValue API</a></li>
-		<li><a href="#leaderInfo" data-toggle="tab">Leadership Groups</a></li>
+		<li class="active"><a href="#topologyTab" data-toggle="tab">Topology</a></li>
+		<li><a href="#snooperTab" data-toggle="tab">Traffic</a></li>
+		<li><a href="#metricsTab" data-toggle="tab">Metrics</a></li>
+		<li><a href="#keyValueTab" data-toggle="tab">KeyValue API</a></li>
+		<li><a href="#leaderInfoTab" data-toggle="tab">Leadership Groups</a></li>
 		<li><a href="#localStorageTab" data-toggle="tab">LocalStorage</a></li>
 		<li class="disabled"><a href="#unusedTab" data-toggle="tab">Address: <span id="debuggerAddress"></span></a></li>
-		
 	</ul>
 
 	<div class="tab-content">
-		<div id="snooper" class="tab-pane active">
+		<div id="topologyTab" class="tab-pane active">
+			<button onclick="topologyMap.refresh();">Refresh</button>
+			<table id="topologyTable">
+				<thead><tr>
+						<td>Router</td>
+						<td>Participants</td>
+				</tr></thead>
+				<tr class="routerRow routerMulticast"><td class="RouterKey">Multicast</td>
+					<td class="routerValue"><table class="participantTable"><thead><tr>
+					 <td>Address</td>
+					 <td>Type</td>
+					 <td>Members</td>
+					</tr></thead></table></td>
+			</table>
+		</div>
+		<div id="snooperTab" class="tab-pane">
 			<button id="togglePacketCapture" onclick="togglePacketCapture();">Start Capture</button>
 			<button id="clearPacketCapture" onclick="clearPacketCapture();">Clear</button>
 			Filter: <input id="packetCaptureFilter" type="text" style="width:75%"></input>
@@ -49,11 +64,11 @@
 				<tbody></tbody>
 			</table>
 		</div>
-		<div id="metrics" class="tab-pane">
+		<div id="metricsTab" class="tab-pane">
 			<button id="toggleUpdateMetrics" onclick="toggleUpdateMetrics();">Enable Update</button>
 			<pre id="stats"></pre>
 		</div>
-		<div id="keyValue" class="tab-pane">
+		<div id="keyValueTab" class="tab-pane">
 			<button id="kvRefresh" onclick="refreshKV();">Refresh</button>
 			<table id="keyValueTable">
 				<thead><tr>
@@ -63,7 +78,7 @@
 				</tr></thead>
 			</table>
 		</div>
-		<div id="leaderInfo" class="tab-pane">
+		<div id="leaderInfoTab" class="tab-pane">
 			<table>
 				<thead><tr>
 						<td>LeaderGroup</td>

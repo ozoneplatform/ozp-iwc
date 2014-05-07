@@ -1,6 +1,5 @@
 var sibilant=sibilant || {};
 
-sibilant.NamesAPI = function(config) {
-
-	
-};
+sibilant.NamesApi = sibilant.util.extend(sibilant.KeyValueApi,function() {
+	sibilant.KeyValueApi.apply(this,arguments);
+});
