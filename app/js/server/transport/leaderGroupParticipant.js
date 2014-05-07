@@ -232,14 +232,15 @@ sibilant.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext
  * @returns {undefined}
  */
 sibilant.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionMessage) {
-	if(this.isLeader()) {
-		this.sendSync();
-	}
+
 	// is the new election lower priority than us?
 	if(this.priorityLessThan(electionMessage.entity.priority,this.priority)) {
 		// Quell the rebellion!
 		this.startElection();
 	} else {
+		if(this.isLeader()) {
+			this.sendSync();
+		}
 		// Abandon dreams of leadership
 		this.cancelElection();
 	}
@@ -266,6 +267,7 @@ sibilant.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryM
 
 sibilant.LeaderGroupParticipant.prototype.handleSyncMessage=function(packet) {
 	if(typeof(this.target.receiveSync)==="function" && !this.isLeader()) {
+		sibilant.log.log("LeaderParticipant["+this.name+"::"+this.address+"] received sync " + JSON.stringify(packet.entity,null,2));
 		this.target.receiveSync(packet.entity);
 	}
 };
@@ -273,6 +275,7 @@ sibilant.LeaderGroupParticipant.prototype.handleSyncMessage=function(packet) {
 sibilant.LeaderGroupParticipant.prototype.sendSync=function() {
 	if('generateSync' in this.target) {
 		var syncData=this.target.generateSync();
+		sibilant.log.log("LeaderParticipant["+this.name+"::"+this.address+"] generated sync" + JSON.stringify(syncData,null,2));
 		this.send({
 			dst: this.electionAddress,
 			action: 'sync',

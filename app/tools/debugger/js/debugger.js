@@ -397,7 +397,7 @@ function logLeaderPacket(msg) {
 	var leaderGroup=knownLeaderGroups[packet.dst];
 	if(!leaderGroup) {
 		leaderGroup=knownLeaderGroups[packet.dst]=new LeaderGroup(packet.dst);
-		$("#leaderInfo table").append(leaderGroup.el);
+		$("#leaderInfoTab table").append(leaderGroup.el);
 	}
 	leaderGroup.update(packet);
 };

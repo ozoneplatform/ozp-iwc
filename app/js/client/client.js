@@ -25,7 +25,7 @@ sibilant.Client=function(config) {
 	}
 	
 	// receive postmessage events
-	window.addEventListener("message", function(event) {
+	this.messageEventListener=window.addEventListener("message", function(event) {
 		if(event.origin !== self.peerUrl){
 			return;
 		}
@@ -94,6 +94,7 @@ sibilant.Client.prototype.off=function(event,callback) {
 };
 
 sibilant.Client.prototype.disconnect=function() {
+	window.removeEventListener("message",this.messageEventListener,false);
 	if(this.iframe) {
 		document.body.removeChild(this.iframe);
 	}
