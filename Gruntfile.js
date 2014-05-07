@@ -79,16 +79,19 @@ module.exports = function(grunt) {
 				options: { port: 13001, base: "doc" }
 			},			
 			demo1: {
-				options: { port: 15000, base: "demo" }
+				options: { port: 15000, base: "demo/bouncingBalls" }
 			},
 			demo2: {
-				options: { port: 15001, base: "demo" }
+				options: { port: 15001, base: "demo/bouncingBalls" }
 			},
 			demo3: {
-				options: { port: 15002, base: "demo" }
+				options: { port: 15002, base: "demo/bouncingBalls" }
 			},
 			demo4: {
-				options: { port: 15003, base: "demo" }
+				options: { port: 15003, base: "demo/bouncingBalls" }
+			},
+			gridsterDemo: {
+				options: { port: 15004, base: "demo/gridster" }
 			}
 		}
 
@@ -101,6 +104,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-connect');
 	
   // Default task(s).
-  grunt.registerTask('default', ['uglify','jsdoc']);
+  grunt.registerTask('default', ['concat','uglify','jsdoc']);
   grunt.registerTask('test', ['concat','uglify','connect','watch']);
 };
