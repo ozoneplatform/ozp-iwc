@@ -11,7 +11,7 @@ if(sibilant.Router) {
 }
 
 if(sibilant.LocalStorageLink) {
-	sibilant.defaultLocalStorageLink=new sibilant.LocalStorageLink({
+	sibilant.defaultLocalStorageLink=new sibilant.KeyBroadcastLocalStorageLink({
 		peer: sibilant.defaultPeer
 	});	
 }
