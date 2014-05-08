@@ -18,6 +18,11 @@ sibilant.Client=function(config) {
 	this.msgIdSequence=0;
 	this.events=new sibilant.Event();
 	this.events.mixinOnOff(this);
+	this.receivedPackets=0;
+	this.receivedBytes=0;
+	this.sentPackets=0;
+	this.sentBytes=0;
+	this.startTime=sibilant.util.now();
 	var self=this;
 
 	if(this.autoPeer) {
@@ -31,6 +36,8 @@ sibilant.Client=function(config) {
 		}
 		try {
 			self.receive(JSON.parse(event.data));
+			self.receivedBytes+=(event.data.length * 2);
+			self.receivedPackets++;		
 		} catch(e) {
 			// ignore!
 		}
@@ -76,8 +83,10 @@ sibilant.Client.prototype.send=function(fields,callback) {
 	if(callback) {
 		this.replyCallbacks[id]=callback;
 	}
-
-	this.peer.postMessage(JSON.stringify(packet),'*');
+	var data=JSON.stringify(packet);
+	this.peer.postMessage(data,'*');
+	this.sentBytes+=data.length;
+	this.sentPackets++;
 	return packet;
 };
 

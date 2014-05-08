@@ -2,6 +2,13 @@
 <html>
   <head>
     <title>Tests</title>
+		<script type="text/javascript" src="../lib/jquery-2.1.0.min.js"></script>
+		<script type="text/javascript">
+			$(function() {
+				$('a').each(function(){this.hostname=window.location.hostname;});
+			});
+		</script>
+
   </head>
 	<body>
 	<ul>

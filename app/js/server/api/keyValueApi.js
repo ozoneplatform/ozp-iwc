@@ -37,25 +37,25 @@ sibilant.KeyValueApi = function() {
 	}
  */
 sibilant.KeyValueApi.prototype.triggerChange=function(evt) {
-	return evt.node.watchers.map(function(packet) {
-		var packet={
-			'dst'   : packet.src,
+	return evt.node.watchers.map(function(watcher) {
+		var reply={
+			'dst'   : watcher.src,
+		  'replyTo' : watcher.msgId,
 			'action': 'changed',
-		  'replyTo' : packet.msgId,
 			'resource': evt.path,
 			'entity': {	}
 		};
 		if(evt.newData || evt.oldData) {
-			packet.entity.newValue=evt.newData;
-			packet.entity.oldValue=evt.oldData;
+			reply.entity.newValue=evt.newData;
+			reply.entity.oldValue=evt.oldData;
 		}
 		if(evt.addChild) {
-			packet.entity.addChild=evt.addChild;
+			reply.entity.addChild=evt.addChild;
 		}
 		if(evt.removeChild) {
-			packet.entity.removeChild=evt.removeChild;
+			reply.entity.removeChild=evt.removeChild;
 		}
-		return packet;
+		return reply;
 	});
 };
 
@@ -87,7 +87,7 @@ sibilant.KeyValueApi.prototype.handleSetAsLeader=function(packetContext) {
 		'newData' : node.data
 	});
 	
-	responses.push({'action': 'success'});
+	responses.unshift({'action': 'success'});
 	return responses;
 };
 
@@ -106,7 +106,7 @@ sibilant.KeyValueApi.prototype.handleDeleteAsLeader=function(packetContext) {
 		'newData' : undefined
 	});
 	
-	responses.push({'action': 'success'});
+	responses.unshift({'action': 'success'});
 	
 	return responses;
 };
@@ -150,9 +150,12 @@ sibilant.KeyValueApi.prototype.handleUnwatchAsLeader=function(packetContext) {
 
 sibilant.KeyValueApi.prototype.handleListAsLeader=function(packetContext) {
 	var packet=packetContext.packet;
-	var node=this.kvStore.get(packet.resource);
-	
-	return [{'action': 'success','entity': node.children}];
+	if(packet.resource) {
+		var node=this.kvStore.get(packet.resource);
+		return [{'action': 'success','entity': node.children}];
+	} else {
+		return [{'action': 'success','entity': this.kvStore.keys()}];
+	}
 };
 
 /**
@@ -181,7 +184,7 @@ sibilant.KeyValueApi.prototype.handlePushAsLeader=function(packetContext) {
 		'node': node,
 		'addChild' : key
 	});
-	responses.push({'action': 'success','entity': {'resource':key}});
+	responses.unshift({'action': 'success','entity': {'resource':key}});
 	return responses;
 };
 
@@ -211,7 +214,7 @@ sibilant.KeyValueApi.prototype.handleUnshiftAsLeader=function(packetContext) {
 		'node': node,
 		'addChild' : key
 	});
-	responses.push({'action': 'success','entity': {'resource':key}});
+	responses.unshift({'action': 'success','entity': {'resource':key}});
 	return responses;
 };
 
@@ -236,7 +239,7 @@ sibilant.KeyValueApi.prototype.handlePopAsLeader=function(packetContext) {
 		'node': node,
 		'removeChild' : key
 	});
-	responses.push({action: 'success',entity: childNode.data});
+	responses.unshift({action: 'success',entity: childNode.data});
 	return responses;
 };
 
@@ -260,7 +263,7 @@ sibilant.KeyValueApi.prototype.handleShiftAsLeader=function(packetContext) {
 		'node': node,
 		'removeChild' : key
 	});
-	responses.push({action: 'success',entity: childNode.data});
+	responses.unshift({action: 'success',entity: childNode.data});
 	return responses;
 };
 

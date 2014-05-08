@@ -167,8 +167,8 @@ sibilant.Router=function(config) {
 		}
 	};
 	this.events.on("preSend",checkFormat);
-	this.watchdog=new sibilant.RouterWatchdog({router: this});
-	this.registerParticipant(this.watchdog);
+//	this.watchdog=new sibilant.RouterWatchdog({router: this});
+//	this.registerParticipant(this.watchdog);
 	/** @TODO move all of this to the "names" service */
 //	this.participants[this.routerControlAddress] = {
 //		receiveFromRouter: function(packetContext) {

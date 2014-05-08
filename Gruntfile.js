@@ -71,28 +71,28 @@ module.exports = function(grunt) {
 				options:{ port: 13000,base: "app" }
 			},
 			tests: {        
-				options:{ port: 14000, base: "test/tests"	}
+				options:{ port: 14000, base: ["app","test/tests"]	}
 			},
 			pingers: {        
-				options:{	port: 14001, base: "test/pingers"	}
+				options:{	port: 14001, base: ["app","test/pingers"]	}
 			},
 			doc: {
 				options: { port: 13001, base: "doc" }
 			},			
 			demo1: {
-				options: { port: 15000, base: "demo/bouncingBalls" }
+				options: { port: 15000, base: ["app","demo/bouncingBalls"] }
 			},
 			demo2: {
-				options: { port: 15001, base: "demo/bouncingBalls" }
+				options: { port: 15001, base: ["app","demo/bouncingBalls"] }
 			},
 			demo3: {
-				options: { port: 15002, base: "demo/bouncingBalls" }
+				options: { port: 15002, base: ["app","demo/bouncingBalls"] }
 			},
 			demo4: {
-				options: { port: 15003, base: "demo/bouncingBalls" }
+				options: { port: 15003, base: ["app","demo/bouncingBalls"] }
 			},
 			gridsterDemo: {
-				options: { port: 15004, base: "demo/gridster" }
+				options: { port: 15004, base: ["app","demo/gridster"] }
 			}
 		}
 

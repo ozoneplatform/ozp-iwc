@@ -62,7 +62,10 @@ sibilant.Participant.prototype.fixPacket=function(packet) {
  */
 sibilant.Participant.prototype.send=function(packet) {
 	packet=this.fixPacket(packet);
-	this.router.send(packet,this);
+	var self=this;
+//	window.setTimeout(function(){
+		self.router.send(packet,self);
+//	},0);
 	return packet;
 };
 

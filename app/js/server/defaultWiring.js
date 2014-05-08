@@ -13,7 +13,10 @@ if(sibilant.Router) {
 if(sibilant.LocalStorageLink) {
 	sibilant.defaultLocalStorageLink=new sibilant.KeyBroadcastLocalStorageLink({
 		peer: sibilant.defaultPeer
-	});	
+	});
+//	sibilant.defaultLocalStorageLink=new sibilant.LocalStorageLink({
+//		peer: sibilant.defaultPeer
+//	});	
 }
 
 if(sibilant.PostMessageParticipantListener) {
@@ -34,10 +37,10 @@ if(sibilant.KeyValueApi) {
 
 	sibilant.defaultRouter.registerParticipant(sibilant.keyValueApi);
 }
-if(sibilant.NamesApi) {
-	sibilant.namesApi=new sibilant.LeaderGroupParticipant({
-		name: "names.api",
-		target: new sibilant.NamesApi()
-	});
-	sibilant.defaultRouter.registerParticipant(sibilant.namesApi);
-}
+//	if(sibilant.NamesApi) {
+//		sibilant.namesApi=new sibilant.LeaderGroupParticipant({
+//			name: "names.api",
+//			target: new sibilant.NamesApi()
+//		});
+//		sibilant.defaultRouter.registerParticipant(sibilant.namesApi);
+//	}

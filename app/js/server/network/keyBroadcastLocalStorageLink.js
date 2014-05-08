@@ -57,8 +57,13 @@ sibilant.KeyBroadcastLocalStorageLink = function(config) {
 	var self=this;
 	
 	var receiveStorageEvent=function(event) {
-		var packet=JSON.parse(event.key);
-		self.peer.receive(self.linkId,packet);
+		try {
+			var packet=JSON.parse(event.key);
+			self.peer.receive(self.linkId,packet);
+			sibilant.metrics.counter('links.localStorage.packets.received').inc();
+		} catch(e) {
+			sibilant.metrics.counter('links.localStorage.packets.parseError').inc();
+		}
 	};
 	window.addEventListener('storage',receiveStorageEvent , false); 
 	
@@ -81,6 +86,8 @@ sibilant.KeyBroadcastLocalStorageLink.prototype.send=function(packet) {
 	var packet=JSON.stringify(packet);
 	localStorage.setItem(packet,"");
 	sibilant.metrics.counter('links.localStorage.packets.sent').inc();
-	localStorage.removeItem(packet);
+	window.setTimeout(function() {
+		localStorage.removeItem(packet);
+	},2);
 };
 
