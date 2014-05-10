@@ -22,7 +22,7 @@ sibilant.metricsStats=sibilant.metricsStats || {};
 
 //  Take an exponentially decaying sample of size size of all values
 sibilant.metricsStats.DEFAULT_RESCALE_THRESHOLD = 60 * 60 * 1000; // 1 hour in milliseconds
-sibilant.metricsStats.DEFAULT_DECAY_ALPHA=1;
+sibilant.metricsStats.DEFAULT_DECAY_ALPHA=0.015;
 /**
  * This acts as a ordered binary heap for any serializeable JS object or collection of such objects 
  * <p>Borrowed from https://github.com/mikejihbe/metrics. 

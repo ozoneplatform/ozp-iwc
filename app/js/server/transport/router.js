@@ -201,7 +201,7 @@ sibilant.Router.prototype.registerParticipant=function(participant,packet) {
 	this.participants[participant_id]=participant;
 	participant.connectToRouter(this,participant_id);
 	
-	sibilant.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
+//	sibilant.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
 	return participant_id;
 };
 

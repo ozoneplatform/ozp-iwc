@@ -50,7 +50,75 @@ describe("Sample Interface",function() {
 			
 		});
 	}// loop over all sample classes
-	
+
 });
 
 
+describe("Uniform Sample Specific Functions",function() {
+	var sample;
+	beforeEach(function() {
+		sample=new sibilant.metricsStats.UniformSample(10);
+	});
+
+	it("gets no bigger than the max size",function() {
+		for(var i=0; i<100;++i) {
+			sample.update(i);
+		}
+		expect(sample.size()).toEqual(10);
+	});
+
+	it("randomly replaces values once the buffer is full (extremely small chance that this test will occasionally fail)",function() {
+		for(var i=0; i<10000;++i) {
+			sample.update(i);
+		}
+
+		var v=sample.getValues();
+		var success=false;
+		// Should be at least one value larger than 10 in here.
+		// not going for statistical soundness, just that it does
+		// put some values in
+		for(var i=0;i<v.length;++i) {
+			if(v[i]>10) {
+				success=true;
+			}
+		}
+
+		expect(success).toBe(true);
+	});		
+
+});
+	
+describe("Exponentially Decaying Sample functionality",function() {
+	var sample;
+	beforeEach(function() {
+		sample=new sibilant.metricsStats.ExponentiallyDecayingSample(10);
+	});
+
+	it("gets no bigger than the max size",function() {
+		for(var i=0; i<100;++i) {
+			sample.update(i);
+		}
+		expect(sample.size()).toEqual(10);
+	});
+
+	it("randomly replaces values once the buffer is full (extremely small chance that this test will occasionally fail)",function() {
+		for(var i=0; i<10000;++i) {
+			sample.update(i);
+		}
+
+		var v=sample.getValues();
+		var success=false;
+		// Should be at least one value larger than 10 in here.
+		// not going for statistical soundness, just that it does
+		// put some values in
+		for(var i=0;i<v.length;++i) {
+			if(v[i]>10) {
+				success=true;
+			}
+		}
+
+		expect(success).toBe(true);
+	});		
+	
+	
+});

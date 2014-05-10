@@ -1,17 +1,7 @@
 describe("LocalStorageLink",function() {
 	var link;
 	var event;
-	var clockOffset;
-	
-	var tick=function(t) { 
-		clockOffset+=t;
-		jasmine.clock().tick(t);
-	};
-	
-	// mock out the now function to let us fast forward time
-	sibilant.util.now=function() {
-		return new Date().getTime() + clockOffset;
-	};
+
 
 	var makeLink=function(conf) {
 		conf.peer.receive=conf.peer.receive || function(linkId,packet) {};
@@ -37,6 +27,7 @@ describe("LocalStorageLink",function() {
 	afterEach(function() {
 		jasmine.clock().uninstall();
 		event=link=null;
+		clockOffset=0;
 	});
 	
 	it("writes to localStorage",function() {

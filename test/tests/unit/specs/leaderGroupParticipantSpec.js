@@ -7,7 +7,7 @@ describe("Leader Group Participant",function() {
 			if(packetQueue.length===0 || Math.random() > fakeRouter.jitter) {
 				packetQueue.push(packet);
 			} else {
-				console.log("JITTER!");
+//				console.log("JITTER!");
 				packetQueue.splice(-1,0,packet);
 			}
 
@@ -21,7 +21,7 @@ describe("Leader Group Participant",function() {
 			while(packetQueue.length) {
 				processed++;
 				var packet=packetQueue.shift();
-				console.log("PACKET(" + packet.src + "): " + packet.entity.type);
+//				console.log("PACKET(" + packet.src + "): " + packet.entity.type);
 				leaders.forEach(function(l) {
 					if(l.address !== packet.src) {
 						l.receiveFromRouter({'packet':packet});
@@ -44,7 +44,7 @@ describe("Leader Group Participant",function() {
 		var elected=false;
 		var round=0;
 		while(!elected) {
-			console.log("============= Round " + round + " ===================");
+//			console.log("============= Round " + round + " ===================");
 			round++;
 			jasmine.clock().tick(step);
 			fakeRouter.pump();
@@ -60,18 +60,18 @@ describe("Leader Group Participant",function() {
 			'priority': priority,
 		});
 		fakeRouter.registerParticipant(l);
-		l.on("startElection", function() {
-			console.log("startElection[" + l.address + "]");
-		});
-		l.on("endElection",function() {
-			console.log("endElection[" + l.address + "]");
-		});
-		l.on("newLeader",function() {
-			console.log("newLeader[" + l.address + "]");
-		});
-		l.on("becameLeader",function() {
-			console.log("becameLeader[" + l.address + "]");
-		});
+//		l.on("startElection", function() {
+//			console.log("startElection[" + l.address + "]");
+//		});
+//		l.on("endElection",function() {
+//			console.log("endElection[" + l.address + "]");
+//		});
+//		l.on("newLeader",function() {
+//			console.log("newLeader[" + l.address + "]");
+//		});
+//		l.on("becameLeader",function() {
+//			console.log("becameLeader[" + l.address + "]");
+//		});
 		
 		l.TEST_nonElectionPackets=[];
 		l.target={ defaultHandler: function(event) {
@@ -181,7 +181,7 @@ describe("Leader Group Participant",function() {
 
 			for(var i=0; i< leaders.length-1; ++i) {
 				if(leaders[i].isLeader()) {
-					console.log("Leader " + i + " thinks he is the bully");
+//					console.log("Leader " + i + " thinks he is the bully");
 				}
 				expect(leaders[i].isLeader()).toEqual(false);
 			}

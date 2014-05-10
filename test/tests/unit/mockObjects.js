@@ -9,7 +9,18 @@ var FakePeer=function() {
 	};
 };
 
+var clockOffset=0;
 
+var tick=function(t) { 
+	clockOffset+=t;
+	jasmine.clock().tick(t);
+};
+
+// mock out the now function to let us fast forward time
+sibilant.util.now=function() {
+	return new Date().getTime() + clockOffset;
+};
+	
 var TestParticipant=sibilant.util.extend(sibilant.Participant,function(config) {
 	sibilant.Participant.apply(this,arguments);
 	this.origin=config.origin || "foo.com";

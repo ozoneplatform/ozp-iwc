@@ -8,8 +8,10 @@ module.exports = function(grunt) {
 				'app/js/common/util.js',
 				'app/js/metrics/statistics/sample.js',
 				'app/js/metrics/statistics/binary_heap.js',
-				'app/js/metrics/statistics/exponentially_decaying_sample.js',
-				'app/js/metrics/metrics.js'
+				'app/js/metrics/statistics/exponentiallyDecayingSample.js',
+				'app/js/metrics/simpleMetrics.js',
+				'app/js/metrics/metricsRegistry.js',
+				
 			],
 			server: [
 				'<%= src.metrics %>',
