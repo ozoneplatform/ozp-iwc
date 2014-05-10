@@ -4,7 +4,15 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 		src: {
+			metrics: [
+				'app/js/common/util.js',
+				'app/js/metrics/statistics/sample.js',
+				'app/js/metrics/statistics/binary_heap.js',
+				'app/js/metrics/statistics/exponentially_decaying_sample.js',
+				'app/js/metrics/metrics.js'
+			],
 			server: [
+				'<%= src.metrics %>',
 				'app/js/common/**/*.js',
 				'app/js/server/es5-sham.min.js',
 				'app/js/server/util/**/*.js',
@@ -22,11 +30,17 @@ module.exports = function(grunt) {
 			],
 			test: [
 				'app/test/**/*'
+			],
+			all: [
+				'<%= src.metrics %>',
+				'<%= src.server %>',
+				'<%= src.client %>'
 			]
 		},
 		output: {
 			serverJs: 'app/js/<%= pkg.name %>-server',
-			clientJs: 'app/js/<%= pkg.name %>-client'
+			clientJs: 'app/js/<%= pkg.name %>-client',
+			metricsJs: 'app/js/<%= pkg.name %>-metrics'
 		},
 		concat: {
       server: {
@@ -36,6 +50,10 @@ module.exports = function(grunt) {
 			client: {
 				src: '<%= src.client %>',
         dest: '<%= output.clientJs %>.js'
+			},
+			metrics: {
+				src: '<%= src.metrics %>',
+        dest: '<%= output.metricsJs %>.js'
 			}
 		},
     uglify: {
@@ -46,6 +64,10 @@ module.exports = function(grunt) {
 			client: {
         src: '<%= concat.client.dest %>',
         dest: '<%= output.clientJs %>.min.js'
+      },
+			metrics: {
+        src: '<%= concat.metrics.dest %>',
+        dest: '<%= output.metricsJs %>.min.js'
       }
     },
 		jsdoc : {
@@ -62,7 +84,7 @@ module.exports = function(grunt) {
 				tasks: ['jsdoc']
 			},
 			test: {
-				files: ['Gruntfile.js','<%= src.server %>','<%= src.client %>'],
+				files: ['Gruntfile.js','<%= src.all %>'],
 				tasks: ['concat']
 			}
     },
@@ -106,5 +128,5 @@ module.exports = function(grunt) {
 	
   // Default task(s).
   grunt.registerTask('default', ['concat','uglify','jsdoc']);
-  grunt.registerTask('test', ['concat','uglify','connect','watch']);
+  grunt.registerTask('test', ['concat','uglify','connect','watch:test']);
 };
