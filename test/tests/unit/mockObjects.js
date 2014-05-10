@@ -13,7 +13,11 @@ var clockOffset=0;
 
 var tick=function(t) { 
 	clockOffset+=t;
-	jasmine.clock().tick(t);
+	try {
+		jasmine.clock().tick(t);
+	} catch (e) {
+		// do nothing
+	}
 };
 
 // mock out the now function to let us fast forward time

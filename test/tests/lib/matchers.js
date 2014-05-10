@@ -10,6 +10,14 @@ var customMatchers={
 			return result;
 		}
 	};},
+	toBeApproximately: function(util, customEqualityTesters) { return {
+		compare: function(actual,expected,epsilon) {
+			if(typeof(epsilon) !== "number") {
+				epsilon=1e-5;
+			}
+			return {pass: Math.abs(actual-expected) <= epsilon * Math.abs(expected)};
+		}
+	};},
 	toContainAll: function(util, customEqualityTesters) { return {
 		compare: function(actual,expected) {
 			var missing=[];

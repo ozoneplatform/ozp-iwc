@@ -1,52 +1,51 @@
 describe("Metrics: Counter",function() {
-	var metrics;
+	var counter;
 	
 	beforeEach(function() {
-		jasmine.addMatchers(customMatchers);
-		metrics=new sibilant.MetricsRegistry();
+		counter=new sibilant.metricTypes.Counter();
 	});
 	
 	afterEach(function() {
-		metrics=null;
+		counter=null;
 	});
 	
 	
 	it("starts at zero",function() {
-		expect(metrics.counter("foo").get()).toEqual(0);
+		expect(counter.get()).toEqual(0);
 	});
 
 	it("increments by one",function() {
-		metrics.counter("foo").inc();
-		expect(metrics.counter("foo").get()).toEqual(1);
+		counter.inc();
+		expect(counter.get()).toEqual(1);
 	});
 
 	it("increments by a count",function() {
-		metrics.counter("foo").inc(5);
-		expect(metrics.counter("foo").get()).toEqual(5);
+		counter.inc(5);
+		expect(counter.get()).toEqual(5);
 	});
 
 	it("increments multiple times",function() {
-		metrics.counter("foo").inc(5);
-		metrics.counter("foo").inc();
-		metrics.counter("foo").inc(10);
-		expect(metrics.counter("foo").get()).toEqual(16);
+		counter.inc(5);
+		counter.inc();
+		counter.inc(10);
+		expect(counter.get()).toEqual(16);
 	});
 
 	it("decrements by one",function() {
-		metrics.counter("foo").dec();
-		expect(metrics.counter("foo").get()).toEqual(-1);
+		counter.dec();
+		expect(counter.get()).toEqual(-1);
 	});
 
 	it("decrements by a count",function() {
-		metrics.counter("foo").dec(5);
-		expect(metrics.counter("foo").get()).toEqual(-5);
+		counter.dec(5);
+		expect(counter.get()).toEqual(-5);
 	});
 
 	it("decrements multiple times",function() {
-		metrics.counter("foo").dec(5);
-		metrics.counter("foo").dec();
-		metrics.counter("foo").dec(10);
-		expect(metrics.counter("foo").get()).toEqual(-16);
+		counter.dec(5);
+		counter.dec();
+		counter.dec(10);
+		expect(counter.get()).toEqual(-16);
 	});		
 	
 });

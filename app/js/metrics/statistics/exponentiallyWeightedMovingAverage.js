@@ -34,38 +34,35 @@ sibilant.metricsStats.M15_ALPHA = 1 - Math.exp(-5/60/15);
 sibilant.metricsStats.ExponentiallyWeightedMovingAverage=function(alpha, interval) {
   this.alpha = alpha;
   this.interval = interval || 5000;
-  this.initialized = false;
-  this.currentRate = 0.0;
+  this.currentRate = null;
   this.uncounted = 0;
-	this.lastTick=0;
+	this.lastTick=sibilant.util.now();
 };
 
 sibilant.metricsStats.ExponentiallyWeightedMovingAverage.prototype.update = function(n) {
   this.uncounted += (n || 1);
-	var now=sibilant.util.now();
-	var age=now-this.lastTick;
-	if(age > this.interval) {
-		this.lastTick=now - age % this.interval;
-		var requiredTicks=age / this.interval;
-		for(var i=0; i < requiredTicks; ++i) {
-			this.tick();
-		}
-	}
+	this.tick();
 };
 
 /*
  * Update our rate measurements every interval
  */
 sibilant.metricsStats.ExponentiallyWeightedMovingAverage.prototype.tick = function() {
-  var  instantRate = this.uncounted / this.interval;
-  this.uncounted = 0;
-  
-  if(this.initialized) {
-    this.currentRate += this.alpha * (instantRate - this.currentRate);
-  } else {
-    this.currentRate = instantRate;
-    this.initialized = true;
-  }
+ 	var now=sibilant.util.now();
+	var age=now-this.lastTick;
+	if(age > this.interval) {
+		this.lastTick=now - (age % this.interval);
+		var requiredTicks=Math.floor(age / this.interval);
+		for(var i=0; i < requiredTicks; ++i) {
+			var instantRate = this.uncounted / this.interval;
+			this.uncounted = 0;
+			if(this.currentRate!==null) {
+				this.currentRate += this.alpha * (instantRate - this.currentRate);
+			} else {
+				this.currentRate = instantRate;
+			}
+		}
+	}
 };
 
 /*

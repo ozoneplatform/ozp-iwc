@@ -46,7 +46,10 @@ sibilant.metricTypes.Histogram.prototype.get=function() {
 		return a-b;
 	});
 	var percentile=function(p) {
-		var pos=p *(values.length +1);
+		var pos=p *(values.length);
+		if(pos >= values.length) {
+			return values[values.length-1];
+		}
 		pos=Math.max(0,pos);
 		pos=Math.min(pos,values.length+1);
 		var lower = values[Math.floor(pos)-1];
@@ -65,7 +68,7 @@ sibilant.metricTypes.Histogram.prototype.get=function() {
 		'percentile_999': percentile(0.999),				
 		'variance' : this.count < 1 ? null : this.varianceM2 / (this.count -1),
 		'mean' : this.count === 0 ? null : this.varianceMean,
-		'stdDev' : this.count < 1 ? null : Math.sqrt(this.variance),
+		'stdDev' : this.count < 1 ? null : Math.sqrt(this.varianceM2 / (this.count -1)),
 		'count' : this.count,
 		'sum' : this.sum,
 		'max' : this.max,

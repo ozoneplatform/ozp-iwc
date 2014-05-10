@@ -35,3 +35,8 @@ sibilant.metricTypes.Meter.prototype.get=function() {
 	};
 };
 
+sibilant.metricTypes.Meter.prototype.tick=function() { 
+	this.m1Rate.tick();
+	this.m5Rate.tick();
+	this.m15Rate.tick();
+};
