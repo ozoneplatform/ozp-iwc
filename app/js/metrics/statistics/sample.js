@@ -20,7 +20,7 @@
 var sibilant=sibilant || {};
 sibilant.metricsStats=sibilant.metricsStats || {};
 
-sibilant.metricsStats.DEFAULT_POOL_SIZE=1024;
+sibilant.metricsStats.DEFAULT_POOL_SIZE=1028;
 
 sibilant.metricsStats.Sample = function(){
 	this.clear();

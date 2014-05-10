@@ -9,12 +9,13 @@ module.exports = function(grunt) {
 				'app/js/metrics/statistics/sample.js',
 				'app/js/metrics/statistics/binary_heap.js',
 				'app/js/metrics/statistics/exponentiallyDecayingSample.js',
-				'app/js/metrics/simpleMetrics.js',
+				'app/js/metrics/statistics/exponentiallyWeightedMovingAverage.js',
 				'app/js/metrics/metricsRegistry.js',
-				
+				'app/js/metrics/**/*.js'
 			],
 			server: [
 				'<%= src.metrics %>',
+				'app/js/common/event.js',
 				'app/js/common/**/*.js',
 				'app/js/server/es5-sham.min.js',
 				'app/js/server/util/**/*.js',

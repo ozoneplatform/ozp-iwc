@@ -1,4 +1,29 @@
 var sibilant=sibilant || {};
+
+var sibilant=sibilant || {};
+sibilant.metricTypes=sibilant.metricTypes || {};
+
+/**
+ * @typedef {object} sibilant.MetricType 
+ * @property {function} get - returns the current value of the metric
+ */
+
+sibilant.metricTypes.BaseMetric=function() {
+	this.value=0;
+};
+
+sibilant.metricTypes.BaseMetric.prototype.get=function() { 
+	return this.value; 
+};
+
+sibilant.metricTypes.BaseMetric.prototype.unit=function(val) { 
+	if(val) {
+		this.unit=val;
+	}
+	return this.unit; 
+};
+
+
 /**
  * @class
  * A repository of metrics
