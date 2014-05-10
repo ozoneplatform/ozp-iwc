@@ -68,12 +68,12 @@ describe("KV API Base class",function() {
 			
 			var r=kvApi.handleSetAsLeader(nodePacket("/node",{foo:2}));
 
-			expect(r[0].action).toEqual("changed");
-			expect(r[0].dst).toEqual("1");
-			expect(r[0].replyTo).toEqual(123);
-			expect(r[0].resource).toEqual("/node");
-			expect(r[0].entity.oldValue).toEqual({foo:1});
-			expect(r[0].entity.newValue).toEqual({foo:2});
+			expect(r[1].action).toEqual("changed");
+			expect(r[1].dst).toEqual("1");
+			expect(r[1].replyTo).toEqual(123);
+			expect(r[1].resource).toEqual("/node");
+			expect(r[1].entity.oldValue).toEqual({foo:1});
+			expect(r[1].entity.newValue).toEqual({foo:2});
 		});
 
 		it("a watch triggers on delete",function() {
@@ -81,12 +81,12 @@ describe("KV API Base class",function() {
 			
 			var r=kvApi.handleDeleteAsLeader(nodePacket("/node"));
 			
-			expect(r[0].action).toEqual("changed");
-			expect(r[0].dst).toEqual("1");
-			expect(r[0].replyTo).toEqual(123);
-			expect(r[0].resource).toEqual("/node");
-			expect(r[0].entity.newValue).toBeUndefined();
-			expect(r[0].entity.oldValue).toEqual({foo:1});
+			expect(r[1].action).toEqual("changed");
+			expect(r[1].dst).toEqual("1");
+			expect(r[1].replyTo).toEqual(123);
+			expect(r[1].resource).toEqual("/node");
+			expect(r[1].entity.newValue).toBeUndefined();
+			expect(r[1].entity.oldValue).toEqual({foo:1});
 		});
 	
 		it("a watch on one node is isolated from other changes",function() {
@@ -98,24 +98,24 @@ describe("KV API Base class",function() {
 
 			// the change message and the confirmation of set
 			expect(r.length).toEqual(2);
-			expect(r[0].action).toEqual("changed");
-			expect(r[0].dst).toEqual("1");
-			expect(r[0].replyTo).toEqual(123);
-			expect(r[0].resource).toEqual("/node");
-			expect(r[0].entity.oldValue).toEqual({foo:1});
-			expect(r[0].entity.newValue).toEqual({foo:2});
+			expect(r[1].action).toEqual("changed");
+			expect(r[1].dst).toEqual("1");
+			expect(r[1].replyTo).toEqual(123);
+			expect(r[1].resource).toEqual("/node");
+			expect(r[1].entity.oldValue).toEqual({foo:1});
+			expect(r[1].entity.newValue).toEqual({foo:2});
 			
 			// check the second watcher & path
 			r=kvApi.handleSetAsLeader(nodePacket("/node2",{foo:2}));
 
 			// the change message and the confirmation of set
 			expect(r.length).toEqual(2);
-			expect(r[0].action).toEqual("changed");
-			expect(r[0].dst).toEqual("2");
-			expect(r[0].replyTo).toEqual(321);
-			expect(r[0].resource).toEqual("/node2");
-			expect(r[0].entity.oldValue).toBeUndefined();
-			expect(r[0].entity.newValue).toEqual({foo:2});
+			expect(r[1].action).toEqual("changed");
+			expect(r[1].dst).toEqual("2");
+			expect(r[1].replyTo).toEqual(321);
+			expect(r[1].resource).toEqual("/node2");
+			expect(r[1].entity.oldValue).toBeUndefined();
+			expect(r[1].entity.newValue).toEqual({foo:2});
 		});
 		
 		it("can unregister a watch",function() {
@@ -125,12 +125,12 @@ describe("KV API Base class",function() {
 
 			// the change message and the confirmation of set
 			expect(r.length).toEqual(2);
-			expect(r[0].action).toEqual("changed");
-			expect(r[0].dst).toEqual("1");
-			expect(r[0].replyTo).toEqual(123);
-			expect(r[0].resource).toEqual("/node");
-			expect(r[0].entity.oldValue).toEqual({foo:1});
-			expect(r[0].entity.newValue).toEqual({foo:2});
+			expect(r[1].action).toEqual("changed");
+			expect(r[1].dst).toEqual("1");
+			expect(r[1].replyTo).toEqual(123);
+			expect(r[1].resource).toEqual("/node");
+			expect(r[1].entity.oldValue).toEqual({foo:1});
+			expect(r[1].entity.newValue).toEqual({foo:2});
 
 			kvApi.handleUnwatchAsLeader({packet: {
 					resource: "/node",
@@ -224,22 +224,22 @@ describe("KV API Base class",function() {
 			
 			var r=kvApi.handlePushAsLeader(nodePacket("/node",{foo:2}));
 
-			expect(r[0].action).toEqual("changed");
-			expect(r[0].dst).toEqual("1");
-			expect(r[0].replyTo).toEqual(123);
-			expect(r[0].resource).toEqual("/node");
-			expect(r[0].entity.addChild).toMatch(/\/node\/[^\/]+/);
+			expect(r[1].action).toEqual("changed");
+			expect(r[1].dst).toEqual("1");
+			expect(r[1].replyTo).toEqual(123);
+			expect(r[1].resource).toEqual("/node");
+			expect(r[1].entity.addChild).toMatch(/\/node\/[^\/]+/);
 		});
 		it("notifies on unshifting a child",function() {
 			kvApi.handleWatchAsLeader(watchPacket("/node","1",123));
 			
 			var r=kvApi.handleUnshiftAsLeader(nodePacket("/node",{foo:2}));
 
-			expect(r[0].action).toEqual("changed");
-			expect(r[0].dst).toEqual("1");
-			expect(r[0].replyTo).toEqual(123);
-			expect(r[0].resource).toEqual("/node");
-			expect(r[0].entity.addChild).toMatch(/\/node\/[^\/]+/);
+			expect(r[1].action).toEqual("changed");
+			expect(r[1].dst).toEqual("1");
+			expect(r[1].replyTo).toEqual(123);
+			expect(r[1].resource).toEqual("/node");
+			expect(r[1].entity.addChild).toMatch(/\/node\/[^\/]+/);
 		});
 		
 		it("notifies on popping a child",function() {
@@ -248,11 +248,11 @@ describe("KV API Base class",function() {
 			
 			var r=kvApi.handlePopAsLeader(nodePacket("/node",{foo:2}));
 
-			expect(r[0].action).toEqual("changed");
-			expect(r[0].dst).toEqual("1");
-			expect(r[0].replyTo).toEqual(123);
-			expect(r[0].resource).toEqual("/node");
-			expect(r[0].entity.removeChild).toMatch(/\/node\/[^\/]+/);
+			expect(r[1].action).toEqual("changed");
+			expect(r[1].dst).toEqual("1");
+			expect(r[1].replyTo).toEqual(123);
+			expect(r[1].resource).toEqual("/node");
+			expect(r[1].entity.removeChild).toMatch(/\/node\/[^\/]+/);
 		});
 		it("notifies on shifting a child",function() {
 			kvApi.handlePushAsLeader(nodePacket("/node",{foo:2}));
@@ -260,11 +260,11 @@ describe("KV API Base class",function() {
 			
 			var r=kvApi.handleShiftAsLeader(nodePacket("/node",{foo:2}));
 
-			expect(r[0].action).toEqual("changed");
-			expect(r[0].dst).toEqual("1");
-			expect(r[0].replyTo).toEqual(123);
-			expect(r[0].resource).toEqual("/node");
-			expect(r[0].entity.removeChild).toMatch(/\/node\/[^\/]+/);
+			expect(r[1].action).toEqual("changed");
+			expect(r[1].dst).toEqual("1");
+			expect(r[1].replyTo).toEqual(123);
+			expect(r[1].resource).toEqual("/node");
+			expect(r[1].entity.removeChild).toMatch(/\/node\/[^\/]+/);
 		});
 		
 	});
