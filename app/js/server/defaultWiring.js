@@ -37,19 +37,19 @@ if(sibilant.KeyValueApi) {
 
 	sibilant.defaultRouter.registerParticipant(sibilant.keyValueApi);
 }
-
-if(sibilant.NamesApi) {
-	sibilant.namesApi=new sibilant.LeaderGroupParticipant({
-		name: "names.api",
-		target: new sibilant.NamesApi()
-	});
-	sibilant.defaultRouter.registerParticipant(sibilant.namesApi);
-}
-
-if(sibilant.IntentsApi) {
-	sibilant.intentsApi=new sibilant.LeaderGroupParticipant({
-		name: "intents.api",
-		target: new sibilant.IntentsApi()
-	});
-	sibilant.defaultRouter.registerParticipant(sibilant.intentsApi);
-}
+//
+//if(sibilant.NamesApi) {
+//	sibilant.namesApi=new sibilant.LeaderGroupParticipant({
+//		name: "names.api",
+//		target: new sibilant.NamesApi()
+//	});
+//	sibilant.defaultRouter.registerParticipant(sibilant.namesApi);
+//}
+//
+//if(sibilant.IntentsApi) {
+//	sibilant.intentsApi=new sibilant.LeaderGroupParticipant({
+//		name: "intents.api",
+//		target: new sibilant.IntentsApi()
+//	});
+//	sibilant.defaultRouter.registerParticipant(sibilant.intentsApi);
+//}

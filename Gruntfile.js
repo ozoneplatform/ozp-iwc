@@ -25,6 +25,7 @@ module.exports = function(grunt) {
 				'app/js/server/transport/internalParticipant.js',
 				'app/js/server/transport/router.js',
 				'app/js/server/transport/**/*.js',
+				'app/js/server/api/keyValueApi.js',
 				'app/js/server/*/**/*.js'
 			],
 			client: [

@@ -30,15 +30,18 @@ sibilant.KeyBroadcastLocalStorageLink = function(config) {
 
   // Hook into the system
 	var self=this;
-	
+	var packet;
 	var receiveStorageEvent=function(event) {
 		try {
-			var packet=JSON.parse(event.key);
-			self.peer.receive(self.linkId,packet);
-			sibilant.metrics.counter('links.localStorage.packets.received').inc();
+			packet=JSON.parse(event.key);
 		} catch(e) {
-			sibilant.metrics.counter('links.localStorage.packets.parseError').inc();
+			console.log("Parse error on " + event.key );
+			sibilant.metrics.counter('links.keyBroadcastLocalStorage.packets.parseError').inc();
+			return;
 		}
+		self.peer.receive(self.linkId,packet);
+		sibilant.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
+
 	};
 	window.addEventListener('storage',receiveStorageEvent , false); 
 	
@@ -59,11 +62,11 @@ sibilant.KeyBroadcastLocalStorageLink = function(config) {
  */
 sibilant.KeyBroadcastLocalStorageLink.prototype.send=function(packet) { 
 	try {
-		localStorage.setItem(packet,"");
-		sibilant.metrics.counter('links.localStorage.packets.sent').inc();
+		localStorage.setItem(JSON.stringify(packet),"");
+		sibilant.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
 		localStorage.removeItem(packet,"");
 	} catch (e) {
-		sibilant.metrics.counter('links.localStorage.packets.failed').inc();
+		sibilant.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
 		sibilant.log.error("Failed to write packet(len=" + packet.length + "):" + e);
 	 }
 };
