@@ -19,6 +19,7 @@ sibilant.metricTypes.BaseMetric.prototype.get=function() {
 sibilant.metricTypes.BaseMetric.prototype.unit=function(val) { 
 	if(val) {
 		this.unit=val;
+		return this;
 	}
 	return this.unit; 
 };
@@ -83,6 +84,33 @@ sibilant.MetricsRegistry.prototype.meter=function(name) {
 sibilant.MetricsRegistry.prototype.gauge=function(name) {
 	return this.findOrCreateMetric(this.makeName(arguments),sibilant.metricTypes.Gauge);
 };
+
+/**
+ * @param {...string} name - components of the name
+ * @returns {sibilant.metricTypes.Gauge}
+ */
+sibilant.MetricsRegistry.prototype.histogram=function(name) {
+	return this.findOrCreateMetric(this.makeName(arguments),sibilant.metricTypes.Histogram);
+};
+
+/**
+ * @param {...string} name - components of the name
+ * @returns {sibilant.metricTypes.Gauge}
+ */
+sibilant.MetricsRegistry.prototype.timer=function(name) {
+	return this.findOrCreateMetric(this.makeName(arguments),sibilant.metricTypes.Timer);
+};
+
+/**
+ * @param {...string} name - components of the name
+ * @returns {sibilant.metricTypes.Gauge}
+ */
+sibilant.MetricsRegistry.prototype.register=function(name,metric) {
+	this.metrics[this.makeName(name)]=metric;
+	
+	return metric;
+};
+
 /**
  * 
  * @returns {unresolved}
