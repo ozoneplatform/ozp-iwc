@@ -1,7 +1,7 @@
-Sibilant
+ozp-iwc
 ==============================
 
-Sibilant provides an in-browser communications network between participants in multiple browser tabs, 
+ozp-iwc provides an in-browser communications network between participants in multiple browser tabs, 
 iframes, or workers using HTML5 standard features.  These participants, which can be from different origins,
 can use the client API to send messages to any other participant on the network.
 
@@ -12,7 +12,7 @@ handle to use it, especially if they aren't from the same domain.  A browsing co
 and children, but cannot enumerate or discover unrelated browsing contexts.  Techniques like HTML5 localstorage and 
 allow for multiple contexts of the same domain communicate, but not cross-domain.
 
-Sibilant fills in that gap by providing
+ozp-iwc fills in that gap by providing
 
 
 Peers & Participants
