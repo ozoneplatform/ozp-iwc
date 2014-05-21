@@ -3,7 +3,7 @@ describe("Metrics: Meter",function() {
 	
 	
 	beforeEach(function() {
-		meter=new sibilant.metricTypes.Meter();
+		meter=new ozpIwc.metricTypes.Meter();
 		jasmine.addMatchers(customMatchers);
 	});
 	

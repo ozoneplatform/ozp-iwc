@@ -1,5 +1,5 @@
 /** @namespace **/
-var sibilant = sibilant || {};
+var ozpIwc = ozpIwc || {};
 
 /**
  * <p>This link connects peers using the HTML5 localstorage API.  It is a second generation version of
@@ -15,15 +15,15 @@ var sibilant = sibilant || {};
  * 
  * @class
  * @param {Object} [config] - Configuration for this link
- * @param {sibilant.Peer} [config.peer=sibilant.defaultPeer] - The peer to connect to.
- * @param {string} [config.prefix='sibilant'] - Namespace for communicating, must be the same for all peers on the same network.
+ * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] - The peer to connect to.
+ * @param {string} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
  * @param {string} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
  */
-sibilant.KeyBroadcastLocalStorageLink = function(config) {
+ozpIwc.KeyBroadcastLocalStorageLink = function(config) {
 	config=config || {};
 
-	this.prefix=config.prefix || 'sibilant';
-	this.peer=config.peer || sibilant.defaultPeer;
+	this.prefix=config.prefix || 'ozpIwc';
+	this.peer=config.peer || ozpIwc.defaultPeer;
 	this.selfId=config.selfId || this.peer.selfId;
 	this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
 	this.otherKeysTimeout = config.otherKeysTimeout || 2*60000; // 2 minutes
@@ -36,11 +36,11 @@ sibilant.KeyBroadcastLocalStorageLink = function(config) {
 			packet=JSON.parse(event.key);
 		} catch(e) {
 			console.log("Parse error on " + event.key );
-			sibilant.metrics.counter('links.keyBroadcastLocalStorage.packets.parseError').inc();
+			ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.parseError').inc();
 			return;
 		}
 		self.peer.receive(self.linkId,packet);
-		sibilant.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
+		ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
 
 	};
 	window.addEventListener('storage',receiveStorageEvent , false); 
@@ -58,16 +58,16 @@ sibilant.KeyBroadcastLocalStorageLink = function(config) {
 /**
  * Publishes a packet to other peers.
  * @todo Handle local storage being full.
- * @param {sibilant.NetworkPacket} packet
+ * @param {ozpIwc.NetworkPacket} packet
  */
-sibilant.KeyBroadcastLocalStorageLink.prototype.send=function(packet) { 
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.send=function(packet) { 
 	try {
 		localStorage.setItem(JSON.stringify(packet),"");
-		sibilant.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
+		ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
 		localStorage.removeItem(packet,"");
 	} catch (e) {
-		sibilant.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
-		sibilant.log.error("Failed to write packet(len=" + packet.length + "):" + e);
+		ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
+		ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + e);
 	 }
 };
 

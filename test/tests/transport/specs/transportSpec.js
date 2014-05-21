@@ -9,7 +9,7 @@ describe("Peer broadcast",function() {
 		// use the called flag to prevent this
 		var called=false;
 		
-		client=new sibilant.Client({peerUrl:"http://localhost:13000"});
+		client=new ozpIwc.Client({peerUrl:"http://localhost:13000"});
 		client.on("connected",function() {
 			if(!called) {
 				pinger=window.open("//localhost:14001/transportPinger.html?toAddress=" + client.participantId,"pinger","height=500,width=500");

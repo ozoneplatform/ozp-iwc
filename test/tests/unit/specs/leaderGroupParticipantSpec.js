@@ -54,7 +54,7 @@ describe("Leader Group Participant",function() {
 	};
 	
 	var makeLeader=function(priority) {
-		var l=new sibilant.LeaderGroupParticipant({
+		var l=new ozpIwc.LeaderGroupParticipant({
 			electionAddress:"ea",
 			name: "foo"+leaders.length,
 			'priority': priority,

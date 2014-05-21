@@ -32,7 +32,7 @@
 			}
 			
 			var sendTick=function() {
-				sibilant.defaultPeer.send({tick: new Date().getTime()});
+				ozpIwc.defaultPeer.send({tick: new Date().getTime()});
 				params.tickCount--;
 				if(params.tickCount) {
 					window.setTimeout(sendTick,params.tickDelay)	
@@ -44,8 +44,8 @@
 			}
 			
 			if(params.echoOn) {
-				sibilant.defaultPeer.on("receive",function(event) {
-					sibilant.defaultPeer.send(event.packet.data);
+				ozpIwc.defaultPeer.on("receive",function(event) {
+					ozpIwc.defaultPeer.send(event.packet.data);
 				});
 			}
 		</script>

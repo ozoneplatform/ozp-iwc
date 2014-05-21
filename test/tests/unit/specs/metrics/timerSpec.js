@@ -2,7 +2,7 @@ describe("Metrics: Timer",function() {
 	var timer;
 	
 	beforeEach(function() {
-		timer=new sibilant.metricTypes.Timer();
+		timer=new ozpIwc.metricTypes.Timer();
 		jasmine.addMatchers(customMatchers);
 	});
 	

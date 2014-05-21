@@ -1,4 +1,4 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
 /**
  * @class
@@ -9,20 +9,20 @@ var sibilant=sibilant || {};
  * @param {string} config.peerUrl - Base URL of the peer server
  * @param {boolean} [config.autoPeer=true] - Whether to automatically find and connect to a peer
  */
-sibilant.Client=function(config) {
+ozpIwc.Client=function(config) {
 	config=config || {};
 	this.participantId="$nobody";
 	this.replyCallbacks={};
 	this.peerUrl=config.peerUrl;
 	this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
 	this.msgIdSequence=0;
-	this.events=new sibilant.Event();
+	this.events=new ozpIwc.Event();
 	this.events.mixinOnOff(this);
 	this.receivedPackets=0;
 	this.receivedBytes=0;
 	this.sentPackets=0;
 	this.sentBytes=0;
-	this.startTime=sibilant.util.now();
+	this.startTime=ozpIwc.util.now();
 	var self=this;
 
 	if(this.autoPeer) {
@@ -47,12 +47,12 @@ sibilant.Client=function(config) {
 /**
  * Receive a packet from the connected peer.  If the packet is a reply, then
  * the callback for that reply is invoked.  Otherwise, it fires a receive event
- * @fires sibilant.Client#receive
+ * @fires ozpIwc.Client#receive
  * @protected
- * @param {sibilant.TransportPacket} packet
+ * @param {ozpIwc.TransportPacket} packet
  * @returns {undefined}
  */
-sibilant.Client.prototype.receive=function(packet) {
+ozpIwc.Client.prototype.receive=function(packet) {
 	if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
 		this.replyCallbacks[packet.replyTo](packet);
 	} else {
@@ -65,7 +65,7 @@ sibilant.Client.prototype.receive=function(packet) {
  * @param {object} entity - payload of the packet
  * @param {function} callback - callback for any replies
  */
-sibilant.Client.prototype.send=function(fields,callback) {
+ozpIwc.Client.prototype.send=function(fields,callback) {
 	var now=new Date().getTime();
 	var id="p:"+this.msgIdSequence++; // makes the code below read better
 
@@ -90,7 +90,7 @@ sibilant.Client.prototype.send=function(fields,callback) {
 	return packet;
 };
 
-sibilant.Client.prototype.on=function(event,callback) {
+ozpIwc.Client.prototype.on=function(event,callback) {
 	if(event==="connected" && this.participantId !=="$nobody") {
 		callback(this);
 		return;
@@ -98,18 +98,18 @@ sibilant.Client.prototype.on=function(event,callback) {
 	return this.events.on.apply(this.events,arguments);
 };
 
-sibilant.Client.prototype.off=function(event,callback) { 
+ozpIwc.Client.prototype.off=function(event,callback) { 
 	return this.events.off.apply(this.events,arguments);
 };
 
-sibilant.Client.prototype.disconnect=function() {
+ozpIwc.Client.prototype.disconnect=function() {
 	window.removeEventListener("message",this.messageEventListener,false);
 	if(this.iframe) {
 		document.body.removeChild(this.iframe);
 	}
 };
 
-sibilant.Client.prototype.createIframePeer=function(peerUrl) {
+ozpIwc.Client.prototype.createIframePeer=function(peerUrl) {
 	var self=this;
 	var createIframeShim=function() {
 		self.iframe=document.createElement("iframe");
@@ -130,7 +130,7 @@ sibilant.Client.prototype.createIframePeer=function(peerUrl) {
 }
 };
 
-sibilant.Client.prototype.findPeer=function() {
+ozpIwc.Client.prototype.findPeer=function() {
 	// check if we have a parent, get address there if so
 //	if(window.parent!==window) {
 //		this.peer=window.parent;
@@ -140,7 +140,7 @@ sibilant.Client.prototype.findPeer=function() {
 //	}
 };
 
-sibilant.Client.prototype.requestAddress=function(){
+ozpIwc.Client.prototype.requestAddress=function(){
 	// send connect to get our address
 	var self=this;
 	this.send({dst:"$transport"},function(message) {

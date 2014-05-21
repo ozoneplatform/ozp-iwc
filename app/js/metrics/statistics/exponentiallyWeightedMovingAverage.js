@@ -17,8 +17,8 @@
 /*
  * Original code owned by Mike Ihbe.  Modifications licensed under same terms.
  */
-var sibilant=sibilant || {};
-sibilant.metricsStats=sibilant.metricsStats || {};
+var ozpIwc=ozpIwc || {};
+ozpIwc.metricsStats=ozpIwc.metricsStats || {};
 
 /*
  *  Exponentially weighted moving average.
@@ -27,19 +27,19 @@ sibilant.metricsStats=sibilant.metricsStats || {};
  *  - interval: time in milliseconds
  */
 
-sibilant.metricsStats.M1_ALPHA = 1 - Math.exp(-5/60);
-sibilant.metricsStats.M5_ALPHA = 1 - Math.exp(-5/60/5);
-sibilant.metricsStats.M15_ALPHA = 1 - Math.exp(-5/60/15);
+ozpIwc.metricsStats.M1_ALPHA = 1 - Math.exp(-5/60);
+ozpIwc.metricsStats.M5_ALPHA = 1 - Math.exp(-5/60/5);
+ozpIwc.metricsStats.M15_ALPHA = 1 - Math.exp(-5/60/15);
 
-sibilant.metricsStats.ExponentiallyWeightedMovingAverage=function(alpha, interval) {
+ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage=function(alpha, interval) {
   this.alpha = alpha;
   this.interval = interval || 5000;
   this.currentRate = null;
   this.uncounted = 0;
-	this.lastTick=sibilant.util.now();
+	this.lastTick=ozpIwc.util.now();
 };
 
-sibilant.metricsStats.ExponentiallyWeightedMovingAverage.prototype.update = function(n) {
+ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage.prototype.update = function(n) {
   this.uncounted += (n || 1);
 	this.tick();
 };
@@ -47,8 +47,8 @@ sibilant.metricsStats.ExponentiallyWeightedMovingAverage.prototype.update = func
 /*
  * Update our rate measurements every interval
  */
-sibilant.metricsStats.ExponentiallyWeightedMovingAverage.prototype.tick = function() {
- 	var now=sibilant.util.now();
+ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage.prototype.tick = function() {
+ 	var now=ozpIwc.util.now();
 	var age=now-this.lastTick;
 	if(age > this.interval) {
 		this.lastTick=now - (age % this.interval);
@@ -68,6 +68,6 @@ sibilant.metricsStats.ExponentiallyWeightedMovingAverage.prototype.tick = functi
 /*
  * Return the rate per second
  */
-sibilant.metricsStats.ExponentiallyWeightedMovingAverage.prototype.rate = function() {
+ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage.prototype.rate = function() {
   return this.currentRate * 1000;
 };

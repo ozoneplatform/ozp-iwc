@@ -1,34 +1,34 @@
-sibilant.metricTypes.Timer=sibilant.util.extend(sibilant.metricTypes.BaseMetric,function() {
-	sibilant.metricTypes.BaseMetric.apply(this,arguments);
-	this.meter=new sibilant.metricTypes.Meter();
-	this.histogram=new sibilant.metricTypes.Histogram();
+ozpIwc.metricTypes.Timer=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
+	ozpIwc.metricTypes.BaseMetric.apply(this,arguments);
+	this.meter=new ozpIwc.metricTypes.Meter();
+	this.histogram=new ozpIwc.metricTypes.Histogram();
 });
 
-sibilant.metricTypes.Timer.prototype.mark=function(val,time) {
+ozpIwc.metricTypes.Timer.prototype.mark=function(val,time) {
 	this.meter.mark();
 	this.histogram.mark(val,time);
 };
 
-sibilant.metricTypes.Timer.prototype.start=function() {
+ozpIwc.metricTypes.Timer.prototype.start=function() {
 	var self=this;
-	var startTime=sibilant.util.now();
+	var startTime=ozpIwc.util.now();
 	return function() {
-		var endTime=sibilant.util.now();
+		var endTime=ozpIwc.util.now();
 		self.mark(endTime-startTime,endTime);
 	};
 };
 
-sibilant.metricTypes.Timer.prototype.time=function(callback) {
-	var startTime=sibilant.util.now();
+ozpIwc.metricTypes.Timer.prototype.time=function(callback) {
+	var startTime=ozpIwc.util.now();
 	try {
 		callback();
 	} finally {
-		var endTime=sibilant.util.now();
+		var endTime=ozpIwc.util.now();
 		this.mark(endTime-startTime,endTime);
 	}
 };
 
-sibilant.metricTypes.Timer.prototype.get=function() {
+ozpIwc.metricTypes.Timer.prototype.get=function() {
 	var val=this.histogram.get();
 	var meterMetrics=this.meter.get();
 	for(var k in meterMetrics) {

@@ -3,7 +3,7 @@ describe("Key Value Store",function() {
 	var kvStore;
 	
 	beforeEach(function() {	
-		kvStore=new sibilant.KeyValueStore();
+		kvStore=new ozpIwc.KeyValueStore();
 	});
 	
 	afterEach(function() {

@@ -6,7 +6,7 @@ window.addEventListener("beforeunload", function() {
 
 describe("Peer broadcast",function() {
 	var receiveHandler;
-	var peer=sibilant.defaultPeer;
+	var peer=ozpIwc.defaultPeer;
 	
 	beforeEach(function() {	
 	});

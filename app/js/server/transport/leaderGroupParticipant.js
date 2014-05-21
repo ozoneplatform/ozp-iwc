@@ -1,4 +1,4 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
 /**
  * Baseclass for APIs that need leader election.  Uses the Bully algorithm for leader election.
@@ -19,8 +19,8 @@ var sibilant=sibilant || {};
  *        Number of milliseconds to wait before declaring victory on an election. 
  
  */
-sibilant.LeaderGroupParticipant=sibilant.util.extend(sibilant.Participant,function(config) {
-	sibilant.Participant.apply(this,arguments);
+ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
+	ozpIwc.Participant.apply(this,arguments);
 
 	if(!config.name) {
 		throw "Config must contain a name value";
@@ -33,7 +33,7 @@ sibilant.LeaderGroupParticipant=sibilant.util.extend(sibilant.Participant,functi
 	this.electionAddress=config.electionAddress || (this.name + ".election");
 
 	// Election times and how to score them
-	this.priority = config.priority || sibilant.defaultLeaderPriority || Math.random();
+	this.priority = config.priority || ozpIwc.defaultLeaderPriority || Math.random();
 	this.priorityLessThan = config.priorityLessThan || function(l,r) { return l < r; };
 	this.electionTimeout=config.electionTimeout || 250; // quarter second
 	this.leaderState="connecting";
@@ -42,7 +42,7 @@ sibilant.LeaderGroupParticipant=sibilant.util.extend(sibilant.Participant,functi
 	// tracking the current leader
 	this.leader=null;
 	this.leaderPriority=null;
-	this.events=new sibilant.Event();
+	this.events=new ozpIwc.Event();
 	this.events.mixinOnOff(this);
 
 	this.participantType="leaderGroupMember";
@@ -74,8 +74,8 @@ sibilant.LeaderGroupParticipant=sibilant.util.extend(sibilant.Participant,functi
 	
 });
 
-sibilant.LeaderGroupParticipant.prototype.connectToRouter=function(router,address) {
-	sibilant.Participant.prototype.connectToRouter.apply(this,arguments);
+ozpIwc.LeaderGroupParticipant.prototype.connectToRouter=function(router,address) {
+	ozpIwc.Participant.prototype.connectToRouter.apply(this,arguments);
 	this.router.registerMulticast(this,[this.electionAddress,this.name]);
 	this.startElection();
 };
@@ -84,7 +84,7 @@ sibilant.LeaderGroupParticipant.prototype.connectToRouter=function(router,addres
  * Checks to see if the leadership group is in an election
  * @returns {Boolean} True if in an election state, otherwise false
  */
-sibilant.LeaderGroupParticipant.prototype.inElection=function() {
+ozpIwc.LeaderGroupParticipant.prototype.inElection=function() {
 	return !!this.electionTimer;
 };
 
@@ -92,7 +92,7 @@ sibilant.LeaderGroupParticipant.prototype.inElection=function() {
  * Checks to see if this instance is the leader of it's group.
  * @returns {Boolean}
  */
-sibilant.LeaderGroupParticipant.prototype.isLeader=function() {
+ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
 	return this.leader === this.address;
 };
 
@@ -101,7 +101,7 @@ sibilant.LeaderGroupParticipant.prototype.isLeader=function() {
  * @private
  * @param {string} type - the type of message-- "election" or "victory"
  */
-sibilant.LeaderGroupParticipant.prototype.sendElectionMessage=function(type) {
+ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type) {
 	this.send({
 			dst: this.electionAddress,
 			action: type,
@@ -115,10 +115,10 @@ sibilant.LeaderGroupParticipant.prototype.sendElectionMessage=function(type) {
  * Attempt to start a new election.
  * @protected
  * @returns {undefined}
- * @fire sibilant.LeaderGroupParticipant#startElection
- * @fire sibilant.LeaderGroupParticipant#becameLeader
+ * @fire ozpIwc.LeaderGroupParticipant#startElection
+ * @fire ozpIwc.LeaderGroupParticipant#becameLeader
  */
-sibilant.LeaderGroupParticipant.prototype.startElection=function() {
+ozpIwc.LeaderGroupParticipant.prototype.startElection=function() {
 	// don't start a new election if we are in one
 	if(this.inElection()) {
 		return;
@@ -143,9 +143,9 @@ sibilant.LeaderGroupParticipant.prototype.startElection=function() {
 /**
  * Cancels an in-progress election that we started.
  * @protected
- * @fire sibilant.LeaderGroupParticipant#endElection
+ * @fire ozpIwc.LeaderGroupParticipant#endElection
  */
-sibilant.LeaderGroupParticipant.prototype.cancelElection=function() {
+ozpIwc.LeaderGroupParticipant.prototype.cancelElection=function() {
 	if(this.electionTimer) {	
 		window.clearTimeout(this.electionTimer);
 		this.electionTimer=null;
@@ -156,10 +156,10 @@ sibilant.LeaderGroupParticipant.prototype.cancelElection=function() {
 /**
  * Receives a packet on the election control group or forwards it to the target implementation
  * that of this leadership group.
- * @param {sibilant.TransportPacket} packet
+ * @param {ozpIwc.TransportPacket} packet
  * @returns {boolean}
  */
-sibilant.LeaderGroupParticipant.prototype.receiveFromRouter=function(packetContext) {
+ozpIwc.LeaderGroupParticipant.prototype.receiveFromRouter=function(packetContext) {
 	var packet=packetContext.packet;
 	packetContext.leaderState=this.leaderState;
 	// forward non-election packets to the current state
@@ -188,9 +188,9 @@ sibilant.LeaderGroupParticipant.prototype.receiveFromRouter=function(packetConte
  * </ol>
  * The variable action is the packet's action and leaderstate is the current leadership state.
  * If there's no packet action, then the handle* functions will not be invoked.
- * @param {sibilant.TransportPacketContext} packetContext
+ * @param {ozpIwc.TransportPacketContext} packetContext
  */
-sibilant.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) {
+ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) {
 	if(this.leaderState === "election" || this.leaderState === "connecting") {
 		this.electionQueue.push(packetContext);
 		return;
@@ -228,10 +228,10 @@ sibilant.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext
 /**
  * Respond to someone else starting an election.
  * @private
- * @param {sibilant.TransportPacket} electionMessage
+ * @param {ozpIwc.TransportPacket} electionMessage
  * @returns {undefined}
  */
-sibilant.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionMessage) {
+ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionMessage) {
 
 	// is the new election lower priority than us?
 	if(this.priorityLessThan(electionMessage.entity.priority,this.priority)) {
@@ -248,10 +248,10 @@ sibilant.LeaderGroupParticipant.prototype.handleElectionMessage=function(electio
 
 /**
  * Handle someone else declaring victory.
- * @fire sibilant.LeaderGroupParticipant#newLeader
- * @param {sibilant.TransportPacket} victoryMessage
+ * @fire ozpIwc.LeaderGroupParticipant#newLeader
+ * @param {ozpIwc.TransportPacket} victoryMessage
  */
-sibilant.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMessage) {
+ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMessage) {
 	if(this.priorityLessThan(victoryMessage.entity.priority,this.priority)) {
 		// someone usurped our leadership! start an election!
 		this.startElection();
@@ -265,17 +265,17 @@ sibilant.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryM
 	}
 };
 
-sibilant.LeaderGroupParticipant.prototype.handleSyncMessage=function(packet) {
+ozpIwc.LeaderGroupParticipant.prototype.handleSyncMessage=function(packet) {
 	if(typeof(this.target.receiveSync)==="function" && !this.isLeader()) {
-		sibilant.log.log("LeaderParticipant["+this.name+"::"+this.address+"] received sync " + JSON.stringify(packet.entity,null,2));
+		ozpIwc.log.log("LeaderParticipant["+this.name+"::"+this.address+"] received sync " + JSON.stringify(packet.entity,null,2));
 		this.target.receiveSync(packet.entity);
 	}
 };
 
-sibilant.LeaderGroupParticipant.prototype.sendSync=function() {
+ozpIwc.LeaderGroupParticipant.prototype.sendSync=function() {
 	if('generateSync' in this.target) {
 		var syncData=this.target.generateSync();
-		sibilant.log.log("LeaderParticipant["+this.name+"::"+this.address+"] generated sync" + JSON.stringify(syncData,null,2));
+		ozpIwc.log.log("LeaderParticipant["+this.name+"::"+this.address+"] generated sync" + JSON.stringify(syncData,null,2));
 		this.send({
 			dst: this.electionAddress,
 			action: 'sync',
@@ -284,8 +284,8 @@ sibilant.LeaderGroupParticipant.prototype.sendSync=function() {
 	}
 };
 
-sibilant.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
-	var status= sibilant.Participant.prototype.heartbeatStatus.apply(this,arguments);
+ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
+	var status= ozpIwc.Participant.prototype.heartbeatStatus.apply(this,arguments);
 	status.leaderState=this.leaderState;
 	status.leaderPriority=this.priority;
 	return status;

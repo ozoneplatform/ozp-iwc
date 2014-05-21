@@ -1,10 +1,10 @@
 /** @namespace */
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
 /**
 	* @class
 	*/
-sibilant.Event=function() {
+ozpIwc.Event=function() {
 	this.events={};
 };	
 
@@ -13,15 +13,15 @@ sibilant.Event=function() {
  * @param {string} event The name of the event to trigger on
  * @param {function} callback Function to be invoked
  * @param {object} [self] Used as the this pointer when callback is invoked.
- * @returns {object} A handle that can be used to unregister the callback via [off()]{@link sibilant.Event#off}
+ * @returns {object} A handle that can be used to unregister the callback via [off()]{@link ozpIwc.Event#off}
  */
-sibilant.Event.prototype.on=function(event,callback,self) {
+ozpIwc.Event.prototype.on=function(event,callback,self) {
 	var wrapped=callback;
 	if(self) {
 		wrapped=function() { 
 			callback.apply(self,arguments);
 		};
-		wrapped.sibilantDelegateFor=callback;
+		wrapped.ozpIwcDelegateFor=callback;
 	}
 	this.events[event]=this.events[event]||[];
 	this.events[event].push(wrapped);
@@ -33,9 +33,9 @@ sibilant.Event.prototype.on=function(event,callback,self) {
  * @param {type} event
  * @param {type} callback
  */	
-sibilant.Event.prototype.off=function(event,callback) {
+ozpIwc.Event.prototype.off=function(event,callback) {
 	this.events[event]=(this.events[event]||[]).filter( function(h) {
-		return h!==callback && h.sibilantDelegateFor !== callback;
+		return h!==callback && h.ozpIwcDelegateFor !== callback;
 	});
 };
 
@@ -45,8 +45,8 @@ sibilant.Event.prototype.off=function(event,callback) {
  * @param {object} event - Event object to pass to the handers.
  * @returns {object} The event after all handlers have processed it
  */
-sibilant.Event.prototype.trigger=function(eventName,event) {
-	event = event || new sibilant.CancelableEvent();
+ozpIwc.Event.prototype.trigger=function(eventName,event) {
+	event = event || new ozpIwc.CancelableEvent();
 	var handlers=this.events[eventName] || [];
 
 	handlers.forEach(function(h) {
@@ -60,7 +60,7 @@ sibilant.Event.prototype.trigger=function(eventName,event) {
  * Adds an on() and off() function to the target that delegate to this object 
  * @param {object} target Target to receive the on/off functions
  */
-sibilant.Event.prototype.mixinOnOff=function(target) {
+ozpIwc.Event.prototype.mixinOnOff=function(target) {
 	var self=this;
 	target.on=function() { return self.on.apply(self,arguments);};
 	target.off=function() { return self.off.apply(self,arguments);};
@@ -73,7 +73,7 @@ sibilant.Event.prototype.mixinOnOff=function(target) {
  * @class
  * @param {object} data - Data that will be copied into the event
  */
-sibilant.CancelableEvent=function(data) {
+ozpIwc.CancelableEvent=function(data) {
 	data = data || {};
 	for(k in data) {
 		this[k]=data[k];
@@ -85,9 +85,9 @@ sibilant.CancelableEvent=function(data) {
 /**
  * Marks the event as canceled.
  * @param {type} reason - A text description of why the event was canceled.
- * @returns {sibilant.CancelableEvent} Reference to self
+ * @returns {ozpIwc.CancelableEvent} Reference to self
  */
-sibilant.CancelableEvent.prototype.cancel=function(reason) {
+ozpIwc.CancelableEvent.prototype.cancel=function(reason) {
 	reason= reason || "Unknown";
 	this.canceled=true;
 	this.cancelReason=reason;

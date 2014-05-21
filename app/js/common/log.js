@@ -1,12 +1,12 @@
 /** @namespace */
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
 /** 
  * @type {object}
  * @property {function} log - Normal log output.
  * @property {function} error - Error output.
  */
-sibilant.log=sibilant.log || {
+ozpIwc.log=ozpIwc.log || {
 	log: function() {
 		if(window.console && typeof(window.console.log)==="function") {
 			window.console.log.apply(window.console,arguments);

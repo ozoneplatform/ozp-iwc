@@ -1,8 +1,8 @@
 // From http://eloquentjavascript.net/appendix2.html, 
 // licensed under CCv3.0: http://creativecommons.org/licenses/by/3.0/
 
-var sibilant=sibilant || {};
-sibilant.metricsStats=sibilant.metricsStats || {};
+var ozpIwc=ozpIwc || {};
+ozpIwc.metricsStats=ozpIwc.metricsStats || {};
 /**
  * This acts as a ordered binary heap for any serializeable JS object or collection of such objects 
  * <p>Borrowed from https://github.com/mikejihbe/metrics. Originally from from http://eloquentjavascript.net/appendix2.html
@@ -11,15 +11,15 @@ sibilant.metricsStats=sibilant.metricsStats || {};
  * @param {type} scoreFunction
  * @returns {BinaryHeap}
  */
-sibilant.metricsStats.BinaryHeap = function BinaryHeap(scoreFunction){
+ozpIwc.metricsStats.BinaryHeap = function BinaryHeap(scoreFunction){
   this.content = [];
   this.scoreFunction = scoreFunction;
 };
 
-sibilant.metricsStats.BinaryHeap.prototype = {
+ozpIwc.metricsStats.BinaryHeap.prototype = {
 
   clone: function() {
-    var heap = new sibilant.metricsStats.BinaryHeap(this.scoreFunction);
+    var heap = new ozpIwc.metricsStats.BinaryHeap(this.scoreFunction);
     // A little hacky, but effective.
     heap.content = JSON.parse(JSON.stringify(this.content));
     return heap;

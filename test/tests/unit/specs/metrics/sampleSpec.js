@@ -1,8 +1,8 @@
 describe("Sample Interface",function() {
 	var sampleClasses=[
-		["Sample",sibilant.metricsStats.Sample],
-		["Uniform Sample",sibilant.metricsStats.UniformSample],
-		["Exponentially Decaying Sample",sibilant.metricsStats.ExponentiallyDecayingSample]
+		["Sample",ozpIwc.metricsStats.Sample],
+		["Uniform Sample",ozpIwc.metricsStats.UniformSample],
+		["Exponentially Decaying Sample",ozpIwc.metricsStats.ExponentiallyDecayingSample]
 	];
 	beforeEach(function() {
 		jasmine.addMatchers(customMatchers);
@@ -57,7 +57,7 @@ describe("Sample Interface",function() {
 describe("Uniform Sample Specific Functions",function() {
 	var sample;
 	beforeEach(function() {
-		sample=new sibilant.metricsStats.UniformSample(10);
+		sample=new ozpIwc.metricsStats.UniformSample(10);
 	});
 
 	it("gets no bigger than the max size",function() {
@@ -91,7 +91,7 @@ describe("Uniform Sample Specific Functions",function() {
 describe("Exponentially Decaying Sample functionality",function() {
 	var sample;
 	beforeEach(function() {
-		sample=new sibilant.metricsStats.ExponentiallyDecayingSample(10);
+		sample=new ozpIwc.metricsStats.ExponentiallyDecayingSample(10);
 	});
 
 	it("gets no bigger than the max size",function() {

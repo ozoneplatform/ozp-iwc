@@ -4,7 +4,7 @@ describe("Metrics: Gauge",function() {
 	
 	beforeEach(function() {
 		jasmine.addMatchers(customMatchers);
-		metrics=new sibilant.MetricsRegistry();
+		metrics=new ozpIwc.MetricsRegistry();
 		backingObject={	x: 1, y:100	};
 		metrics.gauge("foo").set(function() {
 			return backingObject;

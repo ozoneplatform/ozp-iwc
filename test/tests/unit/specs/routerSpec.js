@@ -6,13 +6,13 @@ describe("Router",function() {
 	beforeEach(function() {	
 		sendCount=receiveCount=0;
 		
-		fakePeer=new sibilant.Event();
+		fakePeer=new ozpIwc.Event();
 		fakePeer.packets=[];
 		fakePeer.send=function(packet) {
 			fakePeer.packets.push(packet);
 		};
 		
-		router=new sibilant.Router({peer: fakePeer});
+		router=new ozpIwc.Router({peer: fakePeer});
 	});
 	
 	afterEach(function() {
@@ -105,8 +105,8 @@ describe("Router",function() {
 			router.registerParticipant(participant);
 			router.registerParticipant(participant2);
 			
-			sibilant.authorization.grant("participant:"+participant.address,["perm:shared","color:blue"]);
-			sibilant.authorization.grant("participant:"+participant2.address,["perm:shared","color:red"]);
+			ozpIwc.authorization.grant("participant:"+participant.address,["perm:shared","color:blue"]);
+			ozpIwc.authorization.grant("participant:"+participant2.address,["perm:shared","color:red"]);
 		});
 		
 		it("allows receipt of shared permissions",function() {

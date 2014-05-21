@@ -3,10 +3,10 @@
 (function() {
 
 	var updateStats=function() {
-		$("#stats").text(JSON.stringify(sibilant.metrics.toJson(),null,2));
+		$("#stats").text(JSON.stringify(ozpIwc.metrics.toJson(),null,2));
 	};
 
-	sibilant.defaultPeer.on("receive",function(msg) {
+	ozpIwc.defaultPeer.on("receive",function(msg) {
 		$("#messages").append('<span>Peer:</span><pre>'+JSON.stringify(msg,null,2)+'</pre>');
 		updateStats();
 	});

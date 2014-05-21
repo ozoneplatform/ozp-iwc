@@ -1,22 +1,22 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
-var sibilant=sibilant || {};
-sibilant.metricTypes=sibilant.metricTypes || {};
+var ozpIwc=ozpIwc || {};
+ozpIwc.metricTypes=ozpIwc.metricTypes || {};
 
 /**
- * @typedef {object} sibilant.MetricType 
+ * @typedef {object} ozpIwc.MetricType 
  * @property {function} get - returns the current value of the metric
  */
 
-sibilant.metricTypes.BaseMetric=function() {
+ozpIwc.metricTypes.BaseMetric=function() {
 	this.value=0;
 };
 
-sibilant.metricTypes.BaseMetric.prototype.get=function() { 
+ozpIwc.metricTypes.BaseMetric.prototype.get=function() { 
 	return this.value; 
 };
 
-sibilant.metricTypes.BaseMetric.prototype.unit=function(val) { 
+ozpIwc.metricTypes.BaseMetric.prototype.unit=function(val) { 
 	if(val) {
 		this.unit=val;
 		return this;
@@ -29,7 +29,7 @@ sibilant.metricTypes.BaseMetric.prototype.unit=function(val) {
  * @class
  * A repository of metrics
  */
-sibilant.MetricsRegistry=function() {
+ozpIwc.MetricsRegistry=function() {
 	this.metrics={};
 };
 
@@ -40,7 +40,7 @@ sibilant.MetricsRegistry=function() {
  * @param {function} type - The constructor of the requested type for this metric.
  * @returns {MetricType} - Null if the metric already exists of a different type.  Otherwise a reference to the metric.
  */
-sibilant.MetricsRegistry.prototype.findOrCreateMetric=function(name,type) {
+ozpIwc.MetricsRegistry.prototype.findOrCreateMetric=function(name,type) {
 	var m= this.metrics[name] = this.metrics[name] || new type();
 	if(m instanceof type){
 			return m;
@@ -55,7 +55,7 @@ sibilant.MetricsRegistry.prototype.findOrCreateMetric=function(name,type) {
  * @param {string[]} args - Array or the argument-like "arguments" value.
  * @returns {string}
  */
-sibilant.MetricsRegistry.prototype.makeName=function(args) {
+ozpIwc.MetricsRegistry.prototype.makeName=function(args) {
 	// slice is necessary because "arguments" isn't a real array, and it's what
 	// is usually passed in, here.
 	return Array.prototype.slice.call(args).join(".");
@@ -63,49 +63,49 @@ sibilant.MetricsRegistry.prototype.makeName=function(args) {
 
 /**
  * @param {...string} name - components of the name
- * @returns {sibilant.metricTypes.Counter}
+ * @returns {ozpIwc.metricTypes.Counter}
  */
-sibilant.MetricsRegistry.prototype.counter=function(name) {
-	return this.findOrCreateMetric(this.makeName(arguments),sibilant.metricTypes.Counter);
+ozpIwc.MetricsRegistry.prototype.counter=function(name) {
+	return this.findOrCreateMetric(this.makeName(arguments),ozpIwc.metricTypes.Counter);
 };
 
 /**
  * @param {...string} name - components of the name
- * @returns {sibilant.metricTypes.Meter}
+ * @returns {ozpIwc.metricTypes.Meter}
  */
-sibilant.MetricsRegistry.prototype.meter=function(name) {
-	return this.findOrCreateMetric(this.makeName(arguments),sibilant.metricTypes.Meter);
+ozpIwc.MetricsRegistry.prototype.meter=function(name) {
+	return this.findOrCreateMetric(this.makeName(arguments),ozpIwc.metricTypes.Meter);
 };
 
 /**
  * @param {...string} name - components of the name
- * @returns {sibilant.metricTypes.Gauge}
+ * @returns {ozpIwc.metricTypes.Gauge}
  */
-sibilant.MetricsRegistry.prototype.gauge=function(name) {
-	return this.findOrCreateMetric(this.makeName(arguments),sibilant.metricTypes.Gauge);
+ozpIwc.MetricsRegistry.prototype.gauge=function(name) {
+	return this.findOrCreateMetric(this.makeName(arguments),ozpIwc.metricTypes.Gauge);
 };
 
 /**
  * @param {...string} name - components of the name
- * @returns {sibilant.metricTypes.Gauge}
+ * @returns {ozpIwc.metricTypes.Gauge}
  */
-sibilant.MetricsRegistry.prototype.histogram=function(name) {
-	return this.findOrCreateMetric(this.makeName(arguments),sibilant.metricTypes.Histogram);
+ozpIwc.MetricsRegistry.prototype.histogram=function(name) {
+	return this.findOrCreateMetric(this.makeName(arguments),ozpIwc.metricTypes.Histogram);
 };
 
 /**
  * @param {...string} name - components of the name
- * @returns {sibilant.metricTypes.Gauge}
+ * @returns {ozpIwc.metricTypes.Gauge}
  */
-sibilant.MetricsRegistry.prototype.timer=function(name) {
-	return this.findOrCreateMetric(this.makeName(arguments),sibilant.metricTypes.Timer);
+ozpIwc.MetricsRegistry.prototype.timer=function(name) {
+	return this.findOrCreateMetric(this.makeName(arguments),ozpIwc.metricTypes.Timer);
 };
 
 /**
  * @param {...string} name - components of the name
- * @returns {sibilant.metricTypes.Gauge}
+ * @returns {ozpIwc.metricTypes.Gauge}
  */
-sibilant.MetricsRegistry.prototype.register=function(name,metric) {
+ozpIwc.MetricsRegistry.prototype.register=function(name,metric) {
 	this.metrics[this.makeName(name)]=metric;
 	
 	return metric;
@@ -115,7 +115,7 @@ sibilant.MetricsRegistry.prototype.register=function(name,metric) {
  * 
  * @returns {unresolved}
  */
-sibilant.MetricsRegistry.prototype.toJson=function() {
+ozpIwc.MetricsRegistry.prototype.toJson=function() {
 	var rv={};
 	for(var k in this.metrics) {
 		var path=k.split(".");
@@ -130,4 +130,4 @@ sibilant.MetricsRegistry.prototype.toJson=function() {
 };
 
 	
-sibilant.metrics=new sibilant.MetricsRegistry();
+ozpIwc.metrics=new ozpIwc.MetricsRegistry();

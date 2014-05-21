@@ -1,55 +1,55 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
-if(sibilant.Peer) {
-	sibilant.defaultPeer=new sibilant.Peer();
+if(ozpIwc.Peer) {
+	ozpIwc.defaultPeer=new ozpIwc.Peer();
 }
 
-if(sibilant.Router) {
-	sibilant.defaultRouter=new sibilant.Router({
-			peer:sibilant.defaultPeer
+if(ozpIwc.Router) {
+	ozpIwc.defaultRouter=new ozpIwc.Router({
+			peer:ozpIwc.defaultPeer
 		});
 }
 
-if(sibilant.LocalStorageLink) {
-	sibilant.defaultLocalStorageLink=new sibilant.KeyBroadcastLocalStorageLink({
-		peer: sibilant.defaultPeer
+if(ozpIwc.LocalStorageLink) {
+	ozpIwc.defaultLocalStorageLink=new ozpIwc.KeyBroadcastLocalStorageLink({
+		peer: ozpIwc.defaultPeer
 	});
-//	sibilant.defaultLocalStorageLink=new sibilant.LocalStorageLink({
-//		peer: sibilant.defaultPeer
+//	ozpIwc.defaultLocalStorageLink=new ozpIwc.LocalStorageLink({
+//		peer: ozpIwc.defaultPeer
 //	});	
 }
 
-if(sibilant.PostMessageParticipantListener) {
-	sibilant.defaultPostMessageParticipantListener=new sibilant.PostMessageParticipantListener({
-		router: sibilant.defaultRouter
+if(ozpIwc.PostMessageParticipantListener) {
+	ozpIwc.defaultPostMessageParticipantListener=new ozpIwc.PostMessageParticipantListener({
+		router: ozpIwc.defaultRouter
 	});
 }
 
-if(sibilant.BasicAuthorization) {
-	sibilant.authorization=new sibilant.BasicAuthorization();
+if(ozpIwc.BasicAuthorization) {
+	ozpIwc.authorization=new ozpIwc.BasicAuthorization();
 }
 
-if(sibilant.KeyValueApi) {
-	sibilant.keyValueApi=new sibilant.LeaderGroupParticipant({
+if(ozpIwc.KeyValueApi) {
+	ozpIwc.keyValueApi=new ozpIwc.LeaderGroupParticipant({
 		name: "keyValue.api",
-		target: new sibilant.KeyValueApi()
+		target: new ozpIwc.KeyValueApi()
 	});
 
-	sibilant.defaultRouter.registerParticipant(sibilant.keyValueApi);
+	ozpIwc.defaultRouter.registerParticipant(ozpIwc.keyValueApi);
 }
 //
-//if(sibilant.NamesApi) {
-//	sibilant.namesApi=new sibilant.LeaderGroupParticipant({
+//if(ozpIwc.NamesApi) {
+//	ozpIwc.namesApi=new ozpIwc.LeaderGroupParticipant({
 //		name: "names.api",
-//		target: new sibilant.NamesApi()
+//		target: new ozpIwc.NamesApi()
 //	});
-//	sibilant.defaultRouter.registerParticipant(sibilant.namesApi);
+//	ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi);
 //}
 //
-//if(sibilant.IntentsApi) {
-//	sibilant.intentsApi=new sibilant.LeaderGroupParticipant({
+//if(ozpIwc.IntentsApi) {
+//	ozpIwc.intentsApi=new ozpIwc.LeaderGroupParticipant({
 //		name: "intents.api",
-//		target: new sibilant.IntentsApi()
+//		target: new ozpIwc.IntentsApi()
 //	});
-//	sibilant.defaultRouter.registerParticipant(sibilant.intentsApi);
+//	ozpIwc.defaultRouter.registerParticipant(ozpIwc.intentsApi);
 //}

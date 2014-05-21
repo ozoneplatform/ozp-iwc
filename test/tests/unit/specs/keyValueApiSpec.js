@@ -6,7 +6,7 @@ describe("KV API Base class",function() {
 		jasmine.addMatchers(customMatchers);
 		jasmine.clock().install();
 
-		kvApi=new sibilant.KeyValueApi();
+		kvApi=new ozpIwc.KeyValueApi();
 	});
 	
 	afterEach(function() {

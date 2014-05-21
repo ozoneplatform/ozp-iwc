@@ -1,16 +1,16 @@
 /** @namespace */
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
 /**
- * @class sibilant.PostMessageParticipant
- * @extends sibilant.Participant
+ * @class ozpIwc.PostMessageParticipant
+ * @extends ozpIwc.Participant
  * @param {object} config
  * @param {string} config.origin
  * @param {object} config.sourceWindow
  * @param {object} config.credentials
  */
-sibilant.PostMessageParticipant=sibilant.util.extend(sibilant.Participant,function(config) {
-	sibilant.Participant.apply(this,arguments);
+ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
+	ozpIwc.Participant.apply(this,arguments);
 	this.origin=this.name=config.origin;
 	this.sourceWindow=config.sourceWindow;
 	this.credentials=config.credentials;
@@ -20,9 +20,9 @@ sibilant.PostMessageParticipant=sibilant.util.extend(sibilant.Participant,functi
 
 /**
  * Receives a packet on behalf of this participant and forwards it via PostMessage.
- * @param {sibilant.TransportPacketContext} packetContext 
+ * @param {ozpIwc.TransportPacketContext} packetContext 
  */
-sibilant.PostMessageParticipant.prototype.receiveFromRouter=function(packetContext) {
+ozpIwc.PostMessageParticipant.prototype.receiveFromRouter=function(packetContext) {
 	this.sendToRecipient(packetContext.packet);
 	return true;
 };
@@ -30,11 +30,11 @@ sibilant.PostMessageParticipant.prototype.receiveFromRouter=function(packetConte
 /**
  * Sends a message to the other end of our connection.  Wraps any string mangling
  * necessary by the postMessage implementation of the browser.
- * @param {sibilant.TransportPacket} packet
+ * @param {ozpIwc.TransportPacket} packet
  * @todo Only IE requires the packet to be stringified before sending, should use feature detection?
  * @returns {undefined}
  */
-sibilant.PostMessageParticipant.prototype.sendToRecipient=function(packet) {
+ozpIwc.PostMessageParticipant.prototype.sendToRecipient=function(packet) {
 	this.sourceWindow.postMessage(JSON.stringify(packet),this.origin);
 };
 
@@ -44,7 +44,7 @@ sibilant.PostMessageParticipant.prototype.sendToRecipient=function(packet) {
  * @param {object} packet
  * @returns {undefined}
  */
-sibilant.PostMessageParticipant.prototype.handleTransportPacket=function(packet) {
+ozpIwc.PostMessageParticipant.prototype.handleTransportPacket=function(packet) {
 	var reply={
 		'ver': 1,
 		'dst': this.address,
@@ -62,18 +62,18 @@ sibilant.PostMessageParticipant.prototype.handleTransportPacket=function(packet)
 /**
  * 
  * @todo track the last used timestamp and make sure we don't send a duplicate messageId
- * @param {sibilant.TransportPacket} packet
+ * @param {ozpIwc.TransportPacket} packet
  * @param {type} event
  * @returns {undefined}
  */
-sibilant.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,event) {
+ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,event) {
 	if(typeof(packet) !== "object") {
-		sibilant.log.error("Unknown packet received: " + JSON.stringify(packet));
+		ozpIwc.log.error("Unknown packet received: " + JSON.stringify(packet));
 		return;
 	}
 	if(event.origin !== this.origin) {
 		/** @todo participant changing origins should set off more alarms, probably */
-		sibilant.metrics.counter("transport."+participant.address+".invalidSenderOrigin").inc();
+		ozpIwc.metrics.counter("transport."+participant.address+".invalidSenderOrigin").inc();
 		return;
 	}
 	
@@ -91,12 +91,12 @@ sibilant.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet
 /**
  * @class
  * @param {object} config
- * @param {sibilant.Router} config.router
+ * @param {ozpIwc.Router} config.router
  */
-sibilant.PostMessageParticipantListener=function(config) {
+ozpIwc.PostMessageParticipantListener=function(config) {
 	config = config || {};
 	this.participants=[];
-	this.router=config.router || sibilant.defaultRouter;
+	this.router=config.router || ozpIwc.defaultRouter;
 	
 	var self=this;
 	
@@ -111,7 +111,7 @@ sibilant.PostMessageParticipantListener=function(config) {
  * compare windows other than equality.
  * @param {object} sourceWindow - the participant window handle from message's event.source 
  */
-sibilant.PostMessageParticipantListener.prototype.findParticipant=function(sourceWindow) {
+ozpIwc.PostMessageParticipantListener.prototype.findParticipant=function(sourceWindow) {
 	for(var i=0; i< this.participants.length; ++i) {
 		if(this.participants[i].sourceWindow === sourceWindow) {
 			return this.participants[i];
@@ -124,9 +124,9 @@ sibilant.PostMessageParticipantListener.prototype.findParticipant=function(sourc
  * @param {object} event - The event received from the "message" event handler
  * @param {string} event.origin
  * @param {object} event.source
- * @param {sibilant.TransportPacket} event.data
+ * @param {ozpIwc.TransportPacket} event.data
  */
-sibilant.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(event) {
+ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(event) {
 	var participant=this.findParticipant(event.source);
 	var packet=event.data;
 
@@ -136,7 +136,7 @@ sibilant.PostMessageParticipantListener.prototype.receiveFromPostMessage=functio
 	
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
-		participant=new sibilant.PostMessageParticipant({
+		participant=new ozpIwc.PostMessageParticipant({
 			'origin': event.origin,
 			'sourceWindow': event.source,
 			'credentials': packet.entity

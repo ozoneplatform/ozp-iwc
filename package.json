@@ -1,8 +1,8 @@
 {
-  "author": "me",
-  "name": "sibilant",
+  "author": "Ozone Developers",
+  "name": "ozpIwc",
   "version": "0.0.1",
-	"repository": "https://github.com/nialscorva/Sibilant",
+	"repository": "https://github.com/ozone-development/ozp-iwc",
   "devDependencies": {
   	"grunt" : "0.4.x",
 		"grunt-contrib-uglify": "*",

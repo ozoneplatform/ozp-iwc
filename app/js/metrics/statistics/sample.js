@@ -17,28 +17,28 @@
 /*
  * Original code owned by Mike Ihbe.  Modifications licensed under same terms.
  */
-var sibilant=sibilant || {};
-sibilant.metricsStats=sibilant.metricsStats || {};
+var ozpIwc=ozpIwc || {};
+ozpIwc.metricsStats=ozpIwc.metricsStats || {};
 
-sibilant.metricsStats.DEFAULT_POOL_SIZE=1028;
+ozpIwc.metricsStats.DEFAULT_POOL_SIZE=1028;
 
-sibilant.metricsStats.Sample = function(){
+ozpIwc.metricsStats.Sample = function(){
 	this.clear();
 };
 
-sibilant.metricsStats.Sample.prototype.update = function(val){ 
+ozpIwc.metricsStats.Sample.prototype.update = function(val){ 
 	this.values.push(val); 
 };
 
-sibilant.metricsStats.Sample.prototype.clear = function(){ 
+ozpIwc.metricsStats.Sample.prototype.clear = function(){ 
 	this.values = []; 
 	this.count = 0; 
 };
-sibilant.metricsStats.Sample.prototype.size = function(){ 
+ozpIwc.metricsStats.Sample.prototype.size = function(){ 
 	return this.values.length;
 };
 
-sibilant.metricsStats.Sample.prototype.getValues = function(){ 
+ozpIwc.metricsStats.Sample.prototype.getValues = function(){ 
 	return this.values; 
 };
 
@@ -46,14 +46,14 @@ sibilant.metricsStats.Sample.prototype.getValues = function(){
 /**
  *  Take a uniform sample of size size for all values
  *  @class
- *  @param {Number} [size=sibilant.metricsStats.DEFAULT_POOL_SIZE] - The size of the sample pool.
+ *  @param {Number} [size=ozpIwc.metricsStats.DEFAULT_POOL_SIZE] - The size of the sample pool.
  */
-sibilant.metricsStats.UniformSample=sibilant.util.extend(sibilant.metricsStats.Sample,function(size) {
-	sibilant.metricsStats.Sample.apply(this);
-  this.limit = size || sibilant.metricsStats.DEFAULT_POOL_SIZE;
+ozpIwc.metricsStats.UniformSample=ozpIwc.util.extend(ozpIwc.metricsStats.Sample,function(size) {
+	ozpIwc.metricsStats.Sample.apply(this);
+  this.limit = size || ozpIwc.metricsStats.DEFAULT_POOL_SIZE;
 });
 
-sibilant.metricsStats.UniformSample.prototype.update = function(val) {
+ozpIwc.metricsStats.UniformSample.prototype.update = function(val) {
   this.count++;
   if (this.size() < this.limit) {
     this.values.push(val);

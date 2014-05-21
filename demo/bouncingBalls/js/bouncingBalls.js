@@ -19,7 +19,7 @@ var Ball=function(ballRef,svgElement) {
 	this.ballResource=ballRef;
 	this.totalLatency=0;
 	this.packets=0;
-	this.lastUpdate=sibilant.util.now();
+	this.lastUpdate=ozpIwc.util.now();
 	this.updateDelta=0;
 	this.updateCount=0;
 	
@@ -31,7 +31,7 @@ var Ball=function(ballRef,svgElement) {
 	var self=this;
 	var packet=client.send(watchRequest,function(packet) {
 		self.packets++;
-		var now=sibilant.util.now();
+		var now=ozpIwc.util.now();
 		self.totalLatency+=now-packet.time;
 
 		if(packet.action==="changed") {
@@ -53,7 +53,7 @@ Ball.prototype.draw=function(info) {
 	if(!info) {
 		this.remove();
 	}
-	var now=sibilant.util.now();
+	var now=ozpIwc.util.now();
 	this.updateDelta+=now-this.lastUpdate;
 	this.updateCount++;
 	this.lastUpdate=now;
@@ -156,7 +156,7 @@ $(document).ready(function(){
 
 	
 //	window.setInterval(function() {
-//		var elapsed=(sibilant.util.now()-client.startTime)/1000;
+//		var elapsed=(ozpIwc.util.now()-client.startTime)/1000;
 //	
 //		$('#averageLatencies').text(
 //			"Sent [Pkt/sec: " + (client.sentPackets/elapsed).toFixed(1) + ", " +
@@ -167,7 +167,7 @@ $(document).ready(function(){
 //	},500);
 });
 
-var client=new sibilant.Client({peerUrl:"http://" + window.location.hostname + ":13000"});
+var client=new ozpIwc.Client({peerUrl:"http://" + window.location.hostname + ":13000"});
 
 client.on("connected",function() {
 	// setup

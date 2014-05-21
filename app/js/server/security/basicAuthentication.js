@@ -1,14 +1,14 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
-/** @typedef {string} sibilant.security.Principal */
+/** @typedef {string} ozpIwc.security.Principal */
 
-/** @typedef {string} sibilant.security.Permission */
+/** @typedef {string} ozpIwc.security.Permission */
 
-/** @typedef { sibilant.security.Principal[] } sibilant.security.Subject */
+/** @typedef { ozpIwc.security.Principal[] } ozpIwc.security.Subject */
 
 /** 
- * @typedef {object} sibilant.security.Actor 
- * @property {sibilant.security.Subject} securitySubject
+ * @typedef {object} ozpIwc.security.Actor 
+ * @property {ozpIwc.security.Subject} securitySubject
  */
 
 
@@ -29,7 +29,7 @@ var sibilant=sibilant || {};
  * <p> All operations are potentially asynchronous, though if the request can
  * be answered immediately, it will be.
  * 
- * <h2>Sibilant's usage of authorization</h2>
+ * <h2>OZP IWC's usage of authorization</h2>
  * 
  * <p> Principals are strings of the form "${domain}:${id}".  The domain
  * identifies the type of principal, where the ID indentifies the specific instance.
@@ -40,7 +40,7 @@ var sibilant=sibilant || {};
  *   <li>origin:${origin}
  * </ul>
  * 
- * <p> Sibilant uses permissions of the form "${domain}:${action}:${instance}".
+ * <p> OZP IWC uses permissions of the form "${domain}:${action}:${instance}".
  * The domain is the type of the object being acted upon, the action
  * corresponds to the action being taken, and the instance is an optional
  * ID for the specific instance of the domain being acted upon.
@@ -49,7 +49,7 @@ var sibilant=sibilant || {};
  * 
  * @class
  */
-sibilant.BasicAuthentication=function() {
+ozpIwc.BasicAuthentication=function() {
 	this.principals={};	
 };
 
@@ -62,17 +62,17 @@ sibilant.BasicAuthentication=function() {
  * determines that.  The security module can then add additional principals based
  * upon configuration.
  * 
- * @param {sibilant.security.Credentials} credentials
- * @param {sibilant.security.Subject} [preAuthenticatedSubject] - The pre-authenticated
+ * @param {ozpIwc.security.Credentials} credentials
+ * @param {ozpIwc.security.Subject} [preAuthenticatedSubject] - The pre-authenticated
  *   subject that is presenting these credentials.   
- * @returns {sibilant.AsyncAction} If the credentials are authenticated, the success handler receives
+ * @returns {ozpIwc.AsyncAction} If the credentials are authenticated, the success handler receives
  *     the subject.
  */
-sibilant.BasicAuthentication.prototype.login=function(credentials,preAuthenticatedSubject) {
+ozpIwc.BasicAuthentication.prototype.login=function(credentials,preAuthenticatedSubject) {
 	if(!credentials) {
 		throw "Must supply credentials for login";
 	}
-	var action=new sibilant.AsyncAction();
+	var action=new ozpIwc.AsyncAction();
 	
 	preAuthenticatedSubject=preAuthenticatedSubject || [];
 	return action.resolve("success",preAuthenticatedSubject);

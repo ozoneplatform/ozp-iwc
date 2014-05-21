@@ -1,5 +1,5 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
-sibilant.IntentsApi = sibilant.util.extend(sibilant.KeyValueApi,function() {
-	sibilant.KeyValueApi.apply(this,arguments);
+ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.KeyValueApi,function() {
+	ozpIwc.KeyValueApi.apply(this,arguments);
 });

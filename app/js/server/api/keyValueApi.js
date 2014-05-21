@@ -1,8 +1,8 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
 
 /**
- * @typedef {object} sibilant.KeyValuePair
+ * @typedef {object} ozpIwc.KeyValuePair
  * @property {object} data
  * @property {string} contentType
  * @property {object} permissions
@@ -12,8 +12,8 @@ var sibilant=sibilant || {};
 /**
  * @class
  */
-sibilant.KeyValueApi = function() {
-	this.kvStore=new sibilant.KeyValueStore({
+ozpIwc.KeyValueApi = function() {
+	this.kvStore=new ozpIwc.KeyValueStore({
 		defaultData: function() { 
 			return { 
 				data: undefined,
@@ -31,12 +31,12 @@ sibilant.KeyValueApi = function() {
  * @todo if we implement multi-dst packets, only return the one. 
  * @param {object} evt
  * @param {string} evt.path - The path of the changed node.
- * @param {sibilant.KeyValuePair} evt.node - The node being changed.
+ * @param {ozpIwc.KeyValuePair} evt.node - The node being changed.
  * @param {object} evt.oldData - Value of the node prior to being changed.
  * @param {object} evt.newData - Current value of the node.
 	}
  */
-sibilant.KeyValueApi.prototype.triggerChange=function(evt) {
+ozpIwc.KeyValueApi.prototype.triggerChange=function(evt) {
 	return evt.node.watchers.map(function(watcher) {
 		var reply={
 			'dst'   : watcher.src,
@@ -61,9 +61,9 @@ sibilant.KeyValueApi.prototype.triggerChange=function(evt) {
 
 
 /**
- * @param {sibilant.TransportPacketContext} packetContext
+ * @param {ozpIwc.TransportPacketContext} packetContext
  */
-sibilant.KeyValueApi.prototype.handleGetAsLeader=function(packetContext) {
+ozpIwc.KeyValueApi.prototype.handleGetAsLeader=function(packetContext) {
 	return [{
 		'action': 'success',
 		'entity': this.kvStore.get(packetContext.packet.resource).data
@@ -71,9 +71,9 @@ sibilant.KeyValueApi.prototype.handleGetAsLeader=function(packetContext) {
 };
 
 /**
- * @param {sibilant.TransportPacketContext} packetContext
+ * @param {ozpIwc.TransportPacketContext} packetContext
  */
-sibilant.KeyValueApi.prototype.handleSetAsLeader=function(packetContext) {
+ozpIwc.KeyValueApi.prototype.handleSetAsLeader=function(packetContext) {
 	var packet=packetContext.packet;
 	var node=this.kvStore.get(packet.resource);
 	var oldData=node.data;
@@ -92,9 +92,9 @@ sibilant.KeyValueApi.prototype.handleSetAsLeader=function(packetContext) {
 };
 
 /**
- * @param {sibilant.TransportPacketContext} packetContext
+ * @param {ozpIwc.TransportPacketContext} packetContext
  */
-sibilant.KeyValueApi.prototype.handleDeleteAsLeader=function(packetContext) {
+ozpIwc.KeyValueApi.prototype.handleDeleteAsLeader=function(packetContext) {
 	var packet=packetContext.packet;
 	var node=this.kvStore.get(packet.resource);
 	this.kvStore.delete(packet.resource);
@@ -112,9 +112,9 @@ sibilant.KeyValueApi.prototype.handleDeleteAsLeader=function(packetContext) {
 };
 
 /**
- * @param {sibilant.TransportPacketContext} packetContext
+ * @param {ozpIwc.TransportPacketContext} packetContext
  */
-sibilant.KeyValueApi.prototype.handleWatchAsLeader=function(packetContext) {
+ozpIwc.KeyValueApi.prototype.handleWatchAsLeader=function(packetContext) {
 	var packet=packetContext.packet;
 	var node=this.kvStore.get(packet.resource);
 	
@@ -131,9 +131,9 @@ sibilant.KeyValueApi.prototype.handleWatchAsLeader=function(packetContext) {
 };
 
 /**
- * @param {sibilant.TransportPacketContext} packetContext
+ * @param {ozpIwc.TransportPacketContext} packetContext
  */
-sibilant.KeyValueApi.prototype.handleUnwatchAsLeader=function(packetContext) {
+ozpIwc.KeyValueApi.prototype.handleUnwatchAsLeader=function(packetContext) {
 	var packet=packetContext.packet;
 	var node=this.kvStore.get(packet.resource);
 	node.watchers=node.watchers.filter(function(w) {
@@ -148,7 +148,7 @@ sibilant.KeyValueApi.prototype.handleUnwatchAsLeader=function(packetContext) {
 	}];
 };
 
-sibilant.KeyValueApi.prototype.handleListAsLeader=function(packetContext) {
+ozpIwc.KeyValueApi.prototype.handleListAsLeader=function(packetContext) {
 	var packet=packetContext.packet;
 	if(packet.resource) {
 		var node=this.kvStore.get(packet.resource);
@@ -159,15 +159,15 @@ sibilant.KeyValueApi.prototype.handleListAsLeader=function(packetContext) {
 };
 
 /**
- * @param {sibilant.TransportPacketContext} packetContext
+ * @param {ozpIwc.TransportPacketContext} packetContext
  */
-sibilant.KeyValueApi.prototype.handlePushAsLeader=function(packetContext) {
+ozpIwc.KeyValueApi.prototype.handlePushAsLeader=function(packetContext) {
 	var packet=packetContext.packet;
 	var node=this.kvStore.get(packet.resource);
 
 	var key;
 	do {
-		key=packet.resource +"/"+ sibilant.util.generateId();
+		key=packet.resource +"/"+ ozpIwc.util.generateId();
 	} while(this.kvStore.hasKey(key));
 
 	// save the new child
@@ -189,15 +189,15 @@ sibilant.KeyValueApi.prototype.handlePushAsLeader=function(packetContext) {
 };
 
 /**
- * @param {sibilant.TransportPacketContext} packetContext
+ * @param {ozpIwc.TransportPacketContext} packetContext
  */
-sibilant.KeyValueApi.prototype.handleUnshiftAsLeader=function(packetContext) {
+ozpIwc.KeyValueApi.prototype.handleUnshiftAsLeader=function(packetContext) {
 	var packet=packetContext.packet;
 	var node=this.kvStore.get(packet.resource);
 
 	var key;
 	do {
-		key=packet.resource +"/"+ sibilant.util.generateId();
+		key=packet.resource +"/"+ ozpIwc.util.generateId();
 	} while(this.kvStore.hasKey(key));
 
 	// save the new child
@@ -219,9 +219,9 @@ sibilant.KeyValueApi.prototype.handleUnshiftAsLeader=function(packetContext) {
 };
 
 /**
- * @param {sibilant.TransportPacketContext} packetContext
+ * @param {ozpIwc.TransportPacketContext} packetContext
  */
-sibilant.KeyValueApi.prototype.handlePopAsLeader=function(packetContext) {
+ozpIwc.KeyValueApi.prototype.handlePopAsLeader=function(packetContext) {
 	var packet=packetContext.packet;
 	var node=this.kvStore.get(packet.resource);
 	
@@ -244,9 +244,9 @@ sibilant.KeyValueApi.prototype.handlePopAsLeader=function(packetContext) {
 };
 
 /**
- * @param {sibilant.TransportPacketContext} packetContext
+ * @param {ozpIwc.TransportPacketContext} packetContext
  */
-sibilant.KeyValueApi.prototype.handleShiftAsLeader=function(packetContext) {
+ozpIwc.KeyValueApi.prototype.handleShiftAsLeader=function(packetContext) {
 	var packet=packetContext.packet;
 	var node=this.kvStore.get(packet.resource);
 	
@@ -267,10 +267,10 @@ sibilant.KeyValueApi.prototype.handleShiftAsLeader=function(packetContext) {
 	return responses;
 };
 
-sibilant.KeyValueApi.prototype.generateSync=function() {
+ozpIwc.KeyValueApi.prototype.generateSync=function() {
 	return this.kvStore.data;
 };
 
-sibilant.KeyValueApi.prototype.receiveSync=function(data) {
+ozpIwc.KeyValueApi.prototype.receiveSync=function(data) {
 	this.kvStore.data=data;
 };

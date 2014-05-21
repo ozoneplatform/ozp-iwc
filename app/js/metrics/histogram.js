@@ -1,15 +1,15 @@
 /**
  * @class
- * @extends sibilant.BaseMetric
+ * @extends ozpIwc.BaseMetric
  */
-sibilant.metricTypes.Histogram=sibilant.util.extend(sibilant.metricTypes.BaseMetric,function() {
-	sibilant.metricTypes.BaseMetric.apply(this,arguments);
-	this.sample = new sibilant.metricsStats.ExponentiallyDecayingSample();
+ozpIwc.metricTypes.Histogram=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
+	ozpIwc.metricTypes.BaseMetric.apply(this,arguments);
+	this.sample = new ozpIwc.metricsStats.ExponentiallyDecayingSample();
 	this.clear();
 });
 
 
-sibilant.metricTypes.Histogram.prototype.clear=function() {
+ozpIwc.metricTypes.Histogram.prototype.clear=function() {
 	this.sample.clear();
 	this.min=this.max=null;
 	this.varianceMean=0;
@@ -22,8 +22,8 @@ sibilant.metricTypes.Histogram.prototype.clear=function() {
  * @param {Number} [delta=1] - Increment by this value
  * @returns {Number} - Value of the counter after increment
  */
-sibilant.metricTypes.Histogram.prototype.mark=function(val,timestamp) { 
-	timestamp = timestamp || sibilant.util.now();
+ozpIwc.metricTypes.Histogram.prototype.mark=function(val,timestamp) { 
+	timestamp = timestamp || ozpIwc.util.now();
 	
 	this.sample.update(val,timestamp);
 	
@@ -39,7 +39,7 @@ sibilant.metricTypes.Histogram.prototype.mark=function(val,timestamp) {
 	return this.count;
 };
 
-sibilant.metricTypes.Histogram.prototype.get=function() { 
+ozpIwc.metricTypes.Histogram.prototype.get=function() { 
 	var values=this.sample.getValues().map(function(v){
 		return parseFloat(v);
 	}).sort(function(a,b) { 

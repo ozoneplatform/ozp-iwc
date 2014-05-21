@@ -3,7 +3,7 @@ describe("Metrics Registry",function() {
 	
 	beforeEach(function() {
 		jasmine.addMatchers(customMatchers);
-		metrics=new sibilant.MetricsRegistry();
+		metrics=new ozpIwc.MetricsRegistry();
 	});
 	
 	afterEach(function() {
@@ -12,12 +12,12 @@ describe("Metrics Registry",function() {
 	
 	it("creates a counter upon request",function() {
 		expect(metrics.counter("foo.bar"))
-						.toBeInstanceOf(sibilant.metricTypes.Counter);
+						.toBeInstanceOf(ozpIwc.metricTypes.Counter);
 	});
 
 	it("creates a meter upon request",function() {
 		expect(metrics.meter("foo.bar"))
-						.toBeInstanceOf(sibilant.metricTypes.Meter);
+						.toBeInstanceOf(ozpIwc.metricTypes.Meter);
 	});
 
 	it("returns the same counter at each invocation",function() {

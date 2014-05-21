@@ -1,5 +1,5 @@
 
-var client=new sibilant.Client({peerUrl:"http://localhost:13000"});
+var client=new ozpIwc.Client({peerUrl:"http://localhost:13000"});
 
 client.on("connected",function() {
 	$('#myAddress').text(client.participantId);

@@ -1,7 +1,7 @@
 describe("Metrics: Histogram",function() {
 	var histogram;
 	beforeEach(function() {
-		histogram=new sibilant.metricTypes.Histogram();
+		histogram=new ozpIwc.metricTypes.Histogram();
 		jasmine.addMatchers(customMatchers);
 	});
 	

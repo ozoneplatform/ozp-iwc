@@ -1,5 +1,5 @@
 /** @namespace **/
-var sibilant = sibilant || {};
+var ozpIwc = ozpIwc || {};
 
 /**
  * <p>This link connects peers using the HTML5 localstorage API.  It handles cleaning up
@@ -38,17 +38,17 @@ var sibilant = sibilant || {};
  * 
  * @class
  * @param {Object} [config] - Configuration for this link
- * @param {sibilant.Peer} [config.peer=sibilant.defaultPeer] - The peer to connect to.
+ * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] - The peer to connect to.
  * @param {Number} [config.myKeysTimeout=5000] - Milliseconds to wait before deleting this link's keys.
  * @param {Number} [config.otherKeysTimeout=120000] - Milliseconds to wait before cleaning up other link's keys
- * @param {string} [config.prefix='sibilant'] - Namespace for communicating, must be the same for all peers on the same network.
+ * @param {string} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
  * @param {string} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
  */
-sibilant.LocalStorageLink = function(config) {
+ozpIwc.LocalStorageLink = function(config) {
 	config=config || {};
 
-	this.prefix=config.prefix || 'sibilant';
-	this.peer=config.peer || sibilant.defaultPeer;
+	this.prefix=config.prefix || 'ozpIwc';
+	this.peer=config.peer || ozpIwc.defaultPeer;
 	this.selfId=config.selfId || this.peer.selfId;
 	this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
 	this.otherKeysTimeout = config.otherKeysTimeout || 2*60000; // 2 minutes
@@ -62,11 +62,11 @@ sibilant.LocalStorageLink = function(config) {
 			var packet=JSON.parse(localStorage.getItem(event.key));
 
 			if(!packet) {
-				sibilant.metrics.counter('links.localStorage.packets.vanished').inc();
+				ozpIwc.metrics.counter('links.localStorage.packets.vanished').inc();
 			} else if(typeof(packet) !== "object") {
-				sibilant.metrics.counter('links.localStorage.packets.notAnObject').inc();
+				ozpIwc.metrics.counter('links.localStorage.packets.notAnObject').inc();
 			} else {
-				sibilant.metrics.counter('links.localStorage.packets.receive').inc();
+				ozpIwc.metrics.counter('links.localStorage.packets.receive').inc();
 				self.peer.receive(self.linkId,packet);
 			} 
 		};
@@ -88,7 +88,7 @@ sibilant.LocalStorageLink = function(config) {
 
 
 	// METRICS
-	sibilant.metrics.gauge('links.localStorage.buffer').set(function() {
+	ozpIwc.metrics.gauge('links.localStorage.buffer').set(function() {
 		var	stats= {
 					used: 0,
 					max: 5 *1024 * 1024,
@@ -102,7 +102,7 @@ sibilant.LocalStorageLink = function(config) {
 			var v=localStorage.getItem(k);
 			
 			var size=v.length*2;
-			var oldKeyTime = sibilant.util.now() - this.myKeysTimeout;
+			var oldKeyTime = ozpIwc.util.now() - this.myKeysTimeout;
 
 			stats.used+=size;
 			
@@ -127,8 +127,8 @@ sibilant.LocalStorageLink = function(config) {
  * @todo Is timestamp granular enough that no two packets can come in at the same time?
  * @returns {string} a new key
  */
-sibilant.LocalStorageLink.prototype.makeKey=function(sequence) { 
-	return [this.prefix,this.selfId,sibilant.util.now(),sequence].join('|');
+ozpIwc.LocalStorageLink.prototype.makeKey=function(sequence) { 
+	return [this.prefix,this.selfId,ozpIwc.util.now(),sequence].join('|');
 };
 
 /**
@@ -137,7 +137,7 @@ sibilant.LocalStorageLink.prototype.makeKey=function(sequence) {
  * @param {type} k The key to split
  * @returns {object} The id and createdAt for the key if it's valid, otherwise null.
  */
-sibilant.LocalStorageLink.prototype.splitKey=function(k) { 
+ozpIwc.LocalStorageLink.prototype.splitKey=function(k) { 
 	var parts=k.split("|");
 	if(parts.length===4 && parts[0]===this.prefix) {
 		return { id: parts[1], createdAt: parseInt(parts[2]) };
@@ -152,8 +152,8 @@ sibilant.LocalStorageLink.prototype.splitKey=function(k) {
  * @todo Coordinate expiration windows.
  * @returns {undefined}
  */
-sibilant.LocalStorageLink.prototype.cleanKeys=function() {
-	var now=sibilant.util.now();
+ozpIwc.LocalStorageLink.prototype.cleanKeys=function() {
+	var now=ozpIwc.util.now();
 	var myKeyExpiration = now - this.myKeysTimeout;
 	var otherKeyExpiration = now - this.otherKeysTimeout;
 
@@ -173,11 +173,11 @@ sibilant.LocalStorageLink.prototype.cleanKeys=function() {
 /**
  * Publishes a packet to other peers.
  * @todo Handle local storage being full.
- * @param {sibilant.NetworkPacket} packet
+ * @param {ozpIwc.NetworkPacket} packet
  */
-sibilant.LocalStorageLink.prototype.send=function(packet) { 
+ozpIwc.LocalStorageLink.prototype.send=function(packet) { 
 	localStorage.setItem(this.makeKey(packet.sequence),JSON.stringify(packet));
-	sibilant.metrics.counter('links.localStorage.packets.sent').inc();
+	ozpIwc.metrics.counter('links.localStorage.packets.sent').inc();
 	var self=this;
 
 };

@@ -4,7 +4,7 @@ describe("Basic authorization",function() {
 	beforeEach(function() {
 		jasmine.addMatchers(customMatchers);
 		
-		auth=new sibilant.BasicAuthorization();
+		auth=new ozpIwc.BasicAuthorization();
 	});
 	
 	afterEach(function() {

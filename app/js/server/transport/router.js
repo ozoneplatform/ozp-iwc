@@ -1,7 +1,7 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
 /**
- * @typedef sibilant.TransportPacket
+ * @typedef ozpIwc.TransportPacket
  * @property {string} src - The participant address that sent this packet
  * @property {string} dst - The intended recipient of this packet
  * @property {Number} ver - Protocol Version.  Should be 1
@@ -17,16 +17,16 @@ var sibilant=sibilant || {};
 /**
  * @class 
  * @param {object} config
- * @param {sibilant.TransportPacket} config.packet
- * @param {sibilant.Router} config.router
- * @param {sibilant.Participant} [config.srcParticpant]
- * @param {sibilant.Participant} [config.dstParticpant]
- * @property {sibilant.TransportPacket} packet
- * @property {sibilant.Router} router
- * @property {sibilant.Participant} [srcParticpant]
- * @property {sibilant.Participant} [dstParticpant]
+ * @param {ozpIwc.TransportPacket} config.packet
+ * @param {ozpIwc.Router} config.router
+ * @param {ozpIwc.Participant} [config.srcParticpant]
+ * @param {ozpIwc.Participant} [config.dstParticpant]
+ * @property {ozpIwc.TransportPacket} packet
+ * @property {ozpIwc.Router} router
+ * @property {ozpIwc.Participant} [srcParticpant]
+ * @property {ozpIwc.Participant} [dstParticpant]
  */
-sibilant.TransportPacketContext=function(config) {
+ozpIwc.TransportPacketContext=function(config) {
 	for(var i in config) {
 		this[i]=config[i];
 	}
@@ -34,10 +34,10 @@ sibilant.TransportPacketContext=function(config) {
 
 /**
  * 
- * @param {sibilant.TransportPacket} response
- * @returns {sibilant.TransportPacket} the packet that was sent
+ * @param {ozpIwc.TransportPacket} response
+ * @returns {ozpIwc.TransportPacket} the packet that was sent
  */
-sibilant.TransportPacketContext.prototype.replyTo=function(response) {
+ozpIwc.TransportPacketContext.prototype.replyTo=function(response) {
 	var now=new Date().getTime();
 	response.ver = response.ver || 1;
 	response.time = response.time || now;
@@ -52,43 +52,43 @@ sibilant.TransportPacketContext.prototype.replyTo=function(response) {
 };
 
 /**
- * @event sibilant.Router#preRegisterParticipant
- * @mixes sibilant.CancelableEvent
- * @property {sibilant.TransportPacket} [packet] - The packet to be delivered
+ * @event ozpIwc.Router#preRegisterParticipant
+ * @mixes ozpIwc.CancelableEvent
+ * @property {ozpIwc.TransportPacket} [packet] - The packet to be delivered
  * @property {object} registration - Information provided by the participant about it's registration
- * @property {sibilant.Participant} participant - The participant that will receive the packet
+ * @property {ozpIwc.Participant} participant - The participant that will receive the packet
  */
 
 /**
- * @event sibilant.Router#preSend
- * @mixes sibilant.CancelableEvent
- * @property {sibilant.TransportPacket} packet - The packet to be sent
- * @property {sibilant.Participant} participant - The participant that sent the packet
+ * @event ozpIwc.Router#preSend
+ * @mixes ozpIwc.CancelableEvent
+ * @property {ozpIwc.TransportPacket} packet - The packet to be sent
+ * @property {ozpIwc.Participant} participant - The participant that sent the packet
  */
 
 /**
- * @event sibilant.Router#preDeliver
- * @mixes sibilant.CancelableEvent
- * @property {sibilant.TransportPacket} packet - The packet to be delivered
- * @property {sibilant.Participant} participant - The participant that will receive the packet
+ * @event ozpIwc.Router#preDeliver
+ * @mixes ozpIwc.CancelableEvent
+ * @property {ozpIwc.TransportPacket} packet - The packet to be delivered
+ * @property {ozpIwc.Participant} participant - The participant that will receive the packet
  */
 
 /**
- * @event sibilant.Router#send
- * @property {sibilant.TransportPacket} packet - The packet to be delivered
+ * @event ozpIwc.Router#send
+ * @property {ozpIwc.TransportPacket} packet - The packet to be delivered
  */
 
 /**
- * @event sibilant.Router#prePeerReceive
- * @mixes sibilant.CancelableEvent
- * @property {sibilant.TransportPacket} packet
- * @property {sibilant.NetworkPacket} rawPacket
+ * @event ozpIwc.Router#prePeerReceive
+ * @mixes ozpIwc.CancelableEvent
+ * @property {ozpIwc.TransportPacket} packet
+ * @property {ozpIwc.NetworkPacket} rawPacket
  */
 /**
  * @class
  */
-sibilant.RouterWatchdog=sibilant.util.extend(sibilant.InternalParticipant,function(config) {
-	sibilant.InternalParticipant.apply(this,arguments);
+ozpIwc.RouterWatchdog=ozpIwc.util.extend(ozpIwc.InternalParticipant,function(config) {
+	ozpIwc.InternalParticipant.apply(this,arguments);
 	
 	this.participantType="routerWatchdog";
 	this.on("connected",function() {
@@ -112,38 +112,38 @@ sibilant.RouterWatchdog=sibilant.util.extend(sibilant.InternalParticipant,functi
 	},this.heartbeatFrequency);
 });
 
-sibilant.RouterWatchdog.prototype.connectToRouter=function(router,address) {
-	sibilant.Participant.prototype.connectToRouter.apply(this,arguments);
+ozpIwc.RouterWatchdog.prototype.connectToRouter=function(router,address) {
+	ozpIwc.Participant.prototype.connectToRouter.apply(this,arguments);
 	this.name=router.self_id;
 };
 
-sibilant.RouterWatchdog.prototype.shutdown=function() {
+ozpIwc.RouterWatchdog.prototype.shutdown=function() {
 	window.clearInterval(this.timer);
 };
 
 /**
  * @class
  * @param {object} [config]
- * @param {sibilant.Peer} [config.peer=sibilant.defaultPeer]
+ * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer]
  */
-sibilant.Router=function(config) {
+ozpIwc.Router=function(config) {
 	config=config || {};
-	this.peer=config.peer || sibilant.defaultPeer;
+	this.peer=config.peer || ozpIwc.defaultPeer;
 
 //	this.nobodyAddress="$nobody";
 //	this.routerControlAddress='$transport';
 	var self=this;	
 
-	this.self_id=sibilant.util.generateId();
+	this.self_id=ozpIwc.util.generateId();
 	
 	// Stores all local addresses
 	this.participants={};
 	
-	sibilant.metrics.gauge("transport.participants").set(function() {
+	ozpIwc.metrics.gauge("transport.participants").set(function() {
 		return Object.keys(self.participants).length;
 	});
 
-	this.events=new sibilant.Event();
+	this.events=new ozpIwc.Event();
 	this.events.mixinOnOff(this);
 	
 	// Wire up to the peer
@@ -163,29 +163,29 @@ sibilant.Router=function(config) {
 			event.cancel("nullDestination");
 		}
 		if(event.canceled) {
-			sibilant.metrics.counter("transport.packets.invalidFormat").inc();
+			ozpIwc.metrics.counter("transport.packets.invalidFormat").inc();
 		}
 	};
 	this.events.on("preSend",checkFormat);
-	this.watchdog=new sibilant.RouterWatchdog({router: this});
+	this.watchdog=new ozpIwc.RouterWatchdog({router: this});
 	this.registerParticipant(this.watchdog);
 };
 
 /**
  * Allows a listener to add a new participant.  
- * @fires sibilant.Router#registerParticipant
+ * @fires ozpIwc.Router#registerParticipant
  * @param {object} participant the participant object that contains a send() function.
  * @param {object} packet The handshake requesting registration.
  * @returns {string} returns participant id
  */
-sibilant.Router.prototype.registerParticipant=function(participant,packet) {
+ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
 	packet = packet || {};
 	var participant_id;
 	do {
-			participant_id=sibilant.util.generateId() + "." + this.self_id;
+			participant_id=ozpIwc.util.generateId() + "." + this.self_id;
 	} while(this.participants.hasOwnProperty(participant_id));
 
-	var registerEvent=new sibilant.CancelableEvent({
+	var registerEvent=new ozpIwc.CancelableEvent({
 		'packet': packet,
 		'registration': packet.entity,
 		'participant': participant
@@ -194,23 +194,23 @@ sibilant.Router.prototype.registerParticipant=function(participant,packet) {
 
 	if(registerEvent.canceled){
 		// someone vetoed this participant
-		sibilant.log.log("registeredParticipant[DENIED] origin:"+participant.origin+ 
+		ozpIwc.log.log("registeredParticipant[DENIED] origin:"+participant.origin+ 
 						" because " + registerEvent.cancelReason);
 		return null;
 	}
 	this.participants[participant_id]=participant;
 	participant.connectToRouter(this,participant_id);
 	
-//	sibilant.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
+//	ozpIwc.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
 	return participant_id;
 };
 
 /**
- * @fires sibilant.Router#preSend
- * @param {sibilant.TransportPacket} packet
- * @param {sibilant.Participant} sendingParticipant
+ * @fires ozpIwc.Router#preSend
+ * @param {ozpIwc.TransportPacket} packet
+ * @param {ozpIwc.Participant} sendingParticipant
  */
-sibilant.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
+ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
 	if(!packet) {
 		throw "Cannot deliver a null packet!";
 	}
@@ -218,32 +218,32 @@ sibilant.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
 	if(!localParticipant) {
 		return;
 	}
-	var packetContext=new sibilant.TransportPacketContext({
+	var packetContext=new ozpIwc.TransportPacketContext({
 		'packet':packet,
 		'router': this,
 		'srcParticipant': sendingParticipant,
 		'dstParticipant': localParticipant
 	});
 
-	var preDeliverEvent=new sibilant.CancelableEvent({
+	var preDeliverEvent=new ozpIwc.CancelableEvent({
 		'packet': packet,
 		'dstParticipant': localParticipant,
 		'srcParticipant': sendingParticipant			
 	});
 
 	if(this.events.trigger("preDeliver",preDeliverEvent).canceled) {
-		sibilant.metrics.counter("transport.packets.rejected").inc();
+		ozpIwc.metrics.counter("transport.packets.rejected").inc();
 		return;
 	}
 
-	sibilant.authorization.isPermitted(localParticipant.securitySubject,packet.permissions)
+	ozpIwc.authorization.isPermitted(localParticipant.securitySubject,packet.permissions)
 		.success(function() {
-			sibilant.metrics.counter("transport.packets.delivered").inc();
+			ozpIwc.metrics.counter("transport.packets.delivered").inc();
 			localParticipant.receiveFromRouter(packetContext);
 		})
 		.failure(function() {
 			/** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-			sibilant.metrics.counter("transport.packets.forbidden").inc();
+			ozpIwc.metrics.counter("transport.packets.forbidden").inc();
 		});
 	
 };
@@ -251,15 +251,15 @@ sibilant.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
 
 /**
  * Registers a participant for a multicast group
- * @param {sibilant.Participant} participant
+ * @param {ozpIwc.Participant} participant
  * @param {String[]} multicastGroups
  */
-sibilant.Router.prototype.registerMulticast=function(participant,multicastGroups) {
+ozpIwc.Router.prototype.registerMulticast=function(participant,multicastGroups) {
 	var self=this;
 	multicastGroups.forEach(function(groupName) {
 		var g=self.participants[groupName];
 		if(!g) {
-			g=self.participants[groupName]=new sibilant.MulticastParticipant(groupName);
+			g=self.participants[groupName]=new ozpIwc.MulticastParticipant(groupName);
 		}
 		g.addMember(participant);
 	});
@@ -268,26 +268,26 @@ sibilant.Router.prototype.registerMulticast=function(participant,multicastGroups
 
 /**
  * Used by participant listeners to route a message to other participants.
- * @fires sibilant.Router#preSend
- * @fires sibilant.Router#send
- * @param {sibilant.TransportPacket} packet The packet to route.
- * @param {sibilant.Participant} sendingParticipant Information about the participant that is attempting to send
+ * @fires ozpIwc.Router#preSend
+ * @fires ozpIwc.Router#send
+ * @param {ozpIwc.TransportPacket} packet The packet to route.
+ * @param {ozpIwc.Participant} sendingParticipant Information about the participant that is attempting to send
  *   the packet.
  * @returns {undefined}
  */
-sibilant.Router.prototype.send=function(packet,sendingParticipant) {
+ozpIwc.Router.prototype.send=function(packet,sendingParticipant) {
 
-	var preSendEvent=new sibilant.CancelableEvent({
+	var preSendEvent=new ozpIwc.CancelableEvent({
 		'packet': packet,
 		'participant': sendingParticipant
 	});
 	this.events.trigger("preSend",preSendEvent);
 
 	if(preSendEvent.canceled) {
-		sibilant.metrics.counter("transport.packets.sendCanceled");
+		ozpIwc.metrics.counter("transport.packets.sendCanceled");
 		return;
 	} 
-	sibilant.metrics.counter("transport.packets.sent").inc();
+	ozpIwc.metrics.counter("transport.packets.sent").inc();
 	this.deliverLocal(packet,sendingParticipant);
 	this.events.trigger("send",{'packet': packet});
 	this.peer.send(packet);
@@ -295,12 +295,12 @@ sibilant.Router.prototype.send=function(packet,sendingParticipant) {
 
 /**
  * Recieve a packet from the peer
- * @fires sibilant.Router#peerReceive
- * @param packet {sibilant.TransportPacket} the packet to receive
+ * @fires ozpIwc.Router#peerReceive
+ * @param packet {ozpIwc.TransportPacket} the packet to receive
  */
-sibilant.Router.prototype.receiveFromPeer=function(packet) {
-	sibilant.metrics.counter("transport.packets.receivedFromPeer").inc();
-	var peerReceiveEvent=new sibilant.CancelableEvent({
+ozpIwc.Router.prototype.receiveFromPeer=function(packet) {
+	ozpIwc.metrics.counter("transport.packets.receivedFromPeer").inc();
+	var peerReceiveEvent=new ozpIwc.CancelableEvent({
 		'packet' : packet.data,
 		'rawPacket' : packet
 	});

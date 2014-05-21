@@ -1,14 +1,14 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
-/** @typedef {string} sibilant.security.Principal */
+/** @typedef {string} ozpIwc.security.Principal */
 
-/** @typedef {string} sibilant.security.Permission */
+/** @typedef {string} ozpIwc.security.Permission */
 
-/** @typedef { sibilant.security.Principal[] } sibilant.security.Subject */
+/** @typedef { ozpIwc.security.Principal[] } ozpIwc.security.Subject */
 
 /** 
- * @typedef {object} sibilant.security.Actor 
- * @property {sibilant.security.Subject} securitySubject
+ * @typedef {object} ozpIwc.security.Actor 
+ * @property {ozpIwc.security.Subject} securitySubject
  */
 
 
@@ -29,7 +29,7 @@ var sibilant=sibilant || {};
  * <p> All operations are potentially asynchronous, though if the request can
  * be answered immediately, it will be.
  * 
- * <h2>Sibilant's usage of authorization</h2>
+ * <h2>OZP IWC's usage of authorization</h2>
  * 
  * <p> Principals are strings of the form "${domain}:${id}".  The domain
  * identifies the type of principal, where the ID indentifies the specific instance.
@@ -40,7 +40,7 @@ var sibilant=sibilant || {};
  *   <li>origin:${origin}
  * </ul>
  * 
- * <p> Sibilant uses permissions of the form "${domain}:${action}:${instance}".
+ * <p> OZP IWC uses permissions of the form "${domain}:${action}:${instance}".
  * The domain is the type of the object being acted upon, the action
  * corresponds to the action being taken, and the instance is an optional
  * ID for the specific instance of the domain being acted upon.
@@ -49,17 +49,17 @@ var sibilant=sibilant || {};
  * 
  * @class
  */
-sibilant.BasicAuthorization=function() {
+ozpIwc.BasicAuthorization=function() {
 	this.principals={};	
 };
 
 /**
  * Grants permissions to a principal.
- * @param {sibilant.security.Principal} principal
- * @param {sibilant.security.Permission[]} permissions
+ * @param {ozpIwc.security.Principal} principal
+ * @param {ozpIwc.security.Permission[]} permissions
  * @returns {undefined}
  */
-sibilant.BasicAuthorization.prototype.grant=function(principal,permissions) {
+ozpIwc.BasicAuthorization.prototype.grant=function(principal,permissions) {
 	var a=this.principals[principal] || [];
 	
 	this.principals[principal]=a.concat(permissions);
@@ -68,14 +68,14 @@ sibilant.BasicAuthorization.prototype.grant=function(principal,permissions) {
 	
 /**
  * Confirms that the subject has all of the permissions requested.
- * @param {sibilant.security.Subject} subject
- * @param {sibilant.security.Permission[]} permissions
- * @returns {sibilant.AsyncAction}
+ * @param {ozpIwc.security.Subject} subject
+ * @param {ozpIwc.security.Permission[]} permissions
+ * @returns {ozpIwc.AsyncAction}
  */
-sibilant.BasicAuthorization.prototype.isPermitted=function(subject,permissions) {
+ozpIwc.BasicAuthorization.prototype.isPermitted=function(subject,permissions) {
 	var permMap={};
 	
-	var action=new sibilant.AsyncAction();
+	var action=new ozpIwc.AsyncAction();
 	if(!permissions) {
 		return action.resolve('success');
 	}
@@ -110,4 +110,4 @@ sibilant.BasicAuthorization.prototype.isPermitted=function(subject,permissions) 
 	return action.resolve('failure');
 };
 
-sibilant.authorization=new sibilant.BasicAuthorization();
+ozpIwc.authorization=new ozpIwc.BasicAuthorization();

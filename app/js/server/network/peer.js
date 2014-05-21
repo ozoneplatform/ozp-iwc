@@ -1,51 +1,51 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
 /**
-* @typedef sibilant.NetworkPacket
+* @typedef ozpIwc.NetworkPacket
 * @property {string} src_peer - The id of the peer who broadcast this packet.
 * @property {string} sequence - A monotonically increasing, unique identifier for this packet.
 * @property {object} data - The payload of this packet.
 */
 
 /**
- * @event sibilant.Peer#receive
+ * @event ozpIwc.Peer#receive
  * The peer has received a packet from other peers.
- * @property {sibilant.NetworkPacket} packet
+ * @property {ozpIwc.NetworkPacket} packet
  * @property {string} linkId
  */
 
 
 /**
- * @event sibilant.Peer#preSend
+ * @event ozpIwc.Peer#preSend
  * A cancelable event that allows listeners to override the forwarding of 
  * a given packet to other peers.
- * @extends sibilant.CancelableEvent
- * @property {sibilant.NetworkPacket} packet
+ * @extends ozpIwc.CancelableEvent
+ * @property {ozpIwc.NetworkPacket} packet
 */
 
 /**
- * @event sibilant.Peer#send
+ * @event ozpIwc.Peer#send
  * Notifies that a packet is being sent to other peers.  Links should use this
  * event to forward packets to other peers. 
- * @property {sibilant.NetworkPacket} packet
+ * @property {ozpIwc.NetworkPacket} packet
  */
 
 /**
- * @event sibilant.Peer#beforeShutdown
+ * @event ozpIwc.Peer#beforeShutdown
  * Fires when the peer is being explicitly or implicitly shut down.
  */
 
 /**
  * The peer handles low-level broadcast communications between multiple browser contexts.
  * Links do the actual work of moving the packet to other browser contexts.  The links
- * call @{link sibilant.Peer#receive} when they need to deliver a packet to this peer and hook
- * the @{link event:sibilant.Peer#send} event in order to send packets.
+ * call @{link ozpIwc.Peer#receive} when they need to deliver a packet to this peer and hook
+ * the @{link event:ozpIwc.Peer#send} event in order to send packets.
  * @class
  */
-sibilant.Peer=function() {
+ozpIwc.Peer=function() {
 	
 	// generate a random 4 byte id
-	this.selfId=sibilant.util.generateId();
+	this.selfId=ozpIwc.util.generateId();
 	
 	// unique ids for all packets sent by this peer
 	this.sequenceCounter=0;
@@ -57,7 +57,7 @@ sibilant.Peer=function() {
 	
 	this.knownPeers={};
 	
-	this.events=new sibilant.Event();
+	this.events=new ozpIwc.Event();
 	this.events.mixinOnOff(this);
 		
 	var self=this;
@@ -72,13 +72,13 @@ sibilant.Peer=function() {
 
 /**
  * Helper to determine if we've seen this packet before
- * @param {sibilant.NetworkPacket} packet
+ * @param {ozpIwc.NetworkPacket} packet
  * @returns {boolean}
  */
-sibilant.Peer.prototype.haveSeen=function(packet) {
+ozpIwc.Peer.prototype.haveSeen=function(packet) {
 	// don't forward our own packets
 	if(packet.src_peer===this.selfId) {
-		sibilant.metrics.counter('network.packets.droppedOwnPacket').inc();
+		ozpIwc.metrics.counter('network.packets.droppedOwnPacket').inc();
 		return true;
 	}
 	var seen=this.packetsSeen[packet.src_peer];
@@ -97,50 +97,50 @@ sibilant.Peer.prototype.haveSeen=function(packet) {
 
 /**
  * Used by routers to broadcast a packet to network
- * @fires sibilant.Peer#preSend
- * @fires sibilant.Peer#send
- * @param {sibilant.NetworkPacket} packet
+ * @fires ozpIwc.Peer#preSend
+ * @fires ozpIwc.Peer#send
+ * @param {ozpIwc.NetworkPacket} packet
  */
-sibilant.Peer.prototype.send= function(packet) {
+ozpIwc.Peer.prototype.send= function(packet) {
 	var networkPacket={
 			src_peer: this.selfId,
 			sequence: this.sequenceCounter++,
 			data: packet
 	};
 	
-	var preSendEvent=new sibilant.CancelableEvent({'packet': networkPacket});
+	var preSendEvent=new ozpIwc.CancelableEvent({'packet': networkPacket});
 
 	this.events.trigger("preSend",preSendEvent);
 	if(!preSendEvent.canceled) {
-		sibilant.metrics.counter('network.packets.sent').inc();
+		ozpIwc.metrics.counter('network.packets.sent').inc();
 		this.events.trigger("send",{'packet':networkPacket});
 	} else {
-		sibilant.metrics.counter('network.packets.sendRejected').inc();
+		ozpIwc.metrics.counter('network.packets.sendRejected').inc();
 	}
 };
 
 /**
  * Called by the links when a new packet is recieved.
- * @fires sibilant.Peer#receive
+ * @fires ozpIwc.Peer#receive
  * @param {string} linkId
- * @param {sibilant.NetworkPacket} packet
+ * @param {ozpIwc.NetworkPacket} packet
  * @returns {unresolved}
  */
-sibilant.Peer.prototype.receive=function(linkId,packet) {
+ozpIwc.Peer.prototype.receive=function(linkId,packet) {
 	// drop it if we've seen it before
 	if(this.haveSeen(packet)) {
-		sibilant.metrics.counter('network.packets.dropped').inc();
+		ozpIwc.metrics.counter('network.packets.dropped').inc();
 		return;
 	}
-	sibilant.metrics.counter('network.packets.received').inc();
+	ozpIwc.metrics.counter('network.packets.received').inc();
 	this.events.trigger("receive",{'packet':packet,'linkId': linkId});
 };
 
  /**
 	* Explicitly shuts down the peer.
-	* @fires sibilant.Peer#send
+	* @fires ozpIwc.Peer#send
 	*/
-sibilant.Peer.prototype.shutdown=function() {
+ozpIwc.Peer.prototype.shutdown=function() {
 	this.events.trigger("beforeShutdown");
 	window.removeEventListener('beforeunload',this.unloadListener);
 };

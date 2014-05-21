@@ -1,7 +1,7 @@
 
 
-var client=new sibilant.InternalParticipant({name: "debuggerClient"});
-sibilant.defaultRouter.registerParticipant(client);
+var client=new ozpIwc.InternalParticipant({name: "debuggerClient"});
+ozpIwc.defaultRouter.registerParticipant(client);
 //===============================================================================================
 // Topology tab
 //===============================================================================================
@@ -223,8 +223,8 @@ function logPacket(msg) {
 			'</tr>'
 	);
 };
-sibilant.defaultPeer.on("receive",logPacket);
-sibilant.defaultPeer.on("send",logPacket);
+ozpIwc.defaultPeer.on("receive",logPacket);
+ozpIwc.defaultPeer.on("send",logPacket);
 
 $(document).ready(function() {
 	$('#debuggerAddress').text(client.address);
@@ -239,7 +239,7 @@ $(document).ready(function() {
 //===============================================================================================
 
 function updateStats() {
-	$("#stats").text(JSON.stringify(sibilant.metrics.toJson(),null,2));
+	$("#stats").text(JSON.stringify(ozpIwc.metrics.toJson(),null,2));
 };
 
 var updateMetrics=false;
@@ -350,7 +350,7 @@ var LeaderGroup=function(groupName) {
 					'</tr>');
 	
 	this.update=function(packet) {
-		var now=sibilant.util.now();
+		var now=ozpIwc.util.now();
 		var history=this.el.find(".history");
 		
 		this.members[packet.src]={
@@ -401,8 +401,8 @@ function logLeaderPacket(msg) {
 	}
 	leaderGroup.update(packet);
 };
-sibilant.defaultPeer.on("receive",logLeaderPacket);
-sibilant.defaultPeer.on("send",logLeaderPacket);
+ozpIwc.defaultPeer.on("receive",logLeaderPacket);
+ozpIwc.defaultPeer.on("send",logLeaderPacket);
 
 
 //===============================================================================================

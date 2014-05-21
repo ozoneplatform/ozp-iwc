@@ -1,14 +1,14 @@
 /** @namespace */
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
 /** @namespace */
-sibilant.util=sibilant.util || {};
+ozpIwc.util=ozpIwc.util || {};
 
 /**
  * Generates a large hexidecimal string to serve as a unique ID.  Not a guid.
  * @returns {String}
  */
-sibilant.util.generateId=function() {
+ozpIwc.util.generateId=function() {
 		return Math.floor(Math.random() * 0xffffffff).toString(16);
 };
 
@@ -17,7 +17,7 @@ sibilant.util.generateId=function() {
  * to allow a fast-forward on time-based actions.
  * @returns {Number}
  */
-sibilant.util.now=function() {
+ozpIwc.util.now=function() {
 		return new Date().getTime();
 };
 
@@ -27,7 +27,7 @@ sibilant.util.now=function() {
  * @param {function} newConstructor - the new base class
  * @returns {Function} newConstructor with an augmented prototype
  */
-sibilant.util.extend=function(baseClass,newConstructor) {
+ozpIwc.util.extend=function(baseClass,newConstructor) {
 	newConstructor.prototype = Object.create(baseClass.prototype); 
 	newConstructor.prototype.constructor = newConstructor;
 	return newConstructor;

@@ -6,7 +6,7 @@ describe("LocalStorageLink",function() {
 	var makeLink=function(conf) {
 		conf.peer.receive=conf.peer.receive || function(linkId,packet) {};
 		
-		var link=new sibilant.LocalStorageLink(conf);
+		var link=new ozpIwc.LocalStorageLink(conf);
 		
 		return link;
 	};
@@ -17,7 +17,7 @@ describe("LocalStorageLink",function() {
 		clockOffset=0;
 		localStorage.clear();
 		
-		event=new sibilant.Event();
+		event=new ozpIwc.Event();
 		link=makeLink({
 			peer: event,
 			selfId: "peer"

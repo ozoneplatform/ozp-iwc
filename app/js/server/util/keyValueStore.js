@@ -1,4 +1,4 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
 /**
  * @class
@@ -6,7 +6,7 @@ var sibilant=sibilant || {};
  * @param {function} [config.defaultData] - The default data for a node if accessed.
  * @param {function} [config.copyValue] - How to copy values.  The default is JSON.parse(JSON.stringify(value)).
  */
-sibilant.KeyValueStore = function(config) {
+ozpIwc.KeyValueStore = function(config) {
 	config=config || {};
 	this.defaultData=config.defaultData || function() { return undefined;};
 	this.copyValue=config.copyValue || function(value) { 
@@ -17,13 +17,13 @@ sibilant.KeyValueStore = function(config) {
 		}
 	};
 	this.data={};
-	this.events=new sibilant.Event();
+	this.events=new ozpIwc.Event();
 	this.events.mixinOnOff(this);	
 };
 
-sibilant.KeyValueStore.prototype.set=function(path,newValue) {
+ozpIwc.KeyValueStore.prototype.set=function(path,newValue) {
 	var oldValue=this.data[path];
-	var evt=new sibilant.CancelableEvent({
+	var evt=new ozpIwc.CancelableEvent({
 			'path': path,
 			'newValue': this.copyValue(newValue),
 			'oldValue': this.copyValue(oldValue)
@@ -38,16 +38,16 @@ sibilant.KeyValueStore.prototype.set=function(path,newValue) {
 	}
 };
 
-sibilant.KeyValueStore.prototype.hasKey=function(path) {
+ozpIwc.KeyValueStore.prototype.hasKey=function(path) {
 	return path in this.data;
 };
 
-sibilant.KeyValueStore.prototype.get=function(path) {
+ozpIwc.KeyValueStore.prototype.get=function(path) {
 	if(!(path in this.data)) {
 		this.data[path]=this.defaultData();
 	}
 	
-	var evt=new sibilant.CancelableEvent({
+	var evt=new ozpIwc.CancelableEvent({
 			'path': path,
 			'value': this.copyValue(this.data[path])
 	});
@@ -57,9 +57,9 @@ sibilant.KeyValueStore.prototype.get=function(path) {
 	}
 };
 
-sibilant.KeyValueStore.prototype.delete=function(path,value) {
+ozpIwc.KeyValueStore.prototype.delete=function(path,value) {
 	var value=this.data[path];
-	var evt=new sibilant.CancelableEvent({
+	var evt=new ozpIwc.CancelableEvent({
 			'path': path,
 			'value': this.copyValue(value)
 	});
@@ -69,6 +69,6 @@ sibilant.KeyValueStore.prototype.delete=function(path,value) {
 	}
 };
 
-sibilant.KeyValueStore.prototype.keys=function() {
+ozpIwc.KeyValueStore.prototype.keys=function() {
 	return Object.keys(this.data);
 };

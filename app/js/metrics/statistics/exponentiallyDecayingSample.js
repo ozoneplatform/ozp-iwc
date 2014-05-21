@@ -17,26 +17,26 @@
 /*
  * Original code owned by Mike Ihbe.  Modifications licensed under same terms.
  */
-var sibilant=sibilant || {};
-sibilant.metricsStats=sibilant.metricsStats || {};
+var ozpIwc=ozpIwc || {};
+ozpIwc.metricsStats=ozpIwc.metricsStats || {};
 
 //  Take an exponentially decaying sample of size size of all values
-sibilant.metricsStats.DEFAULT_RESCALE_THRESHOLD = 60 * 60 * 1000; // 1 hour in milliseconds
-sibilant.metricsStats.DEFAULT_DECAY_ALPHA=0.015;
+ozpIwc.metricsStats.DEFAULT_RESCALE_THRESHOLD = 60 * 60 * 1000; // 1 hour in milliseconds
+ozpIwc.metricsStats.DEFAULT_DECAY_ALPHA=0.015;
 /**
  * This acts as a ordered binary heap for any serializeable JS object or collection of such objects 
  * <p>Borrowed from https://github.com/mikejihbe/metrics. 
  * @class 
 	*/
-sibilant.metricsStats.ExponentiallyDecayingSample=sibilant.util.extend(sibilant.metricsStats.Sample,function(size, alpha) {
-	sibilant.metricsStats.Sample.apply(this);
-  this.limit = size || sibilant.metricsStats.DEFAULT_POOL_SIZE;
-  this.alpha = alpha || sibilant.metricsStats.DEFAULT_DECAY_ALPHA;
-	this.rescaleThreshold = sibilant.metricsStats.DEFAULT_RESCALE_THRESHOLD;
+ozpIwc.metricsStats.ExponentiallyDecayingSample=ozpIwc.util.extend(ozpIwc.metricsStats.Sample,function(size, alpha) {
+	ozpIwc.metricsStats.Sample.apply(this);
+  this.limit = size || ozpIwc.metricsStats.DEFAULT_POOL_SIZE;
+  this.alpha = alpha || ozpIwc.metricsStats.DEFAULT_DECAY_ALPHA;
+	this.rescaleThreshold = ozpIwc.metricsStats.DEFAULT_RESCALE_THRESHOLD;
 });
 
 // This is a relatively expensive operation
-sibilant.metricsStats.ExponentiallyDecayingSample.prototype.getValues = function() {
+ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.getValues = function() {
   var values = [];
   var heap = this.values.clone();
 	var elt;
@@ -46,23 +46,23 @@ sibilant.metricsStats.ExponentiallyDecayingSample.prototype.getValues = function
   return values;
 };
 
-sibilant.metricsStats.ExponentiallyDecayingSample.prototype.size = function() {
+ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.size = function() {
   return this.values.size();
 };
 
-sibilant.metricsStats.ExponentiallyDecayingSample.prototype.newHeap = function() {
-  return new sibilant.metricsStats.BinaryHeap(function(obj){return obj.priority;});
+ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.newHeap = function() {
+  return new ozpIwc.metricsStats.BinaryHeap(function(obj){return obj.priority;});
 };
 
-sibilant.metricsStats.ExponentiallyDecayingSample.prototype.now = function() {
-  return sibilant.util.now();
+ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.now = function() {
+  return ozpIwc.util.now();
 };
 
-sibilant.metricsStats.ExponentiallyDecayingSample.prototype.tick = function() {
+ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.tick = function() {
   return this.now() / 1000;
 };
 
-sibilant.metricsStats.ExponentiallyDecayingSample.prototype.clear = function() {
+ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.clear = function() {
   this.values = this.newHeap();
   this.count = 0;
   this.startTime = this.tick();
@@ -72,7 +72,7 @@ sibilant.metricsStats.ExponentiallyDecayingSample.prototype.clear = function() {
 /*
 * timestamp in milliseconds
 */
-sibilant.metricsStats.ExponentiallyDecayingSample.prototype.update = function(val, timestamp) {
+ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.update = function(val, timestamp) {
   // Convert timestamp to seconds
   if (timestamp == undefined) {
     timestamp = this.tick();
@@ -97,11 +97,11 @@ sibilant.metricsStats.ExponentiallyDecayingSample.prototype.update = function(va
   }
 };
 
-sibilant.metricsStats.ExponentiallyDecayingSample.prototype.weight = function(time) {
+ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.weight = function(time) {
   return Math.exp(this.alpha * time);
 };
 
-sibilant.metricsStats.ExponentiallyDecayingSample.prototype.rescale = function() {
+ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.rescale = function() {
   this.nextScaleTime = this.now() + this.rescaleThreshold;
   var oldContent = this.values.content
     , newContent = []

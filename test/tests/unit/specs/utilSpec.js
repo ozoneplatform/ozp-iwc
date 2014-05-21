@@ -4,7 +4,7 @@ describe("Event",function() {
 	beforeEach(function() {
 		jasmine.addMatchers(customMatchers);
 		
-		event=new sibilant.Event();
+		event=new ozpIwc.Event();
 	});
 	
 	afterEach(function() {
@@ -93,12 +93,12 @@ describe("Event",function() {
 		});
 
 		it("returns false from trigger if the cancelable event is not canceled",function() {
-			expect(event.trigger("1",new sibilant.CancelableEvent()).canceled).toEqual(false);
+			expect(event.trigger("1",new ozpIwc.CancelableEvent()).canceled).toEqual(false);
 		});
 
 		it("returns true from trigger if the event is canceled",function() {
 			event.on("1",function(event) { event.cancel();});
-			expect(event.trigger("1",new sibilant.CancelableEvent()).canceled).toEqual(true);
+			expect(event.trigger("1",new ozpIwc.CancelableEvent()).canceled).toEqual(true);
 		});
 
 	});
@@ -160,7 +160,7 @@ describe("Event",function() {
 describe("Async Action",function() {
 	var action;
 	beforeEach(function() {
-		action=new sibilant.AsyncAction();
+		action=new ozpIwc.AsyncAction();
 	});
 	
 	it("resolve calls the handler",function() {

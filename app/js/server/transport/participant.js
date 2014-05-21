@@ -1,30 +1,30 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
 /**
  * @class
- * @mixes sibilant.security.Actor
+ * @mixes ozpIwc.security.Actor
  * @property {string} address - The assigned address to this address.
- * @property {sibilant.security.Subject} securitySubject - The subject for this principal.
+ * @property {ozpIwc.security.Subject} securitySubject - The subject for this principal.
  */
-sibilant.Participant=function() {
+ozpIwc.Participant=function() {
 	this.securitySubject=[];
 };
 
 /**
- * @param {sibilant.PacketContext} packetContext
+ * @param {ozpIwc.PacketContext} packetContext
  * @returns {boolean} true if this packet could have additional recipients
  */
-sibilant.Participant.prototype.receiveFromRouter=function(packetContext) { 
+ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) { 
 	// doesn't really do anything other than return a bool and prevent "unused param" warnings
 	return !packetContext;
 };
 
 /**
- * @param {sibilant.Router} router
+ * @param {ozpIwc.Router} router
  * @param {string} address
  * @returns {boolean} true if this packet could have additional recipients
  */
-sibilant.Participant.prototype.connectToRouter=function(router,address) {
+ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
 	this.address=address;
 	this.router=router;
 	this.securitySubject=this.securitySubject || [];
@@ -35,17 +35,17 @@ sibilant.Participant.prototype.connectToRouter=function(router,address) {
 /**
  * Populates fields relevant to this packet if they aren't already set:
  * src, ver, msgId, and time.
- * @param {sibilant.TransportPacket} packet
- * @returns {sibilant.TransportPacket}
+ * @param {ozpIwc.TransportPacket} packet
+ * @returns {ozpIwc.TransportPacket}
  */
-sibilant.Participant.prototype.fixPacket=function(packet) {
+ozpIwc.Participant.prototype.fixPacket=function(packet) {
 	// clean up the packet a bit on behalf of the sender
 	packet.src=packet.src || this.address;
 	packet.ver = packet.ver || 1;
 
 	// if the packet doesn't have a msgId, use a timestamp
 	if(!packet.msgId) {
-		var now=sibilant.util.now();
+		var now=ozpIwc.util.now();
 		packet.msgId = packet.msgId || this.generateMsgId();
 
 		// might as well be helpful and set the time, too
@@ -57,10 +57,10 @@ sibilant.Participant.prototype.fixPacket=function(packet) {
 /**
  * Sends a packet to this participants router.  Calls fixPacket
  * before doing so.
- * @param {sibilant.TransportPacket} packet
- * @returns {sibilant.TransportPacket}
+ * @param {ozpIwc.TransportPacket} packet
+ * @returns {ozpIwc.TransportPacket}
  */
-sibilant.Participant.prototype.send=function(packet) {
+ozpIwc.Participant.prototype.send=function(packet) {
 	packet=this.fixPacket(packet);
 	var self=this;
 //	window.setTimeout(function(){
@@ -70,11 +70,11 @@ sibilant.Participant.prototype.send=function(packet) {
 };
 
 
-sibilant.Participant.prototype.generateMsgId=function() {
+ozpIwc.Participant.prototype.generateMsgId=function() {
 	return "i:" + this.msgId++;
 };
 
-sibilant.Participant.prototype.heartbeatStatus=function() {
+ozpIwc.Participant.prototype.heartbeatStatus=function() {
 	return {
 		address: this.address,
 		subjects: this.securitySubject,

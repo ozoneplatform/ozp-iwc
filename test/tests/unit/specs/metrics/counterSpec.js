@@ -2,7 +2,7 @@ describe("Metrics: Counter",function() {
 	var counter;
 	
 	beforeEach(function() {
-		counter=new sibilant.metricTypes.Counter();
+		counter=new ozpIwc.metricTypes.Counter();
 	});
 	
 	afterEach(function() {

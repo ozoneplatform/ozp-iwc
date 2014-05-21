@@ -8,9 +8,9 @@ describe("customMatchers",function() {
 		var toBeInstanceOf;
 		
 		var Base=function() {};
-		var DerivedA=sibilant.util.extend(Base,function(){});
-		var DerivedB=sibilant.util.extend(Base,function(){});
-		var DerivedFromA=sibilant.util.extend(DerivedA,function(){});
+		var DerivedA=ozpIwc.util.extend(Base,function(){});
+		var DerivedB=ozpIwc.util.extend(Base,function(){});
+		var DerivedFromA=ozpIwc.util.extend(DerivedA,function(){});
 
 		
 		beforeEach(function() {

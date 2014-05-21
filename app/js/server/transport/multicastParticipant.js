@@ -1,12 +1,12 @@
-var sibilant=sibilant || {};
+var ozpIwc=ozpIwc || {};
 
 /**
  * @class
- * @extends sibilant.Participant
+ * @extends ozpIwc.Participant
  * @param {string} name
  */
-sibilant.MulticastParticipant=sibilant.util.extend(sibilant.Participant,function(name) {
-	sibilant.Participant.apply(this,arguments);
+ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name) {
+	ozpIwc.Participant.apply(this,arguments);
 	this.name=name;
 	this.participantType="multicast";
 	this.members=[];
@@ -14,24 +14,24 @@ sibilant.MulticastParticipant=sibilant.util.extend(sibilant.Participant,function
 
 /**
  * Receives a packet on behalf of the multicast group.
- * @param {sibilant.TransportPacket} packet
+ * @param {ozpIwc.TransportPacket} packet
  * @returns {Boolean}
  */
-sibilant.MulticastParticipant.prototype.receiveFromRouter=function(packet) {
+ozpIwc.MulticastParticipant.prototype.receiveFromRouter=function(packet) {
 	this.members.forEach(function(m) { m.receiveFromRouter(packet);});
 	return false;
 };
 
 /**
  * 
- * @param {sibilant.Participant} participant
+ * @param {ozpIwc.Participant} participant
  */
-sibilant.MulticastParticipant.prototype.addMember=function(participant) {
+ozpIwc.MulticastParticipant.prototype.addMember=function(participant) {
 	this.members.push(participant);
 };
 
-sibilant.MulticastParticipant.prototype.heartbeatStatus=function() {
-	var status= sibilant.Participant.prototype.heartbeatStatus.apply(this,arguments);
+ozpIwc.MulticastParticipant.prototype.heartbeatStatus=function() {
+	var status= ozpIwc.Participant.prototype.heartbeatStatus.apply(this,arguments);
 	status.members=this.members.map(function(m) { return m.address;});
 	return status;
 };
