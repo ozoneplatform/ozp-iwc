@@ -15,6 +15,7 @@ module.exports = function(grunt) {
 			],
 			server: [
 				'<%= src.metrics %>',
+				'app/js/server/jquery-2.1.0.min.js',
 				'app/js/common/event.js',
 				'app/js/common/**/*.js',
 				'app/js/server/es5-sham.min.js',
@@ -25,7 +26,8 @@ module.exports = function(grunt) {
 				'app/js/server/transport/internalParticipant.js',
 				'app/js/server/transport/router.js',
 				'app/js/server/transport/**/*.js',
-				'app/js/server/api/keyValueApi.js',
+				'app/js/server/storage/**/*.js',
+				'app/js/server/api/keyValueApiBase.js',
 				'app/js/server/*/**/*.js'
 			],
 			client: [
