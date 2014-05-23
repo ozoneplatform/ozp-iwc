@@ -96,13 +96,19 @@ module.exports = function(grunt) {
     },
 		connect: {
 			app: {        
-				options:{ port: 13000,base: "app" }
+				options:{ port: 13000,base: "app", debug: true}
+			},
+			appSecure: {        
+				options:{ port: 13443,base: "app", protocol:"https"}
 			},
 			tests: {        
 				options:{ port: 14000, base: ["app","test/tests"]	}
 			},
 			pingers: {        
 				options:{	port: 14001, base: ["app","test/pingers"]	}
+			},
+			owf7: {        
+				options:{	port: 14002, base: ["app","test/owf7Widgets"]	}
 			},
 			doc: {
 				options: { port: 13001, base: "doc" }
