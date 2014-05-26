@@ -19,7 +19,7 @@ var ozpIwc = ozpIwc || {};
  * @param {string} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
  * @param {string} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
  * @param {Number} [config.maxRetries] - Number of times packet transmission will retry if failed. Defaults to 0.
- * @param {Number} [config.retryTimeout] - Constant for exponential back off/retry. Defaults to 100ms.
+ * @param {Number} [config.retryTimeout] - Constant for exponential back off/retry. Defaults to 70 ms.
  * 
  */
 ozpIwc.KeyBroadcastLocalStorageLink = function(config) {
@@ -30,8 +30,8 @@ ozpIwc.KeyBroadcastLocalStorageLink = function(config) {
 	this.selfId=config.selfId || this.peer.selfId;
 	this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
   this.otherKeysTimeout = config.otherKeysTimeout || 2*60000; // 2 minutes
-  this.maxRetries = config.maxRetries || 5;
-  this.retryTimeout = config.retryTimeout || 100; // 1/10 second
+  this.maxRetries = config.maxRetries || 0;
+  this.retryTimeout = config.retryTimeout || 70;
 
   // Hook into the system
 	var self=this;
@@ -71,7 +71,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function(packet, retryCount
   // the packet fails.
   var timeOut = 0;
   if (typeof retryCount !== 'undefined') {
-    timeOut = Math.pow(2, retryCount) * 25; 
+    timeOut = Math.pow(2, retryCount) * this.retryTimeout; 
   } else {
     retryCount = 0;
   }
@@ -90,7 +90,6 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function(packet, retryCount
       if (retryCount <= self.maxRetries) {
         self.send(packet, ++retryCount);
       } else {
-        console.log('failed to write in ' + self.maxRetries + ' attempts');
         ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
         ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + e);
       }
