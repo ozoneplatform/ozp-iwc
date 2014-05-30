@@ -1,4 +1,0 @@
-describe("Peer broadcast",function() {
-	
-	
-});

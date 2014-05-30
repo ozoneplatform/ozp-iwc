@@ -7,11 +7,19 @@
 
 		<script type="text/javascript" src="../lib/jquery-2.1.0.min.js"></script>
 		
-		<script type="text/javascript" src="//localhost:13000/js/common/util.js"></script>
-		<script type="text/javascript" src="//localhost:13000/js/server/util/metrics.js"></script>
-		<script type="text/javascript" src="//localhost:13000/js/server/network/peer.js"></script>
-		<script type="text/javascript" src="//localhost:13000/js/server/network/localStorageLink.js"></script>
-		<script type="text/javascript" src="//localhost:13000/js/server/defaultWiring.js"></script>
+		<script type="text/javascript" src="//localhost:13000/js/ozpIwc-server.js"></script>
+		<script type="text/javascript">
+			if(ozpIwc.Peer) {
+				ozpIwc.defaultPeer=new ozpIwc.Peer();
+			}
+
+
+			if(ozpIwc.LocalStorageLink) {
+				ozpIwc.defaultLocalStorageLink=new ozpIwc.KeyBroadcastLocalStorageLink({
+					peer: ozpIwc.defaultPeer
+				});
+			}
+		</script>
 
 		<script type="text/javascript" src="../lib/samples/sampleWidget-logging.js"></script>
 		

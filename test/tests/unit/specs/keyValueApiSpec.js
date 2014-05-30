@@ -11,7 +11,6 @@ describe("KV API Base class",function() {
 	
 	afterEach(function() {
 		kvApi=null;
-		router=null;
 	});
 
 	var nodePacket=function(resource,entity) {
@@ -20,13 +19,13 @@ describe("KV API Base class",function() {
 			'entity': entity
 		}};
 	};
-			var watchPacket=function(node,src,msgId) {
-			return {packet: {
-				'src': src,
-				'resource' : node,
-				'msgId' : msgId
-			}};
-		};
+	var watchPacket=function(node,src,msgId) {
+		return {packet: {
+			'src': src,
+			'resource' : node,
+			'msgId' : msgId
+		}};
+	};
 	describe("operation as Leader", function() {
 		it("responds to a get", function() {
 			var r=kvApi.handleGetAsLeader(nodePacket("/node","bar"));

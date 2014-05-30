@@ -424,9 +424,8 @@ function drawLocalStorage() {
 }
 
 function wipeLocalStorage() {
-	for(var i=0; i < localStorage.length;++i) {
-		var k=localStorage.key(i);
-		localStorage.removeItem(k);
+	while(localStorage.length) {
+		localStorage.removeItem(localStorage.key(0));
 	}
 	drawLocalStorage();
 }

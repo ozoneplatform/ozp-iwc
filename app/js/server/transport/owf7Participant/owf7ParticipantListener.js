@@ -1,18 +1,22 @@
-$(function() {
-	var widgetUrl="http://localhost:14002/";
-	var widgetQuery="?lang=en_US&owf=true&themeName=a_default&themeContrast=standard&themeFontSize=12";
+ozpIwc.Owf7ParticipantListener=function(config) {
+	config = config || {};
 	
-	var instanceId="666f46bf-d8da-27c4-b907-f4a3a9e58c75";
-	var widgetGuid="eb5435cf-4021-4f2a-ba69-dde451d12551";
-	var rpcRelay=$('<a href="rpc_relay.uncompressed.html"></a>')[0].href;
-	var prefsUrl=$('<a href="preferences_shim.html"></a>')[0].href + "#";
+//	var widgetUrl="https://localhost:15005/";
+	this.widgetQuery="?lang=en_US&owf=true&themeName=a_default&themeContrast=standard&themeFontSize=12";
+	
+//	var instanceId="666f46bf-d8da-27c4-b907-f4a3a9e58c75";
+//	var widgetGuid="eb5435cf-4021-4f2a-ba69-dde451d12551";
+	
+	this.rpcRelay=config.rpcRelay || $('<a href="rpc_relay.uncompressed.html"></a>')[0].href;
+	this.prefsUrl=config.prefsUrl || $('<a href="owf7prefs.html"></a>')[0].href + "#";
+
 	// these get turned into the iframes name attribute
 	// Refer to js/eventing/container.js:272
-	var widgetParams={
+	this.baseWidgetParams={
 		"id": instanceId,
 		"webContextPath":"/owf",
-		"preferenceLocation":prefsUrl,
-		"relayUrl":  rpcRelay, 
+		"preferenceLocation": this.prefsUrl,
+		"relayUrl":  this.rpcRelay, 
 		"url": widgetUrl,
 		"guid": widgetGuid,
 		// fixed values
@@ -24,17 +28,37 @@ $(function() {
 			"themeName":"a_default",
 			"themeContrast":"standard",
 			"themeFontSize":12
-		},		"version":1,
+		},		
+		"version":1,
 		"locked":false
 	};
-	
-	var widgetIframe=$("#widgetFrame");
-	var instanceIdString=JSON.stringify({id:instanceId});
-	
-	widgetIframe.attr("name",JSON.stringify(widgetParams))
-					.attr("src",widgetUrl+widgetQuery)
-					.attr("id",instanceIdString);
+};
 
+ozpIwc.Owf7ParticipantListener.prototype.widgetParams=function(config) {
+	var params={};
+	for(var k in this.baseWidgetParams) {
+		params[k]=baseWidgetParams[k];
+	}
+	for(var k in config) {
+		params[k]=config[k];
+	}
+	return params;
+};
+
+ozpIwc.Owf7ParticipantListener.prototype.initializeIframe=function(config) {
+	var instanceIdString=config.id || ozpIwc.util.generateId();
+	var widgetParams=JSON.stringify(this.widgetParams({
+		id: instanceIdString,
+		guid: config.widgetGuid,
+		url: config.widgetUrl
+	}));
+	
+	config.widgetIframe.attr("name",JSON.stringify(widgetParams))
+					.attr("src",config.widgetUrl+this.widgetQuery)
+					.attr("id",instanceIdString);
+};
+
+ozpIwc.Owf7ParticipantListener.prototype.hook=function() {
 	var rpcString=function(rpc) {
 		return "[service:" + rpc.s + ",from:" + rpc.f + "]:" + JSON.stringify(rpc.a);
 	};
@@ -42,11 +66,6 @@ $(function() {
 	gadgets.rpc.registerDefault(function() {
 		console.log("Unknown rpc " + rpcString(this));
 	});
-	
-	gadgets.rpc.register('_widget_iframe_ready',function() {
-		// @see js/components/keys/KeyEventing.js
-	});
-	
 	
 	/**
 	 * Called by the widget to connect to the container
@@ -71,7 +90,11 @@ $(function() {
 		gadgets.rpc.setAuthToken(idString, 0);
 		gadgets.rpc.call(idString, 'after_container_init', null);
 	});
-
+	
+	gadgets.rpc.register('_widget_iframe_ready',function() {
+		// @see js/components/keys/KeyEventing.js
+	});
+	
 	/**
 	 * @see js\state\WidgetStateContainer.js:35
 	 */
@@ -163,4 +186,4 @@ $(function() {
 
 	
 	
-});
+};

@@ -6,7 +6,10 @@ window.addEventListener("beforeunload", function() {
 
 describe("Peer broadcast",function() {
 	var receiveHandler;
-	var peer=ozpIwc.defaultPeer;
+	var peer=new ozpIwc.Peer();
+	var link=new ozpIwc.KeyBroadcastLocalStorageLink({
+		'peer': peer
+	});
 	
 	beforeEach(function() {	
 	});

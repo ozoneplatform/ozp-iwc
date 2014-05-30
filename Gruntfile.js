@@ -34,19 +34,26 @@ module.exports = function(grunt) {
 				'app/js/common/**/*.js',
 				'app/js/client/**/*.js'
 			],
+			owf7: [
+				'<%= src.server %>',
+				'app/js/owf7/lib/**/*',
+				'app/js/owf7/*.js'
+			],
 			test: [
 				'app/test/**/*'
 			],
 			all: [
 				'<%= src.metrics %>',
 				'<%= src.server %>',
-				'<%= src.client %>'
+				'<%= src.client %>',
+				'<%= src.owf7 %>'
 			]
 		},
 		output: {
 			serverJs: 'app/js/<%= pkg.name %>-server',
 			clientJs: 'app/js/<%= pkg.name %>-client',
-			metricsJs: 'app/js/<%= pkg.name %>-metrics'
+			metricsJs: 'app/js/<%= pkg.name %>-metrics',
+			owf7Js: 'app/js/<%= pkg.name %>-owf7'
 		},
 		concat: {
       server: {
@@ -60,6 +67,10 @@ module.exports = function(grunt) {
 			metrics: {
 				src: '<%= src.metrics %>',
         dest: '<%= output.metricsJs %>.js'
+			},
+			owf7: {
+				src: '<%= src.owf7 %>',
+        dest: '<%= output.owf7Js %>.js'
 			}
 		},
     uglify: {
@@ -74,6 +85,10 @@ module.exports = function(grunt) {
 			metrics: {
         src: '<%= concat.metrics.dest %>',
         dest: '<%= output.metricsJs %>.min.js'
+      },
+			owf7: {
+        src: '<%= concat.owf7.dest %>',
+        dest: '<%= output.owf7Js %>.min.js'
       }
     },
 		jsdoc : {
@@ -98,17 +113,11 @@ module.exports = function(grunt) {
 			app: {        
 				options:{ port: 13000,base: "app", debug: true}
 			},
-			appSecure: {        
-				options:{ port: 13443,base: "app", protocol:"https"}
-			},
 			tests: {        
 				options:{ port: 14000, base: ["app","test/tests"]	}
 			},
 			pingers: {        
 				options:{	port: 14001, base: ["app","test/pingers"]	}
-			},
-			owf7: {        
-				options:{	port: 14002, base: ["app","test/owf7Widgets"]	}
 			},
 			doc: {
 				options: { port: 13001, base: "doc" }
@@ -127,6 +136,9 @@ module.exports = function(grunt) {
 			},
 			gridsterDemo: {
 				options: { port: 15004, base: ["app","demo/gridster"] }
+			},
+			owf7: {        
+				options:{	port: 15005, base: ["app","demo/owf7Widgets"], protocol:"https"	}
 			}
 		}
 

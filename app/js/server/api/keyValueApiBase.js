@@ -13,6 +13,7 @@ var ozpIwc=ozpIwc || {};
  * @class
  */
 ozpIwc.KeyValueApiBase = function(config) {
+	config = config || {};
 	this.storage=config.storage || {
 		load: function() { },
 		save: function() { }		

@@ -32,7 +32,9 @@ if(ozpIwc.BasicAuthorization) {
 if(ozpIwc.KeyValueApi) {
 	ozpIwc.keyValueApi=new ozpIwc.LeaderGroupParticipant({
 		name: "keyValue.api",
-		target: new ozpIwc.KeyValueApi()		
+		target: new ozpIwc.KeyValueApi({
+			storage: new ozpIwc.owf7Backend.keyValueApiOwf7Storage()
+		})		
 	});
 
 	ozpIwc.defaultRouter.registerParticipant(ozpIwc.keyValueApi);

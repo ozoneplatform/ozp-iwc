@@ -62,9 +62,10 @@ ozpIwc.KeyBroadcastLocalStorageLink = function(config) {
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.send=function(packet) { 
 	try {
-		localStorage.setItem(JSON.stringify(packet),"");
+		var p=JSON.stringify(packet);
+		localStorage.setItem(p,"");
 		ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
-		localStorage.removeItem(packet,"");
+		localStorage.removeItem(p);
 	} catch (e) {
 		ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
 		ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + e);
