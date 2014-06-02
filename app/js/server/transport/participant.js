@@ -4,7 +4,7 @@ var ozpIwc=ozpIwc || {};
  * @class
  * @mixes ozpIwc.security.Actor
  * @property {string} address - The assigned address to this address.
- * @property {ozpIwc.security.Subject} securitySubject - The subject for this principal.
+ * @property {ozpIwc.security.Subject} securitySubject - The subject for this role.
  */
 ozpIwc.Participant=function() {
 	this.securitySubject=[];

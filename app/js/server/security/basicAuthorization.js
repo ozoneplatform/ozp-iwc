@@ -16,15 +16,15 @@ var ozpIwc=ozpIwc || {};
  * A basic authorization module loosely inspired by Apache Shiro.
  * <ul>
  *   <li> Principal - an individual bundle of authority, represesented by a string.
- *   <li> Subject - an array of principals representing the authorities of an actor.
+ *   <li> Subject - an array of roles representing the authorities of an actor.
  *   <li> Permission - a string representing the authority to perform one discrete action.
  * </ul>
  * 
- * <p> Principals have permissions.  Subjects have one or more principals.  A check
- * is a subject asking if any of it's principals have a set of permissions. 
+ * <p> Principals have permissions.  Subjects have one or more roles.  A check
+ * is a subject asking if any of it's roles have a set of permissions. 
  * 
  * <p> The isPermitted() operation simply asks "for all permissions in the list, does the
- * subject have at least one principal with that permission". 
+ * subject have at least one role with that permission". 
  * 
  * <p> All operations are potentially asynchronous, though if the request can
  * be answered immediately, it will be.
@@ -32,7 +32,7 @@ var ozpIwc=ozpIwc || {};
  * <h2>OZP IWC's usage of authorization</h2>
  * 
  * <p> Principals are strings of the form "${domain}:${id}".  The domain
- * identifies the type of principal, where the ID indentifies the specific instance.
+ * identifies the type of role, where the ID indentifies the specific instance.
  * 
  * <p>Supported Principals:
  * <ul>
@@ -50,19 +50,19 @@ var ozpIwc=ozpIwc || {};
  * @class
  */
 ozpIwc.BasicAuthorization=function() {
-	this.principals={};	
+	this.roles={};	
 };
 
 /**
- * Grants permissions to a principal.
- * @param {ozpIwc.security.Principal} principal
+ * Grants permissions to a role.
+ * @param {ozpIwc.security.Principal} role
  * @param {ozpIwc.security.Permission[]} permissions
  * @returns {undefined}
  */
-ozpIwc.BasicAuthorization.prototype.grant=function(principal,permissions) {
-	var a=this.principals[principal] || [];
+ozpIwc.BasicAuthorization.prototype.grant=function(role,permissions) {
+	var a=this.roles[role] || [];
 	
-	this.principals[principal]=a.concat(permissions);
+	this.roles[role]=a.concat(permissions);
 	
 };
 	
@@ -93,7 +93,7 @@ ozpIwc.BasicAuthorization.prototype.isPermitted=function(subject,permissions) {
 	
 
 	for(var i=0;i<subject.length;++i) {
-		var perms=this.principals[subject[i]];
+		var perms=this.roles[subject[i]];
 		if(!perms) {
 			continue;
 		}
@@ -109,5 +109,18 @@ ozpIwc.BasicAuthorization.prototype.isPermitted=function(subject,permissions) {
 	
 	return action.resolve('failure');
 };
-
+/** 
+ * A basic authorization module loosely inspired by Apache Shiro.
+ * @class
+ */
+ozpIwc.BasicAuthorization.prototype.hasRole=function(role) {
+  var found = false;
+  for (var i in this.roles) {
+    if (i === role) {
+      found = true;
+      break;
+    }
+  }
+  return found;
+};
 ozpIwc.authorization=new ozpIwc.BasicAuthorization();
