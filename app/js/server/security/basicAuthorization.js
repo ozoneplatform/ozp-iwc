@@ -109,9 +109,12 @@ ozpIwc.BasicAuthorization.prototype.isPermitted=function(subject,permissions) {
 	
 	return action.resolve('failure');
 };
-/** 
- * A basic authorization module loosely inspired by Apache Shiro.
+
+/**
+ * Returns a boolean value of having specified role.
+ * 
  * @class
+ * @param {ozpIwc.security.Principal} role
  */
 ozpIwc.BasicAuthorization.prototype.hasRole=function(role) {
   var found = false;
@@ -123,4 +126,5 @@ ozpIwc.BasicAuthorization.prototype.hasRole=function(role) {
   }
   return found;
 };
+
 ozpIwc.authorization=new ozpIwc.BasicAuthorization();
