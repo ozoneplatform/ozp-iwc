@@ -1,10 +1,10 @@
 var ozpIwc=ozpIwc || {};
 
-/** @typedef {string} ozpIwc.security.Principal */
+/** @typedef {string} ozpIwc.security.Role */
 
 /** @typedef {string} ozpIwc.security.Permission */
 
-/** @typedef { ozpIwc.security.Principal[] } ozpIwc.security.Subject */
+/** @typedef { ozpIwc.security.Role[] } ozpIwc.security.Subject */
 
 /** 
  * @typedef {object} ozpIwc.security.Actor 
@@ -15,12 +15,12 @@ var ozpIwc=ozpIwc || {};
 /** 
  * A basic authorization module loosely inspired by Apache Shiro.
  * <ul>
- *   <li> Principal - an individual bundle of authority, represesented by a string.
+ *   <li> Role - an individual bundle of authority, represesented by a string.
  *   <li> Subject - an array of roles representing the authorities of an actor.
  *   <li> Permission - a string representing the authority to perform one discrete action.
  * </ul>
  * 
- * <p> Principals have permissions.  Subjects have one or more roles.  A check
+ * <p> Roles have permissions.  Subjects have one or more roles.  A check
  * is a subject asking if any of it's roles have a set of permissions. 
  * 
  * <p> The isPermitted() operation simply asks "for all permissions in the list, does the
@@ -31,10 +31,10 @@ var ozpIwc=ozpIwc || {};
  * 
  * <h2>OZP IWC's usage of authorization</h2>
  * 
- * <p> Principals are strings of the form "${domain}:${id}".  The domain
+ * <p> Roles are strings of the form "${domain}:${id}".  The domain
  * identifies the type of role, where the ID indentifies the specific instance.
  * 
- * <p>Supported Principals:
+ * <p>Supported Roles:
  * <ul>
  *   <li>participant:${address}
  *   <li>origin:${origin}
