@@ -19,8 +19,7 @@ var ozpIwc = ozpIwc || {};
  * @param {string} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
  * @param {string} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
  * @param {Number} [config.maxRetries] - Number of times packet transmission will retry if failed. Defaults to 6.
- *  * @param {Number} [config.queueSize] - Number of packets allowed to be queued at one time. Defaults to 1024.
- * 
+ * @param {Number} [config.queueSize] - Number of packets allowed to be queued at one time. Defaults to 1024.
  */
 ozpIwc.KeyBroadcastLocalStorageLink = function(config) {
 	config=config || {};
@@ -29,13 +28,13 @@ ozpIwc.KeyBroadcastLocalStorageLink = function(config) {
 	this.peer=config.peer || ozpIwc.defaultPeer;
 	this.selfId=config.selfId || this.peer.selfId;
 	this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
-  this.otherKeysTimeout = config.otherKeysTimeout || 2*60000; // 2 minutes
-  this.maxRetries = config.maxRetries || 6;
-  this.queueSize = config.queueSize || 1024;
-  this.sendQueue = this.sendQueue || [];
+	this.otherKeysTimeout = config.otherKeysTimeout || 2*60000; // 2 minutes
+	this.maxRetries = config.maxRetries || 6;
+	this.queueSize = config.queueSize || 1024;
+	this.sendQueue = this.sendQueue || [];
 
   // Hook into the system
-	var self=this;  
+	var self=this;
 	var packet;
 	var receiveStorageEvent=function(event) {
 		try {
@@ -109,6 +108,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function(packet, ret
     }       
   }
 };
+
 /**
  * <p>Implementation of publishing packets to peers through localStorage.
  * <p>If the localStorage is full or a write collision occurs, the send will not occur.
