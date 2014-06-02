@@ -80,7 +80,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function(packet) {
 };
 
 /**
- * <p> Recursively tries sending the packet (KeyBroadcastLocalStorageLink.maxAttempts) times
+ * <p> Recursively tries sending the packet (KeyBroadcastLocalStorageLink.maxRetries) times
  * The packet is dropped and the send fails after reaching max attempts.
  * 
  * @class
