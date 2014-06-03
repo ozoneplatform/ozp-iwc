@@ -1,10 +1,10 @@
 var ozpIwc=ozpIwc || {};
 
-/** @typedef {string} ozpIwc.security.Principal */
+/** @typedef {string} ozpIwc.security.Role */
 
 /** @typedef {string} ozpIwc.security.Permission */
 
-/** @typedef { ozpIwc.security.Principal[] } ozpIwc.security.Subject */
+/** @typedef { ozpIwc.security.Role[] } ozpIwc.security.Subject */
 
 /** 
  * @typedef {object} ozpIwc.security.Actor 
@@ -15,26 +15,26 @@ var ozpIwc=ozpIwc || {};
 /** 
  * A basic authorization module loosely inspired by Apache Shiro.
  * <ul>
- *   <li> Principal - an individual bundle of authority, represesented by a string.
- *   <li> Subject - an array of principals representing the authorities of an actor.
+ *   <li> Role - an individual bundle of authority, represesented by a string.
+ *   <li> Subject - an array of roles representing the authorities of an actor.
  *   <li> Permission - a string representing the authority to perform one discrete action.
  * </ul>
  * 
- * <p> Principals have permissions.  Subjects have one or more principals.  A check
- * is a subject asking if any of it's principals have a set of permissions. 
+ * <p> Roles have permissions.  Subjects have one or more roles.  A check
+ * is a subject asking if any of it's roles have a set of permissions. 
  * 
  * <p> The isPermitted() operation simply asks "for all permissions in the list, does the
- * subject have at least one principal with that permission". 
+ * subject have at least one role with that permission". 
  * 
  * <p> All operations are potentially asynchronous, though if the request can
  * be answered immediately, it will be.
  * 
  * <h2>OZP IWC's usage of authorization</h2>
  * 
- * <p> Principals are strings of the form "${domain}:${id}".  The domain
- * identifies the type of principal, where the ID indentifies the specific instance.
+ * <p> Roles are strings of the form "${domain}:${id}".  The domain
+ * identifies the type of role, where the ID indentifies the specific instance.
  * 
- * <p>Supported Principals:
+ * <p>Supported Roles:
  * <ul>
  *   <li>participant:${address}
  *   <li>origin:${origin}
@@ -50,16 +50,16 @@ var ozpIwc=ozpIwc || {};
  * @class
  */
 ozpIwc.BasicAuthentication=function() {
-	this.principals={};	
+	this.roles={};	
 };
 
 /**
  * Returns the authenticated subject for the given credentials.
  * 
  * <p>The preAuthenticatedSubject allows an existing subject to augment their
- * principals using credentials.  For example, PostMessageParticipants are
- * assigned a principal equal to their origin, since the browser authoritatively
- * determines that.  The security module can then add additional principals based
+ * roles using credentials.  For example, PostMessageParticipants are
+ * assigned a role equal to their origin, since the browser authoritatively
+ * determines that.  The security module can then add additional roles based
  * upon configuration.
  * 
  * @param {ozpIwc.security.Credentials} credentials

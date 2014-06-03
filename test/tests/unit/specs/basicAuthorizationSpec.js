@@ -24,14 +24,20 @@ describe("Basic authorization",function() {
 		var resolved=false;
 		auth.grant("foo",["perm1"]);
 		
-		expect(auth.principals['foo'][0]).toEqual("perm1");
+		expect(auth.roles['foo'][0]).toEqual("perm1");
+	});
+	
+	it("finds expected roles",function() {
+	  expect(auth.hasRole("foo")).toEqual(false);
+	  auth.grant("foo",["perm1"]);
+	  expect(auth.hasRole("foo")).toEqual(true);
 	});
 	
 	it("allows access after granting permissions",function() {
 		var resolved=false;
 		auth.grant("foo",["perm1"]);
 		
-		expect(auth.principals['foo'][0]).toEqual("perm1");
+		expect(auth.roles['foo'][0]).toEqual("perm1");
 		
 		auth.isPermitted("foo","perm1")
 			.success(function() {	resolved=true;	})
@@ -73,27 +79,27 @@ describe("Basic authorization",function() {
 		expect(resolved).toEqual(true);
 	});
 	
-	it("with multiple principals, allows if the first of them has permission",function() {
+	it("with multiple roles, allows if the first of them has permission",function() {
 		auth.grant("foo",["red1","red2"]);
 		auth.grant("bar",["blue1","blue2"]);
 		
 		auth.isPermitted(["foo","bar"],["red1"])
-			.failure(function() {	expect("multiple principal checks").toEqual("success");});
+			.failure(function() {	expect("multiple role checks").toEqual("success");});
 	});
 	
-	it("with multiple principals, allows if any one of them has permission",function() {
+	it("with multiple roles, allows if any one of them has permission",function() {
 		auth.grant("foo",["red1","red2"]);
 		auth.grant("bar",["blue1","blue2"]);
 		
 		auth.isPermitted(["foo","bar"],["blue1"])
-			.failure(function() {	expect("multiple principal checks").toEqual("success");});
+			.failure(function() {	expect("multiple role checks").toEqual("success");});
 	});	
 	
-	it("with multiple principals, denies none of them has permission",function() {
+	it("with multiple roles, denies none of them has permission",function() {
 		auth.grant("foo",["red1","red2"]);
 		auth.grant("bar",["blue1","blue2"]);
 		
 		auth.isPermitted(["foo","bar"],["blue3"])
-			.success(function() {	expect("multiple principal checks").toEqual("success");});
+			.success(function() {	expect("multiple role checks").toEqual("success");});
 	});	
 });
