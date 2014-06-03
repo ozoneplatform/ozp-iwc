@@ -18,6 +18,8 @@ var ozpIwc = ozpIwc || {};
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] - The peer to connect to.
  * @param {string} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
  * @param {string} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
+ * @param {Number} [config.maxRetries] - Number of times packet transmission will retry if failed. Defaults to 6.
+ * @param {Number} [config.queueSize] - Number of packets allowed to be queued at one time. Defaults to 1024.
  */
 ozpIwc.KeyBroadcastLocalStorageLink = function(config) {
 	config=config || {};
@@ -27,6 +29,9 @@ ozpIwc.KeyBroadcastLocalStorageLink = function(config) {
 	this.selfId=config.selfId || this.peer.selfId;
 	this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
 	this.otherKeysTimeout = config.otherKeysTimeout || 2*60000; // 2 minutes
+	this.maxRetries = config.maxRetries || 6;
+	this.queueSize = config.queueSize || 1024;
+	this.sendQueue = this.sendQueue || [];
 
   // Hook into the system
 	var self=this;
@@ -56,19 +61,77 @@ ozpIwc.KeyBroadcastLocalStorageLink = function(config) {
 };
 
 /**
- * Publishes a packet to other peers.
- * @todo Handle local storage being full.
- * @param {ozpIwc.NetworkPacket} packet
+ * <p>Publishes a packet to other peers.
+ * <p>If the sendQueue is full (KeyBroadcastLocalStorageLink.queueSize) send will not occur.
+ * 
+ * @class
+ * @param {ozpIwc.NetworkPacket} - packet
  */
-ozpIwc.KeyBroadcastLocalStorageLink.prototype.send=function(packet) { 
-	try {
-		var p=JSON.stringify(packet);
-		localStorage.setItem(p,"");
-		ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
-		localStorage.removeItem(p);
-	} catch (e) {
-		ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
-		ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + e);
-	 }
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function(packet) { 
+  if (this.sendQueue.length < this.queueSize) {
+    this.sendQueue = this.sendQueue.concat(packet);
+    while (this.sendQueue.length > 0) {
+      this.attemptSend(this.sendQueue.shift());
+    }
+  } else {
+    ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
+    ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + " Send queue full.");
+  }
 };
 
+/**
+ * <p> Recursively tries sending the packet (KeyBroadcastLocalStorageLink.maxRetries) times
+ * The packet is dropped and the send fails after reaching max attempts.
+ * 
+ * @class
+ * @param {ozpIwc.NetworkPacket} - packet  
+ * @param {Number} [attemptCount] - number of times attempted to send packet.  
+ */
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function(packet, retryCount) {
+
+  var sendStatus = this.sendImpl(packet);  
+  if(sendStatus) {
+    var self = this;
+    retryCount = retryCount || 0;
+    var timeOut = Math.max(1, Math.pow(2, (retryCount-1))) - 1;
+    
+    if (retryCount < self.maxRetries) {
+      retryCount++;
+      // Call again but back off for an exponential amount of time.
+      window.setTimeout(function() {
+        self.attemptSend(packet, retryCount);
+      }, timeOut);
+    } else {
+      ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
+      ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + sendStatus);
+      return sendStatus;
+    }       
+  }
+};
+
+/**
+ * <p>Implementation of publishing packets to peers through localStorage.
+ * <p>If the localStorage is full or a write collision occurs, the send will not occur.
+ * <p>Returns status of localStorage write, null if success.
+ * 
+ * @todo move counter.inc() out of the impl and handle in attemptSend?
+ * 
+ * @class
+ * @param {ozpIwc.NetworkPacket} - packet  
+ */
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function(packet) {
+  var sendStatus;
+  try {
+		var p=JSON.stringify(packet);
+    localStorage.setItem(p,"");
+    ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
+    localStorage.removeItem(p);
+    sendStatus = null;
+  }
+  catch (e) {
+    sendStatus = e;
+  }
+  finally {
+    return sendStatus;
+  }
+};
