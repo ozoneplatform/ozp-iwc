@@ -13,29 +13,29 @@ module.exports = function(grunt) {
 				'app/js/metrics/metricsRegistry.js',
 				'app/js/metrics/**/*.js'
 			],
-			server: [
+			bus: [
 				'<%= src.metrics %>',
-				'app/js/server/jquery-2.1.0.min.js',
+				'app/js/bus/jquery-2.1.0.min.js',
 				'app/js/common/event.js',
 				'app/js/common/**/*.js',
-				'app/js/server/es5-sham.min.js',
-				'app/js/server/util/**/*.js',
-				'app/js/server/security/**/*.js',
-				'app/js/server/network/**/*.js',
-				'app/js/server/transport/participant.js',
-				'app/js/server/transport/internalParticipant.js',
-				'app/js/server/transport/router.js',
-				'app/js/server/transport/**/*.js',
-				'app/js/server/storage/**/*.js',
-				'app/js/server/api/keyValueApiBase.js',
-				'app/js/server/*/**/*.js'
+				'app/js/bus/es5-sham.min.js',
+				'app/js/bus/util/**/*.js',
+				'app/js/bus/security/**/*.js',
+				'app/js/bus/network/**/*.js',
+				'app/js/bus/transport/participant.js',
+				'app/js/bus/transport/internalParticipant.js',
+				'app/js/bus/transport/router.js',
+				'app/js/bus/transport/**/*.js',
+				'app/js/bus/storage/**/*.js',
+				'app/js/bus/api/keyValueApiBase.js',
+				'app/js/bus/*/**/*.js'
 			],
 			client: [
 				'app/js/common/**/*.js',
 				'app/js/client/**/*.js'
 			],
 			owf7: [
-				'<%= src.server %>',
+				'<%= src.bus %>',
 				'app/js/owf7/lib/**/*',
 				'app/js/owf7/*.js'
 			],
@@ -44,21 +44,21 @@ module.exports = function(grunt) {
 			],
 			all: [
 				'<%= src.metrics %>',
-				'<%= src.server %>',
+				'<%= src.bus %>',
 				'<%= src.client %>',
 				'<%= src.owf7 %>'
 			]
 		},
 		output: {
-			serverJs: 'app/js/<%= pkg.name %>-server',
+			busJs: 'app/js/<%= pkg.name %>-bus',
 			clientJs: 'app/js/<%= pkg.name %>-client',
 			metricsJs: 'app/js/<%= pkg.name %>-metrics',
 			owf7Js: 'app/js/<%= pkg.name %>-owf7'
 		},
 		concat: {
-      server: {
-        src: '<%= src.server %>',
-        dest: '<%= output.serverJs %>.js'
+      bus: {
+        src: '<%= src.bus %>',
+        dest: '<%= output.busJs %>.js'
       },
 			client: {
 				src: '<%= src.client %>',
@@ -74,9 +74,9 @@ module.exports = function(grunt) {
 			}
 		},
     uglify: {
-      server: {
-        src: '<%= concat.server.dest %>',
-        dest: '<%= output.serverJs %>.min.js'
+      bus: {
+        src: '<%= concat.bus.dest %>',
+        dest: '<%= output.busJs %>.min.js'
       },
 			client: {
         src: '<%= concat.client.dest %>',
@@ -93,7 +93,7 @@ module.exports = function(grunt) {
     },
 		jsdoc : {
         dist : {
-            src: ['<%= src.server %>','<%=src.client%>'],
+            src: ['<%= src.bus %>','<%= src.client %>'],
             options: {
                 destination: 'doc'
             }
