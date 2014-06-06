@@ -12,7 +12,6 @@ var ozpIwc=ozpIwc || {};
 ozpIwc.Client=function(config) {
 	config=config || {};
 	this.participantId="$nobody";
-	this.replyCallbacks={};
 	this.peerUrl=config.peerUrl;
 	var a=document.createElement("a");
 	a.href = this.peerUrl;
@@ -60,8 +59,11 @@ ozpIwc.Client=function(config) {
  * @returns {undefined}
  */
 ozpIwc.Client.prototype.receive=function(packet) {
-	if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
-		this.replyCallbacks[packet.replyTo](packet);
+	if(packet.replyTo) {
+        var replyEvent = {};
+        replyEvent.msgId = packet.replyTo;
+        replyEvent.packet = packet;
+        this.events.trigger("reply", replyEvent);
 	} else {
 		this.events.trigger("receive",packet);
 	}	
@@ -72,7 +74,7 @@ ozpIwc.Client.prototype.receive=function(packet) {
  * @param {object} entity - payload of the packet
  * @param {function} callback - callback for any replies
  */
-ozpIwc.Client.prototype.send=function(fields,callback) {
+ozpIwc.Client.prototype.send=function(fields,hookReply) {
 	var now=new Date().getTime();
 	var id="p:"+this.msgIdSequence++; // makes the code below read better
 
@@ -87,14 +89,39 @@ ozpIwc.Client.prototype.send=function(fields,callback) {
 		packet[k]=fields[k];
 	}
 
-	if(callback) {
-		this.replyCallbacks[id]=callback;
-	}
+    var promise = {};
+    if(hookReply) {
+        var self = this;
+        promise = new Promise(function(resolve,reject) {
+            var getMsgId = function() {
+                return id;
+            };
+            //BEGIN TEMP CODE
+            console.log("make promise for msgId " + getMsgId());
+            //END TEMP CODE
+            self.events.on("reply",function(event) {
+                if (event.msgId === getMsgId()) {
+                    //BEGIN TEMP CODE
+                    console.log("reply packet received for ID " + getMsgId());
+                    //END TEMP CODE
+                    resolve(event.packet);
+                }
+            });
+            self.events.on("cancelReply",function(event) {
+                if (event.msgId === getMsgId()) {
+                    reject(event.msgId);
+                }
+            });
+        });
+    }
 	var data=JSON.stringify(packet);
 	this.peer.postMessage(data,'*');
 	this.sentBytes+=data.length;
 	this.sentPackets++;
-	return packet;
+    var retVal = {};
+    retVal.packet = packet;
+    retVal.promise = promise;
+	return retVal;
 };
 
 ozpIwc.Client.prototype.on=function(event,callback) {

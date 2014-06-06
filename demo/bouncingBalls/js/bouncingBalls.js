@@ -29,15 +29,20 @@ var Ball=function(ballRef,svgElement) {
 		resource: ballRef
 	};
 	var self=this;
-	var packet=client.send(watchRequest,function(packet) {
+    var retVal = client.send(watchRequest,true);
+    var packet = retVal.packet;
+	retVal.promise.then(function(pkt) {
+        packet = pkt;
 		self.packets++;
 		var now=ozpIwc.util.now();
-		self.totalLatency+=now-packet.time;
+		self.totalLatency+=now-pkt.time;
 
-		if(packet.action==="changed") {
-			self.draw(packet.entity.newValue);
+		if(pkt.action==="changed") {
+			self.draw(pkt.entity.newValue);
 		}
-	});
+	}).catch(function(msgId) {
+        console.log("Reply for msgId " + msgId + " canceled");
+    });
 	
 	$(this.el).click(function() {
 		if(self.label.getAttribute("class").match("svgHidden")) {
@@ -206,6 +211,9 @@ client.on("connected",function() {
 		resource: "/balls"
 	};
 	var onBallsChanged=function(reply) {
+        //BEGIN TEMP CODE
+        console.log("onBallsChanged invoked");
+        //END TEMP CODE
 		if(reply.action!=="changed") {
 			return;
 		}
@@ -216,7 +224,16 @@ client.on("connected",function() {
 			balls[reply.entity.removeChild].cleanup();
 		}
 	};
-	client.send(watchRequest,onBallsChanged);
+	client.send(watchRequest,true).promise.then(function(packet) {
+        //BEGIN TEMP CODE
+        console.log("promise fulfilled");
+        //END TEMP CODE
+        onBallsChanged(packet);
+    }).catch(function(msgId) {
+        //BEGIN TEMP CODE
+        console.log("reply for mdgId " + msgId + " canceled");
+        //END TEMP CODE
+    });
 
 	//=================================================================
 	// get the existing balls
@@ -226,7 +243,7 @@ client.on("connected",function() {
 		resource: "/balls"
 	};
 	
-	client.send(listExistingBalls,function(reply) {
+	client.send(listExistingBalls,true).promise.then(function(reply) {
 		for(var i=0; i<reply.entity.length;++i) {
 			balls[reply.entity[i]]=new Ball(reply.entity[i],viewPort);
 		}
@@ -241,10 +258,10 @@ client.on("connected",function() {
 		entity: {} 
 	};
 	
-	client.send(pushRequest,function(packet){
+	client.send(pushRequest,true).promise.then(function(packet){
 		if(packet.action==="success") {
 			ourBalls.push(new AnimatedBall({
-				resource:packet.entity.resource,
+				resource:packet.entity.resource
 			}));
 
 		} else {
