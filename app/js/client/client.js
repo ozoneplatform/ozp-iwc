@@ -14,6 +14,13 @@ ozpIwc.Client=function(config) {
 	this.participantId="$nobody";
 	this.replyCallbacks={};
 	this.peerUrl=config.peerUrl;
+	var a=document.createElement("a");
+	a.href = this.peerUrl;
+	this.peerOrigin=a.protocol + "//" + a.hostname;
+	if(a.port)
+		this.peerOrigin+= ":" + a.port;
+	
+	
 	this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
 	this.msgIdSequence=0;
 	this.events=new ozpIwc.Event();
@@ -31,7 +38,7 @@ ozpIwc.Client=function(config) {
 	
 	// receive postmessage events
 	this.messageEventListener=window.addEventListener("message", function(event) {
-		if(event.origin !== self.peerUrl){
+		if(event.origin !== self.peerOrigin){
 			return;
 		}
 		try {

@@ -153,4 +153,6 @@ module.exports = function(grunt) {
   // Default task(s).
   grunt.registerTask('default', ['concat','uglify','jsdoc']);
   grunt.registerTask('test', ['concat','uglify','connect','watch:test']);
+  grunt.registerTask('default', ['concat','uglify','jsdoc']);
+
 };
