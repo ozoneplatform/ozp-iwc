@@ -29,16 +29,10 @@ var Ball=function(ballRef,svgElement) {
 		resource: ballRef
 	};
 	var self=this;
-    var retVal = client.send(watchRequest,true);
+    var retVal = client.send(watchRequest,{persist:true});
     var packet = retVal.packet;
 	retVal.promise.then(function(reply) {
-		self.packets++;
-		var now=ozpIwc.util.now();
-		self.totalLatency+=now-reply.time;
-
-		if(reply.action==="changed") {
-			self.draw(reply.entity.newValue);
-		}
+        self.drawNew(reply.packet,reply.promise);
 	}).catch(function(msgId) {
         console.log("Reply for msgId " + msgId + " canceled");
     });
@@ -52,6 +46,22 @@ var Ball=function(ballRef,svgElement) {
 	});	
 	this.watchId=packet.msgId;	
 };
+
+Ball.prototype.drawNew=function(packet,promise) {
+    var self=this;
+    self.packets++;
+    var now=ozpIwc.util.now();
+    self.totalLatency+=now-packet.time;
+
+    if(packet.action==="changed") {
+        self.draw(packet.entity.newValue);
+    }
+    if (promise) {
+        promise.then(function(reply) {
+            self.drawNew(reply.packet,reply.promise);
+        });
+    }
+}
 
 Ball.prototype.draw=function(info) {
 	if(!info) {
@@ -209,25 +219,32 @@ client.on("connected",function() {
 		action: "watch",
 		resource: "/balls"
 	};
-	var onBallsChanged=function(reply) {
+	var onBallsChanged=function(packet,promise) {
         //BEGIN TEMP CODE
         console.log("onBallsChanged invoked");
         //END TEMP CODE
-		if(reply.action!=="changed") {
+		if(packet.action!=="changed") {
+            if (promise) {
+                promise.then(function(reply) {
+                    onBallsChanged(reply.packet, reply.promise);
+                });
+            }
 			return;
 		}
-		if(reply.entity.addChild) {
-			balls[reply.entity.addChild]=new Ball(reply.entity.addChild,viewPort);
+		if(packet.entity.addChild) {
+			balls[packet.entity.addChild]=new Ball(packet.entity.addChild,viewPort);
 		}
-		if(reply.entity.removeChild) {
-			balls[reply.entity.removeChild].cleanup();
+		if(packet.entity.removeChild) {
+			balls[packet.entity.removeChild].cleanup();
 		}
+        if (promise) {
+            promise.then(function(reply) {
+                onBallsChanged(reply.packet, reply.promise);
+            });
+        }
 	};
-	client.send(watchRequest,true).promise.then(function(reply) {
-        //BEGIN TEMP CODE
-        console.log("promise fulfilled");
-        //END TEMP CODE
-        onBallsChanged(reply);
+	client.send(watchRequest,{persist:true}).promise.then(function(reply) {
+        onBallsChanged(reply.packet,reply.promise);
     }).catch(function(msgId) {
         //BEGIN TEMP CODE
         console.log("Reply for mdgId " + msgId + " canceled");
@@ -242,9 +259,9 @@ client.on("connected",function() {
 		resource: "/balls"
 	};
 	
-	client.send(listExistingBalls,true).promise.then(function(reply) {
-		for(var i=0; i<reply.entity.length;++i) {
-			balls[reply.entity[i]]=new Ball(reply.entity[i],viewPort);
+	client.send(listExistingBalls,{persist:false}).promise.then(function(reply) {
+		for(var i=0; i<reply.packet.entity.length;++i) {
+			balls[reply.packet.entity[i]]=new Ball(reply.packet.entity[i],viewPort);
 		}
 	});
 
@@ -257,14 +274,14 @@ client.on("connected",function() {
 		entity: {} 
 	};
 	
-	client.send(pushRequest,true).promise.then(function(reply) {
-		if(reply.action==="success") {
+	client.send(pushRequest,{persist:false}).promise.then(function(reply) {
+		if(reply.packet.action==="success") {
 			ourBalls.push(new AnimatedBall({
-				resource:reply.entity.resource
+				resource:reply.packet.entity.resource
 			}));
 
 		} else {
-			console.log("Failed to push our ball: " + JSON.stringify(reply,null,2));
+			console.log("Failed to push our ball: " + JSON.stringify(reply.packet,null,2));
 		}	
 	});
 });

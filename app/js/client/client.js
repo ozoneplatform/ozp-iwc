@@ -74,7 +74,7 @@ ozpIwc.Client.prototype.receive=function(packet) {
  * @param {object} entity - payload of the packet
  * @param {function} callback - callback for any replies
  */
-ozpIwc.Client.prototype.send=function(fields,hookReply) {
+ozpIwc.Client.prototype.send=function(fields,replyHandlerConfig) {
 	var now=new Date().getTime();
 	var id="p:"+this.msgIdSequence++; // makes the code below read better
 
@@ -89,40 +89,44 @@ ozpIwc.Client.prototype.send=function(fields,hookReply) {
 		packet[k]=fields[k];
 	}
 
-    var promise = {};
-    if(hookReply) {
-        var self = this;
-        promise = new Promise(function(resolve,reject) {
-            var getMsgId = function() {
-                return id;
-            };
-            //BEGIN TEMP CODE
-            console.log("make promise for msgId " + getMsgId());
-            //END TEMP CODE
-            self.events.on("reply",function(event) {
-                if (event.msgId === getMsgId()) {
-                    //BEGIN TEMP CODE
-                    console.log("reply packet received for ID " + getMsgId());
-                    //END TEMP CODE
-                    resolve(event.packet);
-                }
-            });
-            self.events.on("cancelReply",function(event) {
-                if (event.msgId === getMsgId()) {
-                    reject(Error(event.msgId));
-                }
-            });
-        });
+    var retVal={};
+    if(replyHandlerConfig) {
+        promise = this.makePromise(id,replyHandlerConfig.persist);
+        retVal.promise = promise;
     }
 	var data=JSON.stringify(packet);
 	this.peer.postMessage(data,'*');
 	this.sentBytes+=data.length;
 	this.sentPackets++;
-    var retVal = {};
-    retVal.packet = packet;
-    retVal.promise = promise;
+    retVal.packet=packet;
+    console.log("send: id: " + id + " action: " + packet.action);
 	return retVal;
 };
+
+ozpIwc.Client.prototype.makePromise=function(msgId,persistHandler) {
+    var self = this;
+    return new Promise(function(resolve,reject) {
+        self.events.on("reply",function(event) {
+            if (event.msgId === msgId) {
+                //BEGIN TEMP CODE
+                console.log("reply to ID " + msgId);
+                //END TEMP CODE
+                var retVal={};
+                if (persistHandler) {
+                    newPromise=self.makePromise(msgId,persistHandler);
+                    retVal.promise=newPromise;
+                }
+                retVal.packet=event.packet;
+                resolve(retVal);
+            }
+        });
+        self.events.on("cancelReply",function(event) {
+            if (event.msgId === msgId) {
+                reject(Error(event.msgId));
+            }
+        });
+    });
+}
 
 ozpIwc.Client.prototype.on=function(event,callback) {
 	if(event==="connected" && this.participantId !=="$nobody") {
