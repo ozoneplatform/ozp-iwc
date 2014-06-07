@@ -109,7 +109,7 @@ ozpIwc.Client.prototype.send=function(fields,hookReply) {
             });
             self.events.on("cancelReply",function(event) {
                 if (event.msgId === getMsgId()) {
-                    reject(event.msgId);
+                    reject(Error(event.msgId));
                 }
             });
         });
@@ -177,8 +177,8 @@ ozpIwc.Client.prototype.findPeer=function() {
 ozpIwc.Client.prototype.requestAddress=function(){
 	// send connect to get our address
 	var self=this;
-	this.send({dst:"$transport"},function(message) {
-		self.participantId=message.dst;
+	this.send({dst:"$transport"}, true).promise.then(function(reply) {
+		self.participantId=reply.dst;
 		self.events.trigger("connected",self);
 	});
 };
