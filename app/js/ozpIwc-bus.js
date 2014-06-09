@@ -9,7 +9,7 @@ ozpIwc.util=ozpIwc.util || {};
  * @returns {String}
  */
 ozpIwc.util.generateId=function() {
-		return Math.floor(Math.random() * 0xffffffff).toString(16);
+    return Math.floor(Math.random() * 0xffffffff).toString(16);
 };
 
 /**
@@ -18,7 +18,7 @@ ozpIwc.util.generateId=function() {
  * @returns {Number}
  */
 ozpIwc.util.now=function() {
-		return new Date().getTime();
+    return new Date().getTime();
 };
 
 /**
@@ -28,10 +28,29 @@ ozpIwc.util.now=function() {
  * @returns {Function} newConstructor with an augmented prototype
  */
 ozpIwc.util.extend=function(baseClass,newConstructor) {
-	newConstructor.prototype = Object.create(baseClass.prototype); 
-	newConstructor.prototype.constructor = newConstructor;
-	return newConstructor;
+    newConstructor.prototype = Object.create(baseClass.prototype);
+    newConstructor.prototype.constructor = newConstructor;
+    return newConstructor;
 };
+
+/**
+ * Detect browser support for structured clones.
+ * @returns {boolean} - true if structured clones are supported,
+ * false otherwise
+ */
+ozpIwc.util.structuredCloneSupport=function() {
+    var onlyStrings = false;
+    //If the browser doesn't support structured clones, it will call
+    //toString() on the object passed to postMessage
+    try {
+        window.postMessage({
+            toString: function () {
+                onlyStrings = true;
+            }
+        }, "*");
+    } catch (e) {}
+    return !onlyStrings;
+}
 
 /*
  * The MIT License (MIT) Copyright (c) 2012 Mike Ihbe
@@ -3047,7 +3066,7 @@ gadgets.rpc = function() {
     if (relayChannel === 'dpm' || relayChannel === 'wpm') {
       var onmessage = function (packet) {
         // TODO validate packet.domain for security reasons
-        process(gadgets.json.parse(packet.data));
+        process(packet.data);
       }
 
       if (typeof window.addEventListener != 'undefined') {
@@ -4404,7 +4423,11 @@ ozpIwc.PostMessageParticipant.prototype.receiveFromRouter=function(packetContext
  * @returns {undefined}
  */
 ozpIwc.PostMessageParticipant.prototype.sendToRecipient=function(packet) {
-	this.sourceWindow.postMessage(JSON.stringify(packet),this.origin);
+    var data=packet;
+    if (!ozpIwc.util.structuredCloneSupport()) {
+         data=JSON.stringify(packet);
+    }
+	this.sourceWindow.postMessage(data,this.origin);
 };
 
 /**

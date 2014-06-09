@@ -42,7 +42,11 @@ ozpIwc.Client=function(config) {
             return;
         }
         try {
-            self.receive(JSON.parse(event.data));
+            var message=event.data;
+            if (typeof(message) === 'string') {
+                message=JSON.parse(event.data);
+            }
+            self.receive(message);
             self.receivedBytes+=(event.data.length * 2);
             self.receivedPackets++;
         } catch(e) {
@@ -94,7 +98,11 @@ ozpIwc.Client.prototype.send=function(fields,callback) {
     if (callback) {
         this.replyCallbacks[id]=callback;
     }
-    var data=JSON.stringify(packet);
+    var data=packet;
+    if (!ozpIwc.util.structuredCloneSupport()) {
+        data=JSON.stringify(packet);
+    }
+
     this.peer.postMessage(data,'*');
     this.sentBytes+=data.length;
     this.sentPackets++;

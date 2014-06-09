@@ -35,7 +35,11 @@ ozpIwc.PostMessageParticipant.prototype.receiveFromRouter=function(packetContext
  * @returns {undefined}
  */
 ozpIwc.PostMessageParticipant.prototype.sendToRecipient=function(packet) {
-	this.sourceWindow.postMessage(JSON.stringify(packet),this.origin);
+    var data=packet;
+    if (!ozpIwc.util.structuredCloneSupport()) {
+         data=JSON.stringify(packet);
+    }
+	this.sourceWindow.postMessage(data,this.origin);
 };
 
 /**
