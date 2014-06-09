@@ -10,46 +10,45 @@ var ozpIwc=ozpIwc || {};
  * @param {boolean} [config.autoPeer=true] - Whether to automatically find and connect to a peer
  */
 ozpIwc.Client=function(config) {
-	config=config || {};
-	this.participantId="$nobody";
-	this.peerUrl=config.peerUrl;
-	var a=document.createElement("a");
-	a.href = this.peerUrl;
-	this.replyCallbacks={};
-    this.promises={};
-	this.peerOrigin=a.protocol + "//" + a.hostname;
-	if(a.port)
-		this.peerOrigin+= ":" + a.port;
-	
-	
-	this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
-	this.msgIdSequence=0;
-	this.events=new ozpIwc.Event();
-	this.events.mixinOnOff(this);
-	this.receivedPackets=0;
-	this.receivedBytes=0;
-	this.sentPackets=0;
-	this.sentBytes=0;
-	this.startTime=ozpIwc.util.now();
-	var self=this;
+    config=config || {};
+    this.participantId="$nobody";
+    this.peerUrl=config.peerUrl;
+    var a=document.createElement("a");
+    a.href = this.peerUrl;
+    this.replyCallbacks={};
+    this.peerOrigin=a.protocol + "//" + a.hostname;
+    if(a.port)
+        this.peerOrigin+= ":" + a.port;
 
-	if(this.autoPeer) {
-		this.findPeer();
-	}
-	
-	// receive postmessage events
-	this.messageEventListener=window.addEventListener("message", function(event) {
-		if(event.origin !== self.peerOrigin){
-			return;
-		}
-		try {
-			self.receive(JSON.parse(event.data));
-			self.receivedBytes+=(event.data.length * 2);
-			self.receivedPackets++;		
-		} catch(e) {
-			// ignore!
-		}
-	}, false);
+
+    this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
+    this.msgIdSequence=0;
+    this.events=new ozpIwc.Event();
+    this.events.mixinOnOff(this);
+    this.receivedPackets=0;
+    this.receivedBytes=0;
+    this.sentPackets=0;
+    this.sentBytes=0;
+    this.startTime=ozpIwc.util.now();
+    var self=this;
+
+    if(this.autoPeer) {
+        this.findPeer();
+    }
+
+    // receive postmessage events
+    this.messageEventListener=window.addEventListener("message", function(event) {
+        if(event.origin !== self.peerOrigin){
+            return;
+        }
+        try {
+            self.receive(JSON.parse(event.data));
+            self.receivedBytes+=(event.data.length * 2);
+            self.receivedPackets++;
+        } catch(e) {
+            // ignore!
+        }
+    }, false);
 };
 
 /**
@@ -61,12 +60,9 @@ ozpIwc.Client=function(config) {
  * @returns {undefined}
  */
 ozpIwc.Client.prototype.receive=function(packet) {
-    if(packet.replyTo) {
-        if (this.replyCallbacks[packet.replyTo]) {
-            this.replyCallbacks[packet.replyTo](packet);
-        }
-        if (this.promises[packet.replyTo]) {
-            this.promises[packet.replyTo].setReply(packet);
+    if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
+        if (!this.replyCallbacks[packet.replyTo](packet)) {
+            this.cancelCallback(packet.replyTo);
         }
     } else {
         this.events.trigger("receive",packet);
@@ -76,9 +72,11 @@ ozpIwc.Client.prototype.receive=function(packet) {
  * Used to send a packet
  * @param {string} dst - where to send the packet
  * @param {object} entity - payload of the packet
- * @param {function} callback - callback for any replies
+ * @param {function} callback - callback for any replies. The callback will be
+ * persisted if it returns a truth-like value, canceled if it returns a
+ * false-like value.
  */
-ozpIwc.Client.prototype.send=function(fields,config) {
+ozpIwc.Client.prototype.send=function(fields,callback) {
     var now=new Date().getTime();
     var id="p:"+this.msgIdSequence++; // makes the code below read better
 
@@ -93,39 +91,22 @@ ozpIwc.Client.prototype.send=function(fields,config) {
         packet[k]=fields[k];
     }
 
-    var retVal={};
-    if (config && config.oneTime) {
-        var promise = this.makePromise(id);
-        this.promises[id]=promise;
-        retVal.promise = promise;
-    } else if (config && config.callback) {
-        this.replyCallbacks[id]=config.callback;
+    if (callback) {
+        this.replyCallbacks[id]=callback;
     }
     var data=JSON.stringify(packet);
     this.peer.postMessage(data,'*');
     this.sentBytes+=data.length;
     this.sentPackets++;
-    retVal.packet=packet;
-    retVal.msgId=id;
-    return retVal;
+    return packet;
 };
 
-ozpIwc.Client.prototype.makePromise=function(msgId) {
-    var resolveCB=null;
-    var promise=new Promise(function(resolve,reject) {
-      resolveCB=resolve;
-    });
-    promise.setReply=function(packet) {
-        resolveCB(packet);
-    }
-    return promise;
-};
-
-ozpIwc.Client.prototype.cancelCallback=function(msgId,oneTime) {
-    if (oneTime) {
-        this.promises[msgId].setReply();
-        this.promises[msgId]=undefined;
-    } else {
+/**
+ * Cancel a callback registration
+ * @param (string} msgId - The packet replyTo ID for which the callback was registered
+ */
+ozpIwc.Client.prototype.cancelCallback=function(msgId) {
+    if (msgId) {
         this.replyCallbacks[msgId]=undefined;
     }
 };
@@ -184,8 +165,9 @@ ozpIwc.Client.prototype.findPeer=function() {
 ozpIwc.Client.prototype.requestAddress=function(){
     // send connect to get our address
     var self=this;
-    this.send({dst:"$transport"}, {oneTime:true}).promise.then(function(reply) {
+    this.send({dst:"$transport"},function(reply) {
         self.participantId=reply.dst;
         self.events.trigger("connected",self);
+        return null;//de-register callback
     });
 };

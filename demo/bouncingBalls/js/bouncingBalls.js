@@ -29,20 +29,16 @@ var Ball=function(ballRef,svgElement) {
         resource: ballRef
     };
     var self=this;
-    var retVal=client.send(watchRequest,{callback:function(packet) {
+    var packet=client.send(watchRequest,function(reply) {
         self.packets++;
         var now=ozpIwc.util.now();
-        self.totalLatency+=now-packet.time;
+        self.totalLatency+=now-reply.time;
 
-        if(packet.action==="changed") {
-            self.draw(packet.entity.newValue);
+        if(reply.action==="changed") {
+            self.draw(reply.entity.newValue);
         }
-    }});
-    var packet = retVal.packet;
-    //Test cancel of callback
-    //setTimeout(function() {
-    //    client.cancelCallback(retVal.msgId);
-    //},10000);
+        return true;//maintain persistent callback
+    });
 
     $(this.el).click(function() {
         if(self.label.getAttribute("class").match("svgHidden")) {
@@ -212,7 +208,7 @@ client.on("connected",function() {
     };
     var onBallsChanged=function(packet) {
         if(packet.action!=="changed") {
-            return;
+            return true;//maintain persistent callback
         }
         if(packet.entity.addChild) {
             balls[packet.entity.addChild]=new Ball(packet.entity.addChild,viewPort);
@@ -220,8 +216,9 @@ client.on("connected",function() {
         if(packet.entity.removeChild) {
             balls[packet.entity.removeChild].cleanup();
         }
+        return true;//maintain persistent callback
     };
-    client.send(watchRequest,{callback:onBallsChanged});
+    client.send(watchRequest,onBallsChanged);
 
     //=================================================================
     // get the existing balls
@@ -231,12 +228,11 @@ client.on("connected",function() {
         resource: "/balls"
     };
 
-    client.send(listExistingBalls,{oneTime:true}).promise.then(function(packet) {
+    client.send(listExistingBalls,function(packet) {
         for(var i=0; i<packet.entity.length;++i) {
             balls[packet.entity[i]]=new Ball(packet.entity[i],viewPort);
         }
-    }).catch(function(err) {
-        console.log("Reply for msgId " + err + " canceled");
+        return null;//de-register callback
     });
 
     //=================================================================
@@ -248,7 +244,7 @@ client.on("connected",function() {
         entity: {}
     };
 
-    client.send(pushRequest,{oneTime:true}).promise.then(function(packet) {
+    client.send(pushRequest,function(packet) {
         if(packet.action==="success") {
             ourBalls.push(new AnimatedBall({
                 resource:packet.entity.resource
@@ -257,7 +253,6 @@ client.on("connected",function() {
         } else {
             console.log("Failed to push our ball: " + JSON.stringify(packet,null,2));
         }
-    }).catch(function(err) {
-        console.log("Reply for msgId " + err + " canceled");
+        return null;//de-register callback
     });
 });
