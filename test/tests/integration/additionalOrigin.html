@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Widget</title>
+
+    <script type="text/javascript" src="//localhost:13000/js/ozpIwc-bus.js"></script>
+    <script type="text/javascript">
+        if (ozpIwc.Peer) {
+            ozpIwc.defaultPeer = new ozpIwc.Peer();
+        }
+
+
+        if (ozpIwc.LocalStorageLink) {
+            ozpIwc.defaultLocalStorageLink = new ozpIwc.KeyBroadcastLocalStorageLink({
+                peer: ozpIwc.defaultPeer
+            });
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>
