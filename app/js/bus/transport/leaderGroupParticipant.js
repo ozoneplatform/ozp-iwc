@@ -6,8 +6,6 @@ var ozpIwc=ozpIwc || {};
  * @param {object} config
  * @param {String} config.name 
  *        The name of this API.
- * @param {Object} config.target
- *				The packet receiver that gets non-election messages.
  * @param {string} [config.electionAddress=config.name+".election"] 
  *        The multicast channel for running elections.  
  *        The leader will register to receive multicast on this channel.
@@ -28,8 +26,6 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	
 	// Networking info
 	this.name=config.name;
-	this.target=config.target || { receive: function() {}};
-	this.target.participant=this;
 	
 	this.electionAddress=config.electionAddress || (this.name + ".election");
 
@@ -68,18 +64,37 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	// handoff when we shut down
 	window.addEventListener("beforeunload",function() {
 		self.leaderPriority=0;
-		self.sendSync();
 		self.startElection();
 		
 	});
 	
 });
 
+/**
+ * Override from the participant in order to register our multicast addresses
+ * and start an election.
+ * @param {type} router
+ * @param {type} address
+ * @returns {undefined}
+ */
 ozpIwc.LeaderGroupParticipant.prototype.connectToRouter=function(router,address) {
 	ozpIwc.Participant.prototype.connectToRouter.apply(this,arguments);
 	this.router.registerMulticast(this,[this.electionAddress,this.name]);
 	this.startElection();
 };
+
+/**
+ * Override fixPacket to default the source address to the name of this
+ * leadership group.
+ * @param {type} packet
+ * @returns {unresolved}
+ */
+ozpIwc.LeaderGroupParticipant.prototype.fixPacket=function(packet) {
+	packet.src = packet.src || this.name;
+	
+	return ozpIwc.Participant.prototype.fixPacket.apply(this,arguments);
+};
+
 
 /**
  * Checks to see if the leadership group is in an election
@@ -104,11 +119,12 @@ ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
  */
 ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type) {
 	this.send({
-			dst: this.electionAddress,
-			action: type,
-			entity: {
-				'priority': this.priority
-			}
+		'src': this.address,
+		'dst': this.electionAddress,
+		'action': type,
+		'entity': {
+			'priority': this.priority
+		}
 	});
 };
 
@@ -174,8 +190,6 @@ ozpIwc.LeaderGroupParticipant.prototype.receiveFromRouter=function(packetContext
 			this.handleElectionMessage(packet);
 		} else if(packet.action === "victory") {
 			this.handleVictoryMessage(packet);
-		} else if(packet.action === "sync") {
-			this.handleSyncMessage(packet);
 		}
 	}
 };
@@ -197,7 +211,7 @@ ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) 
 		return;
 	}
 	packetContext.leaderState=this.leaderState;
-	this.target.receiveFromRouter(packetContext);
+	this.events.trigger("receive",packetContext);
 };
 	
 	
@@ -214,9 +228,6 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
 		// Quell the rebellion!
 		this.startElection();
 	} else {
-		if(this.isLeader()) {
-			this.sendSync();
-		}
 		// Abandon dreams of leadership
 		this.cancelElection();
 	}
@@ -241,24 +252,6 @@ ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMes
 	}
 };
 
-ozpIwc.LeaderGroupParticipant.prototype.handleSyncMessage=function(packet) {
-	if(typeof(this.target.receiveSync)==="function" && !this.isLeader()) {
-		ozpIwc.log.log("LeaderParticipant["+this.name+"::"+this.address+"] received sync " + JSON.stringify(packet.entity,null,2));
-		this.target.receiveSync(packet.entity);
-	}
-};
-
-ozpIwc.LeaderGroupParticipant.prototype.sendSync=function() {
-	if('generateSync' in this.target) {
-		var syncData=this.target.generateSync();
-		ozpIwc.log.log("LeaderParticipant["+this.name+"::"+this.address+"] generated sync" + JSON.stringify(syncData,null,2));
-		this.send({
-			dst: this.electionAddress,
-			action: 'sync',
-			entity: syncData
-		});
-	}
-};
 
 ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
 	var status= ozpIwc.Participant.prototype.heartbeatStatus.apply(this,arguments);

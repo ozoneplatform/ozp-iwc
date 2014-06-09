@@ -14,9 +14,6 @@ if(ozpIwc.LocalStorageLink) {
 	ozpIwc.defaultLocalStorageLink=new ozpIwc.KeyBroadcastLocalStorageLink({
 		peer: ozpIwc.defaultPeer
 	});
-//	ozpIwc.defaultLocalStorageLink=new ozpIwc.LocalStorageLink({
-//		peer: ozpIwc.defaultPeer
-//	});	
 }
 
 if(ozpIwc.PostMessageParticipantListener) {
@@ -30,12 +27,11 @@ if(ozpIwc.BasicAuthorization) {
 }
 
 if(ozpIwc.DataApi) {
-	ozpIwc.dataApi=new ozpIwc.LeaderGroupParticipant({
-		name: "keyValue.api",
-		target: new ozpIwc.DataApi()
+	ozpIwc.dataApi=new ozpIwc.DataApi({
+		'participant': new ozpIwc.LeaderGroupParticipant({'name': "keyValue.api"})
 	});
 
-	ozpIwc.defaultRouter.registerParticipant(ozpIwc.dataApi);
+	ozpIwc.defaultRouter.registerParticipant(ozpIwc.dataApi.participant);
 }
 //
 //if(ozpIwc.NamesApi) {
