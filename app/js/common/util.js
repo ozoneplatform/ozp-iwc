@@ -32,3 +32,17 @@ ozpIwc.util.extend=function(baseClass,newConstructor) {
 	newConstructor.prototype.constructor = newConstructor;
 	return newConstructor;
 };
+
+/**
+ * Does a deep clone of a serializable object.  Note that this will not
+ * clone unserializable objects like DOM elements, Date, RegExp, etc.
+ * @param {type} value - value to be cloned.
+ * @returns {object} - a deep copy of the object
+ */
+ozpIwc.util.clone=function(value) { 
+	if(typeof(value) === 'array' || typeof(value) === 'object') {
+		return JSON.parse(JSON.stringify(value));
+	} else {
+		return value;
+	}
+};

@@ -29,6 +29,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	// Networking info
 	this.name=config.name;
 	this.target=config.target || { receive: function() {}};
+	this.target.participant=this;
 	
 	this.electionAddress=config.electionAddress || (this.name + ".election");
 
@@ -195,33 +196,8 @@ ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) 
 		this.electionQueue.push(packetContext);
 		return;
 	}
-	var packet=packetContext.packet;
-	var handler="handle";
-	var stateSuffix="As" + this.leaderState.charAt(0).toUpperCase() + this.leaderState.slice(1).toLowerCase();
-	var checkdown=[];
-	
-	if(packet.action) {
-		var handler="handle" + packet.action.charAt(0).toUpperCase() + packet.action.slice(1).toLowerCase();
-		checkdown.push(handler+stateSuffix);
-		checkdown.push(handler);
-	}
-	checkdown.push("defaultHandler" + stateSuffix);
-	checkdown.push("defaultHandler");
-	
-	for(var i=0; i< checkdown.length; ++i) {
-		handler=this.target[checkdown[i]];
-		if(typeof(handler) === 'function') {
-			var replies=handler.call(this.target,packetContext);
-			for(var j=0;j<replies.length;++j) {
-				var reply=this.fixPacket(replies[j]);
-				reply.src = this.name;
-				reply.dst = reply.dst || packet.src;
-				reply.replyTo = reply.replyTo || packet.msgId;
-				reply.resource = reply.resource || packet.resource;
-				this.send(reply);
-			}
-		}
-	}
+	packetContext.leaderState=this.leaderState;
+	this.target.receiveFromRouter(packetContext);
 };
 	
 	

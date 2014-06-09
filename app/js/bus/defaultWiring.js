@@ -29,13 +29,13 @@ if(ozpIwc.BasicAuthorization) {
 	ozpIwc.authorization=new ozpIwc.BasicAuthorization();
 }
 
-if(ozpIwc.KeyValueApi) {
-	ozpIwc.keyValueApi=new ozpIwc.LeaderGroupParticipant({
+if(ozpIwc.DataApi) {
+	ozpIwc.dataApi=new ozpIwc.LeaderGroupParticipant({
 		name: "keyValue.api",
-		target: new ozpIwc.KeyValueApi()		
+		target: new ozpIwc.DataApi()
 	});
 
-	ozpIwc.defaultRouter.registerParticipant(ozpIwc.keyValueApi);
+	ozpIwc.defaultRouter.registerParticipant(ozpIwc.dataApi);
 }
 //
 //if(ozpIwc.NamesApi) {

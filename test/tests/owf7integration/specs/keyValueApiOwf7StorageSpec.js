@@ -5,7 +5,7 @@ describe("OWF 7 backed Key-value store",function() {
 	};
 	
 	beforeEach(function() {	
-		kvStorage=new ozpIwc.owf7Backend.keyValueApiOwf7Storage();
+		kvStorage=new ozpIwc.owf7Backend.DataApiOwf7Storage();
 	});
 	
 	afterEach(function() {

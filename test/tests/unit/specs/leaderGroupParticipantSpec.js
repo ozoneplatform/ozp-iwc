@@ -74,7 +74,7 @@ describe("Leader Group Participant",function() {
 //		});
 		
 		l.TEST_nonElectionPackets=[];
-		l.target={ defaultHandler: function(event) {
+		l.target={ receiveFromRouter: function(event) {
 			l.TEST_nonElectionPackets.push(event);
 			return [];
 		}};
@@ -202,7 +202,6 @@ describe("Leader Group Participant",function() {
 					entity: { foo: "bar" }
 				}});
 				expect(leader.TEST_nonElectionPackets.length).toBe(1);
-
 		});
 	});
 	
