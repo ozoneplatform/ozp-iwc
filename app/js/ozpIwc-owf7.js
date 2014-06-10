@@ -39,6 +39,9 @@ ozpIwc.util.extend=function(baseClass,newConstructor) {
  * false otherwise
  */
 ozpIwc.util.structuredCloneSupport=function() {
+    if (ozpIwc.util.structuredCloneSupport.cache !== undefined) {
+        return ozpIwc.util.structuredCloneSupport.cache;
+    }
     var onlyStrings = false;
     //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
     //A bug in FF will cause File clone to fail (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126)
@@ -51,10 +54,13 @@ ozpIwc.util.structuredCloneSupport=function() {
             blob: new Blob()
         }, "*");
     } catch (e) {
-        onlyStrings=e.DATA_CLONE_ERR ? true : false
+        onlyStrings=true;
     }
-    return !onlyStrings;
+    ozpIwc.util.structuredCloneSupport.cache=!onlyStrings;
+    return ozpIwc.util.structuredCloneSupport.cache;
 }
+
+ozpIwc.util.structuredCloneSupport.cache=undefined;
 
 /*
  * The MIT License (MIT) Copyright (c) 2012 Mike Ihbe
