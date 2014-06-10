@@ -40,15 +40,19 @@ ozpIwc.util.extend=function(baseClass,newConstructor) {
  */
 ozpIwc.util.structuredCloneSupport=function() {
     var onlyStrings = false;
-    //If the browser doesn't support structured clones, it will call
-    //toString() on the object passed to postMessage
+    //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
+    //A bug in FF will cause File clone to fail (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126)
+    //We detect this using a test Blob
     try {
         window.postMessage({
             toString: function () {
                 onlyStrings = true;
-            }
+            },
+            blob: new Blob()
         }, "*");
-    } catch (e) {}
+    } catch (e) {
+        onlyStrings=e.DATA_CLONE_ERR ? true : false
+    }
     return !onlyStrings;
 }
 
