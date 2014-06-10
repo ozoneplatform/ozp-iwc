@@ -1,12 +1,15 @@
 describe("Common API Base class",function() {
 
 	var apiBase;
-	
+	var packets=[];
 	beforeEach(function() {	
 		jasmine.addMatchers(customMatchers);
 		jasmine.clock().install();
-
-		apiBase=new ozpIwc.CommonApiBase();
+		packets=[];
+		
+		apiBase=new ozpIwc.CommonApiBase({
+			'participant': new TestParticipant()
+		});
 		apiBase.makeValue=function(packet) {
 			return new ozpIwc.CommonApiValue({resource: packet.resource});
 		};

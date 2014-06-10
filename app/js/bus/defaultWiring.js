@@ -28,7 +28,7 @@ if(ozpIwc.BasicAuthorization) {
 
 if(ozpIwc.DataApi) {
 	ozpIwc.dataApi=new ozpIwc.DataApi({
-		'participant': new ozpIwc.LeaderGroupParticipant({'name': "keyValue.api"})
+		'participant': new ozpIwc.LeaderGroupParticipant({'name': "data.api"})
 	});
 
 	ozpIwc.defaultRouter.registerParticipant(ozpIwc.dataApi.participant);

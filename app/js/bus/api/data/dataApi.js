@@ -4,121 +4,59 @@ ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function() {
 	ozpIwc.CommonApiBase.apply(this,arguments);
 });
 
-ozpIwc.CommonApiBase.prototype.handleListAsLeader=function(packetContext) {
-	var packet=packetContext.packet;
-	if(packet.resource) {
-		var node=this.kvStore.get(packet.resource);
-		return [{'action': 'success','entity': node.children}];
-	} else {
-		return [{'action': 'success','entity': this.kvStore.keys()}];
-	}
+ozpIwc.CommonApiBase.prototype.handleListAsLeader=function(node,packetContext) {
+	return [{'action': 'success','entity': node.children}];
+};
+
+ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {
+	var key=this.generateKey(node.resource+"/");
+
+	// save the new child
+	var childNode=this.findOrMakeValue(key);
+	childNode.set(packetContext.packet);
+	return childNode;
 };
 
 /**
+ * @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
-ozpIwc.CommonApiBase.prototype.handlePushAsLeader=function(packetContext) {
-	var packet=packetContext.packet;
-	var node=this.kvStore.get(packet.resource);
+ozpIwc.DataApi.prototype.handlePushAsLeader=function(node,packetContext) {
+	var childNode=this.createChild(node,packetContext);
 
-	var key;
-	do {
-		key=packet.resource +"/"+ ozpIwc.util.generateId();
-	} while(this.kvStore.hasKey(key));
-
-	// save the new child
-	var childNode=this.kvStore.get(key);
-	childNode.data=packet.entity;
-	this.kvStore.set(key,childNode);
+	node.pushChild(childNode.resource);
 	
-	// save a copy of the old data
-	node.children.push(key);
-	this.kvStore.set(packet.resource,node);	
-	
-	var responses=this.triggerChange({
-		'path': packet.resource,
-		'node': node,
-		'addChild' : key
-	});
-	responses.unshift({'action': 'success','entity': {'resource':key}});
-	return responses;
+	packetContext.reply({'action':'ok'});
 };
 
 /**
+ * @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
-ozpIwc.CommonApiBase.prototype.handleUnshiftAsLeader=function(packetContext) {
-	var packet=packetContext.packet;
-	var node=this.kvStore.get(packet.resource);
+ozpIwc.DataApi.prototype.handleUnshiftAsLeader=function(node,packetContext) {
+	var childNode=this.createChild(node,packetContext);
 
-	var key;
-	do {
-		key=packet.resource +"/"+ ozpIwc.util.generateId();
-	} while(this.kvStore.hasKey(key));
-
-	// save the new child
-	var childNode=this.kvStore.get(key);
-	childNode.data=packet.entity;
-	this.kvStore.set(key,childNode);
+	node.unshiftChild(childNode.resource);
 	
-	// save a copy of the old data
-	node.children.unshift(key);
-	this.kvStore.set(packet.resource,node);	
-	
-	var responses=this.triggerChange({
-		'path': packet.resource,
-		'node': node,
-		'addChild' : key
-	});
-	responses.unshift({'action': 'success','entity': {'resource':key}});
-	return responses;
+	packetContext.reply({'action':'ok'});
 };
 
 /**
+ * @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
-ozpIwc.CommonApiBase.prototype.handlePopAsLeader=function(packetContext) {
-	var packet=packetContext.packet;
-	var node=this.kvStore.get(packet.resource);
-	
-	if(!node.children.length) {
-		return [{action:'noChild'}];
-	}
-	var key=node.children.pop();
-	
-	this.kvStore.set(packet.resource,node);
-	// save the new child
-	var childNode=this.kvStore.get(key);
-	
-	var responses=this.triggerChange({
-		'path': packet.resource,
-		'node': node,
-		'removeChild' : key
-	});
-	responses.unshift({action: 'success',entity: childNode.data});
-	return responses;
+ozpIwc.DataApi.prototype.handlePopAsLeader=function(node,packetContext) {
+	var child=this.findOrMakeValue(node.popChild());
+	// delegate to the handleGet call
+	this.invokeHandler(child,packetContext,this.handleGet);
 };
 
 /**
+ * @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
-ozpIwc.CommonApiBase.prototype.handleShiftAsLeader=function(packetContext) {
-	var packet=packetContext.packet;
-	var node=this.kvStore.get(packet.resource);
-	
-	if(!node.children.length) {
-		return [{action:'noChild'}];
-	}
-	var key=node.children.shift();
-	
-	this.kvStore.set(packet.resource,node);
-	// save the new child
-	var childNode=this.kvStore.get(key);
-	var responses=this.triggerChange({
-		'path': packet.resource,
-		'node': node,
-		'removeChild' : key
-	});
-	responses.unshift({action: 'success',entity: childNode.data});
-	return responses;
+ozpIwc.DataApi.prototype.handleShiftAsLeader=function(node,packetContext) {
+	var child=this.findOrMakeValue(node.shiftChild());
+	// delegate to the handleGet call
+	this.invokeHandler(child,packetContext,this.handleGet);
 };
