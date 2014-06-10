@@ -1,11 +1,11 @@
 var ozpIwc=ozpIwc || {};
 
 /**
-* @typedef ozpIwc.NetworkPacket
-* @property {string} src_peer - The id of the peer who broadcast this packet.
-* @property {string} sequence - A monotonically increasing, unique identifier for this packet.
-* @property {object} data - The payload of this packet.
-*/
+ * @typedef ozpIwc.NetworkPacket
+ * @property {string} src_peer - The id of the peer who broadcast this packet.
+ * @property {string} sequence - A monotonically increasing, unique identifier for this packet.
+ * @property {object} data - The payload of this packet.
+ */
 
 /**
  * @event ozpIwc.Peer#receive
@@ -17,16 +17,16 @@ var ozpIwc=ozpIwc || {};
 
 /**
  * @event ozpIwc.Peer#preSend
- * A cancelable event that allows listeners to override the forwarding of 
+ * A cancelable event that allows listeners to override the forwarding of
  * a given packet to other peers.
  * @extends ozpIwc.CancelableEvent
  * @property {ozpIwc.NetworkPacket} packet
-*/
+ */
 
 /**
  * @event ozpIwc.Peer#send
  * Notifies that a packet is being sent to other peers.  Links should use this
- * event to forward packets to other peers. 
+ * event to forward packets to other peers.
  * @property {ozpIwc.NetworkPacket} packet
  */
 
@@ -43,32 +43,50 @@ var ozpIwc=ozpIwc || {};
  * @class
  */
 ozpIwc.Peer=function() {
-	
-	// generate a random 4 byte id
-	this.selfId=ozpIwc.util.generateId();
-	
-	// unique ids for all packets sent by this peer
-	this.sequenceCounter=0;
 
-	// track which packets are seen from each peer
-	// key is the name of the peer
-	// value is an array that contains the last 50 ids seen
-	this.packetsSeen={};
-	
-	this.knownPeers={};
-	
-	this.events=new ozpIwc.Event();
-	this.events.mixinOnOff(this);
-		
-	var self=this;
-	
-	// Shutdown handling
-	this.unloadListener=function() {
-		self.shutdown();
-	};
-	window.addEventListener('beforeunload',this.unloadListener);
+    // generate a random 4 byte id
+    this.selfId=ozpIwc.util.generateId();
+
+    // unique ids for all packets sent by this peer
+    this.sequenceCounter=0;
+
+    // track which packets are seen from each peer
+    // key is the name of the peer
+    // value is an array that contains the last 50 ids seen
+    this.packetsSeen={};
+
+    this.knownPeers={};
+
+    this.events=new ozpIwc.Event();
+    this.events.mixinOnOff(this);
+
+    var self=this;
+
+    // Shutdown handling
+    this.unloadListener=function() {
+        self.shutdown();
+    };
+    window.addEventListener('beforeunload',this.unloadListener);
 
 };
+
+ozpIwc.Peer.maxSeqIdPerSource=500;
+
+//Ensure IE 8 compatibility
+if (!Array.prototype.indexOf) {
+    Array.prototype.indexOf = function (obj, fromIndex) {
+        if (fromIndex == null) {
+            fromIndex = 0;
+        } else if (fromIndex < 0) {
+            fromIndex = Math.max(0, this.length + fromIndex);
+        }
+        for (var i = fromIndex, j = this.length; i < j; i++) {
+            if (this[i] === obj)
+                return i;
+        }
+        return -1;
+    };
+}
 
 /**
  * Helper to determine if we've seen this packet before
@@ -76,23 +94,27 @@ ozpIwc.Peer=function() {
  * @returns {boolean}
  */
 ozpIwc.Peer.prototype.haveSeen=function(packet) {
-	// don't forward our own packets
-	if(packet.src_peer===this.selfId) {
-		ozpIwc.metrics.counter('network.packets.droppedOwnPacket').inc();
-		return true;
-	}
-	var seen=this.packetsSeen[packet.src_peer];
-	if(!seen) {
-		seen=this.packetsSeen[packet.src_peer]={};
-	}
+    // don't forward our own packets
+    if (packet.src_peer === this.selfId) {
+        ozpIwc.metrics.counter('network.packets.droppedOwnPacket').inc();
+        return true;
+    }
+    var seen = this.packetsSeen[packet.src_peer];
+    if (!seen) {
+        seen = this.packetsSeen[packet.src_peer] = [];
+    }
 
-	// abort if we've seen the packet before
-	if(packet.sequence in seen) {
-		return true;
-	}
+    // abort if we've seen the packet before
+    if (seen.indexOf(packet.sequence) >= 0) {
+        return true;
+    }
 
-	seen[packet.sequence]=true;
-	return false;
+    //remove oldest array members when truncate needed
+    seen.unshift(packet.sequence);
+    if (seen.length >= ozpIwc.Peer.maxSeqIdPerSource) {
+        seen.length = ozpIwc.Peer.maxSeqIdPerSource;
+    }
+    return false;
 };
 
 /**
@@ -102,21 +124,21 @@ ozpIwc.Peer.prototype.haveSeen=function(packet) {
  * @param {ozpIwc.NetworkPacket} packet
  */
 ozpIwc.Peer.prototype.send= function(packet) {
-	var networkPacket={
-			src_peer: this.selfId,
-			sequence: this.sequenceCounter++,
-			data: packet
-	};
-	
-	var preSendEvent=new ozpIwc.CancelableEvent({'packet': networkPacket});
+    var networkPacket={
+        src_peer: this.selfId,
+        sequence: this.sequenceCounter++,
+        data: packet
+    };
 
-	this.events.trigger("preSend",preSendEvent);
-	if(!preSendEvent.canceled) {
-		ozpIwc.metrics.counter('network.packets.sent').inc();
-		this.events.trigger("send",{'packet':networkPacket});
-	} else {
-		ozpIwc.metrics.counter('network.packets.sendRejected').inc();
-	}
+    var preSendEvent=new ozpIwc.CancelableEvent({'packet': networkPacket});
+
+    this.events.trigger("preSend",preSendEvent);
+    if(!preSendEvent.canceled) {
+        ozpIwc.metrics.counter('network.packets.sent').inc();
+        this.events.trigger("send",{'packet':networkPacket});
+    } else {
+        ozpIwc.metrics.counter('network.packets.sendRejected').inc();
+    }
 };
 
 /**
@@ -127,22 +149,22 @@ ozpIwc.Peer.prototype.send= function(packet) {
  * @returns {unresolved}
  */
 ozpIwc.Peer.prototype.receive=function(linkId,packet) {
-	// drop it if we've seen it before
-	if(this.haveSeen(packet)) {
-		ozpIwc.metrics.counter('network.packets.dropped').inc();
-		return;
-	}
-	ozpIwc.metrics.counter('network.packets.received').inc();
-	this.events.trigger("receive",{'packet':packet,'linkId': linkId});
+    // drop it if we've seen it before
+    if(this.haveSeen(packet)) {
+        ozpIwc.metrics.counter('network.packets.dropped').inc();
+        return;
+    }
+    ozpIwc.metrics.counter('network.packets.received').inc();
+    this.events.trigger("receive",{'packet':packet,'linkId': linkId});
 };
 
- /**
-	* Explicitly shuts down the peer.
-	* @fires ozpIwc.Peer#send
-	*/
+/**
+ * Explicitly shuts down the peer.
+ * @fires ozpIwc.Peer#send
+ */
 ozpIwc.Peer.prototype.shutdown=function() {
-	this.events.trigger("beforeShutdown");
-	window.removeEventListener('beforeunload',this.unloadListener);
+    this.events.trigger("beforeShutdown");
+    window.removeEventListener('beforeunload',this.unloadListener);
 };
 
 			
