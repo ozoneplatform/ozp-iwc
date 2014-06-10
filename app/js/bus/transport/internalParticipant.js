@@ -15,10 +15,12 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
 ozpIwc.InternalParticipant.prototype.receiveFromRouter=function(packetContext) { 
 	var packet=packetContext.packet;
 	if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
-		this.replyCallbacks[packet.replyTo](packet);
+		if (!this.replyCallbacks[packet.replyTo](packet)) {
+            this.cancelCallback(msgId);
+        }
 	} else {
 		this.events.trigger("receive",packet);
-	}	
+	}
 };
 
 
@@ -28,6 +30,12 @@ ozpIwc.InternalParticipant.prototype.send=function(packet,callback) {
 		this.replyCallbacks[packet.msgId]=callback;
 	}
 	ozpIwc.Participant.prototype.send.apply(this,arguments);
-	
+
 	return packet;
 };
+
+ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
+    if (msgId) {
+        this.replyCallbacks[msgId]=undefined;
+    }
+}

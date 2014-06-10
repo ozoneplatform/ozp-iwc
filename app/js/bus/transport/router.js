@@ -180,10 +180,10 @@ ozpIwc.Router=function(config) {
  */
 ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
 	packet = packet || {};
-	var participant_id;
+	var address;
 	do {
-			participant_id=ozpIwc.util.generateId() + "." + this.self_id;
-	} while(this.participants.hasOwnProperty(participant_id));
+			address=ozpIwc.util.generateId() + "." + this.self_id;
+	} while(this.participants.hasOwnProperty(address));
 
 	var registerEvent=new ozpIwc.CancelableEvent({
 		'packet': packet,
@@ -198,11 +198,11 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
 						" because " + registerEvent.cancelReason);
 		return null;
 	}
-	this.participants[participant_id]=participant;
-	participant.connectToRouter(this,participant_id);
+	this.participants[address]=participant;
+	participant.connectToRouter(this,address);
 	
 //	ozpIwc.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
-	return participant_id;
+	return address;
 };
 
 /**
@@ -294,7 +294,7 @@ ozpIwc.Router.prototype.send=function(packet,sendingParticipant) {
 };
 
 /**
- * Recieve a packet from the peer
+ * Receive a packet from the peer
  * @fires ozpIwc.Router#peerReceive
  * @param packet {ozpIwc.TransportPacket} the packet to receive
  */

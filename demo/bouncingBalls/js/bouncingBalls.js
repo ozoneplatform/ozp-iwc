@@ -171,88 +171,88 @@ $(document).ready(function(){
 var client=new ozpIwc.Client({peerUrl:"http://" + window.location.hostname + ":13000"});
 
 client.on("connected",function() {
-    // setup
-    var viewPort=$('#viewport');
+	// setup
+	var viewPort=$('#viewport');
 
-    $('#myAddress').text(client.participantId);
+	$('#myAddress').text(client.address);
 
-    //=================================================================
-    // cleanup when we are done
-    window.addEventListener("beforeunload",function() {
-        for(var i=0;i<ourBalls.length;++i) {
-            ourBalls[i].cleanup();
-        }
-    });
+	//=================================================================
+	// cleanup when we are done
+	window.addEventListener("beforeunload",function() {
+		for(var i=0;i<ourBalls.length;++i) {
+			ourBalls[i].cleanup();
+		}
+	});
 
-    //=================================================================
-    // Animate our balls
-    var lastUpdate=new Date().getTime();
-    var animate=function() {
-        var now=new Date().getTime();
-        var delta=(now-lastUpdate)/1000.0;
-        for(var i=0;i<ourBalls.length;++i) {
-            ourBalls[i].tick(delta);
-        }
-        lastUpdate=now;
-    };
+	//=================================================================
+	// Animate our balls
+	var lastUpdate=new Date().getTime();
+	var animate=function() {
+		var now=new Date().getTime();
+		var delta=(now-lastUpdate)/1000.0;
+		for(var i=0;i<ourBalls.length;++i) {
+			ourBalls[i].tick(delta);
+		}
+		lastUpdate=now;
+	};
 
-    window.setInterval(animate,50);
+	window.setInterval(animate,50);
 
 
-    //=================================================================
-    // listen for balls changing
-    var watchRequest={
-        dst: "keyValue.api",
-        action: "watch",
-        resource: "/balls"
-    };
-    var onBallsChanged=function(packet) {
-        if(packet.action!=="changed") {
-            return true;//maintain persistent callback
-        }
-        if(packet.entity.addChild) {
-            balls[packet.entity.addChild]=new Ball(packet.entity.addChild,viewPort);
-        }
-        if(packet.entity.removeChild) {
-            balls[packet.entity.removeChild].cleanup();
-        }
-        return true;//maintain persistent callback
-    };
-    client.send(watchRequest,onBallsChanged);
+	//=================================================================
+	// listen for balls changing
+	var watchRequest={
+		dst: "keyValue.api",
+		action: "watch",
+		resource: "/balls"
+	};
+	var onBallsChanged=function(reply) {
+		if(reply.action!=="changed") {
+			return true;//maintain persistent callback
+		}
+		if(reply.entity.addChild) {
+			balls[reply.entity.addChild]=new Ball(reply.entity.addChild,viewPort);
+		}
+		if(reply.entity.removeChild) {
+			balls[reply.entity.removeChild].cleanup();
+		}
+		return true;//maintain persistent callback
+	};
+	client.send(watchRequest,onBallsChanged);
 
-    //=================================================================
-    // get the existing balls
-    var listExistingBalls={
-        dst: "keyValue.api",
-        action: "list",
-        resource: "/balls"
-    };
+	//=================================================================
+	// get the existing balls
+	var listExistingBalls={
+		dst: "keyValue.api",
+		action: "list",
+		resource: "/balls"
+	};
 
-    client.send(listExistingBalls,function(packet) {
-        for(var i=0; i<packet.entity.length;++i) {
-            balls[packet.entity[i]]=new Ball(packet.entity[i],viewPort);
-        }
-        return null;//de-register callback
-    });
+	client.send(listExistingBalls,function(reply) {
+		for(var i=0; i<reply.entity.length;++i) {
+			balls[reply.entity[i]]=new Ball(reply.entity[i],viewPort);
+		}
+		return null;//de-register callback
+	});
 
-    //=================================================================
-    // add our ball
-    var pushRequest={
-        dst: "keyValue.api",
-        action: "push",
-        resource: "/balls",
-        entity: {}
-    };
+	//=================================================================
+	// add our ball
+	var pushRequest={
+		dst: "keyValue.api",
+		action: "push",
+		resource: "/balls",
+		entity: {}
+	};
 
-    client.send(pushRequest,function(packet) {
-        if(packet.action==="success") {
-            ourBalls.push(new AnimatedBall({
-                resource:packet.entity.resource
-            }));
+	client.send(pushRequest,function(packet){
+		if(packet.action==="success") {
+			ourBalls.push(new AnimatedBall({
+				resource:packet.entity.resource
+			}));
 
-        } else {
-            console.log("Failed to push our ball: " + JSON.stringify(packet,null,2));
-        }
-        return null;//de-register callback
-    });
+		} else {
+			console.log("Failed to push our ball: " + JSON.stringify(packet,null,2));
+		}
+		return null;//de-register callback
+	});
 });

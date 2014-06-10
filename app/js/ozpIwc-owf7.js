@@ -1760,16 +1760,16 @@ var ozpIwc=ozpIwc || {};
  * @property {ozpIwc.security.Subject} securitySubject - The subject for this role.
  */
 ozpIwc.Participant=function() {
-	this.securitySubject=[];
+    this.securitySubject=[];
 };
 
 /**
  * @param {ozpIwc.PacketContext} packetContext
  * @returns {boolean} true if this packet could have additional recipients
  */
-ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) { 
-	// doesn't really do anything other than return a bool and prevent "unused param" warnings
-	return !packetContext;
+ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
+    // doesn't really do anything other than return a bool and prevent "unused param" warnings
+    return !packetContext;
 };
 
 /**
@@ -1778,11 +1778,11 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
  * @returns {boolean} true if this packet could have additional recipients
  */
 ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
-	this.address=address;
-	this.router=router;
-	this.securitySubject=this.securitySubject || [];
-	this.securitySubject.push("participant:"+address);
-	this.msgId=0;
+    this.address=address;
+    this.router=router;
+    this.securitySubject=this.securitySubject || [];
+    this.securitySubject.push("participant:"+address);
+    this.msgId=0;
 };
 
 /**
@@ -1792,19 +1792,17 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
  * @returns {ozpIwc.TransportPacket}
  */
 ozpIwc.Participant.prototype.fixPacket=function(packet) {
-	// clean up the packet a bit on behalf of the sender
-	packet.src=packet.src || this.address;
-	packet.ver = packet.ver || 1;
+    // clean up the packet a bit on behalf of the sender
+    packet.src=packet.src || this.address;
+    packet.ver = packet.ver || 1;
 
-	// if the packet doesn't have a msgId, use a timestamp
-	if(!packet.msgId) {
-		var now=ozpIwc.util.now();
-		packet.msgId = packet.msgId || this.generateMsgId();
+    // if the packet doesn't have a msgId, generate one
+    packet.msgId = packet.msgId || this.generateMsgId();
 
-		// might as well be helpful and set the time, too
-		packet.time = packet.time || now;
-	}
-	return packet;
+    // might as well be helpful and set the time, too
+    var now=ozpIwc.util.now();
+    packet.time = packet.time || now;
+    return packet;
 };
 
 /**
@@ -1814,26 +1812,26 @@ ozpIwc.Participant.prototype.fixPacket=function(packet) {
  * @returns {ozpIwc.TransportPacket}
  */
 ozpIwc.Participant.prototype.send=function(packet) {
-	packet=this.fixPacket(packet);
-	var self=this;
+    packet=this.fixPacket(packet);
+    var self=this;
 //	window.setTimeout(function(){
-		self.router.send(packet,self);
+    self.router.send(packet,self);
 //	},0);
-	return packet;
+    return packet;
 };
 
 
 ozpIwc.Participant.prototype.generateMsgId=function() {
-	return "i:" + this.msgId++;
+    return "i:" + this.msgId++;
 };
 
 ozpIwc.Participant.prototype.heartbeatStatus=function() {
-	return {
-		address: this.address,
-		subjects: this.securitySubject,
-		type: this.participantType || this.constructor.name,
-		name: this.name
-	};
+    return {
+        address: this.address,
+        subjects: this.securitySubject,
+        type: this.participantType || this.constructor.name,
+        name: this.name
+    };
 };
 
 ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
@@ -1852,10 +1850,12 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
 ozpIwc.InternalParticipant.prototype.receiveFromRouter=function(packetContext) { 
 	var packet=packetContext.packet;
 	if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
-		this.replyCallbacks[packet.replyTo](packet);
+		if (!this.replyCallbacks[packet.replyTo](packet)) {
+            this.cancelCallback(msgId);
+        }
 	} else {
 		this.events.trigger("receive",packet);
-	}	
+	}
 };
 
 
@@ -1865,9 +1865,15 @@ ozpIwc.InternalParticipant.prototype.send=function(packet,callback) {
 		this.replyCallbacks[packet.msgId]=callback;
 	}
 	ozpIwc.Participant.prototype.send.apply(this,arguments);
-	
+
 	return packet;
 };
+
+ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
+    if (msgId) {
+        this.replyCallbacks[msgId]=undefined;
+    }
+}
 var ozpIwc=ozpIwc || {};
 
 /**
@@ -2050,10 +2056,10 @@ ozpIwc.Router=function(config) {
  */
 ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
 	packet = packet || {};
-	var participant_id;
+	var address;
 	do {
-			participant_id=ozpIwc.util.generateId() + "." + this.self_id;
-	} while(this.participants.hasOwnProperty(participant_id));
+			address=ozpIwc.util.generateId() + "." + this.self_id;
+	} while(this.participants.hasOwnProperty(address));
 
 	var registerEvent=new ozpIwc.CancelableEvent({
 		'packet': packet,
@@ -2068,11 +2074,11 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
 						" because " + registerEvent.cancelReason);
 		return null;
 	}
-	this.participants[participant_id]=participant;
-	participant.connectToRouter(this,participant_id);
+	this.participants[address]=participant;
+	participant.connectToRouter(this,address);
 	
 //	ozpIwc.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
-	return participant_id;
+	return address;
 };
 
 /**
@@ -2164,7 +2170,7 @@ ozpIwc.Router.prototype.send=function(packet,sendingParticipant) {
 };
 
 /**
- * Recieve a packet from the peer
+ * Receive a packet from the peer
  * @fires ozpIwc.Router#peerReceive
  * @param packet {ozpIwc.TransportPacket} the packet to receive
  */

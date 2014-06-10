@@ -10,49 +10,49 @@ var ozpIwc=ozpIwc || {};
  * @param {boolean} [config.autoPeer=true] - Whether to automatically find and connect to a peer
  */
 ozpIwc.Client=function(config) {
-    config=config || {};
-    this.participantId="$nobody";
-    this.peerUrl=config.peerUrl;
-    var a=document.createElement("a");
-    a.href = this.peerUrl;
-    this.replyCallbacks={};
-    this.peerOrigin=a.protocol + "//" + a.hostname;
-    if(a.port)
-        this.peerOrigin+= ":" + a.port;
+	config=config || {};
+	this.address="$nobody";
+	this.replyCallbacks={};
+	this.peerUrl=config.peerUrl;
+	var a=document.createElement("a");
+	a.href = this.peerUrl;
+	this.peerOrigin=a.protocol + "//" + a.hostname;
+	if(a.port)
+		this.peerOrigin+= ":" + a.port;
+	
+	
+	this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
+	this.msgIdSequence=0;
+	this.events=new ozpIwc.Event();
+	this.events.mixinOnOff(this);
+	this.receivedPackets=0;
+	this.receivedBytes=0;
+	this.sentPackets=0;
+	this.sentBytes=0;
+	this.startTime=ozpIwc.util.now();
+	var self=this;
 
-
-    this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
-    this.msgIdSequence=0;
-    this.events=new ozpIwc.Event();
-    this.events.mixinOnOff(this);
-    this.receivedPackets=0;
-    this.receivedBytes=0;
-    this.sentPackets=0;
-    this.sentBytes=0;
-    this.startTime=ozpIwc.util.now();
-    var self=this;
-
-    if(this.autoPeer) {
-        this.findPeer();
-    }
-
-    // receive postmessage events
-    this.messageEventListener=window.addEventListener("message", function(event) {
-        if(event.origin !== self.peerOrigin){
-            return;
-        }
-        try {
-            var message=event.data;
+	if(this.autoPeer) {
+		this.findPeer();
+	}
+	
+	// receive postmessage events
+	this.messageEventListener=window.addEventListener("message", function(event) {
+		if(event.origin !== self.peerOrigin){
+			return;
+		}
+		try {
+		    var message=event.data;
             if (typeof(message) === 'string') {
                 message=JSON.parse(event.data);
             }
-            self.receive(message);
-            self.receivedBytes+=(event.data.length * 2);
-            self.receivedPackets++;
-        } catch(e) {
-            // ignore!
-        }
-    }, false);
+			self.receive(message);
+			self.receivedBytes+=(event.data.length * 2);
+			self.receivedPackets++;		
+		} catch(e) {
+			// ignore!
+		}
+	}, false);
 };
 
 /**
@@ -81,32 +81,31 @@ ozpIwc.Client.prototype.receive=function(packet) {
  * false-like value.
  */
 ozpIwc.Client.prototype.send=function(fields,callback) {
-    var now=new Date().getTime();
-    var id="p:"+this.msgIdSequence++; // makes the code below read better
+	var now=new Date().getTime();
+	var id="p:"+this.msgIdSequence++; // makes the code below read better
 
-    var packet={
-        ver: 1,
-        src: this.participantId,
-        msgId: id,
-        time: now
-    };
+	var packet={
+		ver: 1,
+		src: this.address,
+		msgId: id,
+		time: now
+	};
 
-    for(var k in fields) {
-        packet[k]=fields[k];
-    }
+	for(var k in fields) {
+		packet[k]=fields[k];
+	}
 
-    if (callback) {
-        this.replyCallbacks[id]=callback;
-    }
-    var data=packet;
+	if(callback) {
+		this.replyCallbacks[id]=callback;
+	}
+	var data=packet;
     if (!ozpIwc.util.structuredCloneSupport()) {
         data=JSON.stringify(packet);
     }
-
-    this.peer.postMessage(data,'*');
-    this.sentBytes+=data.length;
-    this.sentPackets++;
-    return packet;
+	this.peer.postMessage(data,'*');
+	this.sentBytes+=data.length;
+	this.sentPackets++;
+	return packet;
 };
 
 /**
@@ -124,11 +123,11 @@ ozpIwc.Client.prototype.cancelCallback=function(msgId) {
 
 
 ozpIwc.Client.prototype.on=function(event,callback) {
-    if(event==="connected" && this.participantId !=="$nobody") {
-        callback(this);
-        return;
-    }
-    return this.events.on.apply(this.events,arguments);
+	if(event==="connected" && this.address !=="$nobody") {
+		callback(this);
+		return;
+	}
+	return this.events.on.apply(this.events,arguments);
 };
 
 ozpIwc.Client.prototype.off=function(event,callback) {
@@ -174,11 +173,11 @@ ozpIwc.Client.prototype.findPeer=function() {
 };
 
 ozpIwc.Client.prototype.requestAddress=function(){
-    // send connect to get our address
-    var self=this;
-    this.send({dst:"$transport"},function(reply) {
-        self.participantId=reply.dst;
-        self.events.trigger("connected",self);
+	// send connect to get our address
+	var self=this;
+	this.send({dst:"$transport"},function(message) {
+		self.address=message.dst;
+		self.events.trigger("connected",self);
         return null;//de-register callback
-    });
+	});
 };
