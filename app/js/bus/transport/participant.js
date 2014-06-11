@@ -47,8 +47,7 @@ ozpIwc.Participant.prototype.fixPacket=function(packet) {
     packet.msgId = packet.msgId || this.generateMsgId();
 
     // might as well be helpful and set the time, too
-    var now=ozpIwc.util.now();
-    packet.time = packet.time || now;
+    packet.time = packet.time || ozpIwc.util.now();
     return packet;
 };
 

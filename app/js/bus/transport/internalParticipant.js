@@ -36,6 +36,6 @@ ozpIwc.InternalParticipant.prototype.send=function(packet,callback) {
 
 ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
     if (msgId) {
-        this.replyCallbacks[msgId]=undefined;
+        delete this.replyCallbacks[msgId];
     }
 }
