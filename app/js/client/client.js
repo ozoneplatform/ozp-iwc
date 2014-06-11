@@ -106,9 +106,12 @@ ozpIwc.Client.prototype.send=function(fields,callback) {
  * @param (string} msgId - The packet replyTo ID for which the callback was registered
  */
 ozpIwc.Client.prototype.cancelCallback=function(msgId) {
+    var success=false;
     if (msgId) {
-        this.replyCallbacks[msgId]=undefined;
+        delete this.replyCallbacks[msgId];
+        success=true;
     }
+    return success;
 };
 
 
