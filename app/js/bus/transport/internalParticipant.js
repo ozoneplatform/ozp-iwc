@@ -35,7 +35,10 @@ ozpIwc.InternalParticipant.prototype.send=function(packet,callback) {
 };
 
 ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
+    var success=false;
     if (msgId) {
         delete this.replyCallbacks[msgId];
+        success=true;
     }
+    return success;
 }
