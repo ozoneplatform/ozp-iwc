@@ -215,10 +215,16 @@ describe("data.api integration", function () {
 		});
 
 
-		it('Client pops values', function () {
+		it('Client pops values', function (done) {
 			var called = false;
-			var sentPopPacket;
+			var sentPopPacket, sentPushPacket;
 
+			var pushPacket = {
+				dst: "keyValue.api",
+				action: "push",
+				resource: "/test",
+				entity: 'testData'
+			};
 			var popPacket = {
 				dst: "keyValue.api",
 				action: "pop",
@@ -231,14 +237,16 @@ describe("data.api integration", function () {
 
 					expect(reply.replyTo).toEqual(sentPopPacket.msgId);
 					expect(reply.action).toEqual('success');
+					expect(reply.entity).toEqual(sentPushPacket.entity);
 
 					done();
 				}
 			};
 
 			var pushCallback = function(reply) {
+				console.log(reply);
 				sentPopPacket = client.send(popPacket, popCallback);
-			}
+			};
 
 			sentPushPacket = client.send(pushPacket, pushCallback);
 
