@@ -2,90 +2,318 @@
  * Network Integration
  */
 
-/** Issue #31 [1]
- * All tests exercise at least two origins-- test and IWC bus. A mock or stub origin
- * may be necessary in some situations for coordination between participants.
- *
- * Does this mean a peer window? or operating on logic using the client class && IWC bus?
-  *
- */
-var peerWin = window.open("additionalOrigin.html", "widget", "height=5,width=5");
 
-/** Issue #31 [3]
- * Allow for testing of the LeadershipParticipant where widgets are being opened and closed.
- *
- * Try adding spies to the window and check the status of LeadershipParticipant.
- *
- */
-window.addEventListener("beforeunload", function () {
-    peerWin.close();
-});
+describe("data.api integration", function () {
+	var client;
 
-/** Issue #31 [2]
- * Allow for testing of all APIs in a multi-application environment.
- *
- * Test using client && peer window all api functionality?
- * Figure out if there is a way to test the peer window widget with minimal intrusion
- *
- */
-describe("API Integration", function () {
-    var client;
-    beforeEach(function (done) {
-        // current version of jasmine breaks if done() is called multiple times
-        // use the called flag to prevent this
-        var called = false;
+	beforeEach(function (done) {
+		// current version of jasmine breaks if done() is called multiple times
+		// use the called flag to prevent this
+		var called = false;
 
-        client = new ozpIwc.Client({peerUrl: "http://localhost:13000"});
-        client.on("connected", function () {
-            if (!called) {
-                done();
-                called = true;
-            }
-        });
-    });
+		client = new ozpIwc.Client({peerUrl: "http://localhost:13000"});
+		client.on("connected", function () {
+			if (!called) {
+				done();
+				called = true;
+			}
+		});
+	});
 
-    afterEach(function () {
-        if (client) {
-            client.disconnect();
-            client = null;
-        }
-    });
+	afterEach(function () {
+		if (client) {
+			client.disconnect();
+			client = null;
+		}
+	});
 
-    describe('data.api', function () {
 
-        it('watches resources published by the client.', function (done) {
-            var called = false;
+	describe('Common Actions', function () {
 
-            var watchPacket = {
-                dst: "keyValue.api",
-                action: "watch",
-                resource: "/test"
-            };
+		var deletePacket = {
+			dst: "keyValue.api",
+			action: "delete",
+			resource: "/test"
+		};
+		var setPacket = {
+			dst: "keyValue.api",
+			action: "set",
+			resource: "/test",
+			entity: "testData"
+		};
+		var getPacket = {
+			dst: "keyValue.api",
+			action: "get",
+			resource: "/test"
+		};
 
-            var watchCallback = function (reply) {
-                if (!called) {
-                    console.log(reply);
-                    done();
-                    expect(reply.entity).toEqual("testData");
-                    called = true;
+		beforeEach(function () {
 
-                    client.send({
-                        dst: "keyValue.api",
-                        action: "unwatch",
-                        resource: "/test"
-                    });
-                }
-            };
-            client.send(watchPacket, watchCallback);
+		});
 
-            client.send({
-                dst: "keyValue.api",
-                action: "set",
-                resource: "/test",
-                entity: "testData"
-            });
-        });
+		afterEach(function (done) {
+			var called = false;
+			client.send(deletePacket, function (reply) {
+				if (!called) {
+					console.log(reply);
+					called = true;
+					done();
+				}
+			});
+		});
 
-        it('watches resources published by other origins', function(){});
-    });
+
+		it('Client sets values', function () {
+			var called = false;
+			var sentPacket;
+
+			var setCallback = function (reply) {
+				if (!called) {
+					called = true;
+
+					expect(reply.replyTo).toEqual(sentPacket.msgId);
+					expect(reply.action).toEqual('success');
+
+					done();
+				}
+			};
+
+			sentPacket = client.send(setPacket, setCallback);
+		});
+
+
+		it('Client gets values', function (done) {
+			var called = false;
+			var sentSetPacket, sentGetPacket;
+			var getCallback = function (reply) {
+				if (!called) {
+					called = true;
+
+					expect(reply.replyTo).toEqual(sentGetPacket.msgId);
+					expect(reply.entity).toEqual(sentSetPacket.entity);
+
+					done();
+				}
+			};
+
+			sentSetPacket = client.send(setPacket, function (reply) {
+				sentGetPacket = client.send(getPacket, getCallback);
+			});
+		});
+
+		it('Client deletes values', function (done) {
+			var called = false;
+			var sentDeletePacket;
+			var deleteCallback = function (reply) {
+				if (!called) {
+					called = true;
+
+					expect(reply.replyTo).toEqual(sentDeletePacket.msgId);
+					expect(reply.action).toEqual('success');
+
+					done();
+				}
+			};
+
+			sentDeletePacket = client.send(deletePacket, deleteCallback);
+		});
+
+
+		it('Client watches & un-watches keys', function (done) {
+			var called = false;
+			var sentWatchPacket, sentUnwatchPacket, sentSetPacket;
+
+			var watchPacket = {
+				dst: "keyValue.api",
+				action: "watch",
+				resource: "/test"
+			};
+
+			var unwatchPacket = {
+				dst: "keyValue.api",
+				action: "unwatch",
+				resource: "/test"
+			};
+
+			var unwatchCallback = function (reply) {
+				if (!called) {
+					called = true;
+
+					expect(reply.replyTo).toEqual(sentUnwatchPacket.msgId);
+					expect(reply.action).toEqual('success');
+
+					done();
+				}
+			};
+
+			var watchCallback = function (reply) {
+				if (reply.action === "changed") {
+
+					expect(reply.replyTo).toEqual(sentWatchPacket.msgId);
+					expect(reply.entity.newValue).toEqual(sentSetPacket.entity);
+
+					sentUnwatchPacket = client.send(unwatchPacket, unwatchCallback);
+				}
+			};
+
+			sentWatchPacket = client.send(watchPacket, watchCallback);
+			sentSetPacket = client.send(setPacket);
+		});
+	});
+
+	describe('Collection-like Actions', function () {
+
+		var deletePacket = {
+			dst: "keyValue.api",
+			action: "delete",
+			resource: "/test"
+		};
+		var listPacket = {
+			dst: "keyValue.api",
+			action: "list",
+			resource: "/test"
+		};
+
+		var pushPacket = {
+			dst: "keyValue.api",
+			action: "push",
+			resource: "/test",
+			entity: 'testData'
+		};
+
+		beforeEach(function () {
+
+		});
+
+		afterEach(function (done) {
+			var called = false;
+			client.send(deletePacket, function (reply) {
+				if (!called) {
+					called = true;
+					done();
+				}
+			});
+		});
+
+
+		it('Client pushes values', function (done) {
+			var called = false;
+			var sentPushPacket;
+
+			var pushCallback = function (reply) {
+				if (!called) {
+					called = true;
+
+					expect(reply.replyTo).toEqual(sentPushPacket.msgId);
+					expect(reply.action).toEqual('success');
+
+					done();
+				}
+			};
+
+			sentPushPacket = client.send(pushPacket, pushCallback);
+		});
+
+
+		it('Client pops values', function () {
+			var called = false;
+			var sentPopPacket;
+
+			var popPacket = {
+				dst: "keyValue.api",
+				action: "pop",
+				resource: "/test"
+			};
+
+			var popCallback = function (reply) {
+				if (!called) {
+					called = true;
+
+					expect(reply.replyTo).toEqual(sentPopPacket.msgId);
+					expect(reply.action).toEqual('success');
+
+					done();
+				}
+			};
+
+			var pushCallback = function(reply) {
+				sentPopPacket = client.send(popPacket, popCallback);
+			}
+
+			sentPushPacket = client.send(pushPacket, pushCallback);
+
+		});
+
+
+		it('Client lists values', function (done) {
+			var called = false;
+			var sentListPacket;
+
+			var listCallback = function (reply) {
+				if (!called) {
+					called = true;
+
+					expect(reply.replyTo).toEqual(sentListPacket.msgId);
+					expect(reply.action).toEqual('success');
+
+					done();
+				}
+			};
+
+			sentListPacket = client.send(listPacket, listCallback);
+		});
+
+
+		it('Client unshifts values', function () {
+			var called = false;
+			var sentUnshiftPacket;
+
+			var unshiftPacket = {
+				dst: "keyValue.api",
+				action: "unshift",
+				resource: "/test"
+			};
+
+			var unshiftCallback = function (reply) {
+				if (!called) {
+					called = true;
+
+					expect(reply.replyTo).toEqual(sentUnshiftPacket.msgId);
+					expect(reply.action).toEqual('success');
+
+					done();
+				}
+			};
+
+			sentUnshiftPacket = client.send(unshiftPacket, unshiftCallback);
+		});
+
+
+		it('shifts values', function () {
+			var called = false;
+			var sentShiftPacket;
+
+			var shiftPacket = {
+				dst: "keyValue.api",
+				action: "shift",
+				resource: "/test"
+
+			};
+
+			var shiftCallback = function (reply) {
+				if (!called) {
+					called = true;
+
+					expect(reply.replyTo).toEqual(sentShiftPacket.msgId);
+					expect(reply.action).toEqual('success');
+					expect(reply.entity).toEqual('Need to write push first to compare');
+
+					done();
+				}
+			};
+
+			sentShiftPacket = client.send(shiftPacket, shiftCallback);
+		});
+
+	});
 });
