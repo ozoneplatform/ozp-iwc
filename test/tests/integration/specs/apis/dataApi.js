@@ -11,13 +11,18 @@ describe("data.api integration", function () {
 		// use the called flag to prevent this
 		var called = false;
 
-		client = new ozpIwc.Client({peerUrl: "http://localhost:13000"});
-		client.on("connected", function () {
-			if (!called) {
-				done();
-				called = true;
-			}
-		});
+        var clientGen = {
+            clientCount: 1,
+            clientUrl: "http://localhost:14000/integration/additionalOrigin.html"
+        };
+
+        generateClients(clientGen, function (clientRefs) {
+            if (!called) {
+                called = true;
+                client = clientRefs[0];
+                done();
+            }
+        });
 	});
 
 	afterEach(function () {

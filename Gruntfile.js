@@ -124,9 +124,12 @@ module.exports = function(grunt) {
 			app: {        
 				options:{ port: 13000,base: "app", debug: true}
 			},
-			tests: {        
-				options:{ port: 14000, base: ["app","test/tests"]	}
-			},
+            tests: {
+                options:{ port: 14000, base: ["app","test/tests"]	}
+            },
+            testBus: {
+                options:{ port: 14002, base: ["test/tests/integration/bus","app"] }
+            },
 			pingers: {        
 				options:{	port: 14001, base: ["app","test/pingers"]	}
 			},

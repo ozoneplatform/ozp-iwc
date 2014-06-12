@@ -101,12 +101,14 @@ ozpIwc.PostMessageParticipantListener=function(config) {
 	config = config || {};
 	this.participants=[];
 	this.router=config.router || ozpIwc.defaultRouter;
-	
-	var self=this;
-	
-	window.addEventListener("message", function(event) {
-		self.receiveFromPostMessage(event);
-	}, false);	
+
+    var self=this;
+
+	this.postMessageHandler = function(event) {
+        self.receiveFromPostMessage(event);
+    };
+
+	window.addEventListener("message", this.postMessageHandler, false);
 };
 
 /**
@@ -148,7 +150,6 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 		this.router.registerParticipant(participant,packet);
 		this.participants.push(participant);
 	}
-	
 	participant.forwardFromPostMessage(packet,event);
 };
 
