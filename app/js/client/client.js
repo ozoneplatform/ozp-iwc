@@ -30,29 +30,31 @@ ozpIwc.Client=function(config) {
 	this.sentPackets=0;
 	this.sentBytes=0;
 	this.startTime=ozpIwc.util.now();
+    this.window = window;
 	var self=this;
 
 	if(this.autoPeer) {
 		this.findPeer();
 	}
-	
-	// receive postmessage events
-	this.messageEventListener=window.addEventListener("message", function(event) {
-		if(event.origin !== self.peerOrigin){
-			return;
-		}
-		try {
-		    var message=event.data;
+
+    this.postMessageHandler = function(event) {
+        if(event.origin !== self.peerOrigin){
+            return;
+        }
+        try {
+            var message=event.data;
             if (typeof(message) === 'string') {
                 message=JSON.parse(event.data);
             }
-			self.receive(message);
-			self.receivedBytes+=(event.data.length * 2);
-			self.receivedPackets++;		
-		} catch(e) {
-			// ignore!
-		}
-	}, false);
+            self.receive(message);
+            self.receivedBytes+=(event.data.length * 2);
+            self.receivedPackets++;
+        } catch(e) {
+            // ignore!
+        }
+    };
+	// receive postmessage events
+	this.messageEventListener=window.addEventListener("message", this.postMessageHandler, false);
 };
 
 /**

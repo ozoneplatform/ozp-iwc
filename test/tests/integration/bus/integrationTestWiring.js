@@ -14,9 +14,6 @@ if(ozpIwc.LocalStorageLink) {
 	ozpIwc.defaultLocalStorageLink=new ozpIwc.KeyBroadcastLocalStorageLink({
 		peer: ozpIwc.defaultPeer
 	});
-//	ozpIwc.defaultLocalStorageLink=new ozpIwc.LocalStorageLink({
-//		peer: ozpIwc.defaultPeer
-//	});	
 }
 
 if(ozpIwc.PostMessageParticipantListener) {
@@ -27,12 +24,21 @@ if(ozpIwc.PostMessageParticipantListener) {
         if (event.data.type !== "client.test.request") {
            ozpIwc.defaultPostMessageParticipantListener.postMessageHandler(event);
         } else {
-            console.log('this is a debug injection.');
+            // Craft our object that holds values we will want to check in our test
+            var testValues = {
+                maxSeqIdPerSource: ozpIwc.Peer.maxSeqIdPerSource,
+                peer: ozpIwc.defaultPeer
+            };
+            parent.postMessage({
+                type:"client.test.response",
+                msg: JSON.stringify(testValues)
+                },"http://localhost:14000");
         }
-    }
+    };
+
     // Swap out the usual postMessage handler for one that will allow us to get values for integration testing.
-    window.removeEventListener("message",ozpIwc.defaultPostMessageParticipantListener.postMessageHandler,false);
     window.addEventListener("message",postMessageHandler,false);
+    window.removeEventListener("message",ozpIwc.defaultPostMessageParticipantListener.postMessageHandler,false);
 
 }
 
@@ -48,19 +54,3 @@ if(ozpIwc.KeyValueApi) {
 
 	ozpIwc.defaultRouter.registerParticipant(ozpIwc.keyValueApi);
 }
-//
-//if(ozpIwc.NamesApi) {
-//	ozpIwc.namesApi=new ozpIwc.LeaderGroupParticipant({
-//		name: "names.api",
-//		target: new ozpIwc.NamesApi()
-//	});
-//	ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi);
-//}
-//
-//if(ozpIwc.IntentsApi) {
-//	ozpIwc.intentsApi=new ozpIwc.LeaderGroupParticipant({
-//		name: "intents.api",
-//		target: new ozpIwc.IntentsApi()
-//	});
-//	ozpIwc.defaultRouter.registerParticipant(ozpIwc.intentsApi);
-//}

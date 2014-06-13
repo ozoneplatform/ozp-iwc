@@ -7,7 +7,7 @@ describe("data.api integration", function () {
 	var client;
 
 	beforeEach(function (done) {
-		// current version of jasmine breaks if done() is called multiple times
+ // current version of jasmine breaks if done() is called multiple times
 		// use the called flag to prevent this
 		var called = false;
 
@@ -60,7 +60,6 @@ describe("data.api integration", function () {
 			var called = false;
 			client.send(deletePacket, function (reply) {
 				if (!called) {
-					console.log(reply);
 					called = true;
 					done();
 				}
@@ -158,7 +157,9 @@ describe("data.api integration", function () {
 					expect(reply.entity.newValue).toEqual(sentSetPacket.entity);
 
 					sentUnwatchPacket = client.send(unwatchPacket, unwatchCallback);
+                    return null;
 				}
+                return true;
 			};
 
 			sentWatchPacket = client.send(watchPacket, watchCallback);
@@ -249,7 +250,6 @@ describe("data.api integration", function () {
 			};
 
 			var pushCallback = function(reply) {
-				console.log(reply);
 				sentPopPacket = client.send(popPacket, popCallback);
 			};
 

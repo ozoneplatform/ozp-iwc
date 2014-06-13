@@ -14,6 +14,11 @@ var clientIframeShim = function (clientUrl, cb) {
 		document.body.appendChild(self.iframe);
 		self.peer = self.iframe.contentWindow;
 		self.onReady = function (client) {
+            client.testCallbacks = [];
+            client.getPeer = function(callback){
+                client.testCallbacks.push(callback);
+                client.peer.postMessage({type:"client.test.request"}, "http://localhost:14002");
+            };
 			cb(client);
 		};
 
@@ -38,6 +43,24 @@ var generateClients = function (clientObj, callback) {
 	var clients = [];
 	for (var i = 0; i < clientCount; i++) {
 		clientIframeShim(clientUrl, function (clientRef) {
+            clientRef.window.addEventListener("message",function(event){
+                if(event.data.type === "client.test.response"){
+                    if(clientRef.testCallbacks.length > 0) {
+                        for (var i = 0; i < clientRef.testCallbacks.length; i++) {
+                            if(clientRef.testCallbacks[i]) {
+                                var persist = clientRef.testCallbacks[i](event);
+                                if (!persist) {
+                                    delete clientRef.testCallbacks[i];
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    clientRef.postMessageHandler(event);
+                }
+            },false);
+            clientRef.window.removeEventListener("message",clientRef.postMessageHandler,false);
+
 			clients.push(clientRef);
 			count++;
 			if (count === clientCount) {
