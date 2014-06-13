@@ -205,7 +205,7 @@ gadgets.rpc = function() {
     if (relayChannel === 'dpm' || relayChannel === 'wpm') {
       var onmessage = function (packet) {
         // TODO validate packet.domain for security reasons
-        process(gadgets.json.parse(packet.data));
+        process(packet.data);
       }
 
       if (typeof window.addEventListener != 'undefined') {
