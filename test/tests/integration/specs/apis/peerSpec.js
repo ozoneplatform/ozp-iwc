@@ -40,53 +40,55 @@ describe('Participant Integration', function () {
     });
 
 
-    /**
-     * @TODO Need to wait for peers to connect before watching can trigger (else test pass rate is sporadic)
-     */
     it('can watch resources set by peers.', function (done) {
         var called = false;
 
         var watchCallback = function (reply) {
             if (!called && reply.action === 'changed') {
                 called = true;
+
                 expect(reply.action).toEqual('changed');
                 expect(reply.entity.newValue).toEqual(setPacket.entity);
+
                 done();
                 // returning falsy will cause callback to not persist.
                 return null;
+
+            } else if (reply.action === 'success'){
+                clients[1].send(setPacket);
             }
+
             // returning truthy will cause callback to persist.
             return true;
         };
 
         clients[0].send(watchPacket, watchCallback);
-        clients[0].send(setPacket);
     });
 
 
     it('limits packet History to ozpIwc.Peer.maxSeqIdPerSource', function(done) {
         var called = false;
 
-        var peerCallback = function(event){
+        var testBusCallback = function(event){
             if (!called) {
                 called = true;
-                var testValues = JSON.parse(event.data);
-                var maxSeqIdPerSource = ozpIwc.Peer.maxSeqIdPerSource;
-                var peer = ozpIwc.defaultPeer;
-                expect(maxSeqIdPerSource).not.toBeLessThan(peer.packetsSeen.length);
+
+                var testValues = JSON.parse(event.data.msg);
+                expect(testValues.maxSeqIdPerSource).not.toBeLessThan(testValues.peer.packetsSeen.length);
+
                 done();
+                //testBus callbacks can also be persistent if returned truthy. Return falsy for non-persistent.
+                return null;
             }
-            return null;
         };
 
         var setCallback =  function(callback){
-            clients[0].getPeer(peerCallback);
+            clients[0].getTestBus(testBusCallback);
             return null;
         };
+
         for(var i = 0; i < 1010; i++){
             clients[0].send(setPacket, setCallback);
         }
-
     });
-
 });

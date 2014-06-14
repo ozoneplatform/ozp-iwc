@@ -102,13 +102,7 @@ ozpIwc.PostMessageParticipantListener=function(config) {
 	this.participants=[];
 	this.router=config.router || ozpIwc.defaultRouter;
 
-    var self=this;
-
-	this.postMessageHandler = function(event) {
-        self.receiveFromPostMessage(event);
-    };
-
-	window.addEventListener("message", this.postMessageHandler, false);
+	window.addEventListener("message", this.receiveFromPostMessage, false);
 };
 
 /**

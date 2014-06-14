@@ -1,10 +1,11 @@
 /** Creates clients in an iframe so that we can create multiple connections.
  *
  * @param clientUrl - {String} URL path to client.
- * @param cb - {Function(Client)} Passes reference of created client back to caller
+ * @param callback - {Function(Client)} Passes reference of created client back to caller
  */
-var clientIframeShim = function (clientUrl, cb) {
+var clientIframeShim = function (clientUrl, callback) {
 	var self = this;
+
 	var createIframeShim = function () {
 		self.iframe = document.createElement("iframe");
 		self.iframe.src = clientUrl;
@@ -13,16 +14,21 @@ var clientIframeShim = function (clientUrl, cb) {
 		self.iframe.style = "display:none !important;";
 		document.body.appendChild(self.iframe);
 		self.peer = self.iframe.contentWindow;
+
 		self.onReady = function (client) {
             client.testCallbacks = [];
-            client.getPeer = function(callback){
-                client.testCallbacks.push(callback);
-                client.peer.postMessage({type:"client.test.request"}, "http://localhost:14002");
-            };
-			cb(client);
-		};
 
+            client.getTestBus = function(callback){
+                client.testCallbacks.push(callback);
+                client.peer.postMessage({
+                    type:"client.test.request"
+                }, "http://localhost:14002");
+            };
+
+            callback(client);
+		};
 	};
+
 	// need at least the body tag to be loaded, so wait until it's loaded
 	if (document.readyState === 'complete') {
 		createIframeShim();
@@ -31,7 +37,8 @@ var clientIframeShim = function (clientUrl, cb) {
 	}
 };
 
-/**
+/** Factory function for creating clients for tests. Clients have injected test capabilities as do their peer
+ *  counterparts.
  *
  * @param {Object}clientObj - Specifies the number of clients to generate (clientCount) & the hosting URL (clientUrl)
  * @param {Function({Array})} callback - returns the array of generated clients when all asynchronous work is done.
@@ -41,25 +48,24 @@ var generateClients = function (clientObj, callback) {
 	var clientUrl = clientObj.clientUrl || "http://localhost:14000/integration/additionalOrigin.html";
 	var count = 0;
 	var clients = [];
+
 	for (var i = 0; i < clientCount; i++) {
+
 		clientIframeShim(clientUrl, function (clientRef) {
-            clientRef.window.addEventListener("message",function(event){
+            clientRef.window.addEventListener("message", function(event){
                 if(event.data.type === "client.test.response"){
-                    if(clientRef.testCallbacks.length > 0) {
-                        for (var i = 0; i < clientRef.testCallbacks.length; i++) {
-                            if(clientRef.testCallbacks[i]) {
-                                var persist = clientRef.testCallbacks[i](event);
-                                if (!persist) {
-                                    delete clientRef.testCallbacks[i];
-                                }
-                            }
+                    for (var i = clientRef.testCallbacks.length - 1; i >=0 ; i--) {
+                        var persist = clientRef.testCallbacks[i](event);
+                        if (!persist) {
+                            clientRef.testCallbacks.splice(i,1);
                         }
                     }
                 } else {
                     clientRef.postMessageHandler(event);
                 }
             },false);
-            clientRef.window.removeEventListener("message",clientRef.postMessageHandler,false);
+
+            clientRef.window.removeEventListener("message",clientRef.postMessageHandler, false);
 
 			clients.push(clientRef);
 			count++;

@@ -22,13 +22,15 @@ if(ozpIwc.PostMessageParticipantListener) {
 	});
     var postMessageHandler = function(event) {
         if (event.data.type !== "client.test.request") {
-           ozpIwc.defaultPostMessageParticipantListener.postMessageHandler(event);
+           ozpIwc.defaultPostMessageParticipantListener.receiveFromPostMessage(event);
         } else {
             // Craft our object that holds values we will want to check in our test
+            // @TODO pass the leaderGroupParticipant for testing use. Circular dependency in object.
             var testValues = {
                 maxSeqIdPerSource: ozpIwc.Peer.maxSeqIdPerSource,
                 peer: ozpIwc.defaultPeer
             };
+
             parent.postMessage({
                 type:"client.test.response",
                 msg: JSON.stringify(testValues)
@@ -38,7 +40,7 @@ if(ozpIwc.PostMessageParticipantListener) {
 
     // Swap out the usual postMessage handler for one that will allow us to get values for integration testing.
     window.addEventListener("message",postMessageHandler,false);
-    window.removeEventListener("message",ozpIwc.defaultPostMessageParticipantListener.postMessageHandler,false);
+    window.removeEventListener("message",ozpIwc.defaultPostMessageParticipantListener.receiveFromPostMessage,false);
 
 }
 

@@ -61,7 +61,10 @@ describe("data.api integration", function () {
 			client.send(deletePacket, function (reply) {
 				if (!called) {
 					called = true;
+
 					done();
+                    // return falsy to stop callback persistance.
+                    return null;
 				}
 			});
 		});
@@ -79,6 +82,7 @@ describe("data.api integration", function () {
 					expect(reply.action).toEqual('success');
 
 					done();
+                    return null;
 				}
 			};
 
@@ -89,6 +93,7 @@ describe("data.api integration", function () {
 		it('Client gets values', function (done) {
 			var called = false;
 			var sentSetPacket, sentGetPacket;
+
 			var getCallback = function (reply) {
 				if (!called) {
 					called = true;
@@ -97,17 +102,19 @@ describe("data.api integration", function () {
 					expect(reply.entity).toEqual(sentSetPacket.entity);
 
 					done();
+                    return null;
 				}
 			};
 
 			sentSetPacket = client.send(setPacket, function (reply) {
-				sentGetPacket = client.send(getPacket, getCallback);
+            sentGetPacket = client.send(getPacket, getCallback);
 			});
 		});
 
 		it('Client deletes values', function (done) {
 			var called = false;
 			var sentDeletePacket;
+
 			var deleteCallback = function (reply) {
 				if (!called) {
 					called = true;
@@ -116,6 +123,7 @@ describe("data.api integration", function () {
 					expect(reply.action).toEqual('success');
 
 					done();
+                    return null;
 				}
 			};
 
@@ -147,6 +155,7 @@ describe("data.api integration", function () {
 					expect(reply.action).toEqual('success');
 
 					done();
+                    return null;
 				}
 			};
 
@@ -159,6 +168,7 @@ describe("data.api integration", function () {
 					sentUnwatchPacket = client.send(unwatchPacket, unwatchCallback);
                     return null;
 				}
+                // return truthy to persist callback
                 return true;
 			};
 
@@ -196,7 +206,9 @@ describe("data.api integration", function () {
 			client.send(deletePacket, function (reply) {
 				if (!called) {
 					called = true;
+
 					done();
+                    return null;
 				}
 			});
 		});
@@ -214,6 +226,7 @@ describe("data.api integration", function () {
 					expect(reply.action).toEqual('success');
 
 					done();
+                    return null;
 				}
 			};
 
@@ -246,6 +259,7 @@ describe("data.api integration", function () {
 					expect(reply.entity).toEqual(sentPushPacket.entity);
 
 					done();
+                    return null;
 				}
 			};
 
@@ -270,6 +284,7 @@ describe("data.api integration", function () {
 					expect(reply.action).toEqual('success');
 
 					done();
+                    return null;
 				}
 			};
 
@@ -295,6 +310,7 @@ describe("data.api integration", function () {
 					expect(reply.action).toEqual('success');
 
 					done();
+                    return null;
 				}
 			};
 
@@ -322,6 +338,7 @@ describe("data.api integration", function () {
 					expect(reply.entity).toEqual('Need to write push first to compare');
 
 					done();
+                    return null;
 				}
 			};
 
