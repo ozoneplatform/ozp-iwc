@@ -58,6 +58,21 @@ ozpIwc.util.structuredCloneSupport=function() {
     }
     ozpIwc.util.structuredCloneSupport.cache=!onlyStrings;
     return ozpIwc.util.structuredCloneSupport.cache;
-}
+};
 
 ozpIwc.util.structuredCloneSupport.cache=undefined;
+
+/**
+ * Does a deep clone of a serializable object.  Note that this will not
+ * clone unserializable objects like DOM elements, Date, RegExp, etc.
+ * @param {type} value - value to be cloned.
+ * @returns {object} - a deep copy of the object
+ */
+ozpIwc.util.clone=function(value) { 
+	if(typeof(value) === 'array' || typeof(value) === 'object') {
+		return JSON.parse(JSON.stringify(value));
+	} else {
+		return value;
+	}
+};
+

@@ -1,11 +1,11 @@
 var ozpIwc=ozpIwc || {};
 ozpIwc.owf7Backend=ozpIwc.owf7Backend || {};
 
-ozpIwc.owf7Backend.keyValueApiOwf7Storage = function() {
+ozpIwc.owf7Backend.DataApiOwf7Storage = function() {
 	this.prefsUrl="/owf/prefs/preference/ozp/kvStoreApi";
 };
 
-ozpIwc.owf7Backend.keyValueApiOwf7Storage.prototype.load=function() {
+ozpIwc.owf7Backend.DataApiOwf7Storage.prototype.load=function() {
 	var action=new ozpIwc.AsyncAction();
 	$.ajax({
 	  url: this.prefsUrl,
@@ -20,7 +20,7 @@ ozpIwc.owf7Backend.keyValueApiOwf7Storage.prototype.load=function() {
 	return action;
 };
 
-ozpIwc.owf7Backend.keyValueApiOwf7Storage.prototype.save=function(data) {
+ozpIwc.owf7Backend.DataApiOwf7Storage.prototype.save=function(data) {
 	var action=new ozpIwc.AsyncAction();
 	$.ajax({
 	  url: this.prefsUrl,

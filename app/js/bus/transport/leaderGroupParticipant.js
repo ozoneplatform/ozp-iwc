@@ -6,8 +6,6 @@ var ozpIwc=ozpIwc || {};
  * @param {object} config
  * @param {String} config.name 
  *        The name of this API.
- * @param {Object} config.target
- *				The packet receiver that gets non-election messages.
  * @param {string} [config.electionAddress=config.name+".election"] 
  *        The multicast channel for running elections.  
  *        The leader will register to receive multicast on this channel.
@@ -28,7 +26,6 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	
 	// Networking info
 	this.name=config.name;
-	this.target=config.target || { receive: function() {}};
 	
 	this.electionAddress=config.electionAddress || (this.name + ".election");
 
@@ -42,8 +39,6 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	// tracking the current leader
 	this.leader=null;
 	this.leaderPriority=null;
-	this.events=new ozpIwc.Event();
-	this.events.mixinOnOff(this);
 
 	this.participantType="leaderGroupMember";
 	this.name=config.name;
@@ -67,18 +62,37 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	// handoff when we shut down
 	window.addEventListener("beforeunload",function() {
 		self.leaderPriority=0;
-		self.sendSync();
 		self.startElection();
 		
 	});
 	
 });
 
+/**
+ * Override from the participant in order to register our multicast addresses
+ * and start an election.
+ * @param {type} router
+ * @param {type} address
+ * @returns {undefined}
+ */
 ozpIwc.LeaderGroupParticipant.prototype.connectToRouter=function(router,address) {
 	ozpIwc.Participant.prototype.connectToRouter.apply(this,arguments);
 	this.router.registerMulticast(this,[this.electionAddress,this.name]);
 	this.startElection();
 };
+
+/**
+ * Override fixPacket to default the source address to the name of this
+ * leadership group.
+ * @param {type} packet
+ * @returns {unresolved}
+ */
+ozpIwc.LeaderGroupParticipant.prototype.fixPacket=function(packet) {
+	packet.src = packet.src || this.name;
+	
+	return ozpIwc.Participant.prototype.fixPacket.apply(this,arguments);
+};
+
 
 /**
  * Checks to see if the leadership group is in an election
@@ -103,11 +117,12 @@ ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
  */
 ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type) {
 	this.send({
-			dst: this.electionAddress,
-			action: type,
-			entity: {
-				'priority': this.priority
-			}
+		'src': this.address,
+		'dst': this.electionAddress,
+		'action': type,
+		'entity': {
+			'priority': this.priority
+		}
 	});
 };
 
@@ -173,8 +188,6 @@ ozpIwc.LeaderGroupParticipant.prototype.receiveFromRouter=function(packetContext
 			this.handleElectionMessage(packet);
 		} else if(packet.action === "victory") {
 			this.handleVictoryMessage(packet);
-		} else if(packet.action === "sync") {
-			this.handleSyncMessage(packet);
 		}
 	}
 };
@@ -195,33 +208,8 @@ ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) 
 		this.electionQueue.push(packetContext);
 		return;
 	}
-	var packet=packetContext.packet;
-	var handler="handle";
-	var stateSuffix="As" + this.leaderState.charAt(0).toUpperCase() + this.leaderState.slice(1).toLowerCase();
-	var checkdown=[];
-	
-	if(packet.action) {
-		var handler="handle" + packet.action.charAt(0).toUpperCase() + packet.action.slice(1).toLowerCase();
-		checkdown.push(handler+stateSuffix);
-		checkdown.push(handler);
-	}
-	checkdown.push("defaultHandler" + stateSuffix);
-	checkdown.push("defaultHandler");
-	
-	for(var i=0; i< checkdown.length; ++i) {
-		handler=this.target[checkdown[i]];
-		if(typeof(handler) === 'function') {
-			var replies=handler.call(this.target,packetContext);
-			for(var j=0;j<replies.length;++j) {
-				var reply=this.fixPacket(replies[j]);
-				reply.src = this.name;
-				reply.dst = reply.dst || packet.src;
-				reply.replyTo = reply.replyTo || packet.msgId;
-				reply.resource = reply.resource || packet.resource;
-				this.send(reply);
-			}
-		}
-	}
+	packetContext.leaderState=this.leaderState;
+	this.events.trigger("receive",packetContext);
 };
 	
 	
@@ -238,9 +226,6 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
 		// Quell the rebellion!
 		this.startElection();
 	} else {
-		if(this.isLeader()) {
-			this.sendSync();
-		}
 		// Abandon dreams of leadership
 		this.cancelElection();
 	}
@@ -265,24 +250,6 @@ ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMes
 	}
 };
 
-ozpIwc.LeaderGroupParticipant.prototype.handleSyncMessage=function(packet) {
-	if(typeof(this.target.receiveSync)==="function" && !this.isLeader()) {
-		ozpIwc.log.log("LeaderParticipant["+this.name+"::"+this.address+"] received sync " + JSON.stringify(packet.entity,null,2));
-		this.target.receiveSync(packet.entity);
-	}
-};
-
-ozpIwc.LeaderGroupParticipant.prototype.sendSync=function() {
-	if('generateSync' in this.target) {
-		var syncData=this.target.generateSync();
-		ozpIwc.log.log("LeaderParticipant["+this.name+"::"+this.address+"] generated sync" + JSON.stringify(syncData,null,2));
-		this.send({
-			dst: this.electionAddress,
-			action: 'sync',
-			entity: syncData
-		});
-	}
-};
 
 ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
 	var status= ozpIwc.Participant.prototype.heartbeatStatus.apply(this,arguments);

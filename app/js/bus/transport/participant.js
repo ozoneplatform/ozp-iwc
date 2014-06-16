@@ -7,7 +7,9 @@ var ozpIwc=ozpIwc || {};
  * @property {ozpIwc.security.Subject} securitySubject - The subject for this role.
  */
 ozpIwc.Participant=function() {
-    this.securitySubject=[];
+    this.events=new ozpIwc.Event();
+	this.events.mixinOnOff(this);
+	this.securitySubject=[];
 };
 
 /**

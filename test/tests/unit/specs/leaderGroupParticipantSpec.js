@@ -13,7 +13,7 @@ describe("Leader Group Participant",function() {
 
 		},
 		registerParticipant: function(p) {
-			p.connectToRouter(fakeRouter,leaders.length);
+			p.connectToRouter(fakeRouter,leaders.length+1);
 			leaders.push(p);
 		},
 		pump: function() {
@@ -57,27 +57,27 @@ describe("Leader Group Participant",function() {
 		var l=new ozpIwc.LeaderGroupParticipant({
 			electionAddress:"ea",
 			name: "foo"+leaders.length,
-			'priority': priority,
+			'priority': priority
 		});
 		fakeRouter.registerParticipant(l);
-//		l.on("startElection", function() {
-//			console.log("startElection[" + l.address + "]");
-//		});
-//		l.on("endElection",function() {
-//			console.log("endElection[" + l.address + "]");
-//		});
-//		l.on("newLeader",function() {
-//			console.log("newLeader[" + l.address + "]");
-//		});
-//		l.on("becameLeader",function() {
-//			console.log("becameLeader[" + l.address + "]");
-//		});
+		l.on("startElection", function() {
+			console.log("startElection[" + l.address + "]");
+		});
+		l.on("endElection",function() {
+			console.log("endElection[" + l.address + "]");
+		});
+		l.on("newLeader",function() {
+			console.log("newLeader[" + l.address + "]");
+		});
+		l.on("becameLeader",function() {
+			console.log("becameLeader[" + l.address + "]");
+		});
 		
 		l.TEST_nonElectionPackets=[];
-		l.target={ defaultHandler: function(event) {
-			l.TEST_nonElectionPackets.push(event);
+		l.on("receive",function(packet) {
+			l.TEST_nonElectionPackets.push(packet);
 			return [];
-		}};
+		});
 
 		return l;
 	};
@@ -202,7 +202,6 @@ describe("Leader Group Participant",function() {
 					entity: { foo: "bar" }
 				}});
 				expect(leader.TEST_nonElectionPackets.length).toBe(1);
-
 		});
 	});
 	

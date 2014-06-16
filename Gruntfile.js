@@ -27,7 +27,8 @@ module.exports = function(grunt) {
 				'app/js/bus/transport/router.js',
 				'app/js/bus/transport/**/*.js',
 				'app/js/bus/storage/**/*.js',
-				'app/js/bus/api/keyValueApiBase.js',
+				'app/js/bus/api/*.js',
+				'app/js/bus/api/**/*.js',
 				'app/js/bus/*/**/*.js'
 			],
 			client: [
