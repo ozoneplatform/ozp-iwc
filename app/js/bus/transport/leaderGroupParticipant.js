@@ -39,8 +39,6 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	// tracking the current leader
 	this.leader=null;
 	this.leaderPriority=null;
-	this.events=new ozpIwc.Event();
-	this.events.mixinOnOff(this);
 
 	this.participantType="leaderGroupMember";
 	this.name=config.name;

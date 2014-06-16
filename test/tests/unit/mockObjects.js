@@ -1,13 +1,32 @@
-var FakePeer=function() {
-	this.events=new ozpIwc.Event();
-		
-	this.events.mixinOnOff(this);
-		
-	this.packets=[];
-	this.send=function(packet) {
-		this.packets.push(packet);
-	};
+//================================================
+// Packetbuilders for testing API classes
+//================================================
+var TestPacketContext=ozpIwc.util.extend(ozpIwc.TransportPacketContext, function() {
+    ozpIwc.TransportPacketContext.apply(this,arguments);
+    var self=this;
+    this.responses=[];
+    this.router= {
+        send: function(packet) {
+            self.responses.push(packet);
+        }
+    };
+});
+
+//================================================
+// Packetbuilders for testing API classes
+//================================================
+var watchPacket=function(node,src,msgId) {
+    return new TestPacketContext({
+        'packet': {
+            'src': src,
+            'resource' : node,
+            'msgId' : msgId
+        }
+    });
 };
+//================================================
+// Time-advancement for IWC objects that use time
+//================================================
 
 var clockOffset=0;
 
@@ -24,8 +43,27 @@ var tick=function(t) {
 ozpIwc.util.now=function() {
 	return new Date().getTime() + clockOffset;
 };
-	
+
+
+//========================================================
+// Fake peer that just stores the packets that it receives
+//========================================================
+var FakePeer=function() {
+	this.events=new ozpIwc.Event();
+		
+	this.events.mixinOnOff(this);
+		
+	this.packets=[];
+	this.send=function(packet) {
+		this.packets.push(packet);
+	};
+};
+    
+//========================================================
+// TestParticipant for connecting to a router
+//========================================================
 var TestParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
+    config=config || {};
 	ozpIwc.Participant.apply(this,arguments);
 	this.origin=config.origin || "foo.com";
 	
@@ -44,6 +82,7 @@ var TestParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
 		if(this.callbacks[packet.replyTo]) {
 			this.callbacks[packet.replyTo](packet);
 		}
+        this.events.trigger("receive",packet);
 		this.packets.push(packet); 
 		return true;
 	};

@@ -10,7 +10,11 @@ ozpIwc.CommonApiValue = function(config) {
 	config = config || {};
 	this.watchers=[];
 	this.resource=config.resource;
-	this.deleteData();
+    
+    this.entity=config.entity;
+	this.contentType=config.contentType;
+	this.permissions=config.permissions || [];
+	this.version=config.version || 0;
 };
 
 /**
@@ -23,7 +27,7 @@ ozpIwc.CommonApiValue = function(config) {
 ozpIwc.CommonApiValue.prototype.set=function(packet) {
 	if(this.isValidContentType(packet.contentType)) {
 		var oldValue=(this.entity)?this.toPacket():undefined;
-		
+		console.log("Setting ",this," to ", packet);
 		this.permissions=packet.permisions;
 		this.contentType=packet.contentType;
 		this.entity=packet.entity;

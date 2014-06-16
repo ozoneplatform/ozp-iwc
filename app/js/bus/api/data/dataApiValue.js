@@ -3,7 +3,7 @@ ozpIwc.DataApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) 
 	this.children=[];
 });
 
-ozpIwc.CommonApiValue.prototype.toPacket=function() {
+ozpIwc.DataApiValue.prototype.toPacket=function() {
 	var packet=ozpIwc.CommonApiValue.prototype.toPacket.apply(this,arguments);
 	packet.links=packet.links || {};
 	packet.links.children=this.children;

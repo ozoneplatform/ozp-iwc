@@ -128,7 +128,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 		handler="handle" + packet.action.charAt(0).toUpperCase() + packet.action.slice(1).toLowerCase();
 	}
 	if(!handler || typeof(this[handler]) !== 'function') {
-		packetContext.reply({
+		packetContext.replyTo({
 			'action': 'badAction',
 			'entity': packet.action
 		});
@@ -156,15 +156,15 @@ ozpIwc.CommonApiBase.prototype.validatePreconditions=function(node,packetContext
 ozpIwc.CommonApiBase.prototype.invokeHandler=function(node,packetContext,handler) {
 	this.isPermitted(node,packetContext)
 		.failure(function() {
-			packetContext.reply({'action':'noPerm'});				
+			packetContext.replyTo({'action':'noPerm'});				
 		})
 		.success(function() {
 			if(!this.validateResource(node,packetContext)) {
-				packetContext.reply({'action': 'badResource'});
+				packetContext.replyTo({'action': 'badResource'});
 				return;
 			}
 			if(!this.validatePreconditions(node,packetContext)) {
-				packetContext.reply({'action': 'noMatch'});
+				packetContext.replyTo({'action': 'noMatch'});
 				return;
 			}
 
@@ -184,7 +184,7 @@ ozpIwc.CommonApiBase.prototype.invokeHandler=function(node,packetContext,handler
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.handleGet=function(node,packetContext) {
-	packetContext.reply(node.toPacket({'action': 'ok'}));
+	packetContext.replyTo(node.toPacket({'action': 'ok'}));
 };
 
 /**
@@ -193,7 +193,7 @@ ozpIwc.CommonApiBase.prototype.handleGet=function(node,packetContext) {
  */
 ozpIwc.CommonApiBase.prototype.handleSet=function(node,packetContext) {
 	node.set(packetContext.packet);
-	packetContext.reply({'action':'ok'});
+	packetContext.replyTo({'action':'ok'});
 };
 
 /**
@@ -202,7 +202,7 @@ ozpIwc.CommonApiBase.prototype.handleSet=function(node,packetContext) {
  */
 ozpIwc.CommonApiBase.prototype.handleDelete=function(node,packetContext) {
 	node.deleteData();
-	packetContext.reply({'action':'ok'});
+	packetContext.replyTo({'action':'ok'});
 };
 
 /**
@@ -213,7 +213,7 @@ ozpIwc.CommonApiBase.prototype.handleWatch=function(node,packetContext) {
 	node.watch(packetContext.packet);
 	
 	// @TODO: Reply with the entity? Immediately send a change notice to the new watcher?  
-	packetContext.reply({'action': 'ok'});
+	packetContext.replyTo({'action': 'ok'});
 };
 
 /**
@@ -223,5 +223,5 @@ ozpIwc.CommonApiBase.prototype.handleWatch=function(node,packetContext) {
 ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
 	node.unwatch(packetContext.packet);
 	
-	packetContext.reply({'action':'ok'});
+	packetContext.replyTo({'action':'ok'});
 };

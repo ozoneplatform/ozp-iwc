@@ -4,8 +4,6 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
 	this.replyCallbacks={};
 	this.participantType="internal";
 	this.name=config.name;
-	this.events=new ozpIwc.Event();
-	this.events.mixinOnOff(this);
 });
 
 /**

@@ -2,6 +2,8 @@ describe("Common API Base class",function() {
 
 	var apiBase;
 	var packets=[];
+    var simpleNode;
+    
 	beforeEach(function() {	
 		jasmine.addMatchers(customMatchers);
 		jasmine.clock().install();
@@ -13,141 +15,142 @@ describe("Common API Base class",function() {
 		apiBase.makeValue=function(packet) {
 			return new ozpIwc.CommonApiValue({resource: packet.resource});
 		};
+        simpleNode=new ozpIwc.CommonApiValue({
+            'resource': "/node",
+            'entity' : { 'foo':1 },
+            'contentType' : "application/json"
+        });
+        
 	});
 	
 	afterEach(function() {
 		apiBase=null;
 	});
-
-	var nodePacket=function(resource,entity) {
-		return {packet: {
-			'resource': resource,
-			'entity': entity
-		}};
-	};
-	var watchPacket=function(node,src,msgId) {
-		return {packet: {
-			'src': src,
-			'resource' : node,
-			'msgId' : msgId
-		}};
-	};
 	
 	it("responds to a get", function() {
-		var r=apiBase.handleGet(nodePacket("/node","bar"));
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'resource': "/node",
+                'action': "get"
+            }
+        });
+        
+		apiBase.handleGet(simpleNode,packetContext);
 
-		expect(r[0].action).toEqual("success");
+		expect(packetContext.responses[0])
+            .toEqual(jasmine.objectContaining({
+                'action':"ok",
+                'entity': { 'foo' : 1 }
+            }));
 	});
 
-	it("gets and puts data", function() {
-		apiBase.handleSet(nodePacket("/node",{foo:1}));
+	it("sets data", function() {
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'resource': "/node",
+                'action': "set",
+                'entity': {
+                    'bar':2
+                },
+                'contentType': "application/fake+json"
+            }
+        });
+		
+        apiBase.handleSet(simpleNode,packetContext);
 
-		var r=apiBase.handleGet(nodePacket("/node"));
-		expect(r[0].entity).toEqual({foo:1});
+		expect(packetContext.responses[0])
+            .toEqual(jasmine.objectContaining({
+                'action':"ok"
+            }));
+        expect(simpleNode.entity).toEqual({'bar':2});
+        expect(simpleNode.contentType).toEqual("application/fake+json");
 	});
 
 	it("deletes data", function() {
-		apiBase.handleSet({packet:{
-			resource: "/node",
-			entity: {foo:1}
-		}});
-		apiBase.handleDelete({packet:{
-			resource: "/node"
-		}});
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'resource': "/node",
+                'action': "set"
+            }
+        });
+		apiBase.handleDelete(simpleNode,packetContext);
 
-		var r=apiBase.handleGet({packet:{
-				resource: "/node"
-		}});
-		expect(r.entity).toBeUndefined();
+        expect(simpleNode.entity).toBeUndefined();
+        expect(simpleNode.contentType).toBeUndefined();
+        expect(simpleNode.version).toEqual(0);
 	});
 
-	describe("watch data",function() {
-		beforeEach(function() {
-			apiBase.handleSet(nodePacket("/node",{foo:1}));
-		});
+    it("a watch applies to a node",function() {
+        var watchPacketContext=new TestPacketContext({
+            'packet': {
+                'resource': "/node",
+                'action': "watch",
+                'msgId' : "1234",
+                'src' : "srcParticipant"
+            }
+        });
 
-		it("a watch applies to a node",function() {
-			apiBase.handleWatch(watchPacket("/node","1",123));
+        apiBase.handleWatch(simpleNode,watchPacketContext);
 
-			var r=apiBase.handleSet(nodePacket("/node",{foo:2}));
+        expect(watchPacketContext.responses[0])
+            .toEqual(jasmine.objectContaining({
+                'action':"ok"
+            }));
+        expect(simpleNode.watchers[0])
+            .toEqual(jasmine.objectContaining({
+                'msgId':"1234",
+                'src': "srcParticipant"
+            }));
+    });
 
-			expect(r[1].action).toEqual("changed");
-			expect(r[1].dst).toEqual("1");
-			expect(r[1].replyTo).toEqual(123);
-			expect(r[1].resource).toEqual("/node");
-			expect(r[1].entity.oldValue.entity).toEqual({foo:1});
-			expect(r[1].entity.newValue.entity).toEqual({foo:2});
-		});
+    it("can unregister a watch",function() {
+        var watchPacketContext=new TestPacketContext({
+            'packet': {
+                'resource': "/node",
+                'action': "watch",
+                'msgId' : "1234",
+                'src' : "srcParticipant"
+            }
+        });
 
-		it("a watch triggers on delete",function() {
-			apiBase.handleWatch(watchPacket("/node","1",123));
+        apiBase.handleWatch(simpleNode,watchPacketContext);
+        expect(simpleNode.watchers[0])
+            .toEqual(jasmine.objectContaining({
+                'msgId':"1234",
+                'src': "srcParticipant"
+            }));
+        var unWatchPacketContext=new TestPacketContext({
+            'packet': {
+                'resource': "/node",
+                'action': "unWatch",
+                'replyTo' : "1234",
+                'src' : "srcParticipant"
+            }
+        });
+        apiBase.handleUnwatch(simpleNode,unWatchPacketContext);
 
-			var r=apiBase.handleDelete(nodePacket("/node"));
+        expect(unWatchPacketContext.responses[0])
+            .toEqual(jasmine.objectContaining({
+                'action':"ok"
+            }));
 
-			expect(r[1].action).toEqual("changed");
-			expect(r[1].dst).toEqual("1");
-			expect(r[1].replyTo).toEqual(123);
-			expect(r[1].resource).toEqual("/node");
-			expect(r[1].entity.newValue).toBeUndefined();
-			expect(r[1].entity.oldValue.entity).toEqual({foo:1});
-		});
+        expect(simpleNode.watchers.length).toEqual(0);
+    });
+    describe("CommonAPI Packet Routing",function() {
+        it("routes packets to invokeHandler based upon the action");
+        it("finds the right node to send to invokeHandler");
+        it("returns a badAction packet for unsupported actions");
+    });
 
-		it("a watch on one node is isolated from other changes",function() {
-			apiBase.handleWatch(watchPacket("/node","1",123));
+    describe("Handler invocation",function() {
+        it("returns a noPerm response if the action is not permitted");
+        it("returns noMatch response if the validatePreconditions returns false");
+        it("returns badResource if an invalid resource is used");
+        it("invokes the proper handler");
+        it("notifies watchers if the node changed");
+        it("does not notify watchers if the node is unchanged");
+        
+    });
 
-			apiBase.handleWatch(watchPacket("/node2","2",321));
-
-			var r=apiBase.handleSet(nodePacket("/node",{foo:2}));
-
-			// the change message and the confirmation of set
-			expect(r.length).toEqual(2);
-			expect(r[1].action).toEqual("changed");
-			expect(r[1].dst).toEqual("1");
-			expect(r[1].replyTo).toEqual(123);
-			expect(r[1].resource).toEqual("/node");
-			expect(r[1].entity.oldValue.entity).toEqual({foo:1});
-			expect(r[1].entity.newValue.entity).toEqual({foo:2});
-
-			// check the second watcher & path
-			r=apiBase.handleSet(nodePacket("/node2",{foo:2}));
-
-			// the change message and the confirmation of set
-			expect(r.length).toEqual(2);
-			expect(r[1].action).toEqual("changed");
-			expect(r[1].dst).toEqual("2");
-			expect(r[1].replyTo).toEqual(321);
-			expect(r[1].resource).toEqual("/node2");
-			expect(r[1].entity.oldValue).toBeUndefined();
-			expect(r[1].entity.newValue.entity).toEqual({foo:2});
-		});
-
-		it("can unregister a watch",function() {
-			apiBase.handleWatch(watchPacket("/node","1",123));
-
-			var r=apiBase.handleSet(nodePacket("/node",{foo:2}));
-
-			// the change message and the confirmation of set
-			expect(r.length).toEqual(2);
-			expect(r[1].action).toEqual("changed");
-			expect(r[1].dst).toEqual("1");
-			expect(r[1].replyTo).toEqual(123);
-			expect(r[1].resource).toEqual("/node");
-			expect(r[1].entity.oldValue.entity).toEqual({foo:1});
-			expect(r[1].entity.newValue.entity).toEqual({foo:2});
-
-			apiBase.handleUnwatch({packet: {
-					resource: "/node",
-					src: "1",
-					replyTo: 123
-			}});
-
-
-			var r=apiBase.handleSet(nodePacket("/node",{foo:2}));
-
-			expect(r.length).toEqual(1);
-			expect(r[0].action).toEqual("success");
-
-		});
-	});
 
 });
