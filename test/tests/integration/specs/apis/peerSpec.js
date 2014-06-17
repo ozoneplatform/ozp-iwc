@@ -10,7 +10,8 @@ describe('Participant Integration', function () {
         dst: "keyValue.api",
         action: "set",
         resource: "/test",
-        entity: "test works"
+        entity: "test works",
+        test: true
     };
 
     var watchPacket = {
@@ -18,6 +19,16 @@ describe('Participant Integration', function () {
         action: "watch",
         resource: "/test"
     };
+
+    var maxPacketsPerSource=function(packetsSeen) {
+        var maxPackets=0;
+        for (var seqIds in packetsSeen) {
+            if (seqIds.length>maxPackets) {
+                maxPackets=seqIds.length;
+            }
+        }
+        return maxPackets;
+    }
 
     beforeEach(function (done) {
         var clientGen = {
@@ -73,8 +84,8 @@ describe('Participant Integration', function () {
             if (!called) {
                 called = true;
 
-                var testValues = JSON.parse(event.data.msg);
-                expect(testValues.maxSeqIdPerSource).not.toBeLessThan(testValues.peer.packetsSeen.length);
+                var testValues = event.data;
+                expect(testValues.maxSeqIdPerSource).not.toBeLessThan(maxPacketsPerSource(testValues.packetsSeen));
 
                 done();
                 //testBus callbacks can also be persistent if returned truthy. Return falsy for non-persistent.
@@ -82,13 +93,15 @@ describe('Participant Integration', function () {
             }
         };
 
+        var sendCount=0;
         var setCallback =  function(callback){
             clients[0].getTestBus(testBusCallback);
+            if (sendCount++<=1010) {
+                clients[0].send(setPacket, setCallback);
+            }
             return null;
         };
 
-        for(var i = 0; i < 1010; i++){
-            clients[0].send(setPacket, setCallback);
-        }
+        clients[0].send(setPacket, setCallback);
     });
 });

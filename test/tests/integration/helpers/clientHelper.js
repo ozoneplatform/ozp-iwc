@@ -20,9 +20,6 @@ var clientIframeShim = function (clientUrl, callback) {
 
             client.getTestBus = function(callback){
                 client.testCallbacks.push(callback);
-                client.peer.postMessage({
-                    type:"client.test.request"
-                }, "http://localhost:14002");
             };
 
             callback(client);

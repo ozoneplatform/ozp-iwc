@@ -12,6 +12,7 @@ var ozpIwc=ozpIwc || {};
  * @property {Number} [replyTo] - Reference to the msgId that this is in reply to.
  * @property {string} [action] - Action to be performed.
  * @property {string} [resource] - Resource to perform the action upon.
+ * @property {boolean} [test] - Marker for test packets.
  */
 
 /**
@@ -198,7 +199,7 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
 						" because " + registerEvent.cancelReason);
 		return null;
 	}
-	this.participants[address]=participant;
+        this.participants[address] = participant;
 	participant.connectToRouter(this,address);
 	
 //	ozpIwc.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
@@ -215,6 +216,9 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
 		throw "Cannot deliver a null packet!";
 	}
 	var localParticipant=this.participants[packet.dst];
+    if (packet.test) {
+        this.deliverToTestParticipant(packet, sendingParticipant);
+    }
 	if(!localParticipant) {
 		return;
 	}
@@ -247,6 +251,29 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
 		});
 	
 };
+
+ozpIwc.Router.prototype.deliverToTestParticipant=function(packet,sendingParticipant) {
+    var testParticipant=this.participants[ozpIwc.testParticipant.address];
+    if (!testParticipant) {
+        return;
+    }
+    var packetContext=new ozpIwc.TransportPacketContext({
+        'packet':packet,
+        'router': this,
+        'srcParticipant': sendingParticipant,
+        'dstParticipant': testParticipant
+    });
+
+    ozpIwc.authorization.isPermitted(testParticipant.securitySubject,packet.permissions)
+        .success(function() {
+            ozpIwc.metrics.counter("test.packets.delivered").inc();
+            testParticipant.receiveFromRouter(packetContext);
+        })
+        .failure(function() {
+            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
+            ozpIwc.metrics.counter("test.packets.forbidden").inc();
+        });
+}
 
 
 /**
