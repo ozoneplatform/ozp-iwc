@@ -22,9 +22,9 @@ describe('Participant Integration', function () {
 
     var maxPacketsPerSource=function(packetsSeen) {
         var maxPackets=0;
-        for (var seqIds in packetsSeen) {
-            if (seqIds.length>maxPackets) {
-                maxPackets=seqIds.length;
+        for (var src in packetsSeen) {
+            if (packetsSeen[src].length>maxPackets) {
+                maxPackets=packetsSeen[src];
             }
         }
         return maxPackets;
@@ -79,29 +79,21 @@ describe('Participant Integration', function () {
 
     it('limits packet History to ozpIwc.Peer.maxSeqIdPerSource', function(done) {
         var called = false;
-
-        var testBusCallback = function(event){
-            if (!called) {
-                called = true;
-
-                var testValues = event.data;
-                expect(testValues.maxSeqIdPerSource).not.toBeLessThan(maxPacketsPerSource(testValues.packetsSeen));
-
-                done();
-                //testBus callbacks can also be persistent if returned truthy. Return falsy for non-persistent.
-                return null;
+        var receiveCount=0;
+        var echoCallback=function(event) {
+            if (event.echo) {
+                expect(event.maxSeqIdPerSource).not.toBeLessThan(maxPacketsPerSource(event.packetsSeen));
+                if (!called && receiveCount++>=1010) {
+                    expect(maxPacketsPerSource(event.packetsSeen)).not.toBeLessThan(1000);
+                    called=true;
+                    done();
+                }
             }
-        };
+        }
 
-        var sendCount=0;
-        var setCallback =  function(callback){
-            clients[0].getTestBus(testBusCallback);
-            if (sendCount++<=1010) {
-                clients[0].send(setPacket, setCallback);
-            }
-            return null;
-        };
-
-        clients[0].send(setPacket, setCallback);
+        clients[0].on("receive", echoCallback);
+        for (var i=0; i<=1010; i++) {
+            clients[0].send(setPacket);
+        }
     });
 });

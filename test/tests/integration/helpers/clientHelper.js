@@ -16,12 +16,6 @@ var clientIframeShim = function (clientUrl, callback) {
 		self.peer = self.iframe.contentWindow;
 
 		self.onReady = function (client) {
-            client.testCallbacks = [];
-
-            client.getTestBus = function(callback){
-                client.testCallbacks.push(callback);
-            };
-
             callback(client);
 		};
 	};
@@ -34,8 +28,7 @@ var clientIframeShim = function (clientUrl, callback) {
 	}
 };
 
-/** Factory function for creating clients for tests. Clients have injected test capabilities as do their peer
- *  counterparts.
+/** Factory function for creating clients for tests.
  *
  * @param {Object}clientObj - Specifies the number of clients to generate (clientCount) & the hosting URL (clientUrl)
  * @param {Function({Array})} callback - returns the array of generated clients when all asynchronous work is done.
@@ -49,21 +42,6 @@ var generateClients = function (clientObj, callback) {
 	for (var i = 0; i < clientCount; i++) {
 
 		clientIframeShim(clientUrl, function (clientRef) {
-            clientRef.window.addEventListener("message", function(event){
-                if(event.data.type === "client.test.response"){
-                    for (var i = clientRef.testCallbacks.length - 1; i >=0 ; i--) {
-                        var persist = clientRef.testCallbacks[i](event);
-                        if (!persist) {
-                            clientRef.testCallbacks.splice(i,1);
-                        }
-                    }
-                } else {
-                    clientRef.postMessageHandler(event);
-                }
-            },false);
-
-            clientRef.window.removeEventListener("message",clientRef.postMessageHandler, false);
-
 			clients.push(clientRef);
 			count++;
 			if (count === clientCount) {

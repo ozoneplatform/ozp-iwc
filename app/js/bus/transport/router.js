@@ -216,9 +216,6 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
 		throw "Cannot deliver a null packet!";
 	}
 	var localParticipant=this.participants[packet.dst];
-    if (packet.test) {
-        this.deliverToTestParticipant(packet, sendingParticipant);
-    }
 	if(!localParticipant) {
 		return;
 	}
@@ -251,29 +248,6 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
 		});
 	
 };
-
-ozpIwc.Router.prototype.deliverToTestParticipant=function(packet,sendingParticipant) {
-    var testParticipant=this.participants[ozpIwc.testParticipant.address];
-    if (!testParticipant) {
-        return;
-    }
-    var packetContext=new ozpIwc.TransportPacketContext({
-        'packet':packet,
-        'router': this,
-        'srcParticipant': sendingParticipant,
-        'dstParticipant': testParticipant
-    });
-
-    ozpIwc.authorization.isPermitted(testParticipant.securitySubject,packet.permissions)
-        .success(function() {
-            ozpIwc.metrics.counter("test.packets.delivered").inc();
-            testParticipant.receiveFromRouter(packetContext);
-        })
-        .failure(function() {
-            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-            ozpIwc.metrics.counter("test.packets.forbidden").inc();
-        });
-}
 
 
 /**
