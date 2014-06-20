@@ -41,7 +41,7 @@ module.exports = function(grunt) {
 				'app/js/owf7/*.js'
 			],
 			test: [
-				'app/test/**/*'
+				'test/**/*'
 			],
 			all: [
 				'<%= src.metrics %>',
@@ -51,45 +51,52 @@ module.exports = function(grunt) {
 			]
 		},
 		output: {
-			busJs: 'app/js/<%= pkg.name %>-bus',
-			clientJs: 'app/js/<%= pkg.name %>-client',
-			metricsJs: 'app/js/<%= pkg.name %>-metrics',
-			owf7Js: 'app/js/<%= pkg.name %>-owf7'
+			busJs: 'app/js/<%= pkg.name %>-bus.js',
+			clientJs: 'app/js/<%= pkg.name %>-client.js',
+			metricsJs: 'app/js/<%= pkg.name %>-metrics.js',
+			owf7Js: 'app/js/<%= pkg.name %>-owf7.js',
+			busJsMin: 'app/js/<%= pkg.name %>-bus.min.js',
+			clientJsMin: 'app/js/<%= pkg.name %>-client.min.js',
+			metricsJsMin: 'app/js/<%= pkg.name %>-metrics.min.js',
+			owf7JsMin: 'app/js/<%= pkg.name %>-owf7.min.js',
+			
+			allJs: ['<%=output.busJs %>','<%=output.clientJs %>','<%=output.metricsJs %>'],
+			allJsMin: ['<%=output.busJsMin %>','<%=output.clientJsMin %>','<%=output.metricsJsMin %>']
 		},
 		concat: {
       bus: {
         src: '<%= src.bus %>',
-        dest: '<%= output.busJs %>.js'
+        dest: '<%= output.busJs %>'
       },
 			client: {
 				src: '<%= src.client %>',
-        dest: '<%= output.clientJs %>.js'
+        dest: '<%= output.clientJs %>'
 			},
 			metrics: {
 				src: '<%= src.metrics %>',
-        dest: '<%= output.metricsJs %>.js'
+        dest: '<%= output.metricsJs %>'
 			},
 			owf7: {
 				src: '<%= src.owf7 %>',
-        dest: '<%= output.owf7Js %>.js'
+        dest: '<%= output.owf7Js %>'
 			}
 		},
     uglify: {
       bus: {
         src: '<%= concat.bus.dest %>',
-        dest: '<%= output.busJs %>.min.js'
+        dest: '<%= output.busJsMin %>'
       },
 			client: {
         src: '<%= concat.client.dest %>',
-        dest: '<%= output.clientJs %>.min.js'
+        dest: '<%= output.clientJsMin %>'
       },
 			metrics: {
         src: '<%= concat.metrics.dest %>',
-        dest: '<%= output.metricsJs %>.min.js'
+        dest: '<%= output.metricsJsMin %>'
       },
 			owf7: {
         src: '<%= concat.owf7.dest %>',
-        dest: '<%= output.owf7Js %>.min.js'
+        dest: '<%= output.owf7JsMin %>'
       }
     },
 		jsdoc : {
@@ -101,13 +108,16 @@ module.exports = function(grunt) {
         }
     },
     watch: {
-			jsdoc: {
-	      files: ['Gruntfile.js','<%= jsdoc.dist.src %>'],
-				tasks: ['jsdoc']
-			},
-			test: {
+
+			concatFiles: {
 				files: ['Gruntfile.js','<%= src.all %>'],
 				tasks: ['concat']
+			},
+			test: {
+				files: ['Gruntfile.js','<%= output.allJs %>', '<%= src.test %>'],
+				options: {
+					livereload: true
+				}
 			}
     },
 		connect: {
@@ -153,7 +163,7 @@ module.exports = function(grunt) {
 	
   // Default task(s).
   grunt.registerTask('default', ['concat','uglify','jsdoc']);
-  grunt.registerTask('test', ['concat','uglify','connect','watch:test']);
+  grunt.registerTask('test', ['concat','uglify','connect','watch']);
   grunt.registerTask('default', ['concat','uglify','jsdoc']);
 
 };
