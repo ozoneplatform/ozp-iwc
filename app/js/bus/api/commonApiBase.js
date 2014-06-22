@@ -54,11 +54,12 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
 		  'replyTo' : watcher.msgId,
 			'action': 'changed',
 			'resource': node.resource,
-			'permissions': changes.permissions,
-			'entity': changes.entity
+			'permissions': changes.newValue.permissions,
+			'entity': changes
 		};
+        
 		this.participant.send(reply);
-	});
+	},this);
 };
 
 /**
@@ -132,9 +133,10 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 			'action': 'badAction',
 			'entity': packet.action
 		});
+        return;
 	}
 	var node=this.findOrMakeValue(packetContext.packet);
-	this.invokeHandler(node,packetContext,handler);
+	this.invokeHandler(node,packetContext,this[handler]);
 	
 };
 ozpIwc.CommonApiBase.prototype.validateResource=function(node,packetContext) {
@@ -142,7 +144,7 @@ ozpIwc.CommonApiBase.prototype.validateResource=function(node,packetContext) {
 };
 
 ozpIwc.CommonApiBase.prototype.validatePreconditions=function(node,packetContext) {
-	return packetContext.packet.ifTag && packetContext.packet.ifTag===node.version;
+	return !packetContext.packet.ifTag || packetContext.packet.ifTag===node.version;
 };
 
 /**

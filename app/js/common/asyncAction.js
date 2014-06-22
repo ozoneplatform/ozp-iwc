@@ -11,14 +11,12 @@ ozpIwc.AsyncAction=function() {
 };
 
 ozpIwc.AsyncAction.prototype.when=function(state,callback,self) {
-	if(self) {
-		callback=function() { return callback.apply(self,arguments); };
-	}
+    self=self || this;
 	
 	if(this.resolution === state) {
-		callback.apply(this,this.value);
+		callback.apply(self,this.value);
 	} else {
-		this.callbacks[state]=callback;
+		this.callbacks[state]=function() { return callback.apply(self,arguments); };
 	}
 	return this;
 };

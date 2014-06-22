@@ -76,7 +76,7 @@ ozpIwc.BasicAuthorization.prototype.isPermitted=function(subject,permissions) {
 	var permMap={};
 	
 	var action=new ozpIwc.AsyncAction();
-	if(!permissions) {
+	if(!permissions || permissions.length===0) {
 		return action.resolve('success');
 	}
 	if(typeof(permissions) === "string") {

@@ -58,7 +58,7 @@ var FakePeer=function() {
 		this.packets.push(packet);
 	};
 };
-    
+
 //========================================================
 // TestParticipant for connecting to a router
 //========================================================
@@ -68,6 +68,7 @@ var TestParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
 	this.origin=config.origin || "foo.com";
 	
 	this.packets=[];
+    this.sentPackets=[];
 	this.messageId=1;
 	this.callbacks={};
 	this.connect=function(router) {
@@ -94,10 +95,13 @@ var TestParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
 		packet.msgId= packet.msgId || this.messageId++;
 		packet.time=packet.time || new Date().getTime();
 
-		if(callback) {
+		this.sentPackets.push(packet);
+        if(callback) {
 			this.callbacks[packet.msgId]=callback;
 		}
-		this.router.send(packet,this);
+        if(this.router) {
+            this.router.send(packet,this);
+        }
 		return packet;
 	};
 	
@@ -113,10 +117,14 @@ var TestParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
 		packet.action=packet.action || originalPacket.action;
 		packet.resource=packet.resource || originalPacket.resource;
 
-		if(callback) {
+        this.sentPackets.push(packet);
+
+        if(callback) {
 			this.callbacks[packet.msgId]=callback;
 		}
-		this.router.send(packet,this);
-		return packet;	
+        if(this.router) {
+            this.router.send(packet,this);
+        }
+        return packet;	
 	};
 });

@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
 
   // Project configuration.
-  grunt.initConfig({
+  var config={
     pkg: grunt.file.readJSON('package.json'),
 		src: {
 			metrics: [
@@ -153,7 +153,10 @@ module.exports = function(grunt) {
 			}
 		}
 
-  });
+  };
+	grunt.initConfig(config);
+	console.log("FILES: ",grunt.file.expand(grunt.config.get('src.bus')));
+	
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');

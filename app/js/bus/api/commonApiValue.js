@@ -11,7 +11,7 @@ ozpIwc.CommonApiValue = function(config) {
 	this.watchers=[];
 	this.resource=config.resource;
     
-    this.entity=config.entity;
+  this.entity=config.entity;
 	this.contentType=config.contentType;
 	this.permissions=config.permissions || [];
 	this.version=config.version || 0;
@@ -26,9 +26,7 @@ ozpIwc.CommonApiValue = function(config) {
  */
 ozpIwc.CommonApiValue.prototype.set=function(packet) {
 	if(this.isValidContentType(packet.contentType)) {
-		var oldValue=(this.entity)?this.toPacket():undefined;
-		console.log("Setting ",this," to ", packet);
-		this.permissions=packet.permisions;
+		this.permissions=packet.permissions || this.permissions;
 		this.contentType=packet.contentType;
 		this.entity=packet.entity;
 		this.version++;
@@ -68,9 +66,7 @@ ozpIwc.CommonApiValue.prototype.unwatch=function(packet) {
  */
 ozpIwc.CommonApiValue.prototype.eachWatcher=function(callback,self) {
 	self=self || this;
-	this.watchers.forEach(function(w) {
-		return callback.call(self,w);
-	});
+	return this.watchers.map(callback,self);
 };
 
 /**
@@ -137,11 +133,11 @@ ozpIwc.CommonApiValue.prototype.snapshot=function() {
  * @returns {ozpIwc.CommonApiValue.prototype.changesSince.Anonym$1}
  */
 ozpIwc.CommonApiValue.prototype.changesSince=function(snapshot) {
-	if(snapshot.version !== this.version) {
-		return {
+	if(snapshot.eTag === this.version) {
+        return null;
+    }
+	return {
 			'newValue': this.toPacket(),
 			'oldValue': snapshot
-		};
-	}
-	return null;
+	};
 };
