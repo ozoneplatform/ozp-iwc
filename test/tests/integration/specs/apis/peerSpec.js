@@ -20,11 +20,11 @@ describe('Participant Integration', function () {
         resource: "/test"
     };
 
-    var maxPacketsPerSource=function(packetsSeen) {
-        var maxPackets=0;
+    var maxPacketsPerSource = function (packetsSeen) {
+        var maxPackets = 0;
         for (var src in packetsSeen) {
-            if (packetsSeen[src].length>maxPackets) {
-                maxPackets=packetsSeen[src];
+            if (packetsSeen[src].length > maxPackets) {
+                maxPackets = packetsSeen[src];
             }
         }
         return maxPackets;
@@ -32,22 +32,32 @@ describe('Participant Integration', function () {
 
     beforeEach(function (done) {
         var clientGen = {
-            clientCount: 2,
             clientUrl: "http://localhost:14000/integration/additionalOrigin.html"
         };
-        generateClients(clientGen, function (clientRefs) {
-            clients = clientRefs;
-            done();
-        });
+        var clientCount = 0;
+        var numClients = 2;
+        var called = false;
+
+        for (var i = 0; i < numClients; i++) {
+            generateClient(clientGen, function (client) {
+                clients.push(client);
+                clientCount++;
+                // Wait until
+                if (clientCount == numClients && !called) {
+                    called = true;
+                    done();
+                }
+            });
+        }
     });
 
     afterEach(function () {
         for (var i = 0; i < clients.length; i++) {
             if (clients[i]) {
-                clients[i].disconnect();
-                clients[i] = null;
+                clients[i].remove();
             }
         }
+        clients = [];
     });
 
 
@@ -65,7 +75,7 @@ describe('Participant Integration', function () {
                 // returning falsy will cause callback to not persist.
                 return null;
 
-            } else if (reply.action === 'success'){
+            } else if (reply.action === 'success') {
                 clients[1].send(setPacket);
             }
 
@@ -77,22 +87,22 @@ describe('Participant Integration', function () {
     });
 
 
-    it('limits packet History to ozpIwc.Peer.maxSeqIdPerSource', function(done) {
+    it('limits packet History to ozpIwc.Peer.maxSeqIdPerSource', function (done) {
         var called = false;
-        var receiveCount=0;
-        var echoCallback=function(event) {
+        var receiveCount = 0;
+        var echoCallback = function (event) {
             if (event.echo) {
                 expect(event.maxSeqIdPerSource).not.toBeLessThan(maxPacketsPerSource(event.packetsSeen));
-                if (!called && receiveCount++>=1010) {
+                if (!called && receiveCount++ >= 1010) {
                     expect(maxPacketsPerSource(event.packetsSeen)).not.toBeLessThan(1000);
-                    called=true;
+                    called = true;
                     done();
                 }
             }
-        }
+        };
 
         clients[0].on("receive", echoCallback);
-        for (var i=0; i<=1010; i++) {
+        for (var i = 0; i <= 1010; i++) {
             clients[0].send(setPacket);
         }
     });
