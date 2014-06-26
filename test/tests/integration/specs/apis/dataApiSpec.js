@@ -34,18 +34,18 @@ describe("data.api integration", function () {
     describe('Common Actions', function () {
 
         var deletePacket = {
-            dst: "keyValue.api",
+            dst: "data.api",
             action: "delete",
             resource: "/test"
         };
         var setPacket = {
-            dst: "keyValue.api",
+            dst: "data.api",
             action: "set",
             resource: "/test",
             entity: "testData"
         };
         var getPacket = {
-            dst: "keyValue.api",
+            dst: "data.api",
             action: "get",
             resource: "/test"
         };
@@ -77,7 +77,7 @@ describe("data.api integration", function () {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentPacket.msgId);
-                    expect(reply.action).toEqual('success');
+                    expect(reply.action).toEqual('ok');
 
                     done();
                     return null;
@@ -112,13 +112,12 @@ describe("data.api integration", function () {
         it('Client deletes values', function (done) {
             var called = false;
             var sentDeletePacket;
-
             var deleteCallback = function (reply) {
                 if (!called) {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentDeletePacket.msgId);
-                    expect(reply.action).toEqual('success');
+                    expect(reply.action).toEqual('ok');
 
                     done();
                     return null;
@@ -134,13 +133,13 @@ describe("data.api integration", function () {
             var sentWatchPacket, sentUnwatchPacket, sentSetPacket;
 
             var watchPacket = {
-                dst: "keyValue.api",
+                dst: "data.api",
                 action: "watch",
                 resource: "/test"
             };
 
             var unwatchPacket = {
-                dst: "keyValue.api",
+                dst: "data.api",
                 action: "unwatch",
                 resource: "/test"
             };
@@ -150,7 +149,7 @@ describe("data.api integration", function () {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentUnwatchPacket.msgId);
-                    expect(reply.action).toEqual('success');
+                    expect(reply.action).toEqual('ok');
 
                     done();
                     return null;
@@ -160,7 +159,7 @@ describe("data.api integration", function () {
             var watchCallback = function (reply) {
                 if (reply.action === "changed") {
                     expect(reply.replyTo).toEqual(sentWatchPacket.msgId);
-                    expect(reply.entity.newValue).toEqual(sentSetPacket.entity);
+                    expect(reply.entity.newValue.entity).toEqual(sentSetPacket.entity);
 
                     sentUnwatchPacket = client.send(unwatchPacket, unwatchCallback);
                     return null;
@@ -177,18 +176,18 @@ describe("data.api integration", function () {
     describe('Collection-like Actions', function () {
 
         var deletePacket = {
-            dst: "keyValue.api",
+            dst: "data.api",
             action: "delete",
             resource: "/test"
         };
         var listPacket = {
-            dst: "keyValue.api",
+            dst: "data.api",
             action: "list",
             resource: "/test"
         };
 
         var pushPacket = {
-            dst: "keyValue.api",
+            dst: "data.api",
             action: "push",
             resource: "/test",
             entity: 'testData'
@@ -220,7 +219,7 @@ describe("data.api integration", function () {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentPushPacket.msgId);
-                    expect(reply.action).toEqual('success');
+                    expect(reply.action).toEqual('ok');
 
                     done();
                     return null;
@@ -236,13 +235,13 @@ describe("data.api integration", function () {
             var sentPopPacket, sentPushPacket;
 
             var pushPacket = {
-                dst: "keyValue.api",
+                dst: "data.api",
                 action: "push",
                 resource: "/test",
                 entity: 'testData'
             };
             var popPacket = {
-                dst: "keyValue.api",
+                dst: "data.api",
                 action: "pop",
                 resource: "/test"
             };
@@ -252,7 +251,7 @@ describe("data.api integration", function () {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentPopPacket.msgId);
-                    expect(reply.action).toEqual('success');
+                    expect(reply.action).toEqual('ok');
                     expect(reply.entity).toEqual(sentPushPacket.entity);
 
                     done();
@@ -278,7 +277,7 @@ describe("data.api integration", function () {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentListPacket.msgId);
-                    expect(reply.action).toEqual('success');
+                    expect(reply.action).toEqual('ok');
 
                     done();
                     return null;
@@ -294,7 +293,7 @@ describe("data.api integration", function () {
             var sentUnshiftPacket;
 
             var unshiftPacket = {
-                dst: "keyValue.api",
+                dst: "data.api",
                 action: "unshift",
                 resource: "/test"
             };
@@ -304,7 +303,7 @@ describe("data.api integration", function () {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentUnshiftPacket.msgId);
-                    expect(reply.action).toEqual('success');
+                    expect(reply.action).toEqual('ok');
 
                     done();
                     return null;
@@ -320,7 +319,7 @@ describe("data.api integration", function () {
             var sentShiftPacket;
 
             var shiftPacket = {
-                dst: "keyValue.api",
+                dst: "data.api",
                 action: "shift",
                 resource: "/test"
 
@@ -331,10 +330,7 @@ describe("data.api integration", function () {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentShiftPacket.msgId);
-                    //TODO Kevin what needs to be done here?
-                    //expect(reply.action).toEqual('success');
-                    //expect(reply.entity).toEqual('Need to write push first to compare');
-                    expect(reply.action).toEqual('noChild');
+                    expect(reply.action).toEqual('ok');
 
                     done();
                     return null;

@@ -7,7 +7,7 @@ describe('Participant Integration', function () {
     var clients = [];
 
     var setPacket = {
-        dst: "keyValue.api",
+        dst: "data.api",
         action: "set",
         resource: "/test",
         entity: "test works",
@@ -15,7 +15,7 @@ describe('Participant Integration', function () {
     };
 
     var watchPacket = {
-        dst: "keyValue.api",
+        dst: "data.api",
         action: "watch",
         resource: "/test"
     };
@@ -28,7 +28,7 @@ describe('Participant Integration', function () {
             }
         }
         return maxPackets;
-    }
+    };
 
     beforeEach(function (done) {
         var clientGen = {
@@ -69,13 +69,15 @@ describe('Participant Integration', function () {
                 called = true;
 
                 expect(reply.action).toEqual('changed');
-                expect(reply.entity.newValue).toEqual(setPacket.entity);
+                //TODO: should the new value be in entity.newValue.entity?
+                expect(reply.entity.newValue.entity).toEqual(setPacket.entity);
 
                 done();
                 // returning falsy will cause callback to not persist.
                 return null;
 
-            } else if (reply.action === 'success') {
+
+            } else if (reply.action === 'ok') {
                 clients[1].send(setPacket);
             }
 
