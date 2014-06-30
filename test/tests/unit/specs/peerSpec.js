@@ -35,6 +35,9 @@ describe("Peer",function() {
 		expect(receiveCount).toEqual(1);
 	});
 	
+    //@TODO write shutdown handler notification test
+    it("notifies handlers on shutdown",function(){});
+
 	describe("deduplicates packets", function() {
 		it("receive ignores duplicate src_peer & sequence pairs",function() {
 			peer.receive("testLinkId",{src_peer:"me",sequence:1,data: "foo"});

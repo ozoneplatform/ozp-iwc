@@ -12,6 +12,7 @@ var ozpIwc=ozpIwc || {};
  * @property {Number} [replyTo] - Reference to the msgId that this is in reply to.
  * @property {string} [action] - Action to be performed.
  * @property {string} [resource] - Resource to perform the action upon.
+ * @property {boolean} [test] - Marker for test packets.
  */
 
 /**
@@ -198,7 +199,7 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
 						" because " + registerEvent.cancelReason);
 		return null;
 	}
-	this.participants[address]=participant;
+        this.participants[address] = participant;
 	participant.connectToRouter(this,address);
 	
 //	ozpIwc.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
