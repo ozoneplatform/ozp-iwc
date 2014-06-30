@@ -4,6 +4,10 @@ ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function() {
 	ozpIwc.CommonApiBase.apply(this,arguments);
 });
 
+ozpIwc.DataApi.prototype.makeValue = function(packet){
+    return new ozpIwc.DataApiValue({resource: packet.resource});
+};
+
 ozpIwc.CommonApiBase.prototype.handleListAsLeader=function(node,packetContext) {
 	return [{'action': 'success','entity': node.children}];
 };

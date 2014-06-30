@@ -26,4 +26,6 @@ Peer Network
 ------------
 The network consists of one or more peers that automatically discover and broadcast to each other.
 
-
+Demo
+---------------
+http://ozone-development.github.io/iwc/gridster/
