@@ -17,77 +17,125 @@ function dataApiValueContractTests(classUnderTest,baseConfig) {
         value = new classUnderTest(config);
     });
     
-    it("push and pops children",function() {
-        value.pushChild("child1");
-        value.pushChild("child2");
-        value.pushChild("child3");
+    it("adds a child",function() {
+        value.addChild("child1");
+        value.addChild("child2");
+        value.addChild("child3");
         
         expect(value.listChildren()).toEqual(["child1","child2","child3"]);
-        
-        var v=value.popChild();
-        
-        expect(v).toEqual("child3");
-        expect(value.listChildren()).toEqual(["child1","child2"]);
     });
-    it("unshifts and shifts children",function() {
-        value.unshiftChild("child1");
-        value.unshiftChild("child2");
-        value.unshiftChild("child3");
+
+    it("updates the version when adding a child",function() {
+        value.addChild("child1");
+        value.addChild("child2");
+        value.addChild("child3");
+
+        var originalVersion=value.version;
+        value.addChild("child4");
+        expect(value.version).toEqual(originalVersion+1);
+    });
+    
+    it("will only add a child once",function() {
+        value.addChild("child1");
+        value.addChild("child1");
+
+        value.addChild("child2");
+        value.addChild("child3");
         
-        expect(value.listChildren()).toEqual(["child3","child2","child1"]);
+        value.addChild("child1");
+        value.addChild("child1");
         
-        var v=value.shiftChild();
+        expect(value.listChildren()).toEqual(["child1","child2","child3"]);
+    });
+
+    it("does not update version upon adding a duplicate child",function() {
+        value.addChild("child1");
+        value.addChild("child2");
+        value.addChild("child3");
+
+        var originalVersion=value.version;
+        value.addChild("child1");
+        value.addChild("child1");
         
-        expect(v).toEqual("child3");
-        expect(value.listChildren()).toEqual(["child2","child1"]);
+        expect(value.version).toEqual(originalVersion);
+        
+    });
+    
+    it("removes a child",function() {
+        value.addChild("child1");
+        value.addChild("child2");
+        value.addChild("child3");
+        
+        value.removeChild("child2");
+        
+        expect(value.listChildren()).toEqual(["child1","child3"]);
+    });
+
+    it("updates the version when removing a child",function() {
+        value.addChild("child1");
+        value.addChild("child2");
+        value.addChild("child3");
+
+        var originalVersion=value.version;
+        value.removeChild("child2");
+        expect(value.version).toEqual(originalVersion+1);
+    });
+    
+    it("does not update version or throw error on removing a non-existant child",function() {
+        value.addChild("child1");
+        value.addChild("child2");
+        value.addChild("child3");
+        
+        var version=value.version;
+        value.removeChild("child5");
+        
+        expect(value.version).toEqual(version);
+        
     });
 
     it("generates changes for added children",function() {
         var snapshot=value.snapshot();
         
-        value.unshiftChild("child1");
-        value.unshiftChild("child2");
-        value.pushChild("child3");
-        value.pushChild("child4");
+        value.addChild("child1");
+        value.addChild("child2");
+        value.addChild("child3");
+        value.addChild("child4");
         
         var diff=value.changesSince(snapshot);
-        expect(diff.addedChildren).toEqual(["child2","child1","child3","child4"])
+        expect(diff.addedChildren).toEqual(["child1","child2","child3","child4"]);
         expect(diff.removedChildren).toEqual([]);
     });
     it("generates changes for removed children",function() {
         
-        value.unshiftChild("child1");
-        value.unshiftChild("child2");
-        value.pushChild("child3");
-        value.pushChild("child4");
+        value.addChild("child1");
+        value.addChild("child2");
+        value.addChild("child3");
+        value.addChild("child4");        
         
         var snapshot=value.snapshot();
-        value.shiftChild();
-        value.popChild();
+        value.removeChild("child3");
         var diff=value.changesSince(snapshot);
 
         expect(diff.addedChildren).toEqual([]);
-        expect(diff.removedChildren).toEqual(["child2","child4"]);
-        
+        expect(diff.removedChildren).toEqual(["child3"]);
     });
-       it("generates changes for combined added and removed children",function() {
+
+    it("generates changes for combined added and removed children",function() {
         
-        value.unshiftChild("child1");
-        value.unshiftChild("child2");
-        value.pushChild("child3");
-        value.pushChild("child4");
+        value.addChild("child1");
+        value.addChild("child2");
+        value.addChild("child3");
+        value.addChild("child4");   
         
         var snapshot=value.snapshot();
         
-        value.shiftChild();
-        value.popChild();
-        value.unshiftChild("child5");
-        value.pushChild("child6");
+        value.addChild("child5");
+        value.removeChild("child2");
         
         var diff=value.changesSince(snapshot);
 
-        expect(diff.addedChildren).toEqual(["child5","child6"]);
-        expect(diff.removedChildren).toEqual(["child2","child4"]);        
+        expect(diff.addedChildren).toEqual(["child5"]);
+        expect(diff.removedChildren).toEqual(["child2"]);        
     });
 };
 

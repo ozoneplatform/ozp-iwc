@@ -137,10 +137,6 @@ describe("Common API Base class",function() {
 
         expect(simpleNode.watchers.length).toEqual(0);
     });
-    describe("Handler invocation",function() {
-
-        
-    });
 
     describe("CommonAPI Packet Routing",function() {
         beforeEach(function() {

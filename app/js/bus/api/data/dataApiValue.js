@@ -10,9 +10,11 @@ ozpIwc.DataApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) 
  * @param {string} child - name of the child record of this
  * @returns {undefined}
  */
-ozpIwc.DataApiValue.prototype.pushChild=function(child) {
-	this.children.push(child);
-	this.version++;
+ozpIwc.DataApiValue.prototype.addChild=function(child) {
+    if(this.children.indexOf(child) < 0) {
+        this.children.push(child);
+    	this.version++;
+    }
 };
 
 /**
@@ -20,29 +22,14 @@ ozpIwc.DataApiValue.prototype.pushChild=function(child) {
  * @param {string} child - name of the child record of this
  * @returns {undefined}
  */
-ozpIwc.DataApiValue.prototype.unshiftChild=function(child) {
-	this.children.unshift(child);
-	this.version++;
-};
-
-/**
- * 
- * @param {string} child - name of the child record of this
- * @returns {undefined}
- */
-ozpIwc.DataApiValue.prototype.popChild=function() {
-	this.version++;
-	return this.children.pop();
-};
-
-/**
- * 
- * @param {string} child - name of the child record of this
- * @returns {undefined}
- */
-ozpIwc.DataApiValue.prototype.shiftChild=function() {
-	this.version++;
-	return this.children.shift();
+ozpIwc.DataApiValue.prototype.removeChild=function(child) {
+    var originalLen=this.children.length;
+    this.children=this.children.filter(function(c) {
+        return c !== child;
+    });
+    if(originalLen !== this.children.length) {
+     	this.version++;
+    }
 };
 
 /**
@@ -51,7 +38,7 @@ ozpIwc.DataApiValue.prototype.shiftChild=function() {
  * @returns {undefined}
  */
 ozpIwc.DataApiValue.prototype.listChildren=function() {
-    return this.children;
+    return ozpIwc.util.clone(this.children);
 };
 
 /**
@@ -62,7 +49,7 @@ ozpIwc.DataApiValue.prototype.listChildren=function() {
 ozpIwc.DataApiValue.prototype.toPacket=function() {
 	var packet=ozpIwc.CommonApiValue.prototype.toPacket.apply(this,arguments);
 	packet.links=packet.links || {};
-	packet.links.children=ozpIwc.util.clone(this.children);
+	packet.links.children=this.listChildren();
 	return packet;
 };
 

@@ -51,7 +51,7 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
 		// @TODO check that the recipient has permission to both the new and old values
 		var reply={
 			'dst'   : watcher.src,
-		  'replyTo' : watcher.msgId,
+		    'replyTo' : watcher.msgId,
 			'action': 'changed',
 			'resource': node.resource,
 			'permissions': changes.newValue.permissions,

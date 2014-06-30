@@ -12,7 +12,7 @@ ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {
 	var key=this.createKey(node.resource+"/");
 
 	// save the new child
-	var childNode=this.findOrMakeValue(key);
+	var childNode=this.findOrMakeValue({'resource':key});
 	childNode.set(packetContext.packet);
 	return childNode;
 };
@@ -28,42 +28,27 @@ ozpIwc.DataApi.prototype.handleList=function(node,packetContext) {
  * @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
-ozpIwc.DataApi.prototype.handlePush=function(node,packetContext) {
+ozpIwc.DataApi.prototype.handleAddchild=function(node,packetContext) {
 	var childNode=this.createChild(node,packetContext);
 
-	node.pushChild(childNode.resource);
+	node.addChild(childNode.resource);
 	
-	packetContext.replyTo({'action':'ok'});
+	packetContext.replyTo({
+        'action':'ok',
+        'entity' : {
+            'resource': childNode.resource
+        }
+    });
 };
 
 /**
  * @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
-ozpIwc.DataApi.prototype.handleUnshift=function(node,packetContext) {
-	var childNode=this.createChild(node,packetContext);
-
-	node.unshiftChild(childNode.resource);
-	
-	packetContext.replyTo({'action':'ok'});
-};
-
-/**
- * @param {ozpIwc.CommonApiValue} node
- * @param {ozpIwc.TransportPacketContext} packetContext
- */
-ozpIwc.DataApi.prototype.handlePop=function(node,packetContext) {
-	var child=this.findOrMakeValue(node.popChild());
+ozpIwc.DataApi.prototype.handleRemovechild=function(node,packetContext) {
+    node.removeChild(packetContext.packet.entity.resource);
 	// delegate to the handleGet call
-	this.invokeHandler(child,packetContext,this.handleGet);
-};
-
-/**
- * @param {ozpIwc.CommonApiValue} node
- * @param {ozpIwc.TransportPacketContext} packetContext
- */
-ozpIwc.DataApi.prototype.handleShift=function(node,packetContext) {
-	var child=this.findOrMakeValue(node.shiftChild());
-	// delegate to the handleGet call
-	this.invokeHandler(child,packetContext,this.handleGet);
+	packetContext.replyTo({
+        'action':'ok'
+    });
 };
