@@ -54,7 +54,7 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
 		    'replyTo' : watcher.msgId,
 			'action': 'changed',
 			'resource': node.resource,
-			'permissions': changes.newValue.permissions,
+			'permissions': node.permissions,
 			'entity': changes
 		};
         

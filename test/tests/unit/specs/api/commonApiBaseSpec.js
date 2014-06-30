@@ -271,17 +271,8 @@ describe("Common API Base class",function() {
             expect(apiBase.participant.sentPackets.length).toEqual(1);
             var changePacket=apiBase.participant.sentPackets[0];
             expect(changePacket.action).toEqual("changed");
-            expect(changePacket.entity).toEqual({
-                'newValue': jasmine.objectContaining({
-                    'entity': { 'bar':2},
-                    'eTag': 2
-                }),
-                'oldValue': jasmine.objectContaining({
-                    'entity': { 'foo' :1},
-                    'eTag': 1
-                })
-            });
-            
+            expect(changePacket.entity.newValue).toEqual({'bar':2});
+            expect(changePacket.entity.oldValue).toEqual({'foo':1});
         });
         it("does not notify watchers on a get",function() {
                         simpleNode.watch({'src': "watcher",'msgId': 5678});

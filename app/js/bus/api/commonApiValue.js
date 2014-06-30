@@ -137,7 +137,7 @@ ozpIwc.CommonApiValue.prototype.changesSince=function(snapshot) {
         return null;
     }
 	return {
-			'newValue': this.toPacket(),
-			'oldValue': snapshot
+			'newValue': ozpIwc.util.clone(this.entity),
+			'oldValue': snapshot.entity
 	};
 };

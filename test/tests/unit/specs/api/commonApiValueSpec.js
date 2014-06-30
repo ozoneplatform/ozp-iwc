@@ -107,18 +107,8 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
         });
         var changes=value.changesSince(snapshot);
         
-        expect(changes.newValue).toEqual(jasmine.objectContaining({
-            'entity': {'bar': 2},
-            'contentType': "test/testType+json",
-            'permissions': ['morePerms'],
-            'eTag': 2
-        }));
-        expect(changes.oldValue).toEqual(jasmine.objectContaining({
-            'entity': config.entity,
-            'contentType': config.contentType,
-            'permissions': config.permissions,
-            'eTag': 1
-        }));
+        expect(changes.newValue).toEqual({'bar': 2});
+        expect(changes.oldValue).toEqual(config.entity);
 
     });
 
@@ -141,18 +131,8 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
         });
         
         var changes=value.changesSince(snapshot);
-        expect(changes.newValue).toEqual(jasmine.objectContaining({
-            'entity': {'bar': 2},
-            'contentType': "test/testType+json",
-            'permissions': ['morePerms'],
-            'eTag': 4
-        }));
-        expect(changes.oldValue).toEqual(jasmine.objectContaining({
-            'entity': config.entity,
-            'contentType': config.contentType,
-            'permissions': config.permissions,
-            'eTag': 1
-        }));
+        expect(changes.newValue).toEqual({'bar': 2});
+        expect(changes.oldValue).toEqual(config.entity);
     });
 
 

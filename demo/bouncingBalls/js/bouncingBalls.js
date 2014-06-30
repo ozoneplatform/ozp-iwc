@@ -24,7 +24,7 @@ var Ball=function(ballRef,svgElement) {
     this.updateCount=0;
 
     var watchRequest={
-        dst: "keyValue.api",
+        dst: "data.api",
         action: "watch",
         resource: ballRef
     };
@@ -74,7 +74,7 @@ Ball.prototype.draw=function(info) {
 
 Ball.prototype.remove=function() {
     client.send({
-        dst: "keyValue.api",
+        dst: "data.api",
         action: "unwatch",
         replyTo: this.watchId
     });
@@ -117,7 +117,7 @@ var AnimatedBall=function(config) {
             ball.vy=-ball.vy;
         }
         client.send({
-            dst: "keyValue.api",
+            dst: "data.api",
             action: "set",
             resource: this.resource,
             entity: ball
@@ -126,7 +126,7 @@ var AnimatedBall=function(config) {
 
     this.cleanup=function() {
         client.send({
-            dst: "keyValue.api",
+            dst: "data.api",
             action: "delete",
             resource: this.resource
         });
@@ -210,12 +210,12 @@ client.on("connected",function() {
 		if(reply.action!=="changed") {
 			return true;//maintain persistent callback
 		}
-		if(reply.entity.addChildren) {
-			reply.entity.addChildren.forEach(function(b) {
-    			balls[b]=new Ball(reply.entity.addChild,viewPort);
+		if(reply.entity.addedChildren) {
+			reply.entity.addedChildren.forEach(function(b) {
+    			balls[b]=new Ball(b,viewPort);
             });
 		}
-		if(reply.entity.removeChildren) {
+		if(reply.entity.removedChildren) {
 			reply.entity.removeChildren.forEach(function(b) {
                 balls[b].cleanup();
             });
@@ -243,7 +243,7 @@ client.on("connected",function() {
 	// add our ball
 	var pushRequest={
 		dst: "data.api",
-		action: "push",
+		action: "addChild",
 		resource: "/balls",
 		entity: {}
 	};
