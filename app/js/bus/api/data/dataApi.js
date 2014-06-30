@@ -8,12 +8,8 @@ ozpIwc.DataApi.prototype.makeValue = function(packet){
     return new ozpIwc.DataApiValue({resource: packet.resource});
 };
 
-ozpIwc.CommonApiBase.prototype.handleListAsLeader=function(node,packetContext) {
-	return [{'action': 'success','entity': node.children}];
-};
-
 ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {
-	var key=this.generateKey(node.resource+"/");
+	var key=this.createKey(node.resource+"/");
 
 	// save the new child
 	var childNode=this.findOrMakeValue(key);
@@ -21,35 +17,42 @@ ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {
 	return childNode;
 };
 
+ozpIwc.DataApi.prototype.handleList=function(node,packetContext) {
+	packetContext.replyTo({
+        'action': 'ok',
+        'entity': node.listChildren()
+    });
+};
+
 /**
  * @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
-ozpIwc.DataApi.prototype.handlePushAsLeader=function(node,packetContext) {
+ozpIwc.DataApi.prototype.handlePush=function(node,packetContext) {
 	var childNode=this.createChild(node,packetContext);
 
 	node.pushChild(childNode.resource);
 	
-	packetContext.reply({'action':'ok'});
+	packetContext.replyTo({'action':'ok'});
 };
 
 /**
  * @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
-ozpIwc.DataApi.prototype.handleUnshiftAsLeader=function(node,packetContext) {
+ozpIwc.DataApi.prototype.handleUnshift=function(node,packetContext) {
 	var childNode=this.createChild(node,packetContext);
 
 	node.unshiftChild(childNode.resource);
 	
-	packetContext.reply({'action':'ok'});
+	packetContext.replyTo({'action':'ok'});
 };
 
 /**
  * @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
-ozpIwc.DataApi.prototype.handlePopAsLeader=function(node,packetContext) {
+ozpIwc.DataApi.prototype.handlePop=function(node,packetContext) {
 	var child=this.findOrMakeValue(node.popChild());
 	// delegate to the handleGet call
 	this.invokeHandler(child,packetContext,this.handleGet);
@@ -59,7 +62,7 @@ ozpIwc.DataApi.prototype.handlePopAsLeader=function(node,packetContext) {
  * @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
-ozpIwc.DataApi.prototype.handleShiftAsLeader=function(node,packetContext) {
+ozpIwc.DataApi.prototype.handleShift=function(node,packetContext) {
 	var child=this.findOrMakeValue(node.shiftChild());
 	// delegate to the handleGet call
 	this.invokeHandler(child,packetContext,this.handleGet);

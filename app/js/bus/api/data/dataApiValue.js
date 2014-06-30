@@ -62,6 +62,19 @@ ozpIwc.DataApiValue.prototype.listChildren=function() {
 ozpIwc.DataApiValue.prototype.toPacket=function() {
 	var packet=ozpIwc.CommonApiValue.prototype.toPacket.apply(this,arguments);
 	packet.links=packet.links || {};
-	packet.links.children=this.children;
+	packet.links.children=ozpIwc.util.clone(this.children);
 	return packet;
+};
+
+ozpIwc.DataApiValue.prototype.changesSince=function(snapshot) {
+    var changes=ozpIwc.CommonApiValue.prototype.changesSince.apply(this,arguments);
+	if(changes) {
+        changes.removedChildren=snapshot.links.children.filter(function(f) {
+            return this.indexOf(f) < 0;
+        },this.children);
+        changes.addedChildren=this.children.filter(function(f) {
+            return this.indexOf(f) < 0;
+        },snapshot.links.children);
+	};
+    return changes;
 };

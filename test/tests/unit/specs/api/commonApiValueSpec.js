@@ -107,20 +107,19 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
         });
         var changes=value.changesSince(snapshot);
         
-        expect(changes).toEqual({
-            'newValue': jasmine.objectContaining({
-                'entity': {'bar': 2},
-                'contentType': "test/testType+json",
-                'permissions': ['morePerms'],
-                'eTag': 2
-            }),
-            'oldValue': jasmine.objectContaining({
-                'entity': config.entity,
-                'contentType': config.contentType,
-                'permissions': config.permissions,
-                'eTag': 1
-            })
-        });
+        expect(changes.newValue).toEqual(jasmine.objectContaining({
+            'entity': {'bar': 2},
+            'contentType': "test/testType+json",
+            'permissions': ['morePerms'],
+            'eTag': 2
+        }));
+        expect(changes.oldValue).toEqual(jasmine.objectContaining({
+            'entity': config.entity,
+            'contentType': config.contentType,
+            'permissions': config.permissions,
+            'eTag': 1
+        }));
+
     });
 
     it("shows changes from a multiple sets",function() {
@@ -142,20 +141,18 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
         });
         
         var changes=value.changesSince(snapshot);
-        expect(changes).toEqual({
-            'newValue': jasmine.objectContaining({
-                'entity': {'bar': 2},
-                'contentType': "test/testType+json",
-                'permissions': ['morePerms'],
-                'eTag': 4
-            }),
-            'oldValue': jasmine.objectContaining({
-                'entity': config.entity,
-                'contentType': config.contentType,
-                'permissions': config.permissions,
-                'eTag': 1
-            })
-        });
+        expect(changes.newValue).toEqual(jasmine.objectContaining({
+            'entity': {'bar': 2},
+            'contentType': "test/testType+json",
+            'permissions': ['morePerms'],
+            'eTag': 4
+        }));
+        expect(changes.oldValue).toEqual(jasmine.objectContaining({
+            'entity': config.entity,
+            'contentType': config.contentType,
+            'permissions': config.permissions,
+            'eTag': 1
+        }));
     });
 
 

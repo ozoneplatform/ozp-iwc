@@ -202,7 +202,7 @@ client.on("connected",function() {
 	//=================================================================
 	// listen for balls changing
 	var watchRequest={
-		dst: "keyValue.api",
+		dst: "data.api",
 		action: "watch",
 		resource: "/balls"
 	};
@@ -210,11 +210,15 @@ client.on("connected",function() {
 		if(reply.action!=="changed") {
 			return true;//maintain persistent callback
 		}
-		if(reply.entity.addChild) {
-			balls[reply.entity.addChild]=new Ball(reply.entity.addChild,viewPort);
+		if(reply.entity.addChildren) {
+			reply.entity.addChildren.forEach(function(b) {
+    			balls[b]=new Ball(reply.entity.addChild,viewPort);
+            });
 		}
-		if(reply.entity.removeChild) {
-			balls[reply.entity.removeChild].cleanup();
+		if(reply.entity.removeChildren) {
+			reply.entity.removeChildren.forEach(function(b) {
+                balls[b].cleanup();
+            });
 		}
 		return true;//maintain persistent callback
 	};
@@ -223,7 +227,7 @@ client.on("connected",function() {
 	//=================================================================
 	// get the existing balls
 	var listExistingBalls={
-		dst: "keyValue.api",
+		dst: "data.api",
 		action: "list",
 		resource: "/balls"
 	};
@@ -238,14 +242,14 @@ client.on("connected",function() {
 	//=================================================================
 	// add our ball
 	var pushRequest={
-		dst: "keyValue.api",
+		dst: "data.api",
 		action: "push",
 		resource: "/balls",
 		entity: {}
 	};
 
 	client.send(pushRequest,function(packet){
-		if(packet.action==="success") {
+		if(packet.action==="ok") {
 			ourBalls.push(new AnimatedBall({
 				resource:packet.entity.resource
 			}));
