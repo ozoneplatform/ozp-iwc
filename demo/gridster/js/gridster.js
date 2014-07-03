@@ -2,14 +2,14 @@
 var client=new ozpIwc.Client({peerUrl:"http://localhost:13000"});
 
 client.on("connected",function() {
-	$('#myAddress').text(client.participantId);
+	$('#myAddress').text(client.address);
 });
 
 var Widget=function(config) {
 	this.iframe=$('<iframe src="' + config.url + '" sandbox="allow-scripts allow-same-origin"></iframe>');
 	this.header=$('<header>'+config.name+'</header>');
 	this.el=$('<div class="widget"></div>');
-	
+
 	this.el.data("controller",this);
 	this.el.append(this.header);
 	this.el.append(this.iframe);
@@ -45,7 +45,7 @@ $(function(){
 				stop: onResize
       }
 		}).data('gridster');
-		
+
 	for(var widgetName in widgetDefs) {
 		var button=$("<button>" + widgetName + '</button>');
 		button.data("widgetName",widgetName);
@@ -57,7 +57,6 @@ $(function(){
 		});
 		$('.header').append(button);
 	}
-	
-		
-});
 
+
+});

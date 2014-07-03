@@ -70,7 +70,7 @@ describe('Participant Integration', function () {
 
                 expect(reply.action).toEqual('changed');
                 //TODO: should the new value be in entity.newValue.entity?
-                expect(reply.entity.newValue.entity).toEqual(setPacket.entity);
+                expect(reply.entity.newValue).toEqual(setPacket.entity);
 
                 done();
                 // returning falsy will cause callback to not persist.

@@ -2,13 +2,13 @@
 <html>
   <head>
     <title>Network Pinger</title>
-		
+
 		<link rel="stylesheet" type="text/css" href="css/sample.css">
 
 		<script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
-		
+
 		<script type="text/javascript" src="//localhost:13000/js/ozpIwc-client.js"></script>
-		
+
 		<script>
 			var params={
 				echoOn: true,
@@ -16,7 +16,7 @@
 				tickCount: 100,
 				tickDelay: 100
 			};
-			
+
 			// not a perfect query parser, but good enough for these purposes
 			var regex=/([^&=]+)=?([^&]*)/g;
 			var query=window.location.search.substring(1);
@@ -24,10 +24,10 @@
 			while(match=regex.exec(query)) {
 				params[match[1]]=decodeURIComponent(match[2]);
 			}
-			
+
 			client=new ozpIwc.Client({peerUrl:"http://localhost:13000"});
 			client.on("connected",function() {
-				$("#me").text(client.participantId);
+				$("#me").text(client.address);
 				$("#target").text(params.toAddress);
 				var sendTick=function() {
 					client.send({
@@ -39,11 +39,11 @@
 						window.setTimeout(sendTick,params.tickDelay);
 					}
 				};
-			
+
 				if(params.tickOn) {
 					sendTick();
 				}
-			
+
 				if(params.echoOn) {
 					client.on("receive",function(packet) {
 						client.send({
@@ -56,7 +56,7 @@
 		</script>
   </head>
   <body>
-		I am <span id="me"></span>, 
+		I am <span id="me"></span>,
 		Pinging <span id="target"></span> another <span id="count"></span> times.
   </body>
 </html>
