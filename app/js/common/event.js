@@ -6,7 +6,7 @@ var ozpIwc=ozpIwc || {};
 	*/
 ozpIwc.Event=function() {
 	this.events={};
-};	
+};
 
 /**
  * Registers a handler for the the event.
@@ -18,7 +18,7 @@ ozpIwc.Event=function() {
 ozpIwc.Event.prototype.on=function(event,callback,self) {
 	var wrapped=callback;
 	if(self) {
-		wrapped=function() { 
+		wrapped=function() {
 			callback.apply(self,arguments);
 		};
 		wrapped.ozpIwcDelegateFor=callback;
@@ -32,7 +32,7 @@ ozpIwc.Event.prototype.on=function(event,callback,self) {
  * Unregisters an event handler previously registered.
  * @param {type} event
  * @param {type} callback
- */	
+ */
 ozpIwc.Event.prototype.off=function(event,callback) {
 	this.events[event]=(this.events[event]||[]).filter( function(h) {
 		return h!==callback && h.ozpIwcDelegateFor !== callback;
@@ -57,7 +57,7 @@ ozpIwc.Event.prototype.trigger=function(eventName,event) {
 
 
 /**
- * Adds an on() and off() function to the target that delegate to this object 
+ * Adds an on() and off() function to the target that delegate to this object
  * @param {object} target Target to receive the on/off functions
  */
 ozpIwc.Event.prototype.mixinOnOff=function(target) {
@@ -75,7 +75,7 @@ ozpIwc.Event.prototype.mixinOnOff=function(target) {
  */
 ozpIwc.CancelableEvent=function(data) {
 	data = data || {};
-	for(k in data) {
+	for(var k in data) {
 		this[k]=data[k];
 	}
 	this.canceled=false;

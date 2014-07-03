@@ -59,7 +59,7 @@ module.exports = function(grunt) {
 			clientJsMin: 'app/js/<%= pkg.name %>-client.min.js',
 			metricsJsMin: 'app/js/<%= pkg.name %>-metrics.min.js',
 			owf7JsMin: 'app/js/<%= pkg.name %>-owf7.min.js',
-			
+
 			allJs: ['<%=output.busJs %>','<%=output.clientJs %>','<%=output.metricsJs %>'],
 			allJsMin: ['<%=output.busJsMin %>','<%=output.clientJsMin %>','<%=output.metricsJsMin %>']
 		},
@@ -120,8 +120,24 @@ module.exports = function(grunt) {
 				}
 			}
     },
+
+    // Make sure code styles are up to par and there are no obvious mistakes
+    jshint: {
+      options: {
+        jshintrc: '.jshintrc',
+        reporter: require('jshint-stylish')
+      },
+      all: [
+        'Gruntfile.js',
+        '<%= src.all %>'
+      ],
+      test: {
+        src: ['<%= src.test %>']
+      }
+    },
+
 		connect: {
-			app: {        
+			app: {
 				options:{ port: 13000,base: "app", debug: true}
 			},
             tests: {
@@ -130,12 +146,12 @@ module.exports = function(grunt) {
             testBus: {
                 options:{ port: 14002, base: ["test/tests/integration/bus","app"] }
             },
-			pingers: {        
+			pingers: {
 				options:{	port: 14001, base: ["app","test/pingers"]	}
 			},
 			doc: {
 				options: { port: 13001, base: "doc" }
-			},			
+			},
 			demo1: {
 				options: { port: 15000, base: ["app","demo/bouncingBalls"] }
 			},
@@ -151,7 +167,7 @@ module.exports = function(grunt) {
 			gridsterDemo: {
 				options: { port: 15004, base: ["app","demo/gridster"] }
 			},
-			owf7: {        
+			owf7: {
 				options:{	port: 15005, base: ["app","demo/owf7Widgets"], protocol:"https"	}
 			}
 		}
@@ -159,14 +175,15 @@ module.exports = function(grunt) {
   };
 	grunt.initConfig(config);
 	console.log("FILES: ",grunt.file.expand(grunt.config.get('src.bus')));
-	
+
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-jsdoc');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-connect');
-	
+  grunt.loadNpmTasks('grunt-contrib-jshint');
+
   // Default task(s).
   grunt.registerTask('default', ['concat','uglify','jsdoc']);
   grunt.registerTask('test', ['concat','uglify','connect','watch']);
