@@ -1,5 +1,3 @@
-
-
 describe("Peer broadcast",function() {
 	var client;
 	var pinger;

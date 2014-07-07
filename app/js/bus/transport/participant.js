@@ -4,12 +4,13 @@ var ozpIwc=ozpIwc || {};
  * @class
  * @mixes ozpIwc.security.Actor
  * @property {string} address - The assigned address to this address.
- * @property {ozpIwc.security.Subject} securitySubject - The subject for this role.
+ * @property {ozpIwc.security.Subject} securityAttributes - The security attributes for this participant.
  */
 ozpIwc.Participant=function() {
     this.events=new ozpIwc.Event();
 	this.events.mixinOnOff(this);
-	this.securitySubject=[];
+	this.securityAttributes={};
+    this.msgId=0;
 };
 
 /**
@@ -29,8 +30,7 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
 ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.address=address;
     this.router=router;
-    this.securitySubject=this.securitySubject || [];
-    this.securitySubject.push("participant:"+address);
+    this.securityAttributes.rawAddress=address;
     this.msgId=0;
 };
 
@@ -61,10 +61,7 @@ ozpIwc.Participant.prototype.fixPacket=function(packet) {
  */
 ozpIwc.Participant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
-    var self=this;
-//	window.setTimeout(function(){
-    self.router.send(packet,self);
-//	},0);
+    this.router.send(packet,this);
     return packet;
 };
 
@@ -76,7 +73,7 @@ ozpIwc.Participant.prototype.generateMsgId=function() {
 ozpIwc.Participant.prototype.heartbeatStatus=function() {
     return {
         address: this.address,
-        subjects: this.securitySubject,
+        securityAttributes: this.securityAttributes,
         type: this.participantType || this.constructor.name,
         name: this.name
     };

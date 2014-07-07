@@ -15,7 +15,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	this.sourceWindow=config.sourceWindow;
 	this.credentials=config.credentials;
 	this.participantType="postMessageProxy";
-	this.securitySubject.push("origin:"+this.origin);
+	this.securityAttributes.origin=this.origin;
 });
 
 /**

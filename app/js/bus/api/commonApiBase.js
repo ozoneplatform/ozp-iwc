@@ -34,10 +34,15 @@ ozpIwc.CommonApiBase.prototype.makeValue=function(packet) {
  * @returns {ozpIwc.AsyncAction}
  */
 ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
-	var subject=packetContext.srcSubject || ["participant:"+packetContext.packet.src];
-	
-	var permissions=node.permissions;
-	return ozpIwc.authorization.isPermitted(subject,permissions);
+	var subject=packetContext.srcSubject || {
+        'rawAddress':packetContext.packet.src
+    };
+
+	return ozpIwc.authorization.isPermitted({
+        'subject': subject,
+        'object': node.permissions,
+        'action': {'action':packetContext.action}
+    });
 };
 
 

@@ -8,7 +8,7 @@ var ozpIwc=ozpIwc || {};
 
 /** 
  * @typedef {object} ozpIwc.security.Actor 
- * @property {ozpIwc.security.Subject} securitySubject
+ * @property {ozpIwc.security.Subject} securityAttributes
  */
 
 
@@ -49,9 +49,34 @@ var ozpIwc=ozpIwc || {};
  * 
  * @class
  */
-ozpIwc.BasicAuthorization=function() {
-	this.roles={};	
+ozpIwc.BasicAuthorization=function(config) {
+    config=config || {};
+	this.roles={};
+    this.policies= config.policies || [
+//        ozpIwc.abacPolicies.permitAll
+        ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes,
+        ozpIwc.abacPolicies.subjectHasAllObjectAttributes
+    ];
 };
+
+ozpIwc.BasicAuthorization.prototype.implies=function(subjectVal,objectVal) {
+    // no object value is trivially true
+    if(objectVal===undefined || objectVal === null) {
+        return true;
+    }
+    // no subject value when there is an object value is trivially false
+    if(subjectVal===undefined || subjectVal === null) {
+        return false;
+    }
+    
+    // convert both to arrays, if necessary
+    subjectVal=Array.isArray(subjectVal)?subjectVal:[subjectVal];
+    objectVal=Array.isArray(objectVal)?objectVal:[objectVal];
+
+    // confirm that every element in objectVal is also in subjectVal
+    return ozpIwc.util.arrayContainsAll(subjectVal,objectVal);
+};
+
 
 /**
  * Grants permissions to a role.
@@ -68,46 +93,22 @@ ozpIwc.BasicAuthorization.prototype.grant=function(role,permissions) {
 	
 /**
  * Confirms that the subject has all of the permissions requested.
- * @param {ozpIwc.security.Subject} subject
- * @param {ozpIwc.security.Permission[]} permissions
+ * @param {object} request
  * @returns {ozpIwc.AsyncAction}
  */
-ozpIwc.BasicAuthorization.prototype.isPermitted=function(subject,permissions) {
-	var permMap={};
-	
+ozpIwc.BasicAuthorization.prototype.isPermitted=function(request) {
 	var action=new ozpIwc.AsyncAction();
-	if(!permissions || permissions.length===0) {
-		return action.resolve('success');
-	}
-	if(typeof(permissions) === "string") {
-		permMap[permissions]=1;
-	} else {
-		for(var i=0;i<permissions.length;++i) {
-			permMap[permissions[i]]=1;
-		}
-	}
 	
-	if(typeof(subject) === "string") {
-		subject=[subject];
-	}	
-	
-
-	for(var i=0;i<subject.length;++i) {
-		var perms=this.roles[subject[i]];
-		if(!perms) {
-			continue;
-		}
-		for(var k in permMap) {
-			if(perms.indexOf(k) !== -1) {
-				delete permMap[k];
-				if(Object.keys(permMap).length === 0) {
-					return action.resolve('success');
-				}
-			}
-		}
-	}
-	
-	return action.resolve('failure');
+    var result=this.policies.some(function(policy) {
+        return policy.call(this,request)==="permit";
+    },this);
+    
+    
+    if(result) {
+        return action.resolve("success");
+    } else {
+		return action.resolve('failure');
+    }
 };
 
 /**

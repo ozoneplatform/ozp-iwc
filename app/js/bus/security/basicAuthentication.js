@@ -8,7 +8,7 @@ var ozpIwc=ozpIwc || {};
 
 /** 
  * @typedef {object} ozpIwc.security.Actor 
- * @property {ozpIwc.security.Subject} securitySubject
+ * @property {ozpIwc.security.Subject} securityAttributes
  */
 
 
