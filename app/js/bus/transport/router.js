@@ -172,6 +172,10 @@ ozpIwc.Router=function(config) {
 	this.registerParticipant(this.watchdog);
 };
 
+ozpIwc.Router.prototype.shutdown=function() {
+    this.watchdog.shutdown();
+}
+
 /**
  * Allows a listener to add a new participant.  
  * @fires ozpIwc.Router#registerParticipant

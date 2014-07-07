@@ -16,6 +16,7 @@ describe("Router",function() {
 	});
 	
 	afterEach(function() {
+        router.shutdown();
 		router=null;
 		fakePeer=null;
 	});
