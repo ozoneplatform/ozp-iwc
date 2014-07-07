@@ -9,6 +9,8 @@
 		"grunt-contrib-concat": "*",
 		"grunt-jsdoc": "*",
 		"grunt-contrib-watch": "*",
-		"grunt-contrib-connect": "*"
+		"grunt-contrib-connect": "*",
+    "grunt-contrib-jshint": "*",
+    "jshint-stylish": "*"
   }
 }

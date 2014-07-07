@@ -20,7 +20,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 
 /**
  * Receives a packet on behalf of this participant and forwards it via PostMessage.
- * @param {ozpIwc.TransportPacketContext} packetContext 
+ * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouter=function(packetContext) {
 	this.sendToRecipient(packetContext.packet);
@@ -64,7 +64,7 @@ ozpIwc.PostMessageParticipant.prototype.handleTransportPacket=function(packet) {
 
 
 /**
- * 
+ *
  * @todo track the last used timestamp and make sure we don't send a duplicate messageId
  * @param {ozpIwc.TransportPacket} packet
  * @param {type} event
@@ -77,12 +77,12 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 	}
 	if(event.origin !== this.origin) {
 		/** @todo participant changing origins should set off more alarms, probably */
-		ozpIwc.metrics.counter("transport."+participant.address+".invalidSenderOrigin").inc();
+		ozpIwc.metrics.counter("transport."+this.address+".invalidSenderOrigin").inc();
 		return;
 	}
-	
+
 	packet=this.fixPacket(packet);
-	
+
 	// if it's addressed to $transport, hijack it
 	if(packet.dst === "$transport") {
 		this.handleTransportPacket(packet);
@@ -113,7 +113,7 @@ ozpIwc.PostMessageParticipantListener=function(config) {
  * Finds the participant associated with the given window.  Unfortunately, this is an
  * o(n) algorithm, since there doesn't seem to be any way to hash, order, or any other way to
  * compare windows other than equality.
- * @param {object} sourceWindow - the participant window handle from message's event.source 
+ * @param {object} sourceWindow - the participant window handle from message's event.source
  */
 ozpIwc.PostMessageParticipantListener.prototype.findParticipant=function(sourceWindow) {
 	for(var i=0; i< this.participants.length; ++i) {
@@ -137,7 +137,7 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 	if(typeof(event.data)==="string") {
 		packet=JSON.parse(event.data);
 	}
-	
+
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
 		participant=new ozpIwc.PostMessageParticipant({
@@ -150,4 +150,3 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 	}
 	participant.forwardFromPostMessage(packet,event);
 };
-

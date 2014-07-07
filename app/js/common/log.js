@@ -1,7 +1,7 @@
 /** @namespace */
 var ozpIwc=ozpIwc || {};
 
-/** 
+/**
  * @type {object}
  * @property {function} log - Normal log output.
  * @property {function} error - Error output.
@@ -13,7 +13,7 @@ ozpIwc.log=ozpIwc.log || {
 		}
 	},
 	error: function() {
-		if(window.console && typeof(window.console.error)==="error") {
+		if(window.console && typeof(window.console.error)==="function") {
 			window.console.error.apply(window.console,arguments);
 		}
 	}

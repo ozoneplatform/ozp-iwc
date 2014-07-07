@@ -68,11 +68,10 @@ ozpIwc.util.structuredCloneSupport.cache=undefined;
  * @param {type} value - value to be cloned.
  * @returns {object} - a deep copy of the object
  */
-ozpIwc.util.clone=function(value) { 
-	if(typeof(value) === 'array' || typeof(value) === 'object') {
+ozpIwc.util.clone=function(value) {
+	if(Array.isArray(value) || typeof(value) === 'object') {
 		return JSON.parse(JSON.stringify(value));
 	} else {
 		return value;
 	}
 };
-
