@@ -222,5 +222,126 @@ describe("Async Action",function() {
 			// success!
 		}
 	});
-	
+});
+
+describe("General Utilities", function() {
+    var modulusEquality=function(a,b) {
+        return a%3 === b%3;
+    };
+    describe("arrayContainsAll",function() {
+        it("trivially matches",function() {
+           expect(ozpIwc.util.arrayContainsAll(
+                   [1],
+                   [1]
+           )).toEqual(true);
+        });
+        it("trivially doesn't match",function() {
+           expect(ozpIwc.util.arrayContainsAll(
+                   [1],
+                   [2]
+           )).toEqual(false);
+        });
+        it("matches a subset",function() {
+           expect(ozpIwc.util.arrayContainsAll(
+                   [1,2],
+                   [1]
+           )).toEqual(true);
+        });
+        it("doesn't match a superset",function() {
+           expect(ozpIwc.util.arrayContainsAll(
+                   [1],
+                   [1,2]
+           )).toEqual(false);
+        });
+        it("trivially matches with custom equality",function() {
+           expect(ozpIwc.util.arrayContainsAll(
+                   [1],
+                   [4],
+                   modulusEquality
+           )).toEqual(true);
+        });
+        it("trivially doesn't match with custom equality",function() {
+           expect(ozpIwc.util.arrayContainsAll(
+                   [1],
+                   [5],
+                   modulusEquality
+           )).toEqual(false);
+        });
+        it("matches a subset with custom equality",function() {
+           expect(ozpIwc.util.arrayContainsAll(
+                   [1,2],
+                   [4],
+                   modulusEquality
+           )).toEqual(true);
+        });
+        it("doesn't match a superset with custom equality",function() {
+           expect(ozpIwc.util.arrayContainsAll(
+                   [1],
+                   [4,5],
+                   modulusEquality
+           )).toEqual(false);
+        });
+    });
+
+    describe("objectContainsAll",function() {
+        it("trivially matches",function() {
+           expect(ozpIwc.util.objectContainsAll(
+                   {'a':1},
+                   {'a':1}
+           )).toEqual(true);
+        });
+        it("trivially doesn't match with different values",function() {
+           expect(ozpIwc.util.objectContainsAll(
+                   {'a':1},
+                   {'a':2}
+           )).toEqual(false);
+        });
+        it("trivially doesn't match with different attributes",function() {
+           expect(ozpIwc.util.objectContainsAll(
+                   {'a':1},
+                   {'b':1}
+           )).toEqual(false);
+        });
+        it("matches a subset",function() {
+           expect(ozpIwc.util.objectContainsAll(
+                   {'a':1,'b':2},
+                   {'a':1}
+           )).toEqual(true);
+        });
+        it("doesn't match a superset",function() {
+           expect(ozpIwc.util.objectContainsAll(
+                   {'a':1},
+                   {'a':1,'b':2}
+           )).toEqual(false);
+        });
+        it("trivially matches with custom equality",function() {
+           expect(ozpIwc.util.objectContainsAll(
+                   {'a':1},
+                   {'a':4},
+                   modulusEquality
+           )).toEqual(true);
+        });
+        it("trivially doesn't match with custom equality",function() {
+           expect(ozpIwc.util.objectContainsAll(
+                   {'a':1},
+                   {'a':5},
+                   modulusEquality
+           )).toEqual(false);
+        });
+        it("matches a subset with custom equality",function() {
+           expect(ozpIwc.util.objectContainsAll(
+                   {'a':4,'b':5},
+                   {'a':4},
+                   modulusEquality
+           )).toEqual(true);
+        });
+        it("doesn't match a superset with custom equality",function() {
+           expect(ozpIwc.util.objectContainsAll(
+                   {'a':1},
+                   {'a':4,'b':5},
+                   modulusEquality
+           )).toEqual(false);
+        });
+        
+    });
 });

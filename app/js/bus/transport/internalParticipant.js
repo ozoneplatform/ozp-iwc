@@ -1,5 +1,6 @@
 
 ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
+    config=config || {};
 	ozpIwc.Participant.apply(this,arguments);
 	this.replyCallbacks={};
 	this.participantType="internal";
@@ -39,4 +40,4 @@ ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
         success=true;
     }
     return success;
-}
+};

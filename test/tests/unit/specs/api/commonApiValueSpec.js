@@ -8,7 +8,7 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
         config.resource= "testResource";
         config.entity= {'foo': 1};
         config.contentType= "testContentType";
-        config.permissions= ['perms'];
+        config.permissions= {'perms':"yes"};
         config.version= 1;
         
         value = new classUnderTest(config);
@@ -19,7 +19,7 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
         expect(value.resource).toBeUndefined();
         expect(value.entity).toBeUndefined();
         expect(value.contentType).toBeUndefined();
-        expect(value.permissions).toEqual([]);
+        expect(value.permissions).toEqual({});
         expect(value.version).toEqual(0);
 
     });
@@ -36,12 +36,12 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
         value.set({
             'entity': {'bar': 2},
             'contentType': "test/testType+json",
-            'permissions': ['morePerms']
+            'permissions': {'perms':"maybe"}
         });
         expect(value.resource).toEqual("testResource");
         expect(value.entity).toEqual({'bar': 2});
         expect(value.contentType).toEqual("test/testType+json");
-        expect(value.permissions).toEqual(['morePerms']);
+        expect(value.permissions).toEqual({'perms':"maybe"});
         expect(value.version).toEqual(2);
     });
 
@@ -54,7 +54,7 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
         expect(value.resource).toEqual("testResource");
         expect(value.entity).toEqual({'bar': 2});
         expect(value.contentType).toEqual("test/testType+json");
-        expect(value.permissions).toEqual(['perms']);
+        expect(value.permissions).toEqual(config.permissions);
         expect(value.version).toEqual(2);
     });
 

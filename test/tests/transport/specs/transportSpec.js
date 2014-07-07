@@ -1,5 +1,5 @@
 
-
+jasmine.DEFAULT_TIMEOUT_INTERVAL=50000000
 
 describe("Peer broadcast",function() {
 	var client;

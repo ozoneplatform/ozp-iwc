@@ -105,14 +105,17 @@ describe("Router",function() {
 			router.registerParticipant(participant);
 			router.registerParticipant(participant2);
 			
-			ozpIwc.authorization.grant("participant:"+participant.address,["perm:shared","color:blue"]);
-			ozpIwc.authorization.grant("participant:"+participant2.address,["perm:shared","color:red"]);
+            participant.securityAttributes.perm='shared';
+            participant2.securityAttributes.perm='shared';
+			
+            participant.securityAttributes.color='blue';
+            participant2.securityAttributes.color='red';
 		});
 		
 		it("allows receipt of shared permissions",function() {
 			var packet=participant.send({
 				dst:participant2.address,
-				permissions: ["perm:shared"],
+				permissions: {'perm':"shared"},
 				entity: { foo: "bar" }
 			});
 			
@@ -122,7 +125,7 @@ describe("Router",function() {
 		it("denies receipt of unshared permissions",function() {
 			participant.send({
 				dst:participant2.address,
-				permissions: ["color:blue"],
+				permissions: {'color':"blue"},
 				entity: { foo: "bar" }
 			});
 			
@@ -132,7 +135,7 @@ describe("Router",function() {
 		it("denies if the recipient doesn't have all permissions",function() {
 			participant.send({
 				dst:participant2.address,
-				permissions: ["perm:shared","color:blue"],
+				permissions: {'perm':"shared",'color':"blue"},
 				entity: { foo: "bar" }
 			});
 			
@@ -142,8 +145,8 @@ describe("Router",function() {
 		it("allows a participant to send a packet to require permissions that it doesn't have, itself",function() {
 			var packet=participant.send({
 				dst:participant2.address,
-				permissions: ["color:red"],
-				entity: { foo: "bar" }
+				permissions: {'color':"red"},
+				entity: { 'foo': "bar" }
 			});
 			
 			expect(participant2.packets[0].packet).toEqual(packet);

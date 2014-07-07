@@ -62,47 +62,28 @@ var FakePeer=function() {
 //========================================================
 // TestParticipant for connecting to a router
 //========================================================
-var TestParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
+var TestParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,function(config) {
+    ozpIwc.InternalParticipant.apply(this,arguments);
     config=config || {};
-	ozpIwc.Participant.apply(this,arguments);
-	this.origin=config.origin || "foo.com";
-	
+    this.origin=config.origin || "foo.com";
 	this.packets=[];
     this.sentPackets=[];
-	this.messageId=1;
-	this.callbacks={};
-	this.connect=function(router) {
-		router.registerParticipant(this);
-	};
-	
-	if(config.router) {
-		this.connect(config.router);
-	}
-	
-	this.receiveFromRouter=function(packet){ 
-		if(this.callbacks[packet.replyTo]) {
-			this.callbacks[packet.replyTo](packet);
-		}
-        this.events.trigger("receive",packet);
+
+    var self=this;
+
+    this.router={
+        'send' : function() {}
+    };
+
+    this.receiveFromRouter=function(packet){
 		this.packets.push(packet); 
-		return true;
+		return ozpIwc.InternalParticipant.prototype.receiveFromRouter.call(this,packet,callback);;
 	};
 
 	this.send=function(packet,callback) {
-		packet.ver=packet.ver || 1;
-		packet.src=packet.src || this.address;
-		packet.dst=packet.dst || config.dst;
-		packet.msgId= packet.msgId || this.messageId++;
-		packet.time=packet.time || new Date().getTime();
-
-		this.sentPackets.push(packet);
-        if(callback) {
-			this.callbacks[packet.msgId]=callback;
-		}
-        if(this.router) {
-            this.router.send(packet,this);
-        }
-		return packet;
+        packet=ozpIwc.InternalParticipant.prototype.send.call(this,packet,callback);
+        this.sentPackets.push(packet);
+    	return packet;
 	};
 	
 	this.reply=function(originalPacket,packet,callback) {

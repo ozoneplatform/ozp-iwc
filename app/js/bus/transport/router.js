@@ -237,7 +237,11 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
 		return;
 	}
 
-	ozpIwc.authorization.isPermitted(localParticipant.securitySubject,packet.permissions)
+	ozpIwc.authorization.isPermitted({
+        'subject':localParticipant.securityAttributes,
+        'object': packet.permissions,
+        'action': {'action': 'receive'}
+    })
 		.success(function() {
 			ozpIwc.metrics.counter("transport.packets.delivered").inc();
 			localParticipant.receiveFromRouter(packetContext);

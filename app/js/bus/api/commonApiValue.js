@@ -13,7 +13,7 @@ ozpIwc.CommonApiValue = function(config) {
     
   this.entity=config.entity;
 	this.contentType=config.contentType;
-	this.permissions=config.permissions || [];
+	this.permissions=config.permissions || {};
 	this.version=config.version || 0;
 };
 
