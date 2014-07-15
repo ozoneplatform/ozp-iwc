@@ -26,7 +26,7 @@ if(ozpIwc.BasicAuthorization) {
 	ozpIwc.authorization=new ozpIwc.BasicAuthorization();
 }
 
-if(ozpIwc.DataApi) {
+if(ozpIwc.DataApi && ozpIwc.LeaderGroupParticipant) {
 	ozpIwc.dataApi=new ozpIwc.DataApi({
 		'participant': new ozpIwc.LeaderGroupParticipant({'name': "data.api"})
 	});
@@ -35,11 +35,18 @@ if(ozpIwc.DataApi) {
 }
 
 if(ozpIwc.IntentsApi) {
-    ozpIwc.intentsApi=new ozpIwc.IntentsApi({
+    ozpIwc.intentsApi = new ozpIwc.IntentsApi({
         'participant': new ozpIwc.LeaderGroupParticipant({'name': "intents.api"})
     });
 
     ozpIwc.defaultRouter.registerParticipant(ozpIwc.intentsApi.participant);
+}
+if(ozpIwc.NamesApi && ozpIwc.LeaderGroupParticipant) {
+    ozpIwc.namesApi=new ozpIwc.NamesApi({
+        'participant': new ozpIwc.LeaderGroupParticipant({'name': "names.api"})
+    });
+
+    ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi.participant);
 }
 //
 //if(ozpIwc.NamesApi) {
