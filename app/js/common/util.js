@@ -70,7 +70,11 @@ ozpIwc.util.structuredCloneSupport.cache=undefined;
  */
 ozpIwc.util.clone=function(value) {
 	if(Array.isArray(value) || typeof(value) === 'object') {
-		return JSON.parse(JSON.stringify(value));
+        try {
+            return JSON.parse(JSON.stringify(value));
+        } catch (e) {
+            console.log(e);
+        }
 	} else {
 		return value;
 	}

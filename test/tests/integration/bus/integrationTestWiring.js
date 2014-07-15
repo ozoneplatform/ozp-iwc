@@ -14,6 +14,14 @@ if(ozpIwc.Router) {
     ozpIwc.defaultRouter=new ozpIwc.Router({
         peer:ozpIwc.defaultPeer
     });
+    if(ozpIwc.NamesApi && ozpIwc.LeaderGroupParticipant) {
+        console.log("creating names api");
+        ozpIwc.namesApi=new ozpIwc.NamesApi({
+            'participant': new ozpIwc.LeaderGroupParticipant({'name': "names.api"})
+        });
+
+        ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi.participant);
+    }
     if (ozpIwc.Participant) {
         ozpIwc.testParticipant = new ozpIwc.TestParticipant({name: "Test Participant"});
         ozpIwc.defaultRouter.registerParticipant(ozpIwc.testParticipant);
@@ -113,9 +121,17 @@ if(ozpIwc.DataApi) {
 }
 
 if(ozpIwc.IntentsApi) {
-    ozpIwc.intentsApi=new ozpIwc.IntentsApi({
+    ozpIwc.intentsApi = new ozpIwc.IntentsApi({
         'participant': new ozpIwc.LeaderGroupParticipant({'name': "intents.api"})
     });
 
     ozpIwc.defaultRouter.registerParticipant(ozpIwc.intentsApi.participant);
+}
+if(ozpIwc.NamesApi && ozpIwc.LeaderGroupParticipant) {
+    console.log("creating names api");
+    ozpIwc.namesApi=new ozpIwc.NamesApi({
+        'participant': new ozpIwc.LeaderGroupParticipant({'name': "names.api"})
+    });
+
+    ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi.participant);
 }

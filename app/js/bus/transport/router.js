@@ -112,14 +112,20 @@ ozpIwc.RouterWatchdog=ozpIwc.util.extend(ozpIwc.InternalParticipant,function(con
 		self.send(heartbeat);
 	},this.heartbeatFrequency);
 
-    this.router.on("registeredParticipant", function(event) {
-        ozpIwc.namesApi.makeValue(event.packet, event.participant);
-    });
 });
 
 ozpIwc.RouterWatchdog.prototype.connectToRouter=function(router,address) {
 	ozpIwc.Participant.prototype.connectToRouter.apply(this,arguments);
 	this.name=router.self_id;
+    router.on("registeredParticipant", function(event) {
+        var value = ozpIwc.namesApi.findOrMakeValue({resource: '/address', contentType: "ozp-address-collection-v1+json", participant: event.participant});
+        var packet = {
+            resource: '/address',
+            src: event.participant.address || event.participant.electionAddress,
+            entity: event.participant
+        };
+        value.set(packet);
+    });
 };
 
 ozpIwc.RouterWatchdog.prototype.shutdown=function() {
@@ -223,7 +229,7 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
 		return null;
 	}
 
-    var registeredEvent=new ozpIwc.Event({
+    var registeredEvent=new ozpIwc.CancelableEvent({
         'packet': packet,
         'participant': participant
     });
