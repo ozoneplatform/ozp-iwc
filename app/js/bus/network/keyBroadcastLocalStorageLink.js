@@ -10,7 +10,6 @@ var ozpIwc = ozpIwc || {};
  * This completely eliminates the need to garbage collect the localstorage space, with the associated
  * mutex contention and full-buffer issues.
  *
- * @todo Fragment the packet if it's more than storage can handle.
  * @todo Compress the key
  *
  * @class
@@ -32,6 +31,8 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     this.maxRetries = config.maxRetries || 6;
     this.queueSize = config.queueSize || 1024;
     this.sendQueue = this.sendQueue || [];
+    this.fragmentSize = config.fragmentSize || (5 * 1024 * 1024) / 2 / 2; //50% of 5mb, divide by 2 for utf-16 characters
+    this.fragmentTimeout = config.fragmentTimeout || 1000; // 1 second
 
     //Add fragmenting capabilities
     String.prototype.chunk = function (size) {
@@ -53,7 +54,7 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
             ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.parseError').inc();
             return;
         }
-        if (packet.fragment) {
+        if (packet.data.fragment) {
             self.handleFragment(packet);
         } else {
             self.peer.receive(self.linkId, packet);
@@ -72,68 +73,180 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
 
 };
 
+/**
+ * @typedef ozpIwc.FragmentPacket
+ * @property {boolean} fragment - Flag for knowing this is a fragment packet. Should be true.
+ * @property {Number} msgId - The msgId from the TransportPacket broken up into fragments.
+ * @property {Number} id - The position amongst other fragments of the TransportPacket.
+ * @property {Number} total - Total number of fragments of the TransportPacket expected.
+ * @property {String} chunk - A segment of the TransportPacket in string form.
+ *
+ */
+
+/**
+ * @typedef ozpIwc.FragmentStore
+ * @property {Number} sequence - The sequence of the latest fragment received.
+ * @property {Number} total - The total number of fragments expected.
+ * @property {String} src_peer - The src_peer of the fragments expected.
+ * @property {Array(String)} chunks - String segments of the TransportPacket.
+ */
+
+/**
+ * Handles fragmented packets received from the router. When all fragments of a message have been received,
+ * the resulting packet will be passed on to the registered peer of the KeyBroadcastLocalStorageLink.
+ * @param {ozpIwc.NetworkPacket} packet - NetworkPacket containing an ozpIwc.FragmentPacket as its data property
+ */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet) {
-    // Check to make sure we haven't seen this fragment
+    // Check to make sure the packet is a fragment and we haven't seen it
     if (this.peer.haveSeen(packet)) {
         return;
     }
 
-    this.fragments = this.fragments || [];
-    this.fragments[packet.fragment.time] = this.fragments[packet.fragment.time] || {
-        handling: false,
-        chunks: []
-    };
+    var key = packet.data.msgId;
 
-    this.fragments[packet.fragment.time].chunks[packet.fragment.id] = packet.fragment.chunk;
+    this.storeFragment(packet);
 
-    if (this.fragments[packet.fragment.time].chunks.length === packet.fragment.count) {
-        var result = JSON.parse(this.fragments[packet.fragment.time].chunks.join(''));
+    var defragmentedPacket = this.defragmentPacket(this.fragments[key]);
 
-        var defragmentedPacket = {
-            sequence: packet.sequence,
-            src_peer: packet.src_peer,
-            data: result
-        };
+    if (defragmentedPacket) {
+
+        // clear the fragment timeout
+        window.clearTimeout(this.fragments[key].fragmentTimer);
+
+        // Remove the last sequence from the known packets to reuse it for the defragmented packet
+        var packetIndex = this.peer.packetsSeen[defragmentedPacket.src_peer].indexOf(defragmentedPacket.sequence);
+        delete this.peer.packetsSeen[defragmentedPacket.src_peer][packetIndex];
 
         this.peer.receive(this.linkId, defragmentedPacket);
         ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
 
-        delete this.fragments[packet.fragment.time];
+        delete this.fragments[key];
     }
 };
+
+/**
+ *  Stores a received fragment. When the first fragment of a message is received, a timer is set to destroy the storage
+ *  of the message fragments should not all messages be received.
+ * @param {ozpIwc.NetworkPacket} packet - NetworkPacket containing an ozpIwc.FragmentPacket as its data property
+ * @returns {boolean} result - true if successful.
+ */
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) {
+    if (!packet.data.fragment) {
+        return null;
+    }
+
+    this.fragments = this.fragments || [];
+    // NetworkPacket properties
+    var sequence = packet.sequence;
+    var src_peer = packet.src_peer;
+    // FragmentPacket Properties
+    var key = packet.data.msgId;
+    var id = packet.data.id;
+    var chunk = packet.data.chunk;
+    var total = packet.data.total;
+
+    if (key === undefined || id === undefined) {
+        return null;
+    }
+
+    // If this is the first fragment of a message, add the storage object
+    if (!this.fragments[key]) {
+        this.fragments[key] = {};
+        this.fragments[key].chunks = [];
+
+        var self = this;
+        self.key = key;
+        self.total = total ;
+
+        // Add a timeout to destroy the fragment should the whole message not be received.
+        this.fragments[key].timeoutFunc = function () {
+            ozpIwc.metrics.counter('network.packets.dropped').inc();
+            ozpIwc.metrics.counter('network.fragments.dropped').inc(self.total );
+            delete self.fragments[self.key];
+        };
+    }
+
+    // Restart the fragment drop countdown
+    window.clearTimeout(this.fragments[key].fragmentTimer);
+    this.fragments[key].fragmentTimer = window.setTimeout(this.fragments[key].timeoutFunc, this.fragmentTimeout);
+
+    // keep a copy of properties needed for defragmenting, the last sequence & src_peer received will be
+    // reused in the defragmented packet
+    this.fragments[key].total = total || this.fragments[key].total ;
+    this.fragments[key].sequence = (sequence !== undefined) ? sequence : this.fragments[key].sequence;
+    this.fragments[key].src_peer = src_peer || this.fragments[key].src_peer;
+    this.fragments[key].chunks[id] = chunk;
+
+    // If the necessary properties for defragmenting aren't set the storage fails
+    if (this.fragments[key].total === undefined || this.fragments[key].sequence === undefined ||
+        this.fragments[key].src_peer === undefined) {
+        return null;
+    } else {
+        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.fragments.received').inc();
+        return true;
+    }
+};
+
+/**
+ * Rebuilds the original packet sent across the keyBroadcastLocalStorageLink from the fragments it was broken up into.
+ * @param {ozpIwc.FragmentStore} fragments - the grouping of fragments to reconstruct
+ * @returns {ozpIwc.TransportPacket} result - the reconstructed TransportPacket.
+ */
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragments) {
+    if (fragments.total != fragments.chunks.length) {
+        return null;
+    }
+    try {
+        var result = JSON.parse(fragments.chunks.join(''));
+        return {
+            sequence: fragments.sequence,
+            src_peer: fragments.src_peer,
+            data: result
+        };
+    } catch (e) {
+        return null;
+    }
+};
+
 /**
  * <p>Publishes a packet to other peers.
  * <p>If the sendQueue is full (KeyBroadcastLocalStorageLink.queueSize) send will not occur.
+ * <p>If the TransportPacket is too large (KeyBroadcastLocalStorageLink.fragmentSize) ozpIwc.FragmentPacket's will
+ *    be sent instead.
  *
  * @class
  * @param {ozpIwc.NetworkPacket} - packet
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
-
     var str = JSON.stringify(packet.data);
 
-    // 50% of localStorage = 5MB / 2(utf-16 strings) / 2(50%) = 1280
-    if (str.length < 1280) {
+    if (str.length < this.fragmentSize) {
         this.queueSend(packet);
     } else {
-        var fragments = str.chunk(1280);
+        var fragments = str.chunk(this.fragmentSize);
 
         // Use the original packet as a template, delete the data and
         // generate new packets.
-        delete packet.data;
         var self = this;
-        var fragmentGen = function(chunk) {
-            packet.sequence = self.peer.sequenceCounter++;
-            packet.fragment = {
+        self.data= packet.data;
+        delete packet.data;
+
+        var fragmentGen = function (chunk, template) {
+
+            template.sequence = self.peer.sequenceCounter++;
+            template.data = {
+                fragment: true,
+                msgId: self.data.msgId,
                 id: i,
-                count: fragments.length,
+                total: fragments.length,
                 chunk: chunk
             };
-            return packet;
+            return template;
         };
 
+        // Generate & queue the fragments
         for (var i = 0; i < fragments.length; i++) {
-            this.queueSend(fragmentGen(fragments[i]));
+            this.queueSend(fragmentGen(fragments[i], packet));
         }
     }
 };
