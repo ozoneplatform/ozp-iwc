@@ -122,7 +122,9 @@ ozpIwc.RouterWatchdog.prototype.connectToRouter=function(router,address) {
         var packet = {
             resource: '/address',
             src: event.participant.address || event.participant.electionAddress,
-            entity: event.participant
+            entity: event.participant,
+            dst: "names.api",
+            action: "set"
         };
         value.set(packet);
     });

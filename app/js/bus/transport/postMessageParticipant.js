@@ -60,6 +60,15 @@ ozpIwc.PostMessageParticipant.prototype.handleTransportPacket=function(packet) {
 		}
 	};
 	this.sendToRecipient(reply);
+    var value = ozpIwc.namesApi.findOrMakeValue({resource: '/address', contentType: "ozp-address-collection-v1+json", participant: this});
+    var packet = {
+        resource: '/address',
+        src: this.address,
+        entity: this,
+        dst: "names.api",
+        action: "set"
+    };
+    value.set(packet);
 };
 
 

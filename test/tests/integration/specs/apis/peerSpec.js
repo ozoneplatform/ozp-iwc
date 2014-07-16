@@ -146,6 +146,20 @@ describe('Participant Integration', function () {
             for (var i=0;i<packet.entity.length;i++) {
                 console.log("address: " + packet.entity[i]);
             }
+            var participantFound=false;
+            var keys =Object.keys(packet.entity);
+            participantFound=true;
+            keys.map(function(key) {
+                if (key === 'undefined') {
+                    return;
+                }
+                console.log("Found participant " + key);
+                var subKeys=Object.keys(packet.entity[key]);
+                subKeys.map(function(subKey) {
+                    console.log("\t" + subKey + " = " + packet.entity[key][subKey]);
+                });
+            });
+            expect(participantFound).toBeTruthy();
             done();
             return false;
         }

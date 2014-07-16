@@ -42,7 +42,6 @@ if(ozpIwc.IntentsApi) {
     ozpIwc.defaultRouter.registerParticipant(ozpIwc.intentsApi.participant);
 }
 if(ozpIwc.NamesApi && ozpIwc.LeaderGroupParticipant) {
-    console.log("creating names api");
     ozpIwc.namesApi=new ozpIwc.NamesApi({
         'participant': new ozpIwc.LeaderGroupParticipant({'name': "names.api"})
     });

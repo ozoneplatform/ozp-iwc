@@ -15,7 +15,6 @@ if(ozpIwc.Router) {
         peer:ozpIwc.defaultPeer
     });
     if(ozpIwc.NamesApi && ozpIwc.LeaderGroupParticipant) {
-        console.log("creating names api");
         ozpIwc.namesApi=new ozpIwc.NamesApi({
             'participant': new ozpIwc.LeaderGroupParticipant({'name': "names.api"})
         });
