@@ -108,4 +108,31 @@ describe('Participant Integration', function () {
             clients[0].send(setPacket);
         }
     });
+
+    it('reads metrics gauges', function (done) {
+        var called = false;
+        var receiveCount = 0;
+        var echoCallback = function (event) {
+            if (event.echo) {
+                if (!called && receiveCount++ >= 100) {
+                    expect(event.routerParticipants).not.toBeLessThan(1);
+                    expect(event.postMessageParticipants).not.toBeLessThan(1);
+                    expect(event.leaderGroupElectionQueue).toBeDefined;
+                    expect(event.internalParticipantCallbacks).toBeDefined;
+                    expect(event.authorizedRoles).toBeDefined;
+                    expect(event.authenticatedRoles).toBeDefined;
+                    expect(event.metricsTypes).toBeDefined;
+                    expect(event.linksStorage).toBeDefined;
+                    console.log("links storage: " + event.linksStorage);
+                    called = true;
+                    done();
+                }
+            }
+        };
+
+        clients[0].on("receive", echoCallback);
+        for (var i = 0; i <= 100; i++) {
+            clients[0].send(setPacket);
+        }
+    });
 });

@@ -131,3 +131,10 @@ ozpIwc.MetricsRegistry.prototype.toJson=function() {
 
 	
 ozpIwc.metrics=new ozpIwc.MetricsRegistry();
+var $ = jQuery.noConflict();
+$(function(){
+    var self=ozpIwc.metrics;
+    self.gauge('registry.metrics').set(function() {
+        return {'types':  Object.keys(self.metrics).length};
+    });
+});
