@@ -19,6 +19,9 @@ var ozpIwc = ozpIwc || {};
  * @param {string} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
  * @param {Number} [config.maxRetries] - Number of times packet transmission will retry if failed. Defaults to 6.
  * @param {Number} [config.queueSize] - Number of packets allowed to be queued at one time. Defaults to 1024.
+ * @param {Number} [config.fragmentSize] - Size in bytes of which any TransportPacket exceeds will be sent in FragmentPackets.
+ * @param {Number} [config.fragmentTime] - Time in milliseconds after a fragment is received and additional expected
+ *                                         fragments are not received that the message is dropped.
  */
 ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     config = config || {};
@@ -190,7 +193,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
 /**
  * Rebuilds the original packet sent across the keyBroadcastLocalStorageLink from the fragments it was broken up into.
  * @param {ozpIwc.FragmentStore} fragments - the grouping of fragments to reconstruct
- * @returns {ozpIwc.TransportPacket} result - the reconstructed TransportPacket.
+ * @returns {ozpIwc.NetworkPacket} result - the reconstructed NetworkPacket with TransportPacket as its data property.
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragments) {
     if (fragments.total != fragments.chunks.length) {
@@ -199,6 +202,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragm
     try {
         var result = JSON.parse(fragments.chunks.join(''));
         return {
+            defragmented: true,
             sequence: fragments.sequence,
             src_peer: fragments.src_peer,
             data: result
