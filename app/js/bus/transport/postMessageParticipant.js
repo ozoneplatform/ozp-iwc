@@ -60,9 +60,9 @@ ozpIwc.PostMessageParticipant.prototype.handleTransportPacket=function(packet) {
 		}
 	};
 	this.sendToRecipient(reply);
-    var value = ozpIwc.namesApi.findOrMakeValue({resource: '/address', contentType: "ozp-address-collection-v1+json", participant: this});
+    var value = ozpIwc.namesApi.findOrMakeValue({resource: '/address/' + this.address, contentType: "ozp-address-collection-v1+json", entity: this});
     var packet = {
-        resource: '/address',
+        resource: '/address/' + this.address,
         src: this.address,
         entity: this,
         dst: "names.api",

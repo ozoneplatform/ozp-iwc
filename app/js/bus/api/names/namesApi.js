@@ -4,9 +4,6 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function() {
 	ozpIwc.CommonApiBase.apply(this,arguments);
 });
 
-ozpIwc.NamesApi.prototype.makeValue = function(config){
-    config=config || {};
-    return new ozpIwc.NamesApiValue(
-        {resource: config.resource, contentType: config.contentType, entity: config.participant}
-    );
+ozpIwc.NamesApi.prototype.makeValue = function(packet){
+    return new ozpIwc.NamesApiValue({resource: packet.resource, contentType: packet.contentType});
 };

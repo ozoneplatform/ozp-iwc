@@ -137,34 +137,60 @@ describe('Participant Integration', function () {
     );
     it('Retrieves the registered participant addresses', function (done) {
 
-        var getAddressesPacket = {
+        var getAddressListPacket = {
             dst: "names.api",
             action: "get",
             resource: "/address"
         };
-        var replyCallback=function(packet) {
-            for (var i=0;i<packet.entity.length;i++) {
-                console.log("address: " + packet.entity[i]);
-            }
-            var participantFound=false;
+
+        var foundAddresses=[];
+
+        var addressCallback=function(packet) {
+            var found=false;
             var keys =Object.keys(packet.entity);
-            participantFound=true;
             keys.map(function(key) {
                 if (key === 'undefined') {
                     return;
                 }
-                console.log("Found participant " + key);
+                console.log("Info for participant " + key);
+                found=true;
                 var subKeys=Object.keys(packet.entity[key]);
                 subKeys.map(function(subKey) {
                     console.log("\t" + subKey + " = " + packet.entity[key][subKey]);
                 });
+
+                if (key === foundAddresses[foundAddresses.length-1]) {
+                    console.log("LAST PARTICIPANT");
+                    expect(found).toBeTruthy();
+                    done();
+                }
             });
-            expect(participantFound).toBeTruthy();
-            done();
             return false;
         }
-        for (var i = 0; i <= 1010; i++) {
-            clients[0].send(getAddressesPacket,replyCallback);
-        }
+
+        var addressListCallback=function(packet) {
+            var gotList=false;
+            packet.entity.map(function(id) {
+                if (id !== 'undefined') {
+                    console.log("Found address: " + id);
+                    foundAddresses.push(id);
+                    gotList = true;
+                }
+            });
+
+            expect(gotList).toBeTruthy();
+            foundAddresses.map(function(id) {
+                var getAddressPacket = {
+                    dst: "names.api",
+                    action: "get",
+                    resource: "/address/" + id
+                };
+                console.log("get info for address " + id);
+                clients[0].send(getAddressPacket,addressCallback);
+            })
+            return false;
+        };
+
+        clients[0].send(getAddressListPacket,addressListCallback);
     });
 });
