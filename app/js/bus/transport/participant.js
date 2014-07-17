@@ -18,10 +18,31 @@ ozpIwc.Participant=function() {
  * @returns {boolean} true if this packet could have additional recipients
  */
 ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
+    var self = this;
+    ozpIwc.authorization.isPermitted({
+        'subject': this.securityAttributes,
+        'object': packetContext.packet.permissions,
+    })
+        .success(function(){
+            ozpIwc.metrics.counter("transport.packets.delivered").inc();
+            self.receiveFromRouterImpl(packetContext);
+        })
+        .failure(function() {
+            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
+            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+        });
+};
+
+/**
+ * Overridden by inherited Participants.
+ * @override
+ * @param packetContext
+ * @returns {boolean}
+ */
+ozpIwc.Participant.prototype.receiveFromRouterImpl = function (packetContext) {
     // doesn't really do anything other than return a bool and prevent "unused param" warnings
     return !packetContext;
 };
-
 /**
  * @param {ozpIwc.Router} router
  * @param {string} address

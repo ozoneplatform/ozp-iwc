@@ -27,7 +27,7 @@ ozpIwc.InternalParticipant.prototype.getCallbackCount=function() {
  * @param {ozpIwc.PacketContext} packetContext
  * @returns {boolean} true if this packet could have additional recipients
  */
-ozpIwc.InternalParticipant.prototype.receiveFromRouter=function(packetContext) { 
+ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
 	var packet=packetContext.packet;
 	if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
 		if (!this.replyCallbacks[packet.replyTo](packet)) {

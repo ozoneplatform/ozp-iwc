@@ -22,7 +22,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  * Receives a packet on behalf of this participant and forwards it via PostMessage.
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
-ozpIwc.PostMessageParticipant.prototype.receiveFromRouter=function(packetContext) {
+ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
 	this.sendToRecipient(packetContext.packet);
 	return true;
 };

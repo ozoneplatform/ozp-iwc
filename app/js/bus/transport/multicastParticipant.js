@@ -17,7 +17,7 @@ ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name)
  * @param {ozpIwc.TransportPacket} packet
  * @returns {Boolean}
  */
-ozpIwc.MulticastParticipant.prototype.receiveFromRouter=function(packet) {
+ozpIwc.MulticastParticipant.prototype.receiveFromRouterImpl=function(packet) {
 	this.members.forEach(function(m) { m.receiveFromRouter(packet);});
 	return false;
 };
