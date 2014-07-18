@@ -19,7 +19,7 @@ ozpIwc.NamesApiValue.prototype.set=function(packet) {
         this.contentType=packet.contentType;
         if (packet.resource.indexOf('/address') === 0) {
             var id=this.addressId(packet.resource);
-            if (id && packet.resource === '/address/' + id) {
+            if (id) {
                 if (id === 'undefined') {
                     return;
                 }
