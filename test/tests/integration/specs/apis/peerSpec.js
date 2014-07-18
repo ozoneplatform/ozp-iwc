@@ -137,6 +137,7 @@ describe('Participant Integration', function () {
     );
     it('Retrieves the registered participant addresses', function (done) {
 
+        var called = false;
         var getAddressListPacket = {
             dst: "names.api",
             action: "get",
@@ -149,7 +150,8 @@ describe('Participant Integration', function () {
             var found=false;
             var keys =Object.keys(packet.entity);
             //TODO Investigate: sometimes the entity is empty for the last address retrieved from resource /address
-            if (keys.length == 0) {
+            if (keys.length == 0 && !called) {
+                called = true;
                 done();
             }
             keys.map(function(key) {
@@ -164,6 +166,7 @@ describe('Participant Integration', function () {
                 });
 
                 if (key === foundAddresses[foundAddresses.length-1]) {
+                    called = true;
                     expect(found).toBeTruthy();
                     done();
                 }

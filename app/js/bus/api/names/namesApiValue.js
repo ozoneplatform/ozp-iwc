@@ -54,6 +54,6 @@ ozpIwc.NamesApiValue.prototype.addressId=function(resource) {
  * @param {string} contentType
  * @returns {Boolean}
  */
-ozpIwc.CommonApiValue.prototype.isValidContentType=function(contentType) {
+ozpIwc.NamesApiValue.prototype.isValidContentType=function(contentType) {
     return !this.contentType || !contentType || this.contentType === contentType;
 };
