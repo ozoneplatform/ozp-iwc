@@ -10,8 +10,9 @@ module.exports = function(grunt) {
                 'app/js/metrics/statistics/binary_heap.js',
                 'app/js/metrics/statistics/exponentiallyDecayingSample.js',
                 'app/js/metrics/statistics/exponentiallyWeightedMovingAverage.js',
-                'app/js/metrics/metricsRegistry.js',
-                'app/js/metrics/**/*.js'
+                'app/js/metrics/baseMetric.js',
+                'app/js/metrics/types/*.js',
+                'app/js/metrics/metricsRegistry.js'
             ],
             bus: [
                 '<%= src.metrics %>',
@@ -179,12 +180,17 @@ module.exports = function(grunt) {
     };
     grunt.initConfig(config);
 
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-jsdoc');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-connect');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
+    for(var package in config.pkg.devDependencies) {
+        if(package.match(/grunt\-/)) {
+            grunt.loadNpmTasks(package);
+        }
+    }
+//    grunt.loadNpmTasks('grunt-contrib-uglify');
+//    grunt.loadNpmTasks('grunt-contrib-concat');
+//    grunt.loadNpmTasks('grunt-jsdoc');
+//    grunt.loadNpmTasks('grunt-contrib-watch');
+//    grunt.loadNpmTasks('grunt-contrib-connect');
+//    grunt.loadNpmTasks('grunt-contrib-jshint');
 
     // Default task(s).
     grunt.registerTask('default', ['concat', 'uglify', 'jsdoc']);
