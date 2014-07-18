@@ -10,6 +10,14 @@ if(ozpIwc.Router) {
 		});
 }
 
+if(ozpIwc.NamesApi && ozpIwc.LeaderGroupParticipant) {
+    ozpIwc.namesApi=new ozpIwc.NamesApi({
+        'participant': new ozpIwc.LeaderGroupParticipant({'name': "names.api"})
+    });
+
+    ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi.participant);
+}
+
 if(ozpIwc.LocalStorageLink) {
 	ozpIwc.defaultLocalStorageLink=new ozpIwc.KeyBroadcastLocalStorageLink({
 		peer: ozpIwc.defaultPeer
