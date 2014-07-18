@@ -31,9 +31,7 @@ ozpIwc.NamesApiValue.prototype.set=function(packet) {
                 this.entity[id]=participantInfo;
                 var node=ozpIwc.namesApi.findOrMakeValue({resource: '/address'});
                 node.set({resource: '/address', entity: id})
-                console.log("set id " + id);
             } else if (packet.resource === '/address') {
-                console.log("add id " + packet.entity);
                 this.entity.push(packet.entity);
             }
             this.version++;
@@ -49,3 +47,13 @@ ozpIwc.NamesApiValue.prototype.addressId=function(resource) {
     }
     return null;
 }
+
+/**
+ * Determines if the contentType is acceptable to this value.  Overrides
+ * method in ozpIwc.CommonApiBase
+ * @param {string} contentType
+ * @returns {Boolean}
+ */
+ozpIwc.CommonApiValue.prototype.isValidContentType=function(contentType) {
+    return !this.contentType || !contentType || this.contentType === contentType;
+};

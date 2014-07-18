@@ -100,7 +100,7 @@ ozpIwc.CommonApiValue.prototype.toPacket=function(base) {
 };
 
 /**
- * Determines if the contentType is acceptible to this value.  Intended to be
+ * Determines if the contentType is acceptable to this value.  Intended to be
  * overriden by subclasses.
  * @param {string} contentType
  * @returns {Boolean}
