@@ -119,6 +119,9 @@ ozpIwc.RouterWatchdog.prototype.connectToRouter=function(router,address) {
 	this.name=router.self_id;
     router.on("registeredParticipant", function(event) {
         var pAddress=event.participant.address || event.participant.electionAddress;
+        if (!pAddress) {
+            return;
+        }
         var value = ozpIwc.namesApi.findOrMakeValue({resource: '/address/' + pAddress, contentType: "ozp-address-collection-v1+json", entity: event.participant});
         var packet = {
             resource: '/address/' + pAddress,

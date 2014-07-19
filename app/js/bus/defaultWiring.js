@@ -5,7 +5,6 @@ if(ozpIwc.Peer) {
 }
 
 if(ozpIwc.Router) {
-    console.log("defined namesApi")
     ozpIwc.namesApi=new ozpIwc.NamesApi({
         'participant': new ozpIwc.LeaderGroupParticipant({'name': "names.api"})
     });

@@ -24,7 +24,7 @@ ozpIwc.NamesApiValue.prototype.set=function(packet) {
                     return;
                 }
                 var participantInfo = {
-                    type : packet.entity.participantType,
+                    pType : packet.entity.pType,
                     address: packet.entity.electionAddress? packet.entity.electionAddress : packet.entity.address,
                     name: packet.entity.name
                 };

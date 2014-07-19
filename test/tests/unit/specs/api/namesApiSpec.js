@@ -26,7 +26,7 @@ describe("Names API",function() {
         var packetContext=new TestPacketContext({
             'packet': {
                 'resource': "/address/testAddress",
-                'entity' : {'type':"testType", 'address': "testAddress", 'name': "testName" },
+                'entity' : {'pType':"testType", 'address': "testAddress", 'name': "testName" },
                 'contentType' : "ozp-address-object-v1+json",
                 'version' : 1
             }
@@ -38,7 +38,7 @@ describe("Names API",function() {
         expect(reply.action).toEqual("ok");
 
         // check that the participant info was added.
-        expect(namesApi.data[packetContext.packet.resource].entity).toEqual( {'testAddress': {'type':"testType", 'address': "testAddress", 'name': "testName" }});
+        expect(namesApi.data[packetContext.packet.resource].entity).toEqual( {'testAddress': {'pType':"testType", 'address': "testAddress", 'name': "testName" }});
     });
         
 });
