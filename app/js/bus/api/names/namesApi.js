@@ -5,5 +5,5 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function() {
 });
 
 ozpIwc.NamesApi.prototype.makeValue = function(packet){
-    return new ozpIwc.NamesApiValue({resource: packet.resource, contentType: packet.contentType});
+    return new ozpIwc.NamesApiValue({resource: packet.resource, contentType: packet.contentType, namesApi: this});
 };
