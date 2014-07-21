@@ -7,31 +7,36 @@ ozpIwc.owf7Backend.DataApiOwf7Storage = function() {
 
 ozpIwc.owf7Backend.DataApiOwf7Storage.prototype.load=function() {
 	var action=new ozpIwc.AsyncAction();
-	$.ajax({
-	  url: this.prefsUrl,
-		type: "GET",
-		error: function(xhr,status,error) { 
-			action.resolve("failure",xhr,status,error); 
-		},
-		success: function(data,status,xhr) { 
-			action.resolve("success",JSON.parse(data.value),status,xhr);
-		}
-	});
-	return action;
+    var request = new XMLHttpRequest();
+
+    request.onreadystatechange = function(){
+        if(this.readyState === 4) {
+            if(this.status >= 200 && this.status < 400) {
+                action.resolve("success", JSON.parse(this.responseText), this.status, this);
+            } else {
+                action.resolve("failure", this, this.status, this.responseText);
+            }
+        }
+    };
+    request.open('GET', this.prefsUrl, true);
+    return action;
 };
 
 ozpIwc.owf7Backend.DataApiOwf7Storage.prototype.save=function(data) {
 	var action=new ozpIwc.AsyncAction();
-	$.ajax({
-	  url: this.prefsUrl,
-		type: "POST",
-		data: '_method=PUT&version=7.0.1-GA-v1&value='+encodeURIComponent(JSON.stringify(data)),
-		error: function(xhr,status,error) { 
-			action.resolve("failure",xhr,status,error); 
-		},
-		success: function(data,status,xhr) { 
-			action.resolve("success",data,status,xhr);
-		}
-	});
-	return action;
+    var request = new XMLHttpRequest();
+
+    request.onreadystatechange = function(){
+        if(this.readyState === 4) {
+            if(this.status >= 200 && this.status < 400) {
+                action.resolve("success", JSON.parse(this.responseText), this.status, this);
+            } else {
+                action.resolve("failure", this, this.status, this.responseText);
+            }
+        }
+    };
+    request.open('POST', this.prefsUrl, true);
+    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    request.send('_method=PUT&version=7.0.1-GA-v1&value='+encodeURIComponent(JSON.stringify(data)));
+    return action;
 };
