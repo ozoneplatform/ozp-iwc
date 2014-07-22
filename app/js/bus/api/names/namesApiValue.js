@@ -2,6 +2,10 @@ ozpIwc.NamesApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config)
     ozpIwc.CommonApiValue.apply(this,arguments);
     config=config || {};
     this.namesApi=config.namesApi || ozpIwc.namesApi;
+    this.pInfoMap={};
+    this.pInfoMap.postMessageProxy=['origin','credentials'];
+    this.pInfoMap.multicast=['members'];
+    this.pInfoMap.leaderGroupMember=['electionAddress','priority','electionTimeout','leaderState','electionQueue','leader','leaderPriority'];
 });
 
 ozpIwc.NamesApiValue.prototype.set=function(packet) {
@@ -16,12 +20,13 @@ ozpIwc.NamesApiValue.prototype.set=function(packet) {
                         return;
                     }
                     this.entity=this.entity || {};
-                    var participantInfo = {
+                    this.entity = {
                         participantType: packet.entity.participantType,
-                        address: packet.entity.electionAddress ? packet.entity.electionAddress : packet.entity.address,
-                        name: packet.entity.name
+                        address: packet.entity.address,
+                        name: packet.entity.name,
+                        securityAttributes: packet.entity.securityAttributes
                     };
-                    this.entity = participantInfo;
+                    this.augmentParticipantInfo(packet.entity);
                     var node = this.namesApi.findOrMakeValue({resource: '/address'});
                     node.set({entity: id})
                 } else if (this.resource === '/address') {
@@ -71,6 +76,16 @@ ozpIwc.NamesApiValue.prototype.deleteData=function(packet) {
         } else {
             ozpIwc.CommonApiValue.prototype.deleteData.apply(this,arguments);
         }
+    }
+};
+
+ozpIwc.NamesApiValue.prototype.augmentParticipantInfo=function(participant) {
+    var fields=this.pInfoMap[participant.participantType];
+    var self=this;
+    if (fields) {
+        fields.forEach(function (field) {
+            self.entity[field] = participant[field];
+        });
     }
 };
 

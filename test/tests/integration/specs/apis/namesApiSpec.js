@@ -29,6 +29,8 @@ describe("names.api integration", function () {
         }
     });
 
+//Api names.api.test created in integrationTestWiring.js to de-conflict integration tests
+//with tests in peerSpec.js using names.api
 
 
     var deletePacket = {

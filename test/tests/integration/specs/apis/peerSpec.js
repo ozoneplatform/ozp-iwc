@@ -135,8 +135,8 @@ describe('Participant Integration', function () {
                 clients[0].send(setPacket);
             }}
     );
-    it('Retrieves the registered participant addresses', function (done) {
 
+    it('Queries names.api for the registered participant information', function (done) {
         var called = false;
         var getAddressListPacket = {
             dst: "names.api",
@@ -148,17 +148,27 @@ describe('Participant Integration', function () {
 
         var addressCallback=function(packet) {
             var found=false;
-            var keys=Object.keys(packet.entity);
-            console.log("Found participant: " + packet.entity.name);
-            keys.forEach(function(key) {
-                console.log("\t" + key + " = " + packet.entity[key]);
+            console.log("Found " + packet.entity.participantType + " participant");
+            Object.keys(packet.entity).forEach(function(key) {
+                if (typeof packet.entity[key] === 'object') {
+                    console.log("\t" + key + " values");
+                    if (packet.entity[key]) {
+                        Object.keys(packet.entity[key]).forEach(function (subKey) {
+                            console.log("\t\t" + subKey + " = " + packet.entity[key][subKey]);
+                        });
+                    }
+                } else {
+                    console.log("\t" + key + " = " + packet.entity[key]);
+                }
                 found=true;
             });
             expect(found).toBeTruthy();
 
-            if (foundAddresses.length == 0 && !called) {
-                called = true;
-                done();
+            if (foundAddresses.length == 0) {
+                if (!called) {
+                    called = true;
+                    done();
+                }
             } else {
                 var id=foundAddresses.shift();
                 var getAddressPacket = {
@@ -175,7 +185,7 @@ describe('Participant Integration', function () {
             packet.entity.forEach(function(id) {
                 if (id !== 'undefined') {
                     foundAddresses.push(id);
-                    console.log("found address: " + id)
+                    console.log("retrieved address: " + id)
                 }
             });
 
