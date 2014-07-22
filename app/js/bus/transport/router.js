@@ -124,11 +124,9 @@ ozpIwc.RouterWatchdog.prototype.connectToRouter=function(router,address) {
         }
         var value = ozpIwc.namesApi.findOrMakeValue({resource: '/address/' + pAddress, contentType: "ozp-address-collection-v1+json", entity: event.participant});
         var packet = {
-            resource: '/address/' + pAddress,
             src: pAddress,
             entity: event.participant,
-            dst: "names.api",
-            action: "set"
+            dst: "names.api"
         };
         value.set(packet);
     });

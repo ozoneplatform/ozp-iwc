@@ -148,48 +148,45 @@ describe('Participant Integration', function () {
 
         var addressCallback=function(packet) {
             var found=false;
-            var keys =Object.keys(packet.entity);
-            //TODO Investigate: sometimes the entity is empty for the last address retrieved from resource /address
-            if (keys.length == 0 && !called) {
+            var keys=Object.keys(packet.entity);
+            console.log("Found participant: " + packet.entity.name);
+            keys.forEach(function(key) {
+                console.log("\t" + key + " = " + packet.entity[key]);
+                found=true;
+            });
+            expect(found).toBeTruthy();
+
+            if (foundAddresses.length == 0 && !called) {
                 called = true;
                 done();
-            }
-            keys.map(function(key) {
-                if (key === 'undefined') {
-                    return;
-                }
-                console.log("Info for participant " + key);
-                found=true;
-                var subKeys=Object.keys(packet.entity[key]);
-                subKeys.map(function(subKey) {
-                    console.log("\t" + subKey + " = " + packet.entity[key][subKey]);
-                });
-
-                if (key === foundAddresses[foundAddresses.length-1]) {
-                    called = true;
-                    expect(found).toBeTruthy();
-                    done();
-                }
-            });
-            return false;
-        }
-
-        var addressListCallback=function(packet) {
-            packet.entity.map(function(id) {
-                if (id !== 'undefined') {
-                    foundAddresses.push(id);
-                }
-            });
-
-            expect(foundAddresses.length).toBeGreaterThan(0);
-            foundAddresses.map(function(id) {
+            } else {
+                var id=foundAddresses.shift();
                 var getAddressPacket = {
                     dst: "names.api",
                     action: "get",
                     resource: "/address/" + id
                 };
                 clients[0].send(getAddressPacket,addressCallback);
-            })
+            }
+            return false;
+        }
+
+        var addressListCallback=function(packet) {
+            packet.entity.forEach(function(id) {
+                if (id !== 'undefined') {
+                    foundAddresses.push(id);
+                    console.log("found address: " + id)
+                }
+            });
+
+            expect(foundAddresses.length).toBeGreaterThan(0);
+            var id=foundAddresses.shift();
+            var getAddressPacket = {
+                dst: "names.api",
+                action: "get",
+                resource: "/address/" + id
+            };
+            clients[0].send(getAddressPacket,addressCallback);
             return false;
         };
 

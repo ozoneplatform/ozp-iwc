@@ -1,17 +1,7 @@
 ozpIwc.NamesApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
     ozpIwc.CommonApiValue.apply(this,arguments);
     config=config || {};
-    this.contentType=config.contentType;
     this.namesApi=config.namesApi || ozpIwc.namesApi;
-    this.resource = config.resource;
-    if (this.resource) {
-        if (this.resource.indexOf('/address') === 0) {
-            var id = this.addressId(this.resource);
-            if (!id) {
-                this.entity = [];
-            }
-        }
-    }
 });
 
 ozpIwc.NamesApiValue.prototype.set=function(packet) {
@@ -27,13 +17,13 @@ ozpIwc.NamesApiValue.prototype.set=function(packet) {
                     }
                     this.entity=this.entity || {};
                     var participantInfo = {
-                        pType: packet.entity.pType,
+                        pType: packet.entity.participantType,
                         address: packet.entity.electionAddress ? packet.entity.electionAddress : packet.entity.address,
                         name: packet.entity.name
                     };
-                    this.entity[id] = participantInfo;
+                    this.entity = participantInfo;
                     var node = this.namesApi.findOrMakeValue({resource: '/address'});
-                    node.set({resource: '/address', entity: id})
+                    node.set({entity: id})
                 } else if (this.resource === '/address') {
                     this.entity=this.entity || [];
                     this.entity.push(packet.entity);
@@ -51,16 +41,17 @@ ozpIwc.NamesApiValue.prototype.deleteData=function(packet) {
         if (this.resource.indexOf('/address') === 0) {
             var id = this.addressId(this.resource);
             if (id) {
-                this.entity=this.entity || {};
-                var originalEntry=this.entity[id];
+                var originalEntity=this.entity;
                 ozpIwc.CommonApiValue.prototype.deleteData.apply(this,arguments);
-                if (originalEntry) {
+                if (originalEntity) {
                     var node = this.namesApi.findOrMakeValue({resource: '/address'});
                     node.deleteData({entity: id})
                     this.version++;
                 }
             } else {
-                this.entity=this.entity || [];
+                if (!this.entity) {
+                    return;
+                }
                 var elementRemoved=false;
                 this.entity=this.entity.filter(function(element) {
                     var keep=element !== packet.entity;
