@@ -46,6 +46,41 @@ ozpIwc.NamesApiValue.prototype.set=function(packet) {
     }
 }
 
+ozpIwc.NamesApiValue.prototype.deleteData=function(packet) {
+    if (this.resource) {
+        if (this.resource.indexOf('/address') === 0) {
+            var id = this.addressId(this.resource);
+            if (id) {
+                this.entity=this.entity || {};
+                var originalEntry=this.entity[id];
+                ozpIwc.CommonApiValue.prototype.deleteData.apply(this,arguments);
+                if (originalEntry) {
+                    var node = this.namesApi.findOrMakeValue({resource: '/address'});
+                    node.deleteData({entity: id})
+                    this.version++;
+                }
+            } else {
+                this.entity=this.entity || [];
+                var elementRemoved=false;
+                this.entity=this.entity.filter(function(element) {
+                    var keep=element !== packet.entity;
+                    if (!keep) {
+                        elementRemoved=true;
+                    }
+                    return keep;
+                });
+                if (elementRemoved){
+                    var node = this.namesApi.findOrMakeValue({resource: '/address/'+packet.entity});
+                    node.deleteData();
+                    this.version++;
+                }
+            }
+        } else {
+            ozpIwc.CommonApiValue.prototype.deleteData.apply(this,arguments);
+        }
+    }
+};
+
 ozpIwc.NamesApiValue.prototype.addressId=function(resource) {
     var regexp=/\/address\/(.*)/;
     var res=regexp.exec(resource);

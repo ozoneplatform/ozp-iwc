@@ -83,4 +83,20 @@ describe("Names API",function() {
         expect(changePacket.entity.newValue.testAddress).toEqual({'pType':"testType", 'address': "testAddress", 'name': "testName" });
     });
 
+    it("deletes resource /address/${id} and removes the corresponding entry from resource /address",function() {
+
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'entity' : {'pType':"testType", 'address': "testAddress", 'name': "testName" },
+                'contentType' : "ozp-address-object-v1+json",
+                'version' : 1
+            }
+        });
+
+        namesApi.handleSet(node,packetContext);
+        expect(namesApi.data['/address'].entity.length).toEqual(1);
+        namesApi.handleDelete(node,packetContext);
+        expect(namesApi.data['/address'].entity.length).toEqual(0);
+    });
+
 });
