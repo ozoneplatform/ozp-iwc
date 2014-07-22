@@ -25,7 +25,7 @@ describe("Names API",function() {
     it("sets a participant address",function() {
         var packetContext=new TestPacketContext({
             'packet': {
-                'entity' : {'pType':"testType", 'address': "testAddress", 'name': "testName" },
+                'entity' : {'participantType':"testType", 'address': "testAddress", 'name': "testName" },
                 'contentType' : "ozp-address-object-v1+json",
                 'version' : 1
             }
@@ -37,7 +37,7 @@ describe("Names API",function() {
         expect(reply.action).toEqual("ok");
 
         // check that the participant info was added.
-        expect(namesApi.data[node.resource].entity).toEqual( {'pType':"testType", 'address': "testAddress", 'name': "testName" });
+        expect(namesApi.data[node.resource].entity).toEqual(packetContext.packet.entity);
 
         node=namesApi.findOrMakeValue({
             'resource': "/address",
@@ -68,7 +68,7 @@ describe("Names API",function() {
             'packet': {
                 'resource': "/address/testAddress",
                 'action': "set",
-                'entity' : {'pType':"testType", 'address': "testAddress", 'name': "testName" },
+                'entity' : {'participantType':"testType", 'address': "testAddress", 'name': "testName" },
                 'contentType': "ozp-address-object-v1+json"
             },
             'leaderState': "leader"
@@ -78,14 +78,14 @@ describe("Names API",function() {
         expect(namesApi.participant.sentPackets.length).toEqual(1);
         var changePacket=namesApi.participant.sentPackets[0];
         expect(changePacket.action).toEqual("changed");
-        expect(changePacket.entity.newValue).toEqual({'pType':"testType", 'address': "testAddress", 'name': "testName" });
+        expect(changePacket.entity.newValue).toEqual(packetContext.packet.entity);
     });
 
     it("deletes resource /address/${id} and removes the corresponding entry from resource /address",function() {
 
         var packetContext=new TestPacketContext({
             'packet': {
-                'entity' : {'pType':"testType", 'address': "testAddress", 'name': "testName" },
+                'entity' : {'participantType':"testType", 'address': "testAddress", 'name': "testName" },
                 'contentType' : "ozp-address-object-v1+json",
                 'version' : 1
             }
@@ -95,6 +95,21 @@ describe("Names API",function() {
         expect(namesApi.data['/address'].entity.length).toEqual(1);
         namesApi.handleDelete(node,packetContext);
         expect(namesApi.data['/address'].entity.length).toEqual(0);
+    });
+
+    it("sets the same /address/${id} resource twice and ensures there is only one entry for it in resource /address",function() {
+
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'entity' : {'participantType':"testType", 'address': "testAddress", 'name': "testName" },
+                'contentType' : "ozp-address-object-v1+json",
+                'version' : 1
+            }
+        });
+
+        namesApi.handleSet(node,packetContext);
+        namesApi.handleSet(node,packetContext);
+        expect(namesApi.data['/address'].entity.length).toEqual(1);
     });
 
 });

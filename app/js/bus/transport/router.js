@@ -92,6 +92,7 @@ ozpIwc.RouterWatchdog=ozpIwc.util.extend(ozpIwc.InternalParticipant,function(con
 	ozpIwc.InternalParticipant.apply(this,arguments);
 	
 	this.participantType="routerWatchdog";
+    var self=this;
 	this.on("connected",function() {
 		this.name=this.router.self_id;
 	},this);
@@ -111,21 +112,29 @@ ozpIwc.RouterWatchdog=ozpIwc.util.extend(ozpIwc.InternalParticipant,function(con
 		}
 		self.send(heartbeat);
 	},this.heartbeatFrequency);
-
 });
 
 ozpIwc.RouterWatchdog.prototype.connectToRouter=function(router,address) {
 	ozpIwc.Participant.prototype.connectToRouter.apply(this,arguments);
 	this.name=router.self_id;
+    var self=this;
     router.on("registeredParticipant", function(event) {
         var pAddress=event.participant.address || event.participant.electionAddress;
         if (!pAddress) {
             return;
         }
-        var value = ozpIwc.namesApi.findOrMakeValue({resource: '/address/' + pAddress, contentType: "ozp-address-collection-v1+json", entity: event.participant});
+        var value = ozpIwc.namesApi.findOrMakeValue({resource: '/address/' + pAddress, contentType: "ozp-address-collection-v1+json"});
         var packet = {
             src: pAddress,
             entity: event.participant,
+            dst: "names.api"
+        };
+        value.set(packet);
+
+        value = ozpIwc.namesApi.findOrMakeValue({resource: '/address/' + self.address, contentType: "ozp-address-collection-v1+json"});
+        packet = {
+            src: self.address,
+            entity: self,
             dst: "names.api"
         };
         value.set(packet);

@@ -20,6 +20,11 @@ if(ozpIwc.Router) {
         });
 
         ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi.participant);
+
+        var testNamesApi =new ozpIwc.NamesApi({
+            'participant': new ozpIwc.LeaderGroupParticipant({'name': "names.api.test"})
+        });
+        ozpIwc.defaultRouter.registerParticipant(testNamesApi.participant);
     }
     if (ozpIwc.Participant) {
         ozpIwc.testParticipant = new ozpIwc.TestParticipant({name: "Test Participant"});

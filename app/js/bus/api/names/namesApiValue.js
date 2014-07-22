@@ -17,7 +17,7 @@ ozpIwc.NamesApiValue.prototype.set=function(packet) {
                     }
                     this.entity=this.entity || {};
                     var participantInfo = {
-                        pType: packet.entity.participantType,
+                        participantType: packet.entity.participantType,
                         address: packet.entity.electionAddress ? packet.entity.electionAddress : packet.entity.address,
                         name: packet.entity.name
                     };
@@ -26,7 +26,9 @@ ozpIwc.NamesApiValue.prototype.set=function(packet) {
                     node.set({entity: id})
                 } else if (this.resource === '/address') {
                     this.entity=this.entity || [];
-                    this.entity.push(packet.entity);
+                    if (this.entity.indexOf(packet.entity) < 0) {
+                        this.entity.push(packet.entity);
+                    }
                 }
             } else {
                 this.entity=packet.entity;
