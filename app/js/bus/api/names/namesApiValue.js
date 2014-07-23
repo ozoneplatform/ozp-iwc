@@ -3,9 +3,9 @@ ozpIwc.NamesApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config)
     config=config || {};
     this.namesApi=config.namesApi || ozpIwc.namesApi;
     this.pInfoMap={};
-    this.pInfoMap.postMessageProxy=['origin','credentials'];
-    this.pInfoMap.multicast=['members'];
-    this.pInfoMap.leaderGroupMember=['electionAddress','priority','electionTimeout','leaderState','electionQueue','leader','leaderPriority'];
+    this.pInfoMap.postMessageProxy=['origin','credentials','securityAttributes'];
+    this.pInfoMap.multicast=['members','securityAttributes'];
+    this.pInfoMap.leaderGroupMember=['electionAddress','priority','electionTimeout','leaderState','electionQueue','leader','leaderPriority','securityAttributes'];
 });
 
 ozpIwc.NamesApiValue.prototype.set=function(packet) {
@@ -23,8 +23,7 @@ ozpIwc.NamesApiValue.prototype.set=function(packet) {
                     this.entity = {
                         participantType: packet.entity.participantType,
                         address: packet.entity.address,
-                        name: packet.entity.name,
-                        securityAttributes: packet.entity.securityAttributes
+                        name: packet.entity.name
                     };
                     this.augmentParticipantInfo(packet.entity);
                     var node = this.namesApi.findOrMakeValue({resource: '/address'});
