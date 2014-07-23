@@ -2,11 +2,74 @@
  * The Intents API. Subclasses The Common Api Base.
  * @class
  */
-ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function () {
+ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
     this.events.on("receive", ozpIwc.IntentsApi.prototype.parseResource, this);
+    console.log(ozpIwc.apiRoot.intents);
+    this.loadServerData({
+        href: ozpIwc.apiRoot._links.intents.href,
+        removablePaths: [
+            '/api/intents/v1',
+            '/api/intents'
+        ]
+
+    });
 });
 
+ozpIwc.IntentsApi.prototype.loadServerData = function(config) {
+
+    var self = this;
+    if (config.href) {
+
+        // Get type
+        ozpIwc.util.loadData({
+            href: config.href,
+            method: "GET"
+        })
+            .success(function(data){
+                for(var i = 0; i < data._links.intents.length; i++) {
+
+                    // Get subtype
+                    ozpIwc.util.loadData({
+                        href: data._links.intents[i].href,
+                        method: "GET"
+                    })
+                        .success(function(data){
+                            for(var i = 0; i < data._links.capabilities.length; i++) {
+
+                                // Get verb
+                                ozpIwc.util.loadData({
+                                    href: data._links.capabilities[i].href,
+                                    method: "GET"
+                                })
+                                    .success(function(data){
+                                        for(var i = 0; i < data._embedded.actions.length; i++) {
+
+                                            //register the verb (called definition by current api naming)
+                                            var resource = data._embedded.actions[i]._links.self;
+                                            if(resource) {
+                                                for(var j = 0; j < config.removablePaths.length; j++) {
+                                                    resource = resource.replace(config.removablePaths[j], '');
+                                                }
+                                                var packetMock = {
+                                                    packet: {
+                                                        resource: resource,
+                                                        entity: data._embedded.actions[i]
+                                                    }
+                                                };
+                                                self.parseResource(packetMock);
+                                                var definition = self.getDefinition(packetMock.packet);
+                                                definition.set(packetMock.packet);
+                                                console.log(self);
+                                            }
+                                        }
+                                    });
+                            }
+                        });
+                }
+            });
+    }
+}
 /**
  * Internal method, not intended for API use. Used for handling resource path parsing.
  * @param  {string} resource - the resource path to be evaluated.

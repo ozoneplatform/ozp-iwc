@@ -127,3 +127,31 @@ ozpIwc.util.parseQueryParams=function(query) {
 	}
     return params;
 };
+
+ozpIwc.util.loadData = function (config) {
+
+    var result = new ozpIwc.AsyncAction();
+    var request = new XMLHttpRequest();
+
+    request.onreadystatechange = function() {
+        if (request.readyState !== 4) {
+            return;
+        }
+
+        if (request.status === 200) {
+            result.resolve("success", JSON.parse(this.responseText));
+        } else {
+            result.resolve("failure", this.statusText, this.responseText);
+        }
+    };
+    request.open(config.method, config.href, true);
+
+    if(config.method === "POST") {
+        request.send(config.data);
+    }
+    request.setRequestHeader("Content-Type", "application/json");
+    request.setRequestHeader("Cache-Control", "no-cache");
+    request.send();
+
+    return result;
+};
