@@ -1,4 +1,15 @@
 {
+    "_links": {
+        "self" : { "href": "/text/html" },
+        "curie": {
+            "name": "ozp",
+            "href": "/api/intents/v1/{rel}",
+            "templated": true
+        },
+        "ozp:intentActions" : [
+            { "href": "/text/html/view"}
+        ]
+    },
     "_embedded": {
         "actions": [{
             "type": "text/html",
@@ -6,7 +17,7 @@
             "icon": "http://example.com/view-text-plain.png",
             "label": "View as HTML",
             "_links": {
-                "self" : "/api/intents/text/html/view"
+                "self" : "/text/html/view"
             }
         }]
     }

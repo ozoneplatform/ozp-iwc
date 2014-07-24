@@ -1,8 +1,13 @@
 {
     "_links": {
-        "self": { "href":"/api/intents/v1/application"},
-        "capabilities": [
-            { "href" : "/api/intents/v1/application/ozp-demo-ball+json" }
+        "self": { "href":"/application"},
+        "curie": {
+            "name": "ozp",
+            "href": "/api/intents/v1/{rel}",
+            "templated": true
+        },
+        "ozp:intentSubTypes": [
+            { "href" : "/application/ozp-demo-ball+json" }
         ]
     }
 }

@@ -1,4 +1,16 @@
 {
+    "_links": {
+        "self" : { "href": "/text/plain" },
+        "curie": {
+            "name": "ozp",
+            "href": "/api/intents/v1/{rel}",
+            "templated": true
+        },
+        "ozp:intentActions" : [
+            { "href": "/text/plain/view"},
+            { "href": "/text/plain/edit"}
+        ]
+    },
     "_embedded": {
         "actions": [{
             "type": "text/plain",
@@ -6,7 +18,7 @@
             "icon": "http://example.com/view-text-plain.png",
             "label": "View as plain text",
             "_links": {
-                "self" : "/api/intents/text/plain/view"
+                "self" : "/text/plain/view"
             }
         }]
     }

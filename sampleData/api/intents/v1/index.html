@@ -1,9 +1,14 @@
 {
     "_links": {
         "self": { "href":"/api/intents/v1"},
-        "intents": [
-            { "href" : "/api/intents/v1/application", "type" : "application" },
-            { "href":"/api/intents/v1/text", "type" : "text"}
+        "curie": {
+            "name": "ozp",
+            "href": "/api/intents/v1/{rel}",
+            "templated": true
+        },
+        "ozp:intentTypes" : [
+            { "href" : "/application"},
+            { "href" : "/text"}
         ]
     }
 }

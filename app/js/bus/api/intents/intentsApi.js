@@ -7,69 +7,68 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     this.events.on("receive", ozpIwc.IntentsApi.prototype.parseResource, this);
     console.log(ozpIwc.apiRoot.intents);
     this.loadServerData({
-        href: ozpIwc.apiRoot._links.intents.href,
-        removablePaths: [
-            '/api/intents/v1',
-            '/api/intents'
-        ]
-
+        entryPoint: ozpIwc.apiRoot._links.intents.href
     });
+    console.log(this);
 });
 
 ozpIwc.IntentsApi.prototype.loadServerData = function(config) {
-
+    var rootPath = config.entryPoint;
     var self = this;
-    if (config.href) {
+    var asyncResponse = new ozpIwc.AsyncAction();
+    // Get API root
+    ozpIwc.util.loadData({
+        href: rootPath,
+        method: "GET"
+    })
+        .success(function(data){
 
-        // Get type
-        ozpIwc.util.loadData({
-            href: config.href,
-            method: "GET"
-        })
-            .success(function(data){
-                for(var i = 0; i < data._links.intents.length; i++) {
+            for(var i = 0; i < data._links['ozp:intentTypes'].length; i++) {
 
-                    // Get subtype
-                    ozpIwc.util.loadData({
-                        href: data._links.intents[i].href,
-                        method: "GET"
-                    })
-                        .success(function(data){
-                            for(var i = 0; i < data._links.capabilities.length; i++) {
+                // Get types
+                ozpIwc.util.loadData({
+                    href: rootPath + data._links['ozp:intentTypes'][i].href,
+                    method: "GET"
+                })
+                    .success(function(data){
 
-                                // Get verb
-                                ozpIwc.util.loadData({
-                                    href: data._links.capabilities[i].href,
-                                    method: "GET"
-                                })
-                                    .success(function(data){
-                                        for(var i = 0; i < data._embedded.actions.length; i++) {
+                        // Get subTypes
+                        for(var j = 0; j < data._links['ozp:intentSubTypes'].length; j++) {
 
-                                            //register the verb (called definition by current api naming)
-                                            var resource = data._embedded.actions[i]._links.self;
-                                            if(resource) {
-                                                for(var j = 0; j < config.removablePaths.length; j++) {
-                                                    resource = resource.replace(config.removablePaths[j], '');
-                                                }
-                                                var packetMock = {
+                            ozpIwc.util.loadData({
+                                href: rootPath + data._links['ozp:intentSubTypes'][j].href,
+                                method: "GET"
+                            })
+                                .success(function (data) {
+                                    console.log(data);
+
+                                    //Get Actions
+                                    for(var k = 0; k < data._links['ozp:intentActions'].length; k++) {
+                                        ozpIwc.util.loadData({
+                                            href: rootPath + data._links['ozp:intentActions'][k].href,
+                                            method: "GET"
+                                        })
+                                            .success(function (data) {
+                                                var loadPacket = {
                                                     packet: {
-                                                        resource: resource,
-                                                        entity: data._embedded.actions[i]
+                                                        resource: data._links.self.href,
+                                                        entity: data
                                                     }
                                                 };
-                                                self.parseResource(packetMock);
-                                                var definition = self.getDefinition(packetMock.packet);
-                                                definition.set(packetMock.packet);
-                                                console.log(self);
-                                            }
-                                        }
-                                    });
-                            }
-                        });
-                }
-            });
-    }
-}
+                                                self.parseResource(loadPacket);
+                                                var def = self.getDefinition(loadPacket.packet);
+                                                def.set(loadPacket.packet);
+                                            });
+                                    }
+
+                                });
+                        }
+                    });
+            }
+
+
+        });
+};
 /**
  * Internal method, not intended for API use. Used for handling resource path parsing.
  * @param  {string} resource - the resource path to be evaluated.
