@@ -3,37 +3,60 @@ function namesApiValueContractTests(classUnderTest,baseConfig) {
         commonApiValueContractTests(classUnderTest);
     });
 
-    var value;
-    var config;
+    var addressValue;
+    var multicastValue;
 
     beforeEach(function () {
-        config = {
+        var addressConfig = {
             'resource': "/address/testAddress",
             'contentType': "testContentType",
             'permissions': ['perms'],
             'version': 1
         };
-        value = new classUnderTest(config);
+        var multicastConfig = {
+            'resource': "/multicast/testGroup1",
+            'contentType': "testContentType",
+            'permissions': ['perms'],
+            'version': 1
+        };
+        addressValue = new classUnderTest(addressConfig);
+        multicastValue = new classUnderTest(multicastConfig);
     });
 
     it("updates the version when adding an address", function () {
-        var originalVersion = value.version;
-        value.set({
-                resource: '/address/testAddress',
+        var originalVersion = addressValue.version;
+        addressValue.set({
                 'entity': {'pType': "testType", 'address': "testAddress", 'name': "testName" }}
         );
-        expect(value.version).toEqual(originalVersion + 1);
+        expect(addressValue.version).toEqual(originalVersion + 1);
+    });
+
+    it("updates the version when adding a multicast address", function () {
+        var originalVersion = multicastValue.version;
+        multicastValue.set({'entity': 'testAddress'});
+        expect(multicastValue.version).toEqual(originalVersion + 1);
     });
 
     it("resets the version when deleting an address",function() {
-        value.deleteData();
-        expect(value.version).toEqual(0);
+        addressValue.deleteData();
+        expect(addressValue.version).toEqual(0);
+    });
+
+    it("resets the version when deleting a multicast address",function() {
+        multicastValue.deleteData();
+        expect(multicastValue.version).toEqual(0);
     });
 
     it("deletes an address idempotently",function() {
-        value.deleteData();
-        value.deleteData();
-        expect(value.version).toEqual(0);
+        addressValue.deleteData();
+        addressValue.deleteData();
+        expect(addressValue.version).toEqual(0);
+    });
+
+    it("deletes a multicast address idempotently",function() {
+        multicastValue.deleteData();
+        multicastValue.deleteData();
+        expect(multicastValue.version).toEqual(0);
     });
 };
 

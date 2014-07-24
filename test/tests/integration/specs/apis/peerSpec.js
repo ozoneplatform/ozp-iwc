@@ -202,4 +202,63 @@ describe('Participant Integration', function () {
 
         clients[0].send(getAddressListPacket,addressListCallback);
     });
+
+    it('Queries names.api for the registered multicast group information', function (done) {
+
+        var called = false;
+        var getMulticastListPacket = {
+            dst: "names.api",
+            action: "get",
+            resource: "/multicast"
+        };
+
+        var foundAddresses=[];
+
+        var multicastCallback=function(packet) {
+            var found=false;
+            console.log("Found multicast group");
+            packet.entity.forEach(function(address) {
+                console.log("address: " + address);
+                found=true;
+            });
+            expect(found).toBeTruthy();
+
+            if (foundAddresses.length == 0) {
+                if (!called) {
+                    called = true;
+                    done();
+                }
+            } else {
+                var id=foundAddresses.shift();
+                var getMulticastPacket = {
+                    dst: "names.api",
+                    action: "get",
+                    resource: "/multicast/" + id
+                };
+                clients[0].send(getMulticastPacket,multicastCallback);
+            }
+            return false;
+        }
+
+        var multicastListCallback=function(packet) {
+            packet.entity.forEach(function(id) {
+                if (id !== 'undefined') {
+                    foundAddresses.push(id);
+                    console.log("retrieved multicast address: " + id)
+                }
+            });
+
+            expect(foundAddresses.length).toBeGreaterThan(0);
+            var id=foundAddresses.shift();
+            var getMulticastPacket = {
+                dst: "names.api",
+                action: "get",
+                resource: "/multicast/" + id
+            };
+            clients[0].send(getMulticastPacket,multicastCallback);
+            return false;
+        };
+
+        clients[0].send(getMulticastListPacket,multicastListCallback);
+    });
 });

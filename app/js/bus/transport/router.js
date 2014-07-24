@@ -118,23 +118,38 @@ ozpIwc.RouterWatchdog.prototype.connectToRouter=function(router,address) {
     ozpIwc.Participant.prototype.connectToRouter.apply(this,arguments);
     this.name=router.self_id;
     var self=this;
+
+    //register the router watchdog with the names api service
+    var value = ozpIwc.namesApi.findOrMakeValue({resource: '/address/' + self.address, contentType: "ozp-address-collection-v1+json"});
+    var packet = {
+        src: self.address,
+        entity: self,
+        dst: "names.api"
+    };
+    value.set(packet);
+
+    //register other participants with the names api service
     router.on("registeredParticipant", function(event) {
         var pAddress=event.participant.address || event.participant.electionAddress;
         if (!pAddress) {
             return;
         }
-        var value = ozpIwc.namesApi.findOrMakeValue({resource: '/address/' + pAddress, contentType: "ozp-address-collection-v1+json"});
+        var value = ozpIwc.namesApi.findOrMakeValue({resource: '/address/' + pAddress, contentType: "ozp-address-object-v1+json"});
         var packet = {
             src: pAddress,
             entity: event.participant,
             dst: "names.api"
         };
         value.set(packet);
+    });
 
-        value = ozpIwc.namesApi.findOrMakeValue({resource: '/address/' + self.address, contentType: "ozp-address-collection-v1+json"});
-        packet = {
-            src: self.address,
-            entity: self,
+    //register multicast group memberships with the names api service
+    router.on("registeredMulticast", function(event) {
+        var reg=event.entity;
+        var value = ozpIwc.namesApi.findOrMakeValue({resource: '/multicast/' + reg.group, contentType: "ozp-multicast-object-v1+json"});
+        var packet = {
+            src: reg.address,
+            entity: reg.address,
             dst: "names.api"
         };
         value.set(packet);
@@ -316,12 +331,15 @@ ozpIwc.Router.prototype.registerMulticast=function(participant,multicastGroups) 
             g=self.participants[groupName]=new ozpIwc.MulticastParticipant(groupName);
         }
         g.addMember(participant);
-
-        var registeredEvent=new ozpIwc.CancelableEvent({
-            'participant': g
-        });
-        self.events.trigger("registeredParticipant",registeredEvent);
-        console.log("registered multicast for name: " + participant.name + " type: " + participant.participantType);
+        if (participant.address) {
+            var registeredEvent = new ozpIwc.CancelableEvent({
+                'entity': {'group': groupName, 'address': participant.address}
+            });
+            self.events.trigger("registeredMulticast", registeredEvent);
+        } else {
+            console.log("no address for " +  participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
+        }
+        //console.log("registered " + participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
     });
     return multicastGroups;
 };
