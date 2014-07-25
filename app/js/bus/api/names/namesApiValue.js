@@ -12,6 +12,9 @@ ozpIwc.NamesApiValue.prototype.set=function(packet) {
     if(this.isValidContentType(packet.contentType)) {
         this.permissions=packet.permissions || this.permissions;
         this.contentType=packet.contentType;
+        if (packet.resource==='/me' && packet.src) {
+            this.resource='/address/'+packet.src;
+        }
         if (this.resource) {
             if (this.resource.indexOf('/address') === 0) {
                 var id = this.addressId();

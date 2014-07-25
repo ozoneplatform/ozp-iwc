@@ -136,6 +136,22 @@ describe('Participant Integration', function () {
             }}
     );
 
+    it('gets the current participant address', function (done) {
+        var called = false;
+        var echoCallback = function (event) {
+            if (event.echo) {
+                expect(event.alias).toEqual(event.literal);
+                if (!called) {
+                    called=true;
+                    done();
+                }
+            }
+        };
+
+        clients[0].on("receive", echoCallback);
+        clients[0].send(setPacket);
+    });
+
     it('Queries names.api for the registered participant information', function (done) {
         var called = false;
         var getAddressListPacket = {

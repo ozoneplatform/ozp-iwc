@@ -78,6 +78,18 @@ if (ozpIwc.Participant) {
             var testReply = {
                 ver: 1,
                 src: ozpIwc.testParticipant.address,
+                alias: ozpIwc.namesApi.findOrMakeValue({
+                        resource: '/me',
+                        'contentType' : "ozp-address-object-v1+json",
+                        'src': ozpIwc.testParticipant.address,
+                        'version' : 1
+                }).entity,
+                literal: ozpIwc.namesApi.findOrMakeValue({
+                    'resource': '/address/'+ozpIwc.testParticipant.address,
+                    'contentType' : "ozp-address-object-v1+json",
+                    'src': ozpIwc.testParticipant.address,
+                    'version' : 1
+                }).entity,
                 msgId: "p:" + ozpIwc.testParticipant.msgIdSequence++,
                 time: new Date().getTime(),
                 dst: packet.src,

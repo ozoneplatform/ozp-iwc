@@ -258,13 +258,13 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
         return null;
     }
 
+    this.participants[address] = participant;
+    participant.connectToRouter(this,address);
     var registeredEvent=new ozpIwc.CancelableEvent({
         'packet': packet,
         'participant': participant
     });
     this.events.trigger("registeredParticipant",registeredEvent);
-    this.participants[address] = participant;
-    participant.connectToRouter(this,address);
 
 //	ozpIwc.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
     return address;
