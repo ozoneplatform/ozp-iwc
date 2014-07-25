@@ -5,70 +5,15 @@
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
     this.events.on("receive", ozpIwc.IntentsApi.prototype.parseResource, this);
-    console.log(ozpIwc.apiRoot.intents);
-    this.loadServerData({
-        entryPoint: ozpIwc.apiRoot._links.intents.href
-    });
-    console.log(this);
+
+    this.loadServerDataEmbedded({href : ozpIwc.apiRoot._links.intents.href})
+        .success(function(){
+            // add on successful load code here.
+        });
+
+
 });
 
-ozpIwc.IntentsApi.prototype.loadServerData = function(config) {
-    var rootPath = config.entryPoint;
-    var self = this;
-    var asyncResponse = new ozpIwc.AsyncAction();
-    // Get API root
-    ozpIwc.util.loadData({
-        href: rootPath,
-        method: "GET"
-    })
-        .success(function(data){
-
-            for(var i = 0; i < data._links['ozp:intentTypes'].length; i++) {
-
-                // Get types
-                ozpIwc.util.loadData({
-                    href: rootPath + data._links['ozp:intentTypes'][i].href,
-                    method: "GET"
-                })
-                    .success(function(data){
-
-                        // Get subTypes
-                        for(var j = 0; j < data._links['ozp:intentSubTypes'].length; j++) {
-
-                            ozpIwc.util.loadData({
-                                href: rootPath + data._links['ozp:intentSubTypes'][j].href,
-                                method: "GET"
-                            })
-                                .success(function (data) {
-                                    console.log(data);
-
-                                    //Get Actions
-                                    for(var k = 0; k < data._links['ozp:intentActions'].length; k++) {
-                                        ozpIwc.util.loadData({
-                                            href: rootPath + data._links['ozp:intentActions'][k].href,
-                                            method: "GET"
-                                        })
-                                            .success(function (data) {
-                                                var loadPacket = {
-                                                    packet: {
-                                                        resource: data._links.self.href,
-                                                        entity: data
-                                                    }
-                                                };
-                                                self.parseResource(loadPacket);
-                                                var def = self.getDefinition(loadPacket.packet);
-                                                def.set(loadPacket.packet);
-                                            });
-                                    }
-
-                                });
-                        }
-                    });
-            }
-
-
-        });
-};
 /**
  * Internal method, not intended for API use. Used for handling resource path parsing.
  * @param  {string} resource - the resource path to be evaluated.
@@ -300,4 +245,109 @@ ozpIwc.IntentsApi.prototype.handleBroadcast = function (node, packetContext) {
 //    for (var i in node.handlers) {
 //        this.data[node.handlers[i]].invoke(packetContext.packet);
 //    }
+};
+
+
+/**
+ * Expects a complete Intents data store tree returned from the specified href. Data must be of hal/json type and the
+ * stored tree must be in the '_embedded' property.
+ *
+ * @param config {Object}
+ * @param config.href {String}
+ * @returns {ozpIwc.AsyncAction}
+ */
+ozpIwc.IntentsApi.prototype.loadServerDataEmbedded = function (config) {
+    var self = this;
+    var asyncResponse = new ozpIwc.AsyncAction();
+    ozpIwc.util.ajax({
+        href: config.href,
+        method: "GET"
+    })
+        .success(function (data) {
+            // Take the root path from where the intent data is stored so that we can remove it from each object that
+            // becomes a intent value.
+            var rootPath = data._links.self.href;
+            for (var i in data._embedded['ozp:intentTypes']) {
+                var type = data._embedded['ozp:intentTypes'][i];
+                for (var j in type._embedded['ozp:intentSubTypes']) {
+                    var subType = type._embedded['ozp:intentSubTypes'][j];
+                    for (var k in subType._embedded['ozp:intentActions']) {
+                        var action = subType._embedded['ozp:intentActions'][k];
+                        var loadPacket = {
+                            packet: {
+                                resource: action._links.self.href.replace(rootPath,''),
+                                entity: action
+                            }
+                        };
+
+                        self.parseResource(loadPacket);
+                        var def = self.getDefinition(loadPacket.packet);
+                        def.set(loadPacket.packet);
+                    }
+                }
+            }
+            asyncResponse.resolve("success");
+        });
+
+    return asyncResponse;
+};
+
+/**
+ * Expects the root of an intents data store to be returned from the specified href. Data must be of hal/json
+ * type and the stored tree is gathered through the '_links' property.
+ *
+ * @param config {Object}
+ * @param config.href {String}
+ * @returns {ozpIwc.AsyncAction}
+ */
+ozpIwc.IntentsApi.prototype.loadServerData = function (config) {
+    var self = this;
+    // Get API root
+    ozpIwc.util.loadData({
+        href: config.href,
+        method: "GET"
+    })
+        .success(function (data) {
+            // Take the root path from where the intent data is stored so that we can remove it from each object that
+            // becomes a intent value.
+            var rootPath = data._links.self.href;
+
+            for (var i in data._links['ozp:intentTypes']) {
+
+                ozpIwc.util.ajax({
+                    href: rootPath + data._links['ozp:intentTypes'][i].href,
+                    method: "GET"
+                })
+                    .success(function (data) {
+                        // Get subTypes
+                        for (var j in data._links['ozp:intentSubTypes']) {
+                            ozpIwc.util.ajax({
+                                href: rootPath + data._links['ozp:intentSubTypes'][j].href,
+                                method: "GET"
+                            })
+                                .success(function (data) {
+                                    //Get Actions
+                                    for (var k in data._links['ozp:intentActions']) {
+                                        ozpIwc.util.ajax({
+                                            href: rootPath + data._links['ozp:intentActions'][k].href,
+                                            method: "GET"
+                                        })
+                                            .success(function (data) {
+                                                //Build out the API with the retrieved values
+                                                var loadPacket = {
+                                                    packet: {
+                                                        resource: data._links.self.href.replace(rootPath,''),
+                                                        entity: data
+                                                    }
+                                                };
+                                                self.parseResource(loadPacket);
+                                                var def = self.getDefinition(loadPacket.packet);
+                                                def.set(loadPacket.packet);
+                                            });
+                                    }
+                                });
+                        }
+                    });
+            }
+        });
 };

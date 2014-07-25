@@ -128,7 +128,7 @@ ozpIwc.util.parseQueryParams=function(query) {
     return params;
 };
 
-ozpIwc.util.loadData = function (config) {
+ozpIwc.util.ajax = function (config) {
 
     var result = new ozpIwc.AsyncAction();
     var request = new XMLHttpRequest();

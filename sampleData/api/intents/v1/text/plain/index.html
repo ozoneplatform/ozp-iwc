@@ -1,14 +1,14 @@
 {
     "_links": {
-        "self" : { "href": "/text/plain" },
-        "curie": {
+        "self" : { "href": "/api/intents/v1/text/plain" },
+        "curies": [{
             "name": "ozp",
-            "href": "/api/intents/v1/{rel}",
+            "href": "/api/intents/v1/rels/{rel}",
             "templated": true
-        },
+        }],
         "ozp:intentActions" : [
-            { "href": "/text/plain/view"},
-            { "href": "/text/plain/edit"}
+            { "href": "/api/intents/v1/text/plain/view"},
+            { "href": "/api/intents/v1/text/plain/edit"}
         ]
     },
     "_embedded": {
@@ -18,7 +18,7 @@
             "icon": "http://example.com/view-text-plain.png",
             "label": "View as plain text",
             "_links": {
-                "self" : "/text/plain/view"
+                "self" : "/api/intents/v1/text/plain/view"
             }
         }]
     }

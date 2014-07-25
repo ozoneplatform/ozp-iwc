@@ -1,13 +1,13 @@
 {
     "_links": {
-        "self": { "href": /application/ozp-demo-ball+json"},
-        "curie": {
+        "self": { "href": "/api/intents/v1/application/ozp-demo-ball+json"},
+        "curies": [{
             "name": "ozp",
-            "href": "/api/intents/v1/{rel}",
+            "href": "/api/intents/v1/rels/{rel}",
             "templated": true
-        },
+        }],
         "ozp:intentActions": [
-            { "href": "/application/ozp-demo-ball+json/view"}
+            { "href": "/api/intents/v1/application/ozp-demo-ball+json/view"}
         ]
     },
     "_embedded": {
@@ -17,7 +17,7 @@
             "icon": "http://example.com/view-text-plain.png",
             "label": "View a bouncing ball",
             "_links": {
-                "self" : "/application/ozp-demo-ball+json/view"
+                "self" : "/api/intents/v1/application/ozp-demo-ball+json/view"
             }
         }]
     }
