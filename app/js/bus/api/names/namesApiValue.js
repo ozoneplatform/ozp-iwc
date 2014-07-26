@@ -63,6 +63,9 @@ ozpIwc.NamesApiValue.prototype.set=function(packet) {
 }
 
 ozpIwc.NamesApiValue.prototype.deleteData=function(packet) {
+    if (packet && packet.resource==='/me' && packet.src) {
+        this.resource='/address/'+packet.src;
+    }
     if (this.resource) {
         if (this.resource.indexOf('/address') === 0 || this.resource.indexOf('/multicast') === 0) {
             var id = this.addressId();

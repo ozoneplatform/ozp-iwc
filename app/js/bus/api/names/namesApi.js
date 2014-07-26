@@ -12,10 +12,5 @@ ozpIwc.NamesApi.prototype.findOrMakeValue=function(packet) {
     if (packet.resource==='/me') {
         packet.resource='/address/'+packet.src;
     }
-    var node=this.data[packet.resource];
-
-    if(!node) {
-        node=this.data[packet.resource]=this.makeValue(packet);
-    }
-    return node;
+    return ozpIwc.CommonApiBase.prototype.findOrMakeValue.call(this,packet);
 };
