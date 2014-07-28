@@ -123,7 +123,6 @@ describe('Participant Integration', function () {
                         expect(event.authenticatedRoles).toBeDefined;
                         expect(event.metricsTypes).toBeDefined;
                         expect(event.linksStorage).toBeDefined;
-                        console.log("links storage: " + event.linksStorage);
                         called = true;
                         done();
                     }

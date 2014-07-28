@@ -207,7 +207,6 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 	if(typeof(event.data)==="string") {
 		packet=JSON.parse(event.data);
 	}
-    console.log(event);
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
 		participant=new ozpIwc.PostMessageParticipant({
