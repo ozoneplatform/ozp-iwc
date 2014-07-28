@@ -110,29 +110,171 @@ describe('Participant Integration', function () {
     });
 
     it('reads metrics gauges', function (done) {
+            var called = false;
+            var receiveCount = 0;
+            var echoCallback = function (event) {
+                if (event.echo) {
+                    if (!called && receiveCount++ >= 100) {
+                        expect(event.routerParticipants).not.toBeLessThan(1);
+                        expect(event.postMessageParticipants).not.toBeLessThan(1);
+                        expect(event.leaderGroupElectionQueue).toBeDefined;
+                        expect(event.internalParticipantCallbacks).toBeDefined;
+                        expect(event.authorizedRoles).toBeDefined;
+                        expect(event.authenticatedRoles).toBeDefined;
+                        expect(event.metricsTypes).toBeDefined;
+                        expect(event.linksStorage).toBeDefined;
+                        console.log("links storage: " + event.linksStorage);
+                        called = true;
+                        done();
+                    }
+                }
+            };
+
+            clients[0].on("receive", echoCallback);
+            for (var i = 0; i <= 100; i++) {
+                clients[0].send(setPacket);
+            }}
+    );
+
+    it('gets the current participant address', function (done) {
         var called = false;
-        var receiveCount = 0;
         var echoCallback = function (event) {
             if (event.echo) {
-                if (!called && receiveCount++ >= 100) {
-                    expect(event.routerParticipants).not.toBeLessThan(1);
-                    expect(event.postMessageParticipants).not.toBeLessThan(1);
-                    expect(event.leaderGroupElectionQueue).toBeDefined;
-                    expect(event.internalParticipantCallbacks).toBeDefined;
-                    expect(event.authorizedRoles).toBeDefined;
-                    expect(event.authenticatedRoles).toBeDefined;
-                    expect(event.metricsTypes).toBeDefined;
-                    expect(event.linksStorage).toBeDefined;
-                    console.log("links storage: " + event.linksStorage);
-                    called = true;
+                expect(event.alias).toEqual(event.literal);
+                if (!called) {
+                    called=true;
                     done();
                 }
             }
         };
 
         clients[0].on("receive", echoCallback);
-        for (var i = 0; i <= 100; i++) {
-            clients[0].send(setPacket);
+        clients[0].send(setPacket);
+    });
+
+    it('Queries names.api for the registered participant information', function (done) {
+        var called = false;
+        var getAddressListPacket = {
+            dst: "names.api",
+            action: "get",
+            resource: "/address"
+        };
+
+        var foundAddresses=[];
+
+        var addressCallback=function(packet) {
+            var found=false;
+            console.log("Found " + packet.entity.participantType + " participant");
+            Object.keys(packet.entity).forEach(function(key) {
+                if (typeof packet.entity[key] === 'object') {
+                    console.log("\t" + key + " values");
+                    if (packet.entity[key]) {
+                        Object.keys(packet.entity[key]).forEach(function (subKey) {
+                            console.log("\t\t" + subKey + " = " + packet.entity[key][subKey]);
+                        });
+                    }
+                } else {
+                    console.log("\t" + key + " = " + packet.entity[key]);
+                }
+                found=true;
+            });
+            expect(found).toBeTruthy();
+
+            if (foundAddresses.length == 0) {
+                if (!called) {
+                    called = true;
+                    done();
+                }
+            } else {
+                var id=foundAddresses.shift();
+                var getAddressPacket = {
+                    dst: "names.api",
+                    action: "get",
+                    resource: "/address/" + id
+                };
+                clients[0].send(getAddressPacket,addressCallback);
+            }
+            return false;
         }
+
+        var addressListCallback=function(packet) {
+            packet.entity.forEach(function(id) {
+                if (id !== 'undefined') {
+                    foundAddresses.push(id);
+                    console.log("retrieved address: " + id)
+                }
+            });
+
+            expect(foundAddresses.length).toBeGreaterThan(0);
+            var id=foundAddresses.shift();
+            var getAddressPacket = {
+                dst: "names.api",
+                action: "get",
+                resource: "/address/" + id
+            };
+            clients[0].send(getAddressPacket,addressCallback);
+            return false;
+        };
+
+        clients[0].send(getAddressListPacket,addressListCallback);
+    });
+
+    it('Queries names.api for the registered multicast group information', function (done) {
+
+        var called = false;
+        var getMulticastListPacket = {
+            dst: "names.api",
+            action: "get",
+            resource: "/multicast"
+        };
+
+        var foundAddresses=[];
+
+        var multicastCallback=function(packet) {
+            var found=false;
+            console.log("Found multicast group");
+            packet.entity.forEach(function(address) {
+                console.log("address: " + address);
+                found=true;
+            });
+            expect(found).toBeTruthy();
+
+            if (foundAddresses.length == 0) {
+                if (!called) {
+                    called = true;
+                    done();
+                }
+            } else {
+                var id=foundAddresses.shift();
+                var getMulticastPacket = {
+                    dst: "names.api",
+                    action: "get",
+                    resource: "/multicast/" + id
+                };
+                clients[0].send(getMulticastPacket,multicastCallback);
+            }
+            return false;
+        }
+
+        var multicastListCallback=function(packet) {
+            packet.entity.forEach(function(id) {
+                if (id !== 'undefined') {
+                    foundAddresses.push(id);
+                    console.log("retrieved multicast address: " + id)
+                }
+            });
+
+            expect(foundAddresses.length).toBeGreaterThan(0);
+            var id=foundAddresses.shift();
+            var getMulticastPacket = {
+                dst: "names.api",
+                action: "get",
+                resource: "/multicast/" + id
+            };
+            clients[0].send(getMulticastPacket,multicastCallback);
+            return false;
+        };
+
+        clients[0].send(getMulticastListPacket,multicastListCallback);
     });
 });
