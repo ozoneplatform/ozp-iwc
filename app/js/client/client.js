@@ -150,7 +150,7 @@ ozpIwc.Client.prototype.createIframePeer=function(peerUrl) {
         self.iframe.src=peerUrl+"/iframe_peer.html";
         self.iframe.height=1;
         self.iframe.width=1;
-        self.iframe.style="display:none !important;";
+        self.iframe.style.setProperty ("display", "none", "important")
         self.iframe.addEventListener("load",function() { self.requestAddress(); },false);
         document.body.appendChild(self.iframe);
         self.peer=self.iframe.contentWindow;
