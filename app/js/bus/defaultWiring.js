@@ -1,5 +1,32 @@
 var ozpIwc=ozpIwc || {};
 
+ozpIwc.apiRoot = {
+    "_links": {
+        "self": { "href" : "/api" },
+        "data": { "href":"/api/data/v1/exampleUser"},
+        "intents": { "href":"/api/intents/v1"},
+        "applications": { "href":"/api/application/v1"},
+        "user": { "href":"/api/user/v1/exampleUser"},
+        "system": { "href":"/api/system/v1"}
+    },
+    "_embedded": {
+        "user": {
+            "name": "Jon Doe",
+            "userName": "jon.doe",
+            "_links" : {
+                "self": { "href":"/api/user/v1/exampleUser"}
+            }
+        },
+        "system": {
+            "version": "1.0",
+            "name": "IWC Demo site",
+            "_links" : {
+                "self": { "href":"/api/system/v1"}
+            }
+        }
+    }
+};
+
 if(ozpIwc.Peer) {
     ozpIwc.defaultPeer=new ozpIwc.Peer();
 }
@@ -41,10 +68,13 @@ if(ozpIwc.DataApi && ozpIwc.LeaderGroupParticipant) {
 }
 
 if(ozpIwc.IntentsApi) {
-    ozpIwc.intentsApi = new ozpIwc.IntentsApi({
-        'participant': new ozpIwc.LeaderGroupParticipant({'name': "intents.api"})
+    ozpIwc.intentsApi=new ozpIwc.IntentsApi({
+        'participant': new ozpIwc.LeaderGroupParticipant({
+            'name': "intents.api"
+        }),
+        'href': ozpIwc.apiRoot._links.intents.href,
+        'loadServerDataEmbedded': true
     });
-
     ozpIwc.defaultRouter.registerParticipant(ozpIwc.intentsApi.participant);
 }
 if(ozpIwc.NamesApi && ozpIwc.LeaderGroupParticipant) {

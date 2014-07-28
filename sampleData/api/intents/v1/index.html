@@ -1,0 +1,99 @@
+{
+    "_links": {
+        "self": { "href":"/api/intents/v1"},
+        "curies": [{
+            "name": "ozp",
+            "href": "/api/intents/v1/rels/{rel}",
+            "templated": true
+        }],
+        "ozp:intentTypes": [
+            {"href": "/api/intents/v1/application"},
+            {"href": "/api/intents/v1/text"}
+        ]
+    },
+    "_embedded": {
+        "ozp:intentTypes": [
+            {
+                "_links": {
+                    "self": {"href": "/api/intents/v1/application"}
+                },
+                "_embedded": {
+                    "ozp:intentSubTypes": [
+                        {
+                            "_links": {
+                                "self": {"href": "/api/intents/v1/application/ozp-demo-ball+json"}
+                            },
+                            "_embedded": {
+                                "ozp:intentActions": [
+                                    {
+                                        "_links": {
+                                            "self": {"href": "/api/intents/v1/application/ozp-demo-ball+json/view"}
+                                        },
+                                        "type": "application/ozp-demo-ball+json",
+                                        "action": "view",
+                                        "icon": "http://example.com/view-text-plain.png",
+                                        "label": "View a bouncing ball"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "_links": {
+                    "self": {"href": "/api/intents/v1/text" }
+                },
+                "_embedded": {
+                    "ozp:intentSubTypes": [
+                        {
+                            "_links": {
+                                "self": {"href": "/api/intents/v1/text/plain" }
+                            },
+                            "_embedded": {
+                                "ozp:intentActions": [
+                                    {
+                                        "_links": {
+                                            "self": {"href": "/api/intents/v1/text/plain/edit" }
+                                        },
+                                        "type": "text/plain",
+                                        "action": "edit",
+                                        "icon": "http://example.com/edit-text-plain.png",
+                                        "label": "Edit plain text"
+                                    },
+                                    {
+                                        "_links": {
+                                            "self": {"href": "/api/intents/v1/text/plain/view" }
+                                        },
+                                        "type": "text/plain",
+                                        "action": "view",
+                                        "icon": "http://example.com/view-text-plain.png",
+                                        "label": "View as plain text"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "_links": {
+                                "self": {"href": "/api/intents/v1/text/html" }
+                            },
+                            "_embedded": {
+                                "ozp:intentActions": [
+                                    {
+                                        "_links": {
+                                            "self": {"href": "/api/intents/v1/text/html/view"}
+                                        },
+                                        "type": "text/html",
+                                        "action": "view",
+                                        "icon": "http://example.com/view-text-html.png",
+                                        "label": "View as HTML"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}
