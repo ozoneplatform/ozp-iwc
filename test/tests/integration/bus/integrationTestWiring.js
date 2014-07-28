@@ -95,6 +95,7 @@ if (ozpIwc.Participant) {
                 dst: packet.src,
                 maxSeqIdPerSource: ozpIwc.Peer.maxSeqIdPerSource,
                 packetsSeen: ozpIwc.defaultRouter.peer.packetsSeen,
+                defragmented: (event.packet.defragmented) ? event.packet.defragmented : false,
                 'authenticatedRoles': authenticatedRoles,
                 'authorizedRoles': authorizedRoles,
                 'internalParticipantCallbacks': internalParticipantCallbacks,
@@ -114,7 +115,8 @@ if (ozpIwc.Participant) {
 
 if(ozpIwc.LocalStorageLink) {
     ozpIwc.defaultLocalStorageLink=new ozpIwc.KeyBroadcastLocalStorageLink({
-        peer: ozpIwc.defaultPeer
+        peer: ozpIwc.defaultPeer,
+        fragmentSize: 2.5 * 1024 * 1024 / 2 // 1/2 of local storage capacity 2.5mb
     });
 }
 
