@@ -95,6 +95,7 @@ if (ozpIwc.Participant) {
                 dst: packet.src,
                 maxSeqIdPerSource: ozpIwc.Peer.maxSeqIdPerSource,
                 packetsSeen: ozpIwc.defaultRouter.peer.packetsSeen,
+                defragmented: (event.packet.defragmented) ? event.packet.defragmented : false,
                 'authenticatedRoles': authenticatedRoles,
                 'authorizedRoles': authorizedRoles,
                 'internalParticipantCallbacks': internalParticipantCallbacks,
