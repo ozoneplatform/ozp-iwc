@@ -15,16 +15,40 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	this.sourceWindow=config.sourceWindow;
 	this.credentials=config.credentials;
 	this.participantType="postMessageProxy";
-	this.securityAttributes.origin=this.origin;
+    this.securityAttributes.origin=this.origin;
 });
 
 /**
+ * @override
+ * @param {ozpIwc.Router} router
+ * @param {string} address
+ * @returns {boolean} true if this packet could have additional recipients
+ */
+ozpIwc.PostMessageParticipant.prototype.connectToRouter=function(router,address) {
+    ozpIwc.Participant.prototype.connectToRouter.apply(this,arguments);
+    this.securityAttributes.sendAs=this.address;
+    this.securityAttributes.receiveAs=this.address;
+};
+
+/**
+ * @override
  * Receives a packet on behalf of this participant and forwards it via PostMessage.
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
-ozpIwc.PostMessageParticipant.prototype.receiveFromRouter=function(packetContext) {
-	this.sendToRecipient(packetContext.packet);
-	return true;
+ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
+    var self = this;
+    return ozpIwc.authorization.isPermitted({
+        'subject': this.securityAttributes,
+        'object':  {
+            receiveAs: packetContext.packet.dst
+        }
+    })
+        .success(function(){
+            self.sendToRecipient(packetContext.packet);
+        })
+        .failure(function(){
+            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+        });
 };
 
 /**
@@ -98,6 +122,30 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 	}
 };
 
+/**
+ * Sends a packet to this participants router.  Calls fixPacket
+ * before doing so.
+ * @override
+ * @param {ozpIwc.TransportPacket} packet
+ * @returns {ozpIwc.TransportPacket}
+*/
+ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
+    packet=this.fixPacket(packet);
+    var self = this;
+    return ozpIwc.authorization.isPermitted({
+        'subject': this.securityAttributes,
+        'object': {
+            sendAs: packet.src
+        }
+    })
+        .success(function(){
+            self.router.send(packet,this);
+        })
+        .failure(function(){
+            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+        });
+};
+
 
 /**
  * @class
@@ -159,7 +207,7 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 	if(typeof(event.data)==="string") {
 		packet=JSON.parse(event.data);
 	}
-
+    console.log(event);
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
 		participant=new ozpIwc.PostMessageParticipant({

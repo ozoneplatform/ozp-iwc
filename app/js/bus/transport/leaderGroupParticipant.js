@@ -188,7 +188,7 @@ ozpIwc.LeaderGroupParticipant.prototype.cancelElection=function() {
  * @param {ozpIwc.TransportPacket} packet
  * @returns {boolean}
  */
-ozpIwc.LeaderGroupParticipant.prototype.receiveFromRouter=function(packetContext) {
+ozpIwc.LeaderGroupParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
 	var packet=packetContext.packet;
 	packetContext.leaderState=this.leaderState;
 	// forward non-election packets to the current state
