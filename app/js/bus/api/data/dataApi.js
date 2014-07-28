@@ -1,7 +1,14 @@
 var ozpIwc=ozpIwc || {};
 
-ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function() {
+ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
+    var self = this;
+    if (config.href && config.loadServerDataEmbedded) {
+        this.loadServerDataEmbedded({href: config.href})
+            .success(function () {
+                //Add on load code here
+            });
+    }
 });
 
 ozpIwc.DataApi.prototype.makeValue = function(packet){
@@ -51,4 +58,42 @@ ozpIwc.DataApi.prototype.handleRemovechild=function(node,packetContext) {
 	packetContext.replyTo({
         'action':'ok'
     });
+};
+
+/**
+ * Expects a complete Data API data store tree returned from the specified href. Data must be of hal/json type and the
+ * stored tree must be in the '_embedded' property.
+ *
+ * @param config {Object}
+ * @param config.href {String}
+ * @returns {ozpIwc.AsyncAction}
+ */
+ozpIwc.DataApi.prototype.loadServerDataEmbedded = function (config) {
+    var self = this;
+    var asyncResponse = new ozpIwc.AsyncAction();
+    ozpIwc.util.ajax({
+        href: config.href,
+        method: "GET"
+    })
+        .success(function (data) {
+            // Take the root path from where the intent data is stored so that we can remove it from each object that
+            // becomes a intent value.
+            var rootPath = data._links.self.href;
+            for (var i in data._embedded['ozp:dataObjects']) {
+                var object = data._embedded['ozp:dataObjects'][i];
+                var loadPacket = {
+                    leaderState: 'leader',
+                    action: 'set',
+                    packet: {
+                        resource: object._links.self.href.replace(rootPath, ''),
+                        entity: object.entity
+                    }
+                };
+                var node = self.findOrMakeValue(loadPacket.packet);
+                node.set(loadPacket.packet);
+            }
+            asyncResponse.resolve("success");
+        });
+
+    return asyncResponse;
 };
