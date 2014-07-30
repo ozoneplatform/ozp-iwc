@@ -1,5 +1,7 @@
 ozpIwc.SystemApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
     ozpIwc.CommonApiValue.apply(this,arguments);
+    config=config || {};
+    this.systemApi=config.systemApi || ozpIwc.systemApi;
 });
 
 ozpIwc.SystemApiValue.prototype.set=function(packet) {
@@ -8,24 +10,19 @@ ozpIwc.SystemApiValue.prototype.set=function(packet) {
         this.contentType=packet.contentType;
         if (this.resource) {
             if (this.resource.indexOf('/application') === 0) {
-                var id = this.addressId();
+                var id = this.applicationId();
                 if (id) {
                     this.entity = packet.entity;
-                    var node = ozpIwc.systemApi.findOrMakeValue({resource: '/application'});
+                    var node = this.systemApi.findOrMakeValue({resource: '/application'});
                     node.set({entity: id})
                 } else {
-                    this.entity=this.entity || [];
+                    this.entity = this.entity || [];
                     if (this.entity.indexOf(packet.entity) < 0) {
                         this.entity.push(packet.entity);
                     }
                 }
-            } else if (this.resource === '/user') {
-                this.entity=ozpIwc.apiRoot._embedded.user;
-            } else if (this.resource === '/system') {
-                this.entity=ozpIwc.apiRoot._embedded.system;
-            }
-            else {
-                this.entity=packet.entity;
+            } else {
+                this.entity = packet.entity;
             }
             this.version++;
         }
@@ -35,12 +32,12 @@ ozpIwc.SystemApiValue.prototype.set=function(packet) {
 ozpIwc.SystemApiValue.prototype.deleteData=function(packet) {
     if (this.resource) {
         if (this.resource.indexOf('/application') === 0) {
-            var id = this.addressId();
+            var id = this.applicationId();
             if (id) {
                 var originalEntity=this.entity;
                 ozpIwc.CommonApiValue.prototype.deleteData.apply(this,arguments);
                 if (originalEntity) {
-                    var node = ozpIwc.systemApi.findOrMakeValue({resource: '/application'});
+                    var node = this.systemApi.findOrMakeValue({resource: '/application'});
                     node.deleteData({entity: id})
                 }
             } else {
@@ -57,7 +54,7 @@ ozpIwc.SystemApiValue.prototype.deleteData=function(packet) {
                     return keep;
                 });
                 if (elementRemoved){
-                    var node = ozpIwc.systemApi.findOrMakeValue({resource: '/application/'+packet.entity});
+                    var node = this.systemApi.findOrMakeValue({resource: '/application/'+packet.entity});
                     node.deleteData();
                 }
             }
@@ -68,7 +65,7 @@ ozpIwc.SystemApiValue.prototype.deleteData=function(packet) {
     }
 };
 
-ozpIwc.SystemApiValue.prototype.addressId=function() {
+ozpIwc.SystemApiValue.prototype.applicationId=function() {
     var regexp=/\/application\/(.*)/;
     var res=regexp.exec(this.resource);
     if (res && res.length > 1) {

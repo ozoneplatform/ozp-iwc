@@ -79,7 +79,9 @@ if(ozpIwc.IntentsApi) {
 }
 if(ozpIwc.SystemApi && ozpIwc.LeaderGroupParticipant) {
     ozpIwc.systemApi=new ozpIwc.SystemApi({
-        'participant': new ozpIwc.LeaderGroupParticipant({'name': "system.api"})
+        'participant': new ozpIwc.LeaderGroupParticipant({'name': "system.api"}),
+        'userHref': ozpIwc.apiRoot._links.user.href,
+        'systemHref': ozpIwc.apiRoot._links.system.href
     });
 
     ozpIwc.defaultRouter.registerParticipant(ozpIwc.systemApi.participant);
