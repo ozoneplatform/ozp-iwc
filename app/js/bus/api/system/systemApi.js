@@ -1,15 +1,16 @@
 var ozpIwc=ozpIwc || {};
 
 ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
-	ozpIwc.CommonApiBase.apply(this,arguments);
+    ozpIwc.CommonApiBase.apply(this,arguments);
+    this.participant.securityAttributes=config.securityAttributes;
     if (config.userHref) {
-        this.loadServerDataEmbedded({href: config.userHref})
+        this.loadServerDataEmbedded({href: config.userHref, resource: '/user'})
             .success(function () {
                 //Add on load code here
             });
     }
     if (config.systemHref) {
-        this.loadServerDataEmbedded({href: config.systemHref})
+        this.loadServerDataEmbedded({href: config.systemHref, resource: '/system'})
             .success(function () {
                 //Add on load code here
             });
@@ -22,17 +23,28 @@ ozpIwc.SystemApi.prototype.makeValue = function(packet){
 
 ozpIwc.SystemApi.prototype.isPermitted=function(node,packetContext) {
     var originalNode=node;
+    var originalPacketContext=packetContext;
     if (packetContext.packet.action==='set' || packetContext.packet.action==='delete') {
         node.permissions.modifyAuthority='apiLoader';
+        if (packetContext.packet.securityAttributes) {
+            packetContext.srcSubject=packetContext.srcSubject || {};
+            Object.keys(packetContext.packet.securityAttributes).forEach(function(key) {
+                packetContext.srcSubject[key]=packetContext.packet.securityAttributes[key];
+            });
+        }
     } else {
         delete node.permissions.modifyAuthority;
     }
     for (var i in arguments) {
         if (arguments[i] === originalNode) {
             arguments[i]=node;
+        } else if (arguments[i] === originalPacketContext) {
+            arguments[i]=packetContext;
         }
     }
-   return ozpIwc.CommonApiBase.prototype.isPermitted.apply(this,arguments);
+    var retVal=ozpIwc.CommonApiBase.prototype.isPermitted.apply(this,arguments);
+    delete node.permissions.modifyAuthority;
+    return retVal
 }
 
 /**
@@ -52,10 +64,13 @@ ozpIwc.SystemApi.prototype.loadServerDataEmbedded = function (config) {
         method: "GET"
     })
         .success(function (data) {
-            if (self.resource === '/user' || self.resource === '/system') {
-                this.entity==data._embedded[self.resource];
-            }
+            var value=self.findOrMakeValue({'resource': config.resource});
+            value.set({entity: data});
             asyncResponse.resolve("success");
+        })
+        .failure(function(data) {
+            console.log("AJAX failure response: " + data)
+            asyncResponse.resolve("failure",data);
         });
 
     return asyncResponse;

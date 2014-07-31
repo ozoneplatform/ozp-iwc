@@ -1,6 +1,6 @@
 var ozpIwc=ozpIwc || {};
 
-ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function() {
+ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
 });
 
