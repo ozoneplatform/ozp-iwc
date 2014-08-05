@@ -60,7 +60,7 @@ ozpIwc.NamesApiValue.prototype.set=function(packet) {
             this.version++;
         }
     }
-}
+};
 
 ozpIwc.NamesApiValue.prototype.deleteData=function(packet) {
     if (packet && packet.resource==='/me' && packet.src) {
@@ -127,4 +127,4 @@ ozpIwc.NamesApiValue.prototype.resourceRoot=function() {
         return res[1];
     }
     return null;
-}
+};
