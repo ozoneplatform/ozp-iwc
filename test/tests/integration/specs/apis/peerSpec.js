@@ -276,4 +276,47 @@ describe('Participant Integration', function () {
 
         clients[0].send(getMulticastListPacket,multicastListCallback);
     });
+
+    it('Queries system.api for the default user information', function (done) {
+        var called = false;
+        var getUserPacket = {
+            dst: "system.api",
+            action: "get",
+            resource: "/user"
+        };
+
+        var callback=function(packet) {
+            expect(packet.entity.name).toEqual(ozpIwc.apiRoot._embedded.user.name);
+            expect(packet.entity.userName).toEqual(ozpIwc.apiRoot._embedded.user.userName);
+            if (!called) {
+                called = true;
+                done();
+            }
+            return false;
+        };
+
+        clients[0].send(getUserPacket,callback);
+    });
+
+    it('Queries system.api for the default system information', function (done) {
+        var called = false;
+        var getSystemPacket = {
+            dst: "system.api",
+            action: "get",
+            resource: "/system"
+        };
+
+        var callback=function(packet) {
+            expect(packet.entity.name).toEqual(ozpIwc.apiRoot._embedded.system.name);
+            expect(packet.entity.version).toEqual(ozpIwc.apiRoot._embedded.system.version);
+            if (!called) {
+                called = true;
+                done();
+            }
+            return false;
+        };
+
+        clients[0].send(getSystemPacket,callback);
+    });
+
 });

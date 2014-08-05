@@ -136,16 +136,16 @@ module.exports = function(grunt) {
             app: {
                 options: {
                     port: 13000,
-                    base: ["app", "sampleData"],
+                    base: ["app", "sampleData" ],
                     index: "index.html",
                     debug: true
                 }
             },
             tests: {
-                options: {port: 14000, base: ["app", "test/tests"]}
+                options: {port: 14000, base: ["app", "test/tests", "sampleData"]}
             },
             testBus: {
-                options:{ port: 14002, base: ["test/tests/integration/bus","app"] }
+                options:{ port: 14002, base: ["sampleData","test/tests/integration/bus","app"] }
             },
             pingers: {
                 options:{	port: 14001, base: ["app","test/pingers"]	}

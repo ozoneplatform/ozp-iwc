@@ -167,8 +167,8 @@ ozpIwc.CommonApiBase.prototype.validatePreconditions=function(node,packetContext
  * @returns {undefined}
  */
 ozpIwc.CommonApiBase.prototype.invokeHandler=function(node,packetContext,handler) {
-	this.isPermitted(node,packetContext)
-		.failure(function() {
+	var async =this.isPermitted(node,packetContext);
+		async.failure(function() {
 			packetContext.replyTo({'action':'noPerm'});				
 		})
 		.success(function() {
