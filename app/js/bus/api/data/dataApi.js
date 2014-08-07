@@ -81,15 +81,19 @@ ozpIwc.DataApi.prototype.loadServerDataEmbedded = function (config) {
             var rootPath = data._links.self.href;
             for (var i in data._embedded['ozp:dataObjects']) {
                 var object = data._embedded['ozp:dataObjects'][i];
+                object.children = object.children || [];
+
                 var loadPacket = {
-                    leaderState: 'leader',
-                    action: 'set',
                     packet: {
                         resource: object._links.self.href.replace(rootPath, ''),
                         entity: object.entity
                     }
                 };
                 var node = self.findOrMakeValue(loadPacket.packet);
+
+                for (var i = 0; i < object.children.length; i++){
+                    node.addChild(object.children[i]);
+                }
                 node.set(loadPacket.packet);
             }
             asyncResponse.resolve("success");
