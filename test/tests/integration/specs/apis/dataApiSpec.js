@@ -367,9 +367,9 @@ describe("data.api integration", function () {
 
                     for(var i = 0; i < data._embedded['ozp:dataObjects'].length; i++) {
                         var resource =  data._embedded['ozp:dataObjects'][i]._links.self.href.replace(rootPath, '');
-                        var sampleData = data._embedded['ozp:dataObjects'][i];
+                        var expected = data._embedded['ozp:dataObjects'][i];
 
-                        if(sampleData.children){
+                        if(expected.children){
                             (function(children){
                                 client.send({
                                     dst: "data.api",
@@ -384,10 +384,10 @@ describe("data.api integration", function () {
                                         done();
                                     }
                                 });
-                            })(sampleData.children);
+                            })(expected.children);
                         }
 
-                        if(sampleData.entity){
+                        if(expected.entity){
                             (function(entity){
                                 client.send({
                                     dst: "data.api",
@@ -401,7 +401,7 @@ describe("data.api integration", function () {
                                         done();
                                     }
                                 });
-                            })(sampleData.entity);
+                            })(expected.entity);
                         }
                     }
                 });
