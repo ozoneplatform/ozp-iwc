@@ -31,11 +31,11 @@ if(ozpIwc.Peer) {
     ozpIwc.defaultPeer=new ozpIwc.Peer();
 }
 
-ozpIwc.TestParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,function(config) {
-    ozpIwc.InternalParticipant.apply(this,arguments);
-    this.participantType="testParticipant";
-    this.msgIdSequence=0;
-});
+//ozpIwc.TestParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,function(config) {
+//    ozpIwc.InternalParticipant.apply(this,arguments);
+//    this.participantType="testParticipant";
+//    this.msgIdSequence=0;
+//});
 
 if(ozpIwc.NamesApi && ozpIwc.Router && ozpIwc.LeaderGroupParticipant) {
     ozpIwc.namesApi=new ozpIwc.NamesApi({
@@ -54,7 +54,7 @@ if(ozpIwc.NamesApi && ozpIwc.Router && ozpIwc.LeaderGroupParticipant) {
     ozpIwc.defaultRouter.registerParticipant(testNamesApi.participant);
 }
 if (ozpIwc.Participant) {
-    ozpIwc.testParticipant = new ozpIwc.TestParticipant({name: "Test Participant"});
+    ozpIwc.testParticipant = new ozpIwc.InternalParticipant({name: "Test Participant"});
     ozpIwc.defaultRouter.registerParticipant(ozpIwc.testParticipant);
     ozpIwc.defaultRouter.peer.events.on("receive", function(event) {
         var packet = event.packet.data;
@@ -173,4 +173,15 @@ if(ozpIwc.IntentsApi) {
     });
 
     ozpIwc.defaultRouter.registerParticipant(ozpIwc.intentsApi.participant);
+}
+
+if(ozpIwc.SystemApi && ozpIwc.LeaderGroupParticipant) {
+    ozpIwc.systemApi=new ozpIwc.SystemApi({
+        'participant': new ozpIwc.LeaderGroupParticipant({'name': "system.api"}),
+        'userHref': ozpIwc.apiRoot._links.user.href,
+        'systemHref': ozpIwc.apiRoot._links.system.href,
+        'securityAttributes': {'modifyAuthority': 'apiLoader'}
+    });
+
+    ozpIwc.defaultRouter.registerParticipant(ozpIwc.systemApi.participant);
 }
