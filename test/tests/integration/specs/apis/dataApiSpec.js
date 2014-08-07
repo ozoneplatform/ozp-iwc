@@ -341,4 +341,71 @@ describe("data.api integration", function () {
         });
 
     });
+    describe("Data loading", function(){
+
+        // Same as ozpIwc.apiRoot._links.data.href
+        var rootPath = '/api/data/v1/exampleUser';
+
+        it('Populates its data from the ozpIwc.apiRoot specified path', function(done){
+
+            var called = false;
+
+            ozpIwc.util.ajax({
+                href: rootPath,
+                method: "GET"
+            })
+                .success(function (data) {
+                    var expectedResponses = 0;
+                    for( var i =0; i < data._embedded['ozp:dataObjects'].length; i ++){
+                        if(data._embedded['ozp:dataObjects'][i].children) {
+                            expectedResponses++;
+                        }
+                        if(data._embedded['ozp:dataObjects'][i].entity) {
+                            expectedResponses++;
+                        }
+                    }
+
+                    for(var i = 0; i < data._embedded['ozp:dataObjects'].length; i++) {
+                        var resource =  data._embedded['ozp:dataObjects'][i]._links.self.href.replace(rootPath, '');
+                        var sampleData = data._embedded['ozp:dataObjects'][i];
+
+                        if(sampleData.children){
+                            (function(children){
+                                client.send({
+                                    dst: "data.api",
+                                    action: "list",
+                                    resource: resource
+                                }, function (reply) {
+                                    expectedResponses--;
+                                    expect(reply.entity).toEqual(children);
+                                    if(expectedResponses === 0 && !called){
+                                        console.log('done');
+                                        called = true;
+                                        done();
+                                    }
+                                });
+                            })(sampleData.children);
+                        }
+
+                        if(sampleData.entity){
+                            (function(entity){
+                                client.send({
+                                    dst: "data.api",
+                                    action: "get",
+                                    resource: resource
+                                }, function (reply) {
+                                    expectedResponses--;
+                                    expect(reply.entity).toEqual(entity);
+                                    if(expectedResponses === 0 && !called){
+                                        called = true;
+                                        done();
+                                    }
+                                });
+                            })(sampleData.entity);
+                        }
+                    }
+                });
+
+        });
+    });
 });

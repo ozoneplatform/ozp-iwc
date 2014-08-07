@@ -1,5 +1,32 @@
 var ozpIwc=ozpIwc || {};
 
+ozpIwc.apiRoot = {
+    "_links": {
+        "self": { "href" : "/api" },
+        "data": { "href":"/api/data/v1/exampleUser"},
+        "intents": { "href":"/api/intents/v1"},
+        "applications": { "href":"/api/application/v1"},
+        "user": { "href":"/api/user/v1/exampleUser"},
+        "system": { "href":"/api/system/v1"}
+    },
+    "_embedded": {
+        "user": {
+            "name": "Jon Doe",
+            "userName": "jon.doe",
+            "_links" : {
+                "self": { "href":"/api/user/v1/exampleUser"}
+            }
+        },
+        "system": {
+            "version": "1.0",
+            "name": "IWC Demo site",
+            "_links" : {
+                "self": { "href":"/api/system/v1"}
+            }
+        }
+    }
+};
+
 if(ozpIwc.Peer) {
     ozpIwc.defaultPeer=new ozpIwc.Peer();
 }
@@ -132,7 +159,9 @@ if(ozpIwc.BasicAuthorization) {
 
 if(ozpIwc.DataApi) {
     ozpIwc.dataApi=new ozpIwc.DataApi({
-        'participant': new ozpIwc.LeaderGroupParticipant({'name': "data.api"})
+        'participant': new ozpIwc.LeaderGroupParticipant({'name': "data.api"}),
+        'href': ozpIwc.apiRoot._links.data.href,
+        'loadServerDataEmbedded': true
     });
 
     ozpIwc.defaultRouter.registerParticipant(ozpIwc.dataApi.participant);
