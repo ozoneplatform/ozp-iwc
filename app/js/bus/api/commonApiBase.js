@@ -6,8 +6,11 @@
 ozpIwc.CommonApiBase = function(config) {
 	config = config || {};
 	this.participant=config.participant;
-	
-	this.participant.on("receive",ozpIwc.CommonApiBase.prototype.routePacket,this);
+
+    this.participant.on("receive",ozpIwc.CommonApiBase.prototype.routePacket,this);
+    this.participant.on("getState",ozpIwc.CommonApiBase.prototype.passState,this);
+    this.participant.on("sendToLeader",ozpIwc.CommonApiBase.prototype.sendState,this);
+    this.participant.on("inheritState",ozpIwc.CommonApiBase.prototype.setState,this);
 
 	this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
@@ -237,4 +240,31 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
 	node.unwatch(packetContext.packet);
 	
 	packetContext.replyTo({'action':'ok'});
+};
+
+/**
+ */
+ozpIwc.CommonApiBase.prototype.passState = function(){
+    this.participant.startElection({state:this.data});
+    this.data = {};
+};
+
+/**
+ */
+ozpIwc.CommonApiBase.prototype.sendState = function(){
+    this.participant.sendElectionMessage("prevLeader", {
+        state:this.data,
+        prevLeader: this.participant.address
+    });
+    this.data = {};
+};
+
+/**
+ * @param state
+ */
+ozpIwc.CommonApiBase.prototype.setState = function(state){
+    this.data = {};
+    for(var key in state){
+        this.findOrMakeValue(state[key]);
+    }
 };

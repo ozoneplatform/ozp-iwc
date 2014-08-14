@@ -8,7 +8,7 @@
  */
 ozpIwc.CommonApiValue = function(config) {
 	config = config || {};
-	this.watchers=[];
+	this.watchers= config.watchers || [];
 	this.resource=config.resource;
     
   this.entity=config.entity;
