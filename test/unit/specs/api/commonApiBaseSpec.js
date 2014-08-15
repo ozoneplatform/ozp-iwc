@@ -25,7 +25,28 @@ describe("Common API Base class",function() {
 	afterEach(function() {
 		apiBase=null;
 	});
-	
+
+    it("responds to a root level list action", function() {
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'action': "list"
+            }
+        });
+        
+        // possibly brittle, if CommonApiBase changes how it stores the
+        // keys and values
+        
+        apiBase.data["/node"]=simpleNode;
+        
+		apiBase.rootHandleList(null,packetContext);
+
+		expect(packetContext.responses[0])
+            .toEqual(jasmine.objectContaining({
+                'action':"ok",
+                'entity': ["/node"]
+            }));
+	});
+    
 	it("responds to a get", function() {
         var packetContext=new TestPacketContext({
             'packet': {
@@ -306,6 +327,29 @@ describe("Common API Base class",function() {
             
             expect(apiBase.participant.sentPackets.length).toEqual(0);
             expect(apiBase.participant.sentPackets[0]).toBeUndefined();
+        });
+        it("responds to a root level list action", function() {
+            // possibly brittle, if CommonApiBase changes how it stores the
+            // keys and values
+            apiBase.data["/node"]=simpleNode;
+
+            var context=new TestPacketContext({
+                'leaderState': "leader",
+                'packet': {
+                    'action': "list",
+                    'msgId' : "1234",
+                    'src' : "srcParticipant",
+                    'entity': { 'bar': 2}
+                }
+            });
+
+            apiBase.routePacket(context);            
+            
+            expect(context.responses.length).toEqual(1);
+            
+            var packet=context.responses[0];
+            expect(packet.action).toEqual("ok");
+            expect(packet.entity).toEqual(["/node"]);
         });
     });
 

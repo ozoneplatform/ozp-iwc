@@ -77,6 +77,10 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
  * @param {ozpIwc.TransportPacket} packet
  */
 ozpIwc.CommonApiBase.prototype.findOrMakeValue=function(packet) {
+    if(packet.resource === null || packet.resource === undefined) {
+        // return a throw-away value
+        return new ozpIwc.CommonApiValue();
+    }
 	var node=this.data[packet.resource];
 	
 	if(!node) {
@@ -261,4 +265,15 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
 	node.unwatch(packetContext.packet);
 	
 	packetContext.replyTo({'action':'ok'});
+};
+
+/**
+ * @param {ozpIwc.CommonApiValue} node
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
+    packetContext.replyTo({
+        'action':'ok',
+        'entity': Object.keys(this.data)
+    });
 };
