@@ -156,6 +156,22 @@ describe("Common API Base class",function() {
             apiBase.routePacket(context);
             expect(apiBase.handleGet).toHaveBeenCalled();
         });
+
+        it("routes packets without an action to the rootHandleAction",function() {
+            apiBase.rootHandleGet=jasmine.createSpy('rootHandleGet');
+            var context=new TestPacketContext({
+                'leaderState': "leader",
+                'packet': {
+                    'action': "get",
+                    'msgId' : "1234",
+                    'src' : "srcParticipant"
+                }
+            });
+
+            apiBase.routePacket(context);
+            expect(apiBase.rootHandleGet).toHaveBeenCalled();
+        });
+        
         it("finds the right node to send to invokeHandler",function() {
             var context=new TestPacketContext({
                 'leaderState': "leader",
@@ -176,6 +192,8 @@ describe("Common API Base class",function() {
                 'entity' : { 'foo':1}
             }));
         });
+        
+
         
         it("returns a badAction packet for unsupported actions",function() {
             var context=new TestPacketContext({
