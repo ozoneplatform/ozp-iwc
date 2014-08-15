@@ -54,7 +54,7 @@ ozpIwc.Client=function(config) {
         }
     };
 	// receive postmessage events
-	this.messageEventListener=window.addEventListener("message", this.postMessageHandler, false);
+	window.addEventListener("message", this.postMessageHandler, false);
 };
 
 /**
@@ -137,7 +137,8 @@ ozpIwc.Client.prototype.off=function(event,callback) {
 };
 
 ozpIwc.Client.prototype.disconnect=function() {
-    window.removeEventListener("message",this.messageEventListener,false);
+    this.replyCallbacks={};
+    window.removeEventListener("message",this.postMessageHandler,false);
     if(this.iframe) {
         document.body.removeChild(this.iframe);
     }
