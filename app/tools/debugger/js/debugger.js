@@ -9,35 +9,27 @@ angular.module("ozpIwc.debugger",[
 }).controller("debuggerController",["$scope","iwcClient",function(scope,client) {
     scope.client=client;
     scope.apis=[
-        {
-            'address': "data.api"
-        },
-        {
-            'address': "intents.api"
-        },
-        {
-            'address': "system.api"
-        },
-        {
-            'address': "names.api"
-        }
+        {'address': "data.api"},
+        {'address': "intents.api"},
+        {'address': "system.api"},
+        {'address': "names.api"}
     ];
 }]).controller("packetLogController",["$scope",function(scope) {
     scope.logging=false;
-    scope.filter="";
+    scope.viewFilter="";
     scope.packets=[];
-    scope.maxBuffer=100;
+    scope.maxShown=50;
     
     function logPacket(msg) {
+        console.log("Logging=" + scope.logging + ", maxShown=" + scope.maxShown + ", packets=" + scope.packets.length + ", filter=" + scope.viewFilter);
+        
         if(!scope.logging) {
             return;
         }
+              
         var packet=msg.packet;
         scope.$apply(function() {
            scope.packets.push(packet);
-           if(scope.packets.length > scope.maxBuffer) {
-               scope.packets.splice(0,scope.packets.length-scope.maxBuffer);
-           }
         });
     };
     
@@ -46,35 +38,48 @@ angular.module("ozpIwc.debugger",[
     
 }]).controller("apiDisplayController",["$scope","iwcClient",function(scope,client) {
     scope.keys=[];
-
+    scope.loadKey=function(key) {
+        console.log("loading key " +key.resource);
+        client.send({
+            'dst': scope.api.address,
+            'action': "get",
+            'resource': key.resource
+        },function(response) {
+            for(i in response) {
+                key[i]=response[i];
+            }
+            key.isLoaded=true;
+        });
+        client.send({
+            'dst': scope.api.address,
+            'action': "list",
+            'resource': key.resource
+        },function(response) {
+            if(response.action==="ok") {
+                key.children=response.entity;
+            }else {
+                key.children="Not Supported: " + response.action;
+            }
+        });
+    };
     scope.refresh=function() {
         client.send({
             'dst': scope.api.address,
             'action': "list"
         },function(response) {
             scope.keys=response.entity.map(function(k) {
-                return {
+                var key={
                     'resource': k,
                     'isLoaded':false,
                     'isWatched':false
                 };
+                scope.loadKey(key);
+                return key;
             });
         });
     };
     
-    scope.loadKey=function(key) {
-        client.send({
-            'dst': scope.api.address,
-            'action': "get",
-            'resource': key.resource
-        },function(response) {
-            console.log("For '" + key.resource + "' loaded value ",response);
-            for(i in response) {
-                key[i]=response[i];
-            }
-            key.isLoaded=true;
-        });
-    };
+
     
     scope.watchKey=function(key) {
         console.log("Watching ",key);
