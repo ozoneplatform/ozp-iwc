@@ -1,12 +1,18 @@
 
-angular.module("ozpIwc.debugger",[
+var debuggerModule=angular.module("ozpIwc.debugger",[
     'ngRoute',
     'ui.bootstrap'
-]).factory("iwcClient",function() {
+]);
+        
+        
+debuggerModule.factory("iwcClient",function() {
     var client=new ozpIwc.InternalParticipant({name: "debuggerClient"});
     ozpIwc.defaultRouter.registerParticipant(client);
     return client;
-}).controller("debuggerController",["$scope","iwcClient",function(scope,client) {
+});
+        
+        
+debuggerModule.controller("debuggerController",["$scope","iwcClient",function(scope,client) {
     scope.client=client;
     scope.apis=[
         {'address': "data.api"},
@@ -14,15 +20,16 @@ angular.module("ozpIwc.debugger",[
         {'address': "system.api"},
         {'address': "names.api"}
     ];
-}]).controller("packetLogController",["$scope",function(scope) {
+}]);
+        
+        
+debuggerModule.controller("packetLogController",["$scope",function(scope) {
     scope.logging=false;
     scope.viewFilter="";
     scope.packets=[];
     scope.maxShown=50;
     
-    function logPacket(msg) {
-        console.log("Logging=" + scope.logging + ", maxShown=" + scope.maxShown + ", packets=" + scope.packets.length + ", filter=" + scope.viewFilter);
-        
+    function logPacket(msg) {        
         if(!scope.logging) {
             return;
         }
@@ -36,10 +43,12 @@ angular.module("ozpIwc.debugger",[
     ozpIwc.defaultPeer.on("receive",logPacket);
     ozpIwc.defaultPeer.on("send",logPacket);
     
-}]).controller("apiDisplayController",["$scope","iwcClient",function(scope,client) {
+}]);
+        
+        
+debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(scope,client) {
     scope.keys=[];
     scope.loadKey=function(key) {
-        console.log("loading key " +key.resource);
         client.send({
             'dst': scope.api.address,
             'action': "get",
@@ -82,14 +91,12 @@ angular.module("ozpIwc.debugger",[
 
     
     scope.watchKey=function(key) {
-        console.log("Watching ",key);
         if(key.isWatched) {
             client.send({
                 'dst': scope.api.address,
                 'action': "watch",
                 'resource': key.resource
             },function(response) {
-                console.log("Key is now ",key);
                 if(response.action === 'changed') {
                     scope.$evalAsync(function() {
                         key.entity=response.entity.newValue;
@@ -102,4 +109,30 @@ angular.module("ozpIwc.debugger",[
         }
     };
     scope.refresh();
+}]);
+
+        
+debuggerModule.controller("metricsController",['$scope','$interval',function(scope,$interval) {
+    scope.updateFrequency=1000;
+    scope.updateActive=true;
+        
+    scope.refresh=function() {
+        scope.metrics=ozpIwc.metrics.allMetrics();
+    };
+    
+    scope.refresh();
+    
+    var timer=null;
+    var updateTimer=function() {
+        if(timer) {
+            $interval.cancel(timer);
+        }
+        if(scope.updateActive) {
+            timer=$interval(scope.refresh,scope.updateFrequency);
+        }
+    };
+    
+    
+    scope.$watch('updateActive', updateTimer);
+    scope.$watch('updateFrequency', updateTimer);
 }]);

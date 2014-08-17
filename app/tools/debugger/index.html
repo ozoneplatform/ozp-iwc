@@ -80,7 +80,44 @@
                     </tr>
                 </tbody></table>
         </tab>
+        <tab heading="Metrics" ng-controller="metricsController" active="tabActive">
+            <div class="btn-group">
+                 <button class="btn btn-primary" ng-click="refresh()">Refresh</button>  
+                <button class="btn" ng-class="{true:'btn-danger',false:'btn-primary'}[updateActive]" 
+                     btn-checkbox ng-model="$parent.updateActive"
+                     tooltip-placement="bottom" tooltip="Start/Stop continuous metrics updates.">
+                    Update Metrics
+                </button>
+            </div>
 
+            <select ng-model="$parent.updateFrequency" tooltip-placement="bottom" 
+                    tooltip="How often to update the metrics.">
+                <option value="1000">Every second</option>
+                <option value="2000">Every 2 seconds</option>
+                <option value="5000">Every 5 seconds</option>
+                <option value="15000">Every 15 seconds</option>
+            </select>
+            <input ng-model="$parent.viewFilter" type="text" size="40"
+                   placeholder="filter metrics..."
+                   tooltip-placement="bottom" tooltip="Search for metric...">
+            </input>
+            <table>
+                <thead>
+                    <tr>
+                        <td>Metric</td>
+                        <td>Unit</td>
+                        <td>Value</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="metric in metrics | orderBy:'name' | filter:viewFilter">
+                        <td>{{metric.name}}</td>
+                        <td>{{metric.unit}}</td>
+                        <td>{{metric.get()}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </tab>
         <tab heading="{{api.address}}" ng-repeat="api in apis" ng-controller="apiDisplayController">
             <div class="btn-group">
                 <button class="btn btn-primary" ng-click="refresh()">Refresh</button>

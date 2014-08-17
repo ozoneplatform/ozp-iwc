@@ -8,6 +8,7 @@ ozpIwc.metricTypes=ozpIwc.metricTypes || {};
 
 ozpIwc.metricTypes.BaseMetric=function() {
 	this.value=0;
+    this.name="";
 };
 
 ozpIwc.metricTypes.BaseMetric.prototype.get=function() { 
