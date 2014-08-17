@@ -140,7 +140,7 @@ if (ozpIwc.Participant) {
 
 }
 
-if(ozpIwc.LocalStorageLink) {
+if(ozpIwc.KeyBroadcastLocalStorageLink) {
     ozpIwc.defaultLocalStorageLink=new ozpIwc.KeyBroadcastLocalStorageLink({
         peer: ozpIwc.defaultPeer,
         fragmentSize: 2.5 * 1024 * 1024 / 2 // 1/2 of local storage capacity 2.5mb
