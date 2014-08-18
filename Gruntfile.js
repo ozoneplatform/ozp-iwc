@@ -82,6 +82,24 @@ module.exports = function(grunt) {
                 dest: '<%= output.metricsJsMin %>'
             }
         },
+
+        // Copies minified and non-minified js into dist directory
+        copy: {
+          dist: {
+            files: [
+              {
+                src: ['app/js/*.js'],
+                dest: './dist/',
+                cwd: '.',
+                expand: true,
+                flatten: true
+              }
+            ]
+          }
+        },
+        clean: {
+          dist: ['./dist/']
+        },
         jsdoc: {
             dist: {
                 src: ['<%= src.bus %>', '<%= src.client %>'],
@@ -155,6 +173,9 @@ module.exports = function(grunt) {
             intentsDemo: {
                 options:{	port: 15006, base: ["app","demo/intentsSandbox","test/tests/unit"]}
             }
+        },
+        dist: {
+
         }
 
     };
@@ -173,8 +194,8 @@ module.exports = function(grunt) {
 //    grunt.loadNpmTasks('grunt-contrib-jshint');
 
     // Default task(s).
-    grunt.registerTask('default', ['concat', 'uglify', 'jsdoc']);
+    grunt.registerTask('default', ['clean:dist', 'concat', 'uglify', 'copy:dist', 'jsdoc']);
     grunt.registerTask('test', ['concat', 'uglify', 'connect', 'watch']);
-    grunt.registerTask('default', ['concat', 'uglify', 'jsdoc']);
+    grunt.registerTask('default', ['clean:dist', 'concat', 'uglify', 'copy:dist', 'jsdoc']);
 
 };
