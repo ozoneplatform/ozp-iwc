@@ -18,7 +18,7 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 });
 
 ozpIwc.SystemApi.prototype.makeValue = function(packet){
-    return new ozpIwc.SystemApiValue({resource: packet.resource, contentType: packet.contentType, systemApi: this});
+    return new ozpIwc.SystemApiValue({resource: packet.resource, entity: packet.entity, contentType: packet.contentType, systemApi: this});
 };
 
 ozpIwc.SystemApi.prototype.isPermitted=function(node,packetContext) {
