@@ -43,7 +43,7 @@ if(ozpIwc.Router) {
 
 
 
-if(ozpIwc.LocalStorageLink) {
+if(ozpIwc.KeyBroadcastLocalStorageLink) {
     ozpIwc.defaultLocalStorageLink=new ozpIwc.KeyBroadcastLocalStorageLink({
         peer: ozpIwc.defaultPeer
     });

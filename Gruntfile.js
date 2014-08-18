@@ -35,30 +35,22 @@ module.exports = function(grunt) {
                 'app/js/common/**/*.js',
                 'app/js/client/**/*.js'
             ],
-            owf7: [
-                '<%= src.bus %>',
-                'app/js/owf7/lib/**/*',
-                'app/js/owf7/*.js'
-            ],
             test: [
                 'test/**/*'
             ],
             all: [
                 '<%= src.metrics %>',
                 '<%= src.bus %>',
-                '<%= src.client %>',
-                '<%= src.owf7 %>'
+                '<%= src.client %>'
             ]
         },
         output: {
             busJs: 'app/js/<%= pkg.name %>-bus.js',
             clientJs: 'app/js/<%= pkg.name %>-client.js',
             metricsJs: 'app/js/<%= pkg.name %>-metrics.js',
-            owf7Js: 'app/js/<%= pkg.name %>-owf7.js',
             busJsMin: 'app/js/<%= pkg.name %>-bus.min.js',
             clientJsMin: 'app/js/<%= pkg.name %>-client.min.js',
             metricsJsMin: 'app/js/<%= pkg.name %>-metrics.min.js',
-            owf7JsMin: 'app/js/<%= pkg.name %>-owf7.min.js',
             allJs: ['<%=output.busJs %>', '<%=output.clientJs %>', '<%=output.metricsJs %>'],
             allJsMin: ['<%=output.busJsMin %>', '<%=output.clientJsMin %>', '<%=output.metricsJsMin %>']
         },
@@ -74,10 +66,6 @@ module.exports = function(grunt) {
             metrics: {
                 src: '<%= src.metrics %>',
                 dest: '<%= output.metricsJs %>'
-            },
-            owf7: {
-                src: '<%= src.owf7 %>',
-                dest: '<%= output.owf7Js %>'
             }
         },
         uglify: {
@@ -92,10 +80,6 @@ module.exports = function(grunt) {
             metrics: {
                 src: '<%= concat.metrics.dest %>',
                 dest: '<%= output.metricsJsMin %>'
-            },
-            owf7: {
-                src: '<%= concat.owf7.dest %>',
-                dest: '<%= output.owf7JsMin %>'
             }
         },
         jsdoc: {
@@ -142,13 +126,13 @@ module.exports = function(grunt) {
                 }
             },
             tests: {
-                options: {port: 14000, base: ["app", "test/tests", "sampleData"]}
+                options: {port: 14000, base: ["app", "test","sampleData"]}
+            },
+            mockParticipant: {
+                options: {port: 14001, base: ["app","test/mockParticipant"]}
             },
             testBus: {
-                options:{ port: 14002, base: ["sampleData","test/tests/integration/bus","app"] }
-            },
-            pingers: {
-                options:{	port: 14001, base: ["app","test/pingers"]	}
+                options:{ port: 14002, base: ["test/integration/bus","app","sampleData"] }
             },
             doc: {
                 options: { port: 13001, base: "doc" }
@@ -167,9 +151,6 @@ module.exports = function(grunt) {
             },
             gridsterDemo: {
                 options: { port: 15004, base: ["app","demo/gridster"] }
-            },
-            owf7: {
-                options:{	port: 15005, base: ["app","demo/owf7Widgets"], protocol:"https"	}
             },
             intentsDemo: {
                 options:{	port: 15006, base: ["app","demo/intentsSandbox","test/tests/unit"]}

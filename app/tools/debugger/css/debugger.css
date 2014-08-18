@@ -3,14 +3,22 @@ table {
   border: 1px solid black;
 	width: 100%;
 }
-table td{
+table td {
   border: 1px solid black;
+  box-sizing: content-box;
 }
 
-table#messages tr:nth-child(4n+1),table#messages tr:nth-child(4n+2) {
+table.hidden-rows tr:nth-child(4n+1),table#messages tr:nth-child(4n+2) {
 	background-color: #F3F5F7;
 }
 
+td pre {
+    box-sizing: content-box;
+    margin: 0px;
+    height: 100%;
+    width: 100%;
+    padding: 4px;
+}
 table#keyValueTable tr:nth-child(2n+1) {
 	background-color: #F3F5F7;
 }

@@ -40,6 +40,9 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
  * @returns {string} parsedResource.intentValueType - returns the value type given the resource path (capability, definition, handler)
  */
 ozpIwc.IntentsApi.prototype.parseResource = function (packetContext) {
+    if(!packetContext.packet.resource) {
+        return;
+    }
     var resourceSplit = packetContext.packet.resource.split('/');
     var result = {
         type: resourceSplit[1],

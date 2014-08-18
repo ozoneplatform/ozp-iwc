@@ -80,6 +80,10 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
  * @param {ozpIwc.TransportPacket} packet
  */
 ozpIwc.CommonApiBase.prototype.findOrMakeValue=function(packet) {
+    if(packet.resource === null || packet.resource === undefined) {
+        // return a throw-away value
+        return new ozpIwc.CommonApiValue();
+    }
 	var node=this.data[packet.resource];
 	
 	if(!node) {
@@ -114,7 +118,17 @@ ozpIwc.CommonApiBase.prototype.createKey=function(prefix) {
 };
 
 /**
- * Accept a packet and do all of the pre/post routing checks.  This include
+* Route a packet to the appropriate handler.  The routing path is based upon
+ * the action and whether a resource is defined. If the handler does not exist, it is routed 
+ * to defaultHandler(node,packetContext)
+ * 
+ * Has Resource: handleAction(node,packetContext)
+ *
+ * No resource: rootHandleAction(node,packetContext)
+ * 
+ * Where "Action" is replaced with the packet's action, lowercase with first letter capitalized
+ * (e.g. "doSomething" invokes "handleDosomething")
+ * Note that node will usually be null for the rootHandlerAction calls.
  * <ul>
  * <li> Pre-routing checks	<ul>
  *		<li> Permission check</li>
@@ -136,25 +150,39 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 		return;
 	}	
 	var handler;
-	if(packet.action) {
-		handler="handle" + packet.action.charAt(0).toUpperCase() + packet.action.slice(1).toLowerCase();
-	}
-	if(!handler || typeof(this[handler]) !== 'function') {
-		packetContext.replyTo({
-			'action': 'badAction',
-			'entity': packet.action
-		});
-        return;
-	}
-
     this.events.trigger("receive",packetContext);
+
+    if(packet.resource===null || packet.resource===undefined) {
+        handler="rootHandle";
+    } else {
+        handler="handle";
+    }
+    
+	if(packet.action) {
+		handler+=packet.action.charAt(0).toUpperCase() + packet.action.slice(1).toLowerCase();
+	} else {
+        handler="defaultHandler";
+    }
+    
+	if(!handler || typeof(this[handler]) !== 'function') {
+       handler="defaultHandler";
+	}
 
 	var node=this.findOrMakeValue(packetContext.packet);
 	this.invokeHandler(node,packetContext,this[handler]);
 	
 };
+
+ozpIwc.CommonApiBase.prototype.defaultHandler=function(node,packetContext) {
+    packetContext.replyTo({
+        'action': 'badAction',
+        'entity': packetContext.packet.action
+    });
+};
+
+
 ozpIwc.CommonApiBase.prototype.validateResource=function(node,packetContext) {
-	return packetContext.packet.resource;
+	return true;
 };
 
 ozpIwc.CommonApiBase.prototype.validatePreconditions=function(node,packetContext) {
@@ -267,4 +295,13 @@ ozpIwc.CommonApiBase.prototype.setState = function(state){
     for(var key in state){
         this.findOrMakeValue(state[key]);
     }
+
+ /** @param {ozpIwc.CommonApiValue} node
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
+    packetContext.replyTo({
+        'action':'ok',
+        'entity': Object.keys(this.data)
+    });
 };

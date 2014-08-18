@@ -7,8 +7,10 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
 	this.name=config.name;
 
     var self = this;
-    ozpIwc.metrics.gauge('transport.internal.participants').set(function() {
-        return {'callbacks':  self.getCallbackCount()};
+    this.on("connectedToRouter",function() {
+        ozpIwc.metrics.gauge(self.metricRoot,"registeredCallbacks").set(function() {
+            return self.getCallbackCount();
+        });
     });
 });
 
@@ -31,7 +33,7 @@ ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContex
 	var packet=packetContext.packet;
 	if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
 		if (!this.replyCallbacks[packet.replyTo](packet)) {
-            this.cancelCallback(msgId);
+            this.cancelCallback(packet.replyTo);
         }
 	} else {
 		this.events.trigger("receive",packet);
