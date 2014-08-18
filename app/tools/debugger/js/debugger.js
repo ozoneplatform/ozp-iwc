@@ -117,7 +117,13 @@ debuggerModule.controller("metricsController",['$scope','$interval',function(sco
     scope.updateActive=true;
         
     scope.refresh=function() {
-        scope.metrics=ozpIwc.metrics.allMetrics();
+        scope.metrics=ozpIwc.metrics.allMetrics().map(function(m) {
+            return {
+                'name' :m.name,
+                'unit' : m.unit(),
+                'value' : m.get()
+            };
+        });
     };
     
     scope.refresh();

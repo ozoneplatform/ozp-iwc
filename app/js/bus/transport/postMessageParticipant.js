@@ -16,19 +16,11 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	this.credentials=config.credentials;
 	this.participantType="postMessageProxy";
     this.securityAttributes.origin=this.origin;
+    this.on("connectedToRouter",function() {
+        this.securityAttributes.sendAs=this.address;
+        this.securityAttributes.receiveAs=this.address;
+    },this);
 });
-
-/**
- * @override
- * @param {ozpIwc.Router} router
- * @param {string} address
- * @returns {boolean} true if this packet could have additional recipients
- */
-ozpIwc.PostMessageParticipant.prototype.connectToRouter=function(router,address) {
-    ozpIwc.Participant.prototype.connectToRouter.apply(this,arguments);
-    this.securityAttributes.sendAs=this.address;
-    this.securityAttributes.receiveAs=this.address;
-};
 
 /**
  * @override
@@ -164,7 +156,7 @@ ozpIwc.PostMessageParticipantListener=function(config) {
 	}, false);
 
     ozpIwc.metrics.gauge('transport.postMessageListener.participants').set(function() {
-        return {'participants': self.getParticipantCount()};
+        return self.getParticipantCount();
     });
 };
 

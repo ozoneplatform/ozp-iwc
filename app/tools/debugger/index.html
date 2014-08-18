@@ -113,7 +113,7 @@
                     <tr ng-repeat="metric in metrics | orderBy:'name' | filter:viewFilter">
                         <td>{{metric.name}}</td>
                         <td>{{metric.unit}}</td>
-                        <td>{{metric.get()}}</td>
+                        <td><pre>{{metric.value | json}}</pre></td>
                     </tr>
                 </tbody>
             </table>

@@ -1,41 +1,5 @@
 describe("Post Message Participant",function() {
-    var participants = [];
-    var packetQueue = [];
-    var fakeRouter = {
-        jitter: 0,
-        send: function (packet) {
-            if (packetQueue.length === 0 || Math.random() > fakeRouter.jitter) {
-                packetQueue.push(packet);
-            } else {
-//				console.log("JITTER!");
-                packetQueue.splice(-1, 0, packet);
-            }
-
-        },
-        registerParticipant: function (p) {
-            p.connectToRouter(fakeRouter, participants.length + 1);
-            participants.push(p);
-        },
-        pump: function () {
-            var processed = 0;
-            while (packetQueue.length) {
-                processed++;
-                var packet = packetQueue.shift();
-//				console.log("PACKET(" + packet.src + "): " + packet.entity.type);
-                participants.forEach(function (l) {
-                    if (l.address !== packet.src) {
-                        l.receiveFromRouter({'packet': packet});
-                    }
-                });
-            }
-            return processed;
-        },
-        createMessage: function (m) {
-            return m;
-        },
-        registerMulticast: function () {
-        }
-    };
+    var fakeRouter;
 
     var tick = function (t) {
         fakeRouter.pump();
@@ -67,9 +31,8 @@ describe("Post Message Participant",function() {
         return l;
     };
 
-    afterEach(function () {
-        participants = [];
-        packetQueue = [];
+    beforeEach(function () {
+        fakeRouter= new FakeRouter();
     });
 
     it("permits receiving packets that have a destination matching the receiveAs Attribute", function() {

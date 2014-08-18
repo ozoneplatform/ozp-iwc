@@ -40,7 +40,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	this.leader=null;
 	this.leaderPriority=null;
 
-	this.participantType="leaderGroupMember";
+	this.participantType="leaderGroup";
 	this.name=config.name;
 	
 	this.on("startElection",function() {
@@ -70,7 +70,10 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
         var queue = self.getElectionQueue();
         return {'queue': queue ? queue.length : 0};
     });
-	
+	this.on("connectedToRouter",function() {
+        this.router.registerMulticast(this,[this.electionAddress,this.name]);
+        this.startElection();
+    },this);
 });
 
 /**
@@ -80,19 +83,6 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  */
 ozpIwc.LeaderGroupParticipant.prototype.getElectionQueue=function() {
     return this.electionQueue;
-}
-
-/**
- * Override from the participant in order to register our multicast addresses
- * and start an election.
- * @param {type} router
- * @param {type} address
- * @returns {undefined}
- */
-ozpIwc.LeaderGroupParticipant.prototype.connectToRouter=function(router,address) {
-	ozpIwc.Participant.prototype.connectToRouter.apply(this,arguments);
-	this.router.registerMulticast(this,[this.electionAddress,this.name]);
-	this.startElection();
 };
 
 /**

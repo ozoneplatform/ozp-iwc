@@ -1,38 +1,5 @@
 describe("Leader Group Participant",function() {
-	var leaders=[];
-	var packetQueue=[];
-	var fakeRouter={
-		jitter:0,
-		send: function(packet) {
-			if(packetQueue.length===0 || Math.random() > fakeRouter.jitter) {
-				packetQueue.push(packet);
-			} else {
-//				console.log("JITTER!");
-				packetQueue.splice(-1,0,packet);
-			}
-
-		},
-		registerParticipant: function(p) {
-			p.connectToRouter(fakeRouter,leaders.length+1);
-			leaders.push(p);
-		},
-		pump: function() {
-			var processed=0;
-			while(packetQueue.length) {
-				processed++;
-				var packet=packetQueue.shift();
-//				console.log("PACKET(" + packet.src + "): " + packet.entity.type);
-				leaders.forEach(function(l) {
-					if(l.address !== packet.src) {
-						l.receiveFromRouter({'packet':packet});
-					}
-				});
-			}
-			return processed;
-		},
-		createMessage: function(m) { return m;},
-		registerMulticast: function() {}
-	};
+	var fakeRouter;
 	
 	var tick=function(t) {
 		fakeRouter.pump();
@@ -49,14 +16,14 @@ describe("Leader Group Participant",function() {
 			jasmine.clock().tick(step);
 			fakeRouter.pump();
 			
-			elected=leaders.some(function(l) { return l.isLeader();});
+			elected=fakeRouter.participants.some(function(l) { return l.isLeader();});
 		}
 	};
 	
 	var makeLeader=function(priority) {
 		var l=new ozpIwc.LeaderGroupParticipant({
 			electionAddress:"ea",
-			name: "foo"+leaders.length,
+			name: "foo"+fakeRouter.participants.length,
 			'priority': priority
 		});
 		fakeRouter.registerParticipant(l);
@@ -81,13 +48,9 @@ describe("Leader Group Participant",function() {
 
 		return l;
 	};
-
-	
-	afterEach(function() {
-		leaders=[];
-		packetQueue=[];
-	});
-
+    beforeEach(function() {
+        fakeRouter=new FakeRouter();
+    });
 	it("is not leader when created",function() {
 		var leader=makeLeader(1);
 		expect(leader.isLeader()).toEqual(false);
@@ -149,8 +112,8 @@ describe("Leader Group Participant",function() {
 		
 		tick(1000);
 		
-		for(var i=0; i< leaders.length-1; ++i) {
-			expect(leaders[i].isLeader()).toEqual(false);
+		for(var i=0; i< fakeRouter.participants.length-1; ++i) {
+			expect(fakeRouter.participants[i].isLeader()).toEqual(false);
 		}
 		
 		expect(leader.isLeader()).toEqual(true);
@@ -174,11 +137,11 @@ describe("Leader Group Participant",function() {
 			// step forward time by 50ms at a shot until the chatter stops
 			moveTime(10);
 
-			for(var i=0; i< leaders.length-1; ++i) {
-				if(leaders[i].isLeader()) {
+			for(var i=0; i< fakeRouter.participants.length-1; ++i) {
+				if(fakeRouter.participants[i].isLeader()) {
 //					console.log("Leader " + i + " thinks he is the bully");
 				}
-				expect(leaders[i].isLeader()).toEqual(false);
+				expect(fakeRouter.participants[i].isLeader()).toEqual(false);
 			}
 
 			expect(leader.isLeader()).toEqual(true);
