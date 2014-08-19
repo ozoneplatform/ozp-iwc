@@ -17,8 +17,8 @@ var ozpIwc=ozpIwc || {};
  *        Number of milliseconds to wait before declaring victory on an election. 
  
  */
-ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
-	ozpIwc.Participant.apply(this,arguments);
+ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,function(config) {
+	ozpIwc.InternalParticipant.apply(this,arguments);
 
 	if(!config.name) {
 		throw "Config must contain a name value";
@@ -77,6 +77,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
         this.router.registerMulticast(this,[this.electionAddress,this.name]);
         this.startElection();
     },this);
+    this.on("receive",this.routePacket,this);
 });
 
 /**
@@ -88,17 +89,17 @@ ozpIwc.LeaderGroupParticipant.prototype.getElectionQueue=function() {
     return this.electionQueue;
 };
 
-/**
- * Override fixPacket to default the source address to the name of this
- * leadership group.
- * @param {type} packet
- * @returns {unresolved}
- */
-ozpIwc.LeaderGroupParticipant.prototype.fixPacket=function(packet) {
-	packet.src = packet.src || this.name;
-	
-	return ozpIwc.Participant.prototype.fixPacket.apply(this,arguments);
-};
+///**
+// * Override fixPacket to default the source address to the name of this
+// * leadership group.
+// * @param {type} packet
+// * @returns {unresolved}
+// */
+//ozpIwc.LeaderGroupParticipant.prototype.fixPacket=function(packet) {
+//	packet.src = packet.src || this.name;
+//	
+//	return ozpIwc.InternalParticipant.prototype.fixPacket.apply(this,arguments);
+//};
 
 
 /**
@@ -202,14 +203,11 @@ ozpIwc.LeaderGroupParticipant.prototype.cancelElection=function() {
  * @param {ozpIwc.TransportPacket} packet
  * @returns {boolean}
  */
-ozpIwc.LeaderGroupParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
+ozpIwc.LeaderGroupParticipant.prototype.routePacket=function(packetContext) {
 	var packet=packetContext.packet;
 	packetContext.leaderState=this.leaderState;
-	// forward non-election packets to the current state
-	if(packet.dst !== this.electionAddress) {
-		this.forwardToTarget(packetContext);
-	} else {
-		if(packet.src === this.address) {
+    if(packet.dst === this.electionAddress) {
+        if(packet.src === this.address) {
 			// even if we see our own messages, we shouldn't act upon them
 			return;
 		} else if(packet.action === "election") {
@@ -217,27 +215,18 @@ ozpIwc.LeaderGroupParticipant.prototype.receiveFromRouterImpl=function(packetCon
 		} else if(packet.action === "victory") {
 			this.handleVictoryMessage(packet);
 		}
-	}
+    } else { // if(packet.src !== this.name) {
+		this.forwardToTarget(packetContext);
+	}		
 };
-/**
- * Convention based routing.  Routes to a functions in order of
- * <ol>
- *   <li>handle${action}As${leaderState}</li>
- *   <li>handle${action}</li>
- *   <li>defaultHandlerAs${leaderState}</li>
- *   <li>defaultHandler</li>
- * </ol>
- * The variable action is the packet's action and leaderstate is the current leadership state.
- * If there's no packet action, then the handle* functions will not be invoked.
- * @param {ozpIwc.TransportPacketContext} packetContext
- */
+
 ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) {
 	if(this.leaderState === "election" || this.leaderState === "connecting") {
 		this.electionQueue.push(packetContext);
 		return;
 	}
 	packetContext.leaderState=this.leaderState;
-	this.events.trigger("receive",packetContext);
+	this.events.trigger("receiveApiPacket",packetContext);
 };
 	
 	

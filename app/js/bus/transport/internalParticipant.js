@@ -36,17 +36,20 @@ ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContex
             this.cancelCallback(packet.replyTo);
         }
 	} else {
-		this.events.trigger("receive",packet);
+		this.events.trigger("receive",packetContext);
 	}
 };
 
 
-ozpIwc.InternalParticipant.prototype.send=function(packet,callback) {
-	var packet=this.fixPacket(packet);
+ozpIwc.InternalParticipant.prototype.send=function(originalPacket,callback) {
+    var packet=this.fixPacket(originalPacket);
 	if(callback) {
 		this.replyCallbacks[packet.msgId]=callback;
 	}
-	ozpIwc.Participant.prototype.send.apply(this,arguments);
+    var self=this;
+	ozpIwc.util.setImmediate(function() {
+        ozpIwc.Participant.prototype.send.call(self,packet);
+    });
 
 	return packet;
 };

@@ -27,6 +27,8 @@ module.exports = function(grunt) {
                 'app/js/bus/transport/router.js',
                 'app/js/bus/transport/**/*.js',
                 'app/js/bus/storage/**/*.js',
+                'app/js/bus/api/commonApiValue.js',
+                'app/js/bus/api/commonApiCollectionValue.js',
                 'app/js/bus/api/*.js',
                 'app/js/bus/api/**/*.js',
                 'app/js/bus/*/**/*.js'
@@ -149,7 +151,11 @@ module.exports = function(grunt) {
             },
             all: [
                 'Gruntfile.js',
-                '<%= src.all %>'
+                '<%= src.all %>',
+                '!app/js/common/es5-sham.min.js',
+                '!app/js/common/es5-shim.min.js',
+                '!app/js/common/promise-1.0.0.js'
+                
             ],
             test: {
                 src: ['<%= src.test %>']

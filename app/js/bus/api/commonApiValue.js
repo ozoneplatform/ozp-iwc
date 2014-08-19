@@ -10,11 +10,14 @@ ozpIwc.CommonApiValue = function(config) {
 	config = config || {};
 	this.watchers= config.watchers || [];
 	this.resource=config.resource;
-    
-  this.entity=config.entity;
+    this.allowedContentTypes=config.allowedContentTypes;
+    this.entity=config.entity;
 	this.contentType=config.contentType;
 	this.permissions=config.permissions || {};
 	this.version=config.version || 0;
+    
+    this.persist=true;
+    this.deleted=true;
 };
 
 /**
@@ -81,6 +84,7 @@ ozpIwc.CommonApiValue.prototype.deleteData=function() {
 	this.contentType=undefined;
 	this.permissions=[];
 	this.version=0;
+    this.deleted=true;
 };
 
 /**
@@ -106,7 +110,12 @@ ozpIwc.CommonApiValue.prototype.toPacket=function(base) {
  * @returns {Boolean}
  */
 ozpIwc.CommonApiValue.prototype.isValidContentType=function(contentType) {
-	return true;
+    if(this.allowedContentTypes && this.allowedContentTypes.indexOf(contentType) < 0) {
+        throw new ozpIwc.ApiError("badContent",
+                "Bad contentType " + contentType +", expected " + this.allowedContentTypes.join(","));
+     } else {
+        return true;
+    }
 };
 
 /**

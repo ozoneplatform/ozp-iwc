@@ -6,15 +6,17 @@
 ozpIwc.CommonApiBase = function(config) {
 	config = config || {};
 	this.participant=config.participant;
-
     this.participant.on("receive",ozpIwc.CommonApiBase.prototype.routePacket,this);
     this.participant.on("unloadState",ozpIwc.CommonApiBase.prototype.unloadState,this);
     this.participant.on("acquireState",ozpIwc.CommonApiBase.prototype.setState,this);
+	this.participant.on("receiveApiPacket",ozpIwc.CommonApiBase.prototype.routePacket,this);
 
 	this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
-
-	this.data={};
+    
+    
+    this.collectionNodes=[];
+    this.data={};
 };
 /**
  * Creates a new value for the given packet's request.  Subclasses must override this
@@ -25,7 +27,7 @@ ozpIwc.CommonApiBase = function(config) {
  * @param {ozpIwc.TransportPacket} packet
  * @returns {ozpIwc.CommonApiValue} an object implementing the commonApiValue interfaces
  */
-ozpIwc.CommonApiBase.prototype.makeValue=function(packet) {
+ozpIwc.CommonApiBase.prototype.makeValue=function(/*packet*/) {
 	throw new Error("Subclasses of CommonApiBase must implement the makeValue(packet) function.");
 };
 
@@ -61,6 +63,7 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
 		// @TODO check that the recipient has permission to both the new and old values
 		var reply={
 			'dst'   : watcher.src,
+            'src'   : this.participant.name,
 		    'replyTo' : watcher.msgId,
 			'action': 'changed',
 			'resource': node.resource,
@@ -166,8 +169,24 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 	if(!handler || typeof(this[handler]) !== 'function') {
        handler="defaultHandler";
 	}
-
-	var node=this.findOrMakeValue(packetContext.packet);
+    var node;
+    try {
+        node=this.findOrMakeValue(packetContext.packet);
+    } catch(e) {
+        if(e.errorAction) {
+            packetContext.replyTo({
+                'action': e.errorAction,
+                'entity': e.message
+            });
+            return;
+        } else {
+            throw e;
+        }
+    }
+    if(packetContext.packet.resource && !this.validateResource(node,packetContext)) {
+        packetContext.replyTo({'action': 'badResource'});
+        return;
+    }
 	this.invokeHandler(node,packetContext,this[handler]);
 	
 };
@@ -180,7 +199,7 @@ ozpIwc.CommonApiBase.prototype.defaultHandler=function(node,packetContext) {
 };
 
 
-ozpIwc.CommonApiBase.prototype.validateResource=function(node,packetContext) {
+ozpIwc.CommonApiBase.prototype.validateResource=function(/* node,packetContext */) {
 	return true;
 };
 
@@ -202,25 +221,50 @@ ozpIwc.CommonApiBase.prototype.invokeHandler=function(node,packetContext,handler
 			packetContext.replyTo({'action':'noPerm'});				
 		})
 		.success(function() {
-			if(!this.validateResource(node,packetContext)) {
-				packetContext.replyTo({'action': 'badResource'});
-				return;
-			}
 			if(!this.validatePreconditions(node,packetContext)) {
 				packetContext.replyTo({'action': 'noMatch'});
 				return;
 			}
 
 			var snapshot=node.snapshot();
-			handler.call(this,node,packetContext);
+            try {
+                handler.call(this,node,packetContext);
+            } catch(e) {
+                if(e.errorAction) {
+                    packetContext.replyTo({
+                        'action': e.errorAction,
+                        'entity': e.message
+                    });
+                } else {
+                    throw e;
+                }
+            }
 			var changes=node.changesSince(snapshot);
 			
 			if(changes)	{
 				this.notifyWatchers(node,changes);
-			}	
+            }
+            // update all the collection values
+            this.collectionNodes.forEach(function(resource) {
+                var node=this.data[resource];
+                var snapshot=node.snapshot();
+                node.updateContent(this);
+                var changes=node.changesSince(snapshot);
+                if(changes) {
+                    this.notifyWatchers(node,changes);
+                }
+            },this);
+            
+            
 		},this);	
 };
 
+ozpIwc.CommonApiBase.prototype.addCollectionNode=function(resource,node) {
+    this.data[resource]=node;
+    node.resource=resource;
+    this.collectionNodes.push(resource);
+    node.updateContent(this);
+};
 
 /**
  * @param {ozpIwc.CommonApiValue} node
@@ -310,3 +354,4 @@ ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
         'entity': Object.keys(this.data)
     });
 };
+

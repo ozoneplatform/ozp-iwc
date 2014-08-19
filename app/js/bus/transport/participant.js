@@ -15,6 +15,13 @@ ozpIwc.Participant=function() {
     this.sentPacketsMeter=fakeMeter;
     this.receivedPacketsMeter=fakeMeter;
     this.forbiddenPacketsMeter=fakeMeter;
+    
+    this.participantType=this.constructor.name;
+    this.heartBeatContentType="application/ozpIwc-address-v1+json";
+    this.heartBeatStatus={
+        name: this.name,
+        type: this.participantType || this.constructor.name
+    };
 };
 
 /**
@@ -25,7 +32,7 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     var self = this;
     ozpIwc.authorization.isPermitted({
         'subject': this.securityAttributes,
-        'object': packetContext.packet.permissions,
+        'object': packetContext.packet.permissions
     })
         .success(function(){
             self.receivedPacketsMeter.mark();
@@ -62,6 +69,12 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.sentPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"sentPackets").unit("packets");
     this.receivedPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"receivedPackets").unit("packets");
     this.forbiddenPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"forbiddenPackets").unit("packets");
+    
+    this.namesResource="/address/"+this.address;
+    this.heartBeatStatus.address=this.address;
+    this.heartBeatStatus.name=this.name;
+    this.heartBeatStatus.type=this.participantType || this.constructor.name;
+
     this.events.trigger("connectedToRouter");
 };
 
@@ -102,11 +115,14 @@ ozpIwc.Participant.prototype.generateMsgId=function() {
     return "i:" + this.msgId++;
 };
 
-ozpIwc.Participant.prototype.heartbeatStatus=function() {
-    return {
-        address: this.address,
-        securityAttributes: this.securityAttributes,
-        type: this.participantType || this.constructor.name,
-        name: this.name
-    };
+ozpIwc.Participant.prototype.heartbeat=function() {
+    if(this.router) {
+        this.send({
+            'dst': "names.api",
+            'resource': this.namesResource,
+            'action' : "set",
+            'entity' : this.heartBeatStatus,
+            'contentType' : this.heartBeatContentType
+        },function() {/* eat the response*/});
+    }
 };

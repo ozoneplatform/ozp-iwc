@@ -62,6 +62,6 @@ ozpIwc.DataApiValue.prototype.changesSince=function(snapshot) {
         changes.addedChildren=this.children.filter(function(f) {
             return this.indexOf(f) < 0;
         },snapshot.links.children);
-	};
+	}
     return changes;
 };

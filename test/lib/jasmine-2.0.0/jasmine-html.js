@@ -121,16 +121,18 @@ jasmineRequire.HtmlReporter = function(j$) {
         for (var i = 0; i < result.failedExpectations.length; i++) {
           var expectation = result.failedExpectations[i];
           messages.appendChild(createDom("div", {className: "result-message"}, expectation.message));
-					var stackTrace=createDom("ul", {className: "stack-trace"});
-					var lines=expectation.stack.split(/\r?\n/);
-					for(var j=0; j< lines.length; ++j) {
-						var classes="stack-trace-line";
-						if(lines[j].match(/jasmine.*.js/)) {
-							classes="stack-trace-jasmine";
-						}							
-						stackTrace.appendChild(createDom("li", {className: classes},lines[j]));
-					}
-					messages.appendChild(stackTrace);
+					if(expectation.stack) {
+                        var stackTrace=createDom("ul", {className: "stack-trace"});
+                        var lines=expectation.stack.split(/\r?\n/);
+                        for(var j=0; j< lines.length; ++j) {
+                            var classes="stack-trace-line";
+                            if(lines[j].match(/jasmine.*.js/)) {
+                                classes="stack-trace-jasmine";
+                            }							
+                            stackTrace.appendChild(createDom("li", {className: classes},lines[j]));
+                        }
+                        messages.appendChild(stackTrace);
+                    }
 				}
         failures.push(failure);
       }

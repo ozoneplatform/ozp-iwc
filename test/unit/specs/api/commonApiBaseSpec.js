@@ -1,7 +1,6 @@
 describe("Common API Base class",function() {
 
 	var apiBase;
-	var packets=[];
     var simpleNode;
     
 	beforeEach(function() {	
@@ -352,7 +351,104 @@ describe("Common API Base class",function() {
             expect(packet.entity).toEqual(["/node"]);
         });
     });
+    describe("Collection values",function() {
+        var collectionNode=new ozpIwc.CommonApiCollectionValue({
+                pattern: /^\/foo\/.*$/
+            });
+        beforeEach(function() {
+            apiBase.data["/foo/1"]=new ozpIwc.CommonApiValue({
+                'resource': "/foo/1",
+                'entity' : { 'foo':1 },
+                'contentType' : "application/json",
+                'version' : 1
+            });
+            apiBase.data["/foo/2"]=new ozpIwc.CommonApiValue({
+                'resource': "/foo/2",
+                'entity' : { 'foo':2 },
+                'contentType' : "application/json",
+                'version' : 1
+            });
+            apiBase.data["/foo/3"]=new ozpIwc.CommonApiValue({
+                'resource': "/foo/3",
+                'entity' : { 'foo':3 },
+                'contentType' : "application/json",
+                'version' : 1
+            });
+            apiBase.addCollectionNode("/foo",collectionNode);
+        });
+    
+        it("get on collection nodes list their contents",function() {
+            var context=new TestPacketContext({
+                'leaderState': "leader",
+                'packet': {
+                    'resource': "/foo",
+                    'action': "get",
+                    'msgId' : "1234",
+                    'src' : "srcParticipant"
+                }
+            });
 
+            apiBase.routePacket(context);
+            
+            expect(context.responses[0]).toEqual(jasmine.objectContaining({
+                'dst': "srcParticipant",
+                'action': "ok",
+                'resource': "/foo",
+                'entity': ["/foo/1","/foo/2","/foo/3"]
+            }));
+        });     
+       
+        it("set on collection nodes update their contents",function() {
 
+            apiBase.routePacket(new TestPacketContext({
+                'leaderState': "leader",
+                'packet': {
+                    'resource': "/foo/4",
+                    'action': "set",
+                    'msgId' : "1234",
+                    'src' : "srcParticipant",
+                    'entity': {'foo': 4}
+                }
+            }));
+            var context=new TestPacketContext({
+                'leaderState': "leader",
+                'packet': {
+                    'resource': "/foo",
+                    'action': "get",
+                    'msgId' : "1234",
+                    'src' : "srcParticipant"
+                }
+            });
+            apiBase.routePacket(context);            
+            expect(context.responses[0]).toEqual(jasmine.objectContaining({
+                'dst': "srcParticipant",
+                'action': "ok",
+                'entity': ["/foo/1","/foo/2","/foo/3","/foo/4"]
+            }));
+            
+        });     
+        
+        it("notifies watchers if the collection node changed",function() {
+            collectionNode.watch({'src': "watcher",'msgId': 5678});
+            apiBase.routePacket(new TestPacketContext({
+                'leaderState': "leader",
+                'packet': {
+                    'resource': "/foo/4",
+                    'action': "set",
+                    'msgId' : "1234",
+                    'src' : "srcParticipant",
+                    'entity': {'foo': 4}
+                }
+            }));
+            
+            expect(apiBase.participant.sentPackets.length).toEqual(1);
+            var changePacket=apiBase.participant.sentPackets[0];
+            expect(changePacket.action).toEqual("changed");
+            expect(changePacket.entity.newValue).toEqual([ "/foo/1", "/foo/2", "/foo/3", "/foo/4" ]);
+            expect(changePacket.entity.oldValue).toEqual([ "/foo/1", "/foo/2", "/foo/3"]);
+        });
+        it("returns noPerm on set");
+        
+    });
 
 });

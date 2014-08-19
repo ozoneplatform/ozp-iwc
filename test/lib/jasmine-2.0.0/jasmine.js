@@ -1362,6 +1362,8 @@ getJasmineRequireObj().pp = function(j$) {
         this.emitScalar(value.toString());
       } else if (typeof value === 'function') {
         this.emitScalar('Function');
+      } else if (typeof value === 'object') {
+        this.emitScalar(JSON.stringify(value,null,2));
       } else if (typeof value.nodeType === 'number') {
         this.emitScalar('HTMLNode');
       } else if (value instanceof Date) {

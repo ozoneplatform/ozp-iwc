@@ -28,9 +28,22 @@ ozpIwc.util.now=function() {
  * @returns {Function} newConstructor with an augmented prototype
  */
 ozpIwc.util.extend=function(baseClass,newConstructor) {
+    if(!baseClass || !baseClass.prototype) {
+        console.error("Cannot create a new class for ",newConstructor," due to invalid baseclass:",baseClass);
+        throw new Error("Cannot create a new class due to invalid baseClass.  Dependency not loaded first?");
+    };
     newConstructor.prototype = Object.create(baseClass.prototype);
     newConstructor.prototype.constructor = newConstructor;
     return newConstructor;
+};
+
+/**
+ * Invokes the callback handler on another event loop as soon as possible.
+*/
+ozpIwc.util.setImmediate=function(f) {
+    // todo: do normal checkdown of setImmediate -> postmessage trick -> setTimeout
+    // but watch out for the postMessage trick crossing the streams with the IWC
+    window.setTimeout(f,0);
 };
 
 /**

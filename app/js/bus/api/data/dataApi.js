@@ -1,5 +1,3 @@
-var ozpIwc=ozpIwc || {};
-
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
     var self = this;
