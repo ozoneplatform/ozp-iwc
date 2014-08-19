@@ -6,8 +6,10 @@
 ozpIwc.CommonApiBase = function(config) {
 	config = config || {};
 	this.participant=config.participant;
-	
-	this.participant.on("receive",ozpIwc.CommonApiBase.prototype.routePacket,this);
+
+    this.participant.on("receive",ozpIwc.CommonApiBase.prototype.routePacket,this);
+    this.participant.on("unloadState",ozpIwc.CommonApiBase.prototype.unloadState,this);
+    this.participant.on("acquireState",ozpIwc.CommonApiBase.prototype.setState,this);
 
 	this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
@@ -82,7 +84,7 @@ ozpIwc.CommonApiBase.prototype.findOrMakeValue=function(packet) {
         return new ozpIwc.CommonApiValue();
     }
 	var node=this.data[packet.resource];
-	
+
 	if(!node) {
 		node=this.data[packet.resource]=this.makeValue(packet);
 	}
@@ -268,7 +270,38 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
 };
 
 /**
- * @param {ozpIwc.CommonApiValue} node
+ * Called when the leader participant fires its beforeUnload state. Releases the Api's data property
+ * to be consumed by all, then used by the new leader.
+ */
+ozpIwc.CommonApiBase.prototype.unloadState = function(){
+    this.participant.startElection({state:this.data});
+    this.data = {};
+};
+
+/**
+ * Called when the leader participant looses its leadership. This occurs when a new participant joins with a higher
+ * priority
+ */
+ozpIwc.CommonApiBase.prototype.transferState = function(){
+    this.participant.sendElectionMessage("prevLeader", {
+        state:this.data,
+        prevLeader: this.participant.address
+    });
+    this.data = {};
+};
+
+/**
+ * Sets the APIs data property. Removes current values, then constructs each API value anew.
+ * @param state
+ */
+ozpIwc.CommonApiBase.prototype.setState = function(state) {
+    this.data = {};
+    for (var key in state) {
+        this.findOrMakeValue(state[key]);
+    }
+};
+
+ /** @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {

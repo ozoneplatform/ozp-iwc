@@ -12,7 +12,7 @@ ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 });
 
 ozpIwc.DataApi.prototype.makeValue = function(packet){
-    return new ozpIwc.DataApiValue({resource: packet.resource});
+    return new ozpIwc.DataApiValue(packet);
 };
 
 ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {

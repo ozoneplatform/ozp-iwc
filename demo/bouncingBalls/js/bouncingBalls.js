@@ -22,7 +22,7 @@ var Ball=function(ballRef,svgElement) {
     this.lastUpdate=ozpIwc.util.now();
     this.updateDelta=0;
     this.updateCount=0;
-
+    this.refreshed = false;
     var watchRequest={
         dst: "data.api",
         action: "watch",
@@ -35,10 +35,20 @@ var Ball=function(ballRef,svgElement) {
         self.totalLatency+=now-reply.time;
 
         if(reply.action==="changed") {
+            self.refreshed = true;
             self.draw(reply.entity.newValue);
         }
         return true;//maintain persistent callback
     });
+    this.removeWatchdog = function(){
+        if(self.refreshed){
+            self.refreshed = false;
+            return;
+        } else {
+            self.remove();
+        }
+    };
+   setInterval(this.removeWatchdog,5000);
 
     $(this.el).click(function() {
         if(self.label.getAttribute("class").match("svgHidden")) {
@@ -73,6 +83,7 @@ Ball.prototype.draw=function(info) {
 };
 
 Ball.prototype.remove=function() {
+    clearTimeout(this.removeWatchdog);
     client.send({
         dst: "data.api",
         action: "unwatch",
@@ -120,8 +131,8 @@ var AnimatedBall=function(config) {
         ball.x=Math.min(ball.x,extents.maxX-ball.r);
         ball.y=Math.max(ball.y,extents.minY+ball.r);
         ball.y=Math.min(ball.y,extents.maxY-ball.r);
-        
-        
+
+
         client.send({
             dst: "data.api",
             action: "set",
@@ -167,7 +178,7 @@ $(document).ready(function(){
 
 //	window.setInterval(function() {
 //		var elapsed=(ozpIwc.util.now()-client.startTime)/1000;
-//	
+//
 //		$('#averageLatencies').text(
 //			"Sent [Pkt/sec: " + (client.sentPackets/elapsed).toFixed(1) + ", " +
 //			"Bytes/sec: " + Math.floor(client.sentBytes/elapsed) + "], Received [" +
@@ -183,7 +194,7 @@ client.on("connected",function() {
 	// setup
 	var viewPort=$('#viewport');
 
-	$('#myAddress').text(client.address);
+    $('#myAddress').text(client.address);
 
 	//=================================================================
 	// cleanup when we are done
