@@ -2483,7 +2483,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	this.electionAddress=config.electionAddress || (this.name + ".election");
 
 	// Election times and how to score them
-	this.priority = config.priority || ozpIwc.defaultLeaderPriority || Math.random();
+	this.priority = config.priority || ozpIwc.defaultLeaderPriority || -ozpIwc.util.now();
 	this.priorityLessThan = config.priorityLessThan || function(l,r) { return l < r; };
 	this.electionTimeout=config.electionTimeout || 250; // quarter second
 	this.leaderState="connecting";
@@ -2514,9 +2514,12 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	
 	// handoff when we shut down
 	window.addEventListener("beforeunload",function() {
-		self.leaderPriority=0;
-		self.startElection();
-		
+        //Priority has to be the minimum possible
+        self.priority=-Number.MAX_VALUE;
+        self.leaderPriority=-Number.MAX_VALUE;
+        if(self.leaderState === "leader") {
+            self.events.trigger("unloadState");
+        }
 	});
 
     ozpIwc.metrics.gauge('transport.leaderGroup.election').set(function() {
@@ -2572,13 +2575,16 @@ ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
  * @private
  * @param {string} type - the type of message-- "election" or "victory"
  */
-ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type) {
+ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, config) {
+    config = config || {};
+    var state = config.state || {};
 	this.send({
 		'src': this.address,
 		'dst': this.electionAddress,
 		'action': type,
 		'entity': {
-			'priority': this.priority
+			'priority': this.priority,
+            'state': state,
 		}
 	});
 };
@@ -2590,26 +2596,42 @@ ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type) {
  * @fire ozpIwc.LeaderGroupParticipant#startElection
  * @fire ozpIwc.LeaderGroupParticipant#becameLeader
  */
-ozpIwc.LeaderGroupParticipant.prototype.startElection=function() {
+ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
+    config = config || {};
+    var state = config.state || {};
+
 	// don't start a new election if we are in one
 	if(this.inElection()) {
 		return;
 	}
 	this.leaderState="election";
 	this.events.trigger("startElection");
+
+    this.victoryDebounce = null;
 	
 	var self=this;
 	// if no one overrules us, declare victory
 	this.electionTimer=window.setTimeout(function() {
 		self.cancelElection();
-		self.leader=self.address;
-		self.leaderPriority=self.priority;
-		self.leaderState="leader";
-		self.sendElectionMessage("victory");	
-		self.events.trigger("becameLeader");
+        self.leaderState = "leader";
+        self.leader=self.address;
+        self.leaderPriority=self.priority;
+        self.events.trigger("becameLeader");
+
+        self.sendElectionMessage("victory");
+
+        // Debouncing before setting state.
+        self.victoryDebounce = window.setTimeout(function(){
+            if (self.leaderState === "leader") {
+                if (self.stateStore && Object.keys(self.stateStore).length > 0) {
+                    self.events.trigger("acquireState", self.stateStore);
+                    self.stateStore = {};
+                }
+            }
+        },100);
 	},this.electionTimeout);
 
-	this.sendElectionMessage("election");
+	this.sendElectionMessage("election", {state: state});
 };
 
 /**
@@ -2618,10 +2640,12 @@ ozpIwc.LeaderGroupParticipant.prototype.startElection=function() {
  * @fire ozpIwc.LeaderGroupParticipant#endElection
  */
 ozpIwc.LeaderGroupParticipant.prototype.cancelElection=function() {
-	if(this.electionTimer) {	
-		window.clearTimeout(this.electionTimer);
-		this.electionTimer=null;
-		this.events.trigger("endElection");
+	if(this.electionTimer) {
+        window.clearTimeout(this.electionTimer);
+        this.electionTimer=null;
+        window.clearTimeout(this.victoryDebounce);
+        this.victoryDebounce=null;
+        this.events.trigger("endElection");
 	}
 };
 
@@ -2641,7 +2665,7 @@ ozpIwc.LeaderGroupParticipant.prototype.receiveFromRouterImpl=function(packetCon
 		if(packet.src === this.address) {
 			// even if we see our own messages, we shouldn't act upon them
 			return;
-		}else if(packet.action === "election") {
+		} else if(packet.action === "election") {
 			this.handleElectionMessage(packet);
 		} else if(packet.action === "victory") {
 			this.handleVictoryMessage(packet);
@@ -2677,7 +2701,10 @@ ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) 
  * @returns {undefined}
  */
 ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionMessage) {
-
+    //If a state was received, store it case participant becomes the leader
+    if(Object.keys(electionMessage.entity.state).length > 0){
+        this.stateStore = electionMessage.entity.state;
+    }
 	// is the new election lower priority than us?
 	if(this.priorityLessThan(electionMessage.entity.priority,this.priority)) {
 		// Quell the rebellion!
@@ -2704,6 +2731,7 @@ ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMes
 		this.cancelElection();
 		this.leaderState="member";
 		this.events.trigger("newLeader");
+        this.stateStore = {};
 	}
 };
 
@@ -3054,8 +3082,10 @@ ozpIwc.RouterWatchdog.prototype.shutdown=function() {
 ozpIwc.CommonApiBase = function(config) {
 	config = config || {};
 	this.participant=config.participant;
-	
-	this.participant.on("receive",ozpIwc.CommonApiBase.prototype.routePacket,this);
+
+    this.participant.on("receive",ozpIwc.CommonApiBase.prototype.routePacket,this);
+    this.participant.on("unloadState",ozpIwc.CommonApiBase.prototype.unloadState,this);
+    this.participant.on("acquireState",ozpIwc.CommonApiBase.prototype.setState,this);
 
 	this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
@@ -3130,7 +3160,7 @@ ozpIwc.CommonApiBase.prototype.findOrMakeValue=function(packet) {
         return new ozpIwc.CommonApiValue();
     }
 	var node=this.data[packet.resource];
-	
+
 	if(!node) {
 		node=this.data[packet.resource]=this.makeValue(packet);
 	}
@@ -3316,7 +3346,38 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
 };
 
 /**
- * @param {ozpIwc.CommonApiValue} node
+ * Called when the leader participant fires its beforeUnload state. Releases the Api's data property
+ * to be consumed by all, then used by the new leader.
+ */
+ozpIwc.CommonApiBase.prototype.unloadState = function(){
+    this.participant.startElection({state:this.data});
+    this.data = {};
+};
+
+/**
+ * Called when the leader participant looses its leadership. This occurs when a new participant joins with a higher
+ * priority
+ */
+ozpIwc.CommonApiBase.prototype.transferState = function(){
+    this.participant.sendElectionMessage("prevLeader", {
+        state:this.data,
+        prevLeader: this.participant.address
+    });
+    this.data = {};
+};
+
+/**
+ * Sets the APIs data property. Removes current values, then constructs each API value anew.
+ * @param state
+ */
+ozpIwc.CommonApiBase.prototype.setState = function(state) {
+    this.data = {};
+    for (var key in state) {
+        this.findOrMakeValue(state[key]);
+    }
+};
+
+ /** @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
@@ -3336,7 +3397,7 @@ ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
  */
 ozpIwc.CommonApiValue = function(config) {
 	config = config || {};
-	this.watchers=[];
+	this.watchers= config.watchers || [];
 	this.resource=config.resource;
     
   this.entity=config.entity;
@@ -3471,12 +3532,19 @@ ozpIwc.CommonApiValue.prototype.changesSince=function(snapshot) {
 };
 var ozpIwc=ozpIwc || {};
 
-ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function() {
+ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
+    var self = this;
+    if (config.href && config.loadServerDataEmbedded) {
+        this.loadServerDataEmbedded({href: config.href})
+            .success(function () {
+                //Add on load code here
+            });
+    }
 });
 
 ozpIwc.DataApi.prototype.makeValue = function(packet){
-    return new ozpIwc.DataApiValue({resource: packet.resource});
+    return new ozpIwc.DataApiValue(packet);
 };
 
 ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {
@@ -3522,6 +3590,48 @@ ozpIwc.DataApi.prototype.handleRemovechild=function(node,packetContext) {
 	packetContext.replyTo({
         'action':'ok'
     });
+};
+
+/**
+ * Expects a complete Data API data store tree returned from the specified href. Data must be of hal/json type and the
+ * stored tree must be in the '_embedded' property.
+ *
+ * @param config {Object}
+ * @param config.href {String}
+ * @returns {ozpIwc.AsyncAction}
+ */
+ozpIwc.DataApi.prototype.loadServerDataEmbedded = function (config) {
+    var self = this;
+    var asyncResponse = new ozpIwc.AsyncAction();
+    ozpIwc.util.ajax({
+        href: config.href,
+        method: "GET"
+    })
+        .success(function (data) {
+            // Take the root path from where the intent data is stored so that we can remove it from each object that
+            // becomes a intent value.
+            var rootPath = data._links.self.href;
+            for (var i in data._embedded['ozp:dataObjects']) {
+                var object = data._embedded['ozp:dataObjects'][i];
+                object.children = object.children || [];
+
+                var loadPacket = {
+                    packet: {
+                        resource: object._links.self.href.replace(rootPath, ''),
+                        entity: object.entity
+                    }
+                };
+                var node = self.findOrMakeValue(loadPacket.packet);
+
+                for (var i = 0; i < object.children.length; i++){
+                    node.addChild(object.children[i]);
+                }
+                node.set(loadPacket.packet);
+            }
+            asyncResponse.resolve("success");
+        });
+
+    return asyncResponse;
 };
 
 ozpIwc.DataApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
@@ -3660,6 +3770,7 @@ ozpIwc.IntentsApi.prototype.parseResource = function (packetContext) {
         }
         packetContext.packet.parsedResource = result;
     }
+    return packetContext;
 };
 
 /**
@@ -3669,6 +3780,9 @@ ozpIwc.IntentsApi.prototype.parseResource = function (packetContext) {
  * @returns {IntentsApiHandlerValue|IntentsAPiDefinitionValue|IntentsApiCapabilityValue}
  */
 ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
+    if (!packet.packetResource) {
+        packet = ozpIwc.IntentsApi.prototype.parseResource({packet: packet}).packet;
+    }
     switch (packet.parsedResource.intentValueType) {
         case 'handler':
             return this.getHandler(packet);
@@ -4143,7 +4257,7 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 });
 
 ozpIwc.NamesApi.prototype.makeValue = function(packet){
-    return new ozpIwc.NamesApiValue({resource: packet.resource, contentType: packet.contentType, namesApi: this});
+    return new ozpIwc.NamesApiValue({resource: packet.resource, entity: packet.entity, contentType: packet.contentType, namesApi: this});
 };
 
 ozpIwc.NamesApi.prototype.findOrMakeValue=function(packet) {
@@ -4159,7 +4273,7 @@ ozpIwc.NamesApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config)
     this.pInfoMap={};
     this.pInfoMap.postMessageProxy=['origin','credentials','securityAttributes'];
     this.pInfoMap.multicast=['members','securityAttributes'];
-    this.pInfoMap.leaderGroupMember=['electionAddress','priority','electionTimeout','leaderState','electionQueue','leader','leaderPriority','securityAttributes'];
+    this.pInfoMap.leaderGroupMember=['electionAddress','priority','electionTimeout','leaderState','leader','leaderPriority','securityAttributes'];
 });
 
 ozpIwc.NamesApiValue.prototype.set=function(packet) {
@@ -4303,7 +4417,7 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 });
 
 ozpIwc.SystemApi.prototype.makeValue = function(packet){
-    return new ozpIwc.SystemApiValue({resource: packet.resource, contentType: packet.contentType, systemApi: this});
+    return new ozpIwc.SystemApiValue({resource: packet.resource, entity: packet.entity, contentType: packet.contentType, systemApi: this});
 };
 
 ozpIwc.SystemApi.prototype.isPermitted=function(node,packetContext) {

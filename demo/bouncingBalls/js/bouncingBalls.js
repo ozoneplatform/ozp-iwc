@@ -45,10 +45,24 @@ var Ball=function(ballRef,svgElement) {
             self.refreshed = false;
             return;
         } else {
-            self.remove();
+
+            var svgimg = document.createElementNS('http://www.w3.org/2000/svg','image');
+            svgimg.setAttribute('height','200');
+            svgimg.setAttribute('width','200');
+            svgimg.setAttribute('id','testimg2');
+            svgimg.setAttributeNS('http://www.w3.org/1999/xlink','href','http://bestanimations.com/Military/Explosions/Explode-04-june.gif');
+            svgimg.setAttribute('x','-100');
+            svgimg.setAttribute('y','-100');
+            self.el.appendChild(svgimg);
+
+            self.circle.setAttribute("class","svgHidden");
+            console.log(self.el);
+            window.setTimeout(function(){
+                self.remove();
+            },500);
         }
     };
-   setInterval(this.removeWatchdog,5000);
+   setInterval(this.removeWatchdog,2000);
 
     $(this.el).click(function() {
         if(self.label.getAttribute("class").match("svgHidden")) {
