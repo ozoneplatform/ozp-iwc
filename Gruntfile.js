@@ -85,17 +85,38 @@ module.exports = function(grunt) {
 
         // Copies minified and non-minified js into dist directory
         copy: {
-          dist: {
-            files: [
-              {
-                src: ['app/js/*.js'],
-                dest: './dist/',
-                cwd: '.',
-                expand: true,
-                flatten: true
-              }
-            ]
-          }
+            jssrc: {
+                files: [
+                    {
+                        src: ['app/js/ozpIwc-*.js', 'app/js/bus/defaultWiring.js'],
+                        dest: './dist/js/',
+                        cwd: '.',
+                        expand: true,
+                        flatten: true
+                    }
+                ]
+            },
+            iframepeer: {
+                files: [
+                    {
+                        src: ['app/iframe_peer.html'],
+                        dest: './dist/',
+                        cwd: '.',
+                        expand: true,
+                        flatten: true
+                    }
+                ]
+            },
+            tools: {
+                files: [
+                    {
+                        src: ['**'],
+                        dest: './dist/tools',
+                        cwd: 'app/tools/',
+                        expand: true
+                    }
+                ]
+            }
         },
         clean: {
           dist: ['./dist/', './app/js/*.js']
@@ -186,7 +207,7 @@ module.exports = function(grunt) {
     grunt.initConfig(config);
 
     // Default task(s).
-    grunt.registerTask('default', ['clean', 'concat', 'uglify', 'copy:dist', 'jsdoc']);
+    grunt.registerTask('default', ['clean', 'concat', 'uglify', 'copy', 'jsdoc']);
     grunt.registerTask('test', ['concat', 'uglify', 'connect', 'watch']);
 
 };
