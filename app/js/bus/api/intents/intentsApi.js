@@ -68,6 +68,7 @@ ozpIwc.IntentsApi.prototype.parseResource = function (packetContext) {
         }
         packetContext.packet.parsedResource = result;
     }
+    return packetContext;
 };
 
 /**
@@ -77,6 +78,9 @@ ozpIwc.IntentsApi.prototype.parseResource = function (packetContext) {
  * @returns {IntentsApiHandlerValue|IntentsAPiDefinitionValue|IntentsApiCapabilityValue}
  */
 ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
+    if (!packet.packetResource) {
+        packet = ozpIwc.IntentsApi.prototype.parseResource({packet: packet}).packet;
+    }
     switch (packet.parsedResource.intentValueType) {
         case 'handler':
             return this.getHandler(packet);
