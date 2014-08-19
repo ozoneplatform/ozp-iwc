@@ -179,19 +179,11 @@ module.exports = function(grunt) {
         }
 
     };
-    grunt.initConfig(config);
 
-    for(var package in config.pkg.devDependencies) {
-        if(package.match(/grunt\-/)) {
-            grunt.loadNpmTasks(package);
-        }
-    }
-//    grunt.loadNpmTasks('grunt-contrib-uglify');
-//    grunt.loadNpmTasks('grunt-contrib-concat');
-//    grunt.loadNpmTasks('grunt-jsdoc');
-//    grunt.loadNpmTasks('grunt-contrib-watch');
-//    grunt.loadNpmTasks('grunt-contrib-connect');
-//    grunt.loadNpmTasks('grunt-contrib-jshint');
+    // load all grunt tasks matching the `grunt-*` pattern
+    require('load-grunt-tasks')(grunt);
+
+    grunt.initConfig(config);
 
     // Default task(s).
     grunt.registerTask('default', ['clean', 'concat', 'uglify', 'copy:dist', 'jsdoc']);
