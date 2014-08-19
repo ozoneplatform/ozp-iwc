@@ -45,12 +45,12 @@ module.exports = function(grunt) {
             ]
         },
         output: {
-            busJs: 'app/js/<%= pkg.name %>-bus.js',
-            clientJs: 'app/js/<%= pkg.name %>-client.js',
-            metricsJs: 'app/js/<%= pkg.name %>-metrics.js',
-            busJsMin: 'app/js/<%= pkg.name %>-bus.min.js',
-            clientJsMin: 'app/js/<%= pkg.name %>-client.min.js',
-            metricsJsMin: 'app/js/<%= pkg.name %>-metrics.min.js',
+            busJs: 'dist/js/<%= pkg.name %>-bus.js',
+            clientJs: 'dist/js/<%= pkg.name %>-client.js',
+            metricsJs: 'dist/js/<%= pkg.name %>-metrics.js',
+            busJsMin: 'dist/js/<%= pkg.name %>-bus.min.js',
+            clientJsMin: 'dist/js/<%= pkg.name %>-client.min.js',
+            metricsJsMin: 'dist/js/<%= pkg.name %>-metrics.min.js',
             allJs: ['<%=output.busJs %>', '<%=output.clientJs %>', '<%=output.metricsJs %>'],
             allJsMin: ['<%=output.busJsMin %>', '<%=output.clientJsMin %>', '<%=output.metricsJsMin %>']
         },
@@ -88,7 +88,7 @@ module.exports = function(grunt) {
             jssrc: {
                 files: [
                     {
-                        src: ['app/js/ozpIwc-*.js', 'app/js/bus/defaultWiring.js'],
+                        src: ['app/js/bus/defaultWiring.js'],
                         dest: './dist/js/',
                         cwd: '.',
                         expand: true,
@@ -119,7 +119,7 @@ module.exports = function(grunt) {
             }
         },
         clean: {
-          dist: ['./dist/', './app/js/*.js']
+          dist: ['./dist/']
         },
         jsdoc: {
             dist: {
@@ -159,40 +159,40 @@ module.exports = function(grunt) {
             app: {
                 options: {
                     port: 13000,
-                    base: ["app", "sampleData" ],
+                    base: ["dist", "sampleData" ],
                     index: "index.html",
                     debug: true
                 }
             },
             tests: {
-                options: {port: 14000, base: ["app", "test","sampleData"]}
+                options: {port: 14000, base: ["dist", "test","sampleData"]}
             },
             mockParticipant: {
-                options: {port: 14001, base: ["app","test/mockParticipant"]}
+                options: {port: 14001, base: ["dist","test/mockParticipant"]}
             },
             testBus: {
-                options:{ port: 14002, base: ["test/integration/bus","app","sampleData"] }
+                options:{ port: 14002, base: ["test/integration/bus","dist","sampleData"] }
             },
             doc: {
                 options: { port: 13001, base: "doc" }
             },
             demo1: {
-                options: { port: 15000, base: ["app","demo/bouncingBalls"] }
+                options: { port: 15000, base: ["dist","demo/bouncingBalls"] }
             },
             demo2: {
-                options: { port: 15001, base: ["app","demo/bouncingBalls"] }
+                options: { port: 15001, base: ["dist","demo/bouncingBalls"] }
             },
             demo3: {
-                options: { port: 15002, base: ["app","demo/bouncingBalls"] }
+                options: { port: 15002, base: ["dist","demo/bouncingBalls"] }
             },
             demo4: {
-                options: { port: 15003, base: ["app","demo/bouncingBalls"] }
+                options: { port: 15003, base: ["dist","demo/bouncingBalls"] }
             },
             gridsterDemo: {
-                options: { port: 15004, base: ["app","demo/gridster"] }
+                options: { port: 15004, base: ["dist","demo/gridster"] }
             },
             intentsDemo: {
-                options:{	port: 15006, base: ["app","demo/intentsSandbox","test/tests/unit"]}
+                options:{	port: 15006, base: ["dist","demo/intentsSandbox","test/tests/unit"]}
             }
         },
         dist: {
