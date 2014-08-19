@@ -1,9 +1,11 @@
 {
   "name": "ozp-iwc",
   "main": [
-    "ozpIwc-bus.js",
-    "ozpIwc-client.js",
-    "ozpIwc-metrics.js"
+    "dist/js/ozpIwc-bus.js",
+    "dist/js/ozpIwc-client.js",
+    "dist/js/ozpIwc-metrics.js",
+    "dist/js/defaultWiring.js",
+    "dist/iframe_peer.html"
   ],
   "version": "0.0.1",
   "homepage": "https://github.com/ozone-development/ozp-iwc",
