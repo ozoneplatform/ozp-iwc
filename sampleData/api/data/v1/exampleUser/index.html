@@ -1,0 +1,52 @@
+{
+    "_links": {
+        "self": { "href" : "/api/data/v1/exampleUser" },
+        "curies": [{
+            "name": "ozp",
+            "href": "/api/data/v1/exampleUser/rels/{rel}",
+            "templated": true
+        }]
+    },
+    "_embedded": {
+        "ozp:dataObjects": [
+            {
+                "_links": {
+                    "self": {"href": "/api/data/v1/exampleUser/someResource"}
+                },
+                "entity": {
+                    "some" : "data"
+                }
+            },
+            {
+                "_links": {
+                    "self": {"href": "/api/data/v1/exampleUser/pizza"}
+                },
+                "entity": "pepperoni"
+            },
+            {
+                "_links": {
+                    "self": {"href": "/api/data/v1/exampleUser/theme"}
+                },
+                "entity": "dark"
+            },
+            {
+                "_links": {
+                    "self": {"href": "/api/data/v1/exampleUser/parent"}
+                },
+                "children": ["/parent/1234", "/parent/5678"]
+            },
+            {
+                "_links": {
+                    "self": {"href": "/api/data/v1/exampleUser/parent/1234"}
+                },
+                "entity": "I am child 1234 of parent."
+            },
+            {
+                "_links": {
+                    "self": {"href": "/api/data/v1/exampleUser/parent/5678"}
+                },
+                "entity": "I am child 5678 of parent."
+            }
+        ]
+    }
+}
