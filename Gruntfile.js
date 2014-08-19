@@ -119,7 +119,7 @@ module.exports = function(grunt) {
             }
         },
         clean: {
-          dist: ['./dist/']
+          dist: ['./dist/', './app/js/ozpIwc-*.js']
         },
         jsdoc: {
             dist: {
