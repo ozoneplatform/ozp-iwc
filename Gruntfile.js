@@ -98,7 +98,7 @@ module.exports = function(grunt) {
           }
         },
         clean: {
-          dist: ['./dist/']
+          dist: ['./dist/', './app/js/*.js']
         },
         jsdoc: {
             dist: {
@@ -194,8 +194,7 @@ module.exports = function(grunt) {
 //    grunt.loadNpmTasks('grunt-contrib-jshint');
 
     // Default task(s).
-    grunt.registerTask('default', ['clean:dist', 'concat', 'uglify', 'copy:dist', 'jsdoc']);
+    grunt.registerTask('default', ['clean', 'concat', 'uglify', 'copy:dist', 'jsdoc']);
     grunt.registerTask('test', ['concat', 'uglify', 'connect', 'watch']);
-    grunt.registerTask('default', ['clean:dist', 'concat', 'uglify', 'copy:dist', 'jsdoc']);
 
 };
