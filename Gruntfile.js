@@ -45,12 +45,12 @@ module.exports = function(grunt) {
             ]
         },
         output: {
-            busJs: 'app/js/<%= pkg.name %>-bus.js',
-            clientJs: 'app/js/<%= pkg.name %>-client.js',
-            metricsJs: 'app/js/<%= pkg.name %>-metrics.js',
-            busJsMin: 'app/js/<%= pkg.name %>-bus.min.js',
-            clientJsMin: 'app/js/<%= pkg.name %>-client.min.js',
-            metricsJsMin: 'app/js/<%= pkg.name %>-metrics.min.js',
+            busJs: 'dist/js/<%= pkg.name %>-bus.js',
+            clientJs: 'dist/js/<%= pkg.name %>-client.js',
+            metricsJs: 'dist/js/<%= pkg.name %>-metrics.js',
+            busJsMin: 'dist/js/<%= pkg.name %>-bus.min.js',
+            clientJsMin: 'dist/js/<%= pkg.name %>-client.min.js',
+            metricsJsMin: 'dist/js/<%= pkg.name %>-metrics.min.js',
             allJs: ['<%=output.busJs %>', '<%=output.clientJs %>', '<%=output.metricsJs %>'],
             allJsMin: ['<%=output.busJsMin %>', '<%=output.clientJsMin %>', '<%=output.metricsJsMin %>']
         },
@@ -81,6 +81,45 @@ module.exports = function(grunt) {
                 src: '<%= concat.metrics.dest %>',
                 dest: '<%= output.metricsJsMin %>'
             }
+        },
+
+        // Copies minified and non-minified js into dist directory
+        copy: {
+            jssrc: {
+                files: [
+                    {
+                        src: ['app/js/bus/defaultWiring.js'],
+                        dest: './dist/js/',
+                        cwd: '.',
+                        expand: true,
+                        flatten: true
+                    }
+                ]
+            },
+            iframepeer: {
+                files: [
+                    {
+                        src: ['app/iframe_peer.html'],
+                        dest: './dist/',
+                        cwd: '.',
+                        expand: true,
+                        flatten: true
+                    }
+                ]
+            },
+            tools: {
+                files: [
+                    {
+                        src: ['**'],
+                        dest: './dist/tools',
+                        cwd: 'app/tools/',
+                        expand: true
+                    }
+                ]
+            }
+        },
+        clean: {
+          dist: ['./dist/', './app/js/ozpIwc-*.js']
         },
         jsdoc: {
             dist: {
@@ -120,61 +159,55 @@ module.exports = function(grunt) {
             app: {
                 options: {
                     port: 13000,
-                    base: ["app", "sampleData" ],
+                    base: ["dist", "sampleData" ],
                     index: "index.html",
                     debug: true
                 }
             },
             tests: {
-                options: {port: 14000, base: ["app", "test","sampleData"]}
+                options: {port: 14000, base: ["dist", "test","sampleData"]}
             },
             mockParticipant: {
-                options: {port: 14001, base: ["app","test/mockParticipant"]}
+                options: {port: 14001, base: ["dist","test/mockParticipant"]}
             },
             testBus: {
-                options:{ port: 14002, base: ["test/integration/bus","app","sampleData"] }
+                options:{ port: 14002, base: ["test/integration/bus","dist","sampleData"] }
             },
             doc: {
                 options: { port: 13001, base: "doc" }
             },
             demo1: {
-                options: { port: 15000, base: ["app","demo/bouncingBalls"] }
+                options: { port: 15000, base: ["dist","demo/bouncingBalls"] }
             },
             demo2: {
-                options: { port: 15001, base: ["app","demo/bouncingBalls"] }
+                options: { port: 15001, base: ["dist","demo/bouncingBalls"] }
             },
             demo3: {
-                options: { port: 15002, base: ["app","demo/bouncingBalls"] }
+                options: { port: 15002, base: ["dist","demo/bouncingBalls"] }
             },
             demo4: {
-                options: { port: 15003, base: ["app","demo/bouncingBalls"] }
+                options: { port: 15003, base: ["dist","demo/bouncingBalls"] }
             },
             gridsterDemo: {
-                options: { port: 15004, base: ["app","demo/gridster"] }
+                options: { port: 15004, base: ["dist","demo/gridster"] }
             },
             intentsDemo: {
-                options:{	port: 15006, base: ["app","demo/intentsSandbox","test/tests/unit"]}
+                options:{	port: 15006, base: ["dist","demo/intentsSandbox","test/tests/unit"]}
             }
+        },
+        dist: {
+
         }
 
     };
+
+    // load all grunt tasks matching the `grunt-*` pattern
+    require('load-grunt-tasks')(grunt);
+
     grunt.initConfig(config);
 
-    for(var package in config.pkg.devDependencies) {
-        if(package.match(/grunt\-/)) {
-            grunt.loadNpmTasks(package);
-        }
-    }
-//    grunt.loadNpmTasks('grunt-contrib-uglify');
-//    grunt.loadNpmTasks('grunt-contrib-concat');
-//    grunt.loadNpmTasks('grunt-jsdoc');
-//    grunt.loadNpmTasks('grunt-contrib-watch');
-//    grunt.loadNpmTasks('grunt-contrib-connect');
-//    grunt.loadNpmTasks('grunt-contrib-jshint');
-
     // Default task(s).
-    grunt.registerTask('default', ['concat', 'uglify', 'jsdoc']);
+    grunt.registerTask('default', ['clean', 'concat', 'uglify', 'copy', 'jsdoc']);
     grunt.registerTask('test', ['concat', 'uglify', 'connect', 'watch']);
-    grunt.registerTask('default', ['concat', 'uglify', 'jsdoc']);
 
 };
