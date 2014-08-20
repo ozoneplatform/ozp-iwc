@@ -34,7 +34,7 @@ var Ball=function(ballRef,svgElement) {
         var now=ozpIwc.util.now();
         self.totalLatency+=now-reply.time;
 
-        if(reply.action==="changed") {
+        if(reply.response==="changed") {
             self.refreshed = true;
             self.draw(reply.entity.newValue);
         }
@@ -99,6 +99,7 @@ Ball.prototype.remove=function() {
     client.send({
         dst: "data.api",
         action: "unwatch",
+        rsource: this.ballResource,
         replyTo: this.watchId
     });
     this.el.remove();
@@ -239,7 +240,7 @@ client.on("connected",function() {
 		resource: "/balls"
 	};
 	var onBallsChanged=function(reply) {
-		if(reply.action!=="changed") {
+		if(reply.response!=="changed") {
 			return true;//maintain persistent callback
 		}
 		if(reply.entity.addedChildren) {

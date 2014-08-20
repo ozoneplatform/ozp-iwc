@@ -192,7 +192,12 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 	var packet=event.data;
 
 	if(typeof(event.data)==="string") {
-		packet=JSON.parse(event.data);
+		try {
+            packet=JSON.parse(event.data);
+        } catch(e) {
+            // assume that it's some other library using the bus and let it go
+            return;
+        }
 	}
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {

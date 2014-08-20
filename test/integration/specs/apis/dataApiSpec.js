@@ -48,7 +48,7 @@ describe("Data API", function () {
             'resource' : "/test",
             'action': "watch"
         },function(packet) {
-            if(packet.action==="changed") {
+            if(packet.response==="changed") {
                 expect(packet.entity.newValue).toEqual({'foo':1});
                 expect(packet.entity.oldValue).toBeUndefined();
                 done();

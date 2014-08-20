@@ -145,14 +145,17 @@ describe("Router", function() {
             expect(participant2.packets.length).toEqual(0);
         });
 
-        it("allows a participant to send a packet to require permissions that it doesn't have, itself", function() {
+        it("allows a participant to send a packet to require permissions that it doesn't have, itself", function(done) {
+            participant2.on("receive", function(packetContext) {
+                expect(packetContext.packet.entity).toEqual({foo: "bar"});
+                done();
+            });
             var packet = participant.send({
                 dst: participant2.address,
                 permissions: {'color': "red"},
                 entity: {'foo': "bar"}
             });
 
-            expect(participant2.packets[0].packet).toEqual(packet);
         });
 
     });

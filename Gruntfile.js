@@ -17,6 +17,7 @@ module.exports = function(grunt) {
             bus: [
                 '<%= src.metrics %>',
                 'app/js/bus/jquery-2.1.0.min.js',
+                'app/js/bus/setImmediate.js',
                 'app/js/common/event.js',
                 'app/js/common/**/*.js',
                 'app/js/bus/util/**/*.js',

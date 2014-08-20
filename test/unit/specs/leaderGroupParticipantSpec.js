@@ -28,16 +28,16 @@ describe("Leader Group Participant",function() {
 		});
 		fakeRouter.registerParticipant(l);
 		l.on("startElection", function() {
-//			console.log("startElection[" + l.address + "]");
+			console.log("startElection[" + l.address + "]");
 		});
 		l.on("endElection",function() {
-//			console.log("endElection[" + l.address + "]");
+			console.log("endElection[" + l.address + "]");
 		});
 		l.on("newLeader",function() {
-//			console.log("newLeader[" + l.address + "]");
+			console.log("newLeader[" + l.address + "]");
 		});
 		l.on("becameLeader",function() {
-//			console.log("becameLeader[" + l.address + "]");
+			console.log("becameLeader[" + l.address + "]");
 		});
 		
 		l.TEST_nonElectionPackets=[];

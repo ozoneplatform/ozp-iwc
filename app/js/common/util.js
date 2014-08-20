@@ -41,9 +41,10 @@ ozpIwc.util.extend=function(baseClass,newConstructor) {
  * Invokes the callback handler on another event loop as soon as possible.
 */
 ozpIwc.util.setImmediate=function(f) {
-    // todo: do normal checkdown of setImmediate -> postmessage trick -> setTimeout
-    // but watch out for the postMessage trick crossing the streams with the IWC
+// @TODO the unit tests don't account for the asynchronous nature of setImmediate and fail
+// figure out a better way to test and re-enable this
     window.setTimeout(f,0);
+//    window.setImmediate(f);
 };
 
 /**
