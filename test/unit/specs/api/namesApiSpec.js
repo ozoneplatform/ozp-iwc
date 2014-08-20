@@ -23,7 +23,7 @@ describe("Names API",function() {
             }
         });
         namesApi.routePacket(context);            
-        expect(context.responses[0].action).toEqual("badResource");
+        expect(context.responses[0].response).toEqual("badResource");
     });
     [ {
             'resource': "/address",
@@ -51,7 +51,7 @@ describe("Names API",function() {
                     }
                 });
                 namesApi.routePacket(context);            
-                expect(context.responses[0].action).toEqual("ok");
+                expect(context.responses[0].response).toEqual("ok");
                 expect(context.responses[0].entity).toEqual([]);
                 expect(context.responses[0].contentType).toEqual(r.contentType);
             });
@@ -67,7 +67,7 @@ describe("Names API",function() {
                     }
                 });
                 namesApi.routePacket(context);            
-                expect(context.responses[0].action).toEqual("noPermission");
+                expect(context.responses[0].response).toEqual("noPermission");
             });
             it("allows  " + r.contentType + " when setting a value in the tree",function() {
                 var context=new TestPacketContext({
@@ -82,7 +82,7 @@ describe("Names API",function() {
                     }
                 });
                 namesApi.routePacket(context);            
-                expect(context.responses[0].action).toEqual("ok");
+                expect(context.responses[0].response).toEqual("ok");
             });
             it("updates the collection  when setting a value in the tree",function() {
                 namesApi.routePacket(new TestPacketContext({
@@ -106,7 +106,7 @@ describe("Names API",function() {
                     }
                 });
                 namesApi.routePacket(context);            
-                expect(context.responses[0].action).toEqual("ok");
+                expect(context.responses[0].response).toEqual("ok");
                 expect(context.responses[0].entity).toContain(r.resource + "/testValue");
                 expect(context.responses[0].contentType).toEqual(r.contentType);
                 
@@ -123,7 +123,7 @@ describe("Names API",function() {
                     }
                 });
                 namesApi.routePacket(context);            
-                expect(context.responses[0].action).toEqual("badContent");
+                expect(context.responses[0].response).toEqual("badContent");
             });
 
             it("responds with badContent with invalid contentType",function() {
@@ -139,7 +139,7 @@ describe("Names API",function() {
                     }
                 });
                 namesApi.routePacket(context);            
-                expect(context.responses[0].action).toEqual("badContent");
+                expect(context.responses[0].response).toEqual("badContent");
             });
 
         });

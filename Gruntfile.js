@@ -133,8 +133,8 @@ module.exports = function(grunt) {
         },
         watch: {
             concatFiles: {
-                files: ['Gruntfile.js', '<%= src.all %>'],
-                tasks: ['concat']
+                files: ['Gruntfile.js', '<%= src.all %>','app/**/*'],
+                tasks: ['concat','copy']
             },
             test: {
                 files: ['Gruntfile.js', '<%= output.allJs %>', '<%= src.test %>'],
@@ -214,6 +214,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['clean', 'concat', 'uglify', 'copy', 'jsdoc']);
-    grunt.registerTask('test', ['concat', 'uglify', 'connect', 'watch']);
+    grunt.registerTask('test', ['concat', 'uglify', 'copy','connect', 'watch']);
 
 };

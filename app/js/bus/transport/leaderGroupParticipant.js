@@ -89,18 +89,6 @@ ozpIwc.LeaderGroupParticipant.prototype.getElectionQueue=function() {
     return this.electionQueue;
 };
 
-///**
-// * Override fixPacket to default the source address to the name of this
-// * leadership group.
-// * @param {type} packet
-// * @returns {unresolved}
-// */
-//ozpIwc.LeaderGroupParticipant.prototype.fixPacket=function(packet) {
-//	packet.src = packet.src || this.name;
-//	
-//	return ozpIwc.InternalParticipant.prototype.fixPacket.apply(this,arguments);
-//};
-
 
 /**
  * Checks to see if the leadership group is in an election
@@ -132,7 +120,7 @@ ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, confi
 		'action': type,
 		'entity': {
 			'priority': this.priority,
-            'state': state,
+            'state': state
 		}
 	});
 };
@@ -206,6 +194,10 @@ ozpIwc.LeaderGroupParticipant.prototype.cancelElection=function() {
 ozpIwc.LeaderGroupParticipant.prototype.routePacket=function(packetContext) {
 	var packet=packetContext.packet;
 	packetContext.leaderState=this.leaderState;
+    if(packet.src === this.address) {
+        // drop our own packets that found their way here
+        return;
+    }
     if(packet.dst === this.electionAddress) {
         if(packet.src === this.address) {
 			// even if we see our own messages, we shouldn't act upon them
@@ -215,7 +207,7 @@ ozpIwc.LeaderGroupParticipant.prototype.routePacket=function(packetContext) {
 		} else if(packet.action === "victory") {
 			this.handleVictoryMessage(packet);
 		}
-    } else { // if(packet.src !== this.name) {
+    } else {
 		this.forwardToTarget(packetContext);
 	}		
 };

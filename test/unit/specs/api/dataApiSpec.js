@@ -35,7 +35,7 @@ describe("Data API",function() {
         dataApi.handleAddchild(node,packetContext);
 
         var reply=packetContext.responses[0];
-        expect(reply.action).toEqual("ok");
+        expect(reply.response).toEqual("ok");
         expect(reply.entity.resource).toBeDefined();
         
         // the node should have the new resource as it's only child
@@ -61,7 +61,7 @@ describe("Data API",function() {
         dataApi.handleRemovechild(node,packetContext);
 
         var reply=packetContext.responses[0];
-        expect(reply.action).toEqual("ok");
+        expect(reply.response).toEqual("ok");
         expect(node.children).toEqual([]);
 
     });
@@ -86,7 +86,7 @@ describe("Data API",function() {
 
         expect(dataApi.participant.sentPackets.length).toEqual(1);
         var changePacket=dataApi.participant.sentPackets[0];
-        expect(changePacket.action).toEqual("changed");
+        expect(changePacket.response).toEqual("changed");
         expect(changePacket.entity.addedChildren[0]).toMatch(/\/node\/[0-9a-f]+/);
     });
     it("generates changes for removed children",function() {
@@ -110,7 +110,7 @@ describe("Data API",function() {
 
         expect(dataApi.participant.sentPackets.length).toEqual(1);
         var changePacket=dataApi.participant.sentPackets[0];
-        expect(changePacket.action).toEqual("changed");
+        expect(changePacket.response).toEqual("changed");
         expect(changePacket.entity.removedChildren[0]).toEqual("child1");
     });
 

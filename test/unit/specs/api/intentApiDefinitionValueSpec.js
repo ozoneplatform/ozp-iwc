@@ -46,7 +46,7 @@ function intentsApiDefinitionValueContractTests(classUnderTest, baseConfig) {
         xit("defaults to an empty intent value", function () {
             value = new classUnderTest();
             expect(value.type).toEqual(undefined);
-            expect(value.action).toEqual(undefined);
+            expect(value.response).toEqual(undefined);
             expect(value.icon).toEqual(undefined);
             expect(value.label).toEqual(undefined);
             expect(value.handlers).toEqual([]);

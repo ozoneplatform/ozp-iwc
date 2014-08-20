@@ -39,7 +39,7 @@ function intentsApiHandlerValueContractTests(classUnderTest, baseConfig) {
         it("defaults to an empty intent value", function () {
             value = new classUnderTest();
             expect(value.type).toEqual(undefined);
-            expect(value.action).toEqual(undefined);
+            expect(value.response).toEqual(undefined);
             expect(value.icon).toEqual(undefined);
             expect(value.label).toEqual(undefined);
             expect(value.invokeIntent).toBeUndefined();
@@ -53,7 +53,7 @@ function intentsApiHandlerValueContractTests(classUnderTest, baseConfig) {
         it("resets intent properties on deleteData", function () {
             value.deleteData();
             expect(value.type).toBeUndefined();
-            expect(value.action).toBeUndefined();
+            expect(value.response).toBeUndefined();
             expect(value.label).toBeUndefined();
             expect(value.icon).toBeUndefined();
             expect(value.invokeIntent).toBeUndefined();
@@ -62,7 +62,7 @@ function intentsApiHandlerValueContractTests(classUnderTest, baseConfig) {
         it("converts intent properties to a packet", function () {
             var packet = value.toPacket();
             expect(packet.type).toEqual(value.type);
-            expect(packet.action).toEqual(value.action);
+            expect(packet.response).toEqual(value.action);
             expect(packet.label).toEqual(value.label);
             expect(packet.icon).toEqual(value.icon);
             expect(packet.handlers).toEqual(value.children);

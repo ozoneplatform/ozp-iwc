@@ -87,7 +87,7 @@ describe("intents.api integration", function () {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentPacket.msgId);
-                    expect(reply.action).toEqual('ok');
+                    expect(reply.response).toEqual('ok');
                     expect(reply.entity).toContain(sentPacket.resource);
                     done();
                 }
@@ -104,7 +104,7 @@ describe("intents.api integration", function () {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentPacket.msgId);
-                    expect(reply.action).toEqual('ok');
+                    expect(reply.response).toEqual('ok');
                     done();
                 }
             };
@@ -126,7 +126,7 @@ describe("intents.api integration", function () {
                 if (!called) {
                     called = true;
                     expect(reply.replyTo).toEqual(sentPacket.msgId);
-                    expect(reply.action).toEqual('ok');
+                    expect(reply.response).toEqual('ok');
                     done();
                 }
             };
@@ -166,7 +166,7 @@ describe("intents.api integration", function () {
                 sentPacket = client.send(deletePacket(registerReply.entity), function (reply) {
                     if (!called) {
                         expect(reply.replyTo).toEqual(sentPacket.msgId);
-                        expect(reply.action).toEqual('ok');
+                        expect(reply.response).toEqual('ok');
                         done();
                     }
                 });
@@ -181,7 +181,7 @@ describe("intents.api integration", function () {
                 sentPacket = client.send(invokePacket(registerReply.entity), function (reply) {
                     if (!called) {
                         expect(reply.replyTo).toEqual(sentPacket.msgId);
-                        expect(reply.action).toEqual('ok');
+                        expect(reply.response).toEqual('ok');
                         done();
                     }
                 });

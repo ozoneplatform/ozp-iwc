@@ -281,7 +281,7 @@ client.on("connected",function() {
 	};
 
 	client.send(pushRequest,function(packet){
-		if(packet.action==="ok") {
+		if(packet.response==="ok") {
 			ourBalls.push(new AnimatedBall({
 				resource:packet.entity.resource
 			}));

@@ -24,7 +24,7 @@ ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {
 
 ozpIwc.DataApi.prototype.handleList=function(node,packetContext) {
 	packetContext.replyTo({
-        'action': 'ok',
+        'response': 'ok',
         'entity': node.listChildren()
     });
 };
@@ -39,7 +39,7 @@ ozpIwc.DataApi.prototype.handleAddchild=function(node,packetContext) {
 	node.addChild(childNode.resource);
 	
 	packetContext.replyTo({
-        'action':'ok',
+        'response':'ok',
         'entity' : {
             'resource': childNode.resource
         }
@@ -54,7 +54,7 @@ ozpIwc.DataApi.prototype.handleRemovechild=function(node,packetContext) {
     node.removeChild(packetContext.packet.entity.resource);
 	// delegate to the handleGet call
 	packetContext.replyTo({
-        'action':'ok'
+        'response':'ok'
     });
 };
 

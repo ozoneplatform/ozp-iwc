@@ -68,7 +68,7 @@ describe('Participant Integration', function () {
             if (!called && reply.action === 'changed') {
                 called = true;
 
-                expect(reply.action).toEqual('changed');
+                expect(reply.response).toEqual('changed');
                 //TODO: should the new value be in entity.newValue.entity?
                 expect(reply.entity.newValue).toEqual(setPacket.entity);
 
@@ -77,7 +77,7 @@ describe('Participant Integration', function () {
                 return null;
 
 
-            } else if (reply.action === 'ok') {
+            } else if (reply.response === 'ok') {
                 clients[1].send(setPacket);
             }
 

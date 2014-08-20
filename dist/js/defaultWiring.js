@@ -61,7 +61,11 @@ if(ozpIwc.BasicAuthorization) {
 
 if(ozpIwc.DataApi && ozpIwc.LeaderGroupParticipant) {
     ozpIwc.dataApi=new ozpIwc.DataApi({
-        'participant': new ozpIwc.LeaderGroupParticipant({'name': "data.api"})
+        'participant': new ozpIwc.LeaderGroupParticipant({
+            'name': "data.api"
+        }),
+        'href': ozpIwc.apiRoot._links.data.href,
+        'loadServerDataEmbedded': true
     });
 
     ozpIwc.defaultRouter.registerParticipant(ozpIwc.dataApi.participant);

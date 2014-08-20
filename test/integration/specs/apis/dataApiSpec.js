@@ -76,7 +76,7 @@ describe("Data API", function () {
                 'resource' : "/test",
                 'action': "delete"
             },function(packet) {
-                expect(packet.action).toEqual("ok");
+                expect(packet.response).toEqual("ok");
                 client.send({
                     'dst': "data.api",
                     'resource' : "/test",
