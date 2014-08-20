@@ -72,7 +72,7 @@ describe("System API",function() {
         systemApi.handleSet(applicationNode,packetContext);
 
         var reply=packetContext.responses[0];
-        expect(reply.action).toEqual("ok");
+        expect(reply.response).toEqual("ok");
 
         // check that the participant info was added.
         expect(systemApi.data[applicationNode.resource].entity).toEqual(packetContext.packet.entity);
@@ -137,7 +137,7 @@ describe("System API",function() {
 
         expect(systemApi.participant.sentPackets.length).toEqual(1);
         var changePacket=systemApi.participant.sentPackets[0];
-        expect(changePacket.action).toEqual("changed");
+        expect(changePacket.response).toEqual("changed");
         expect(changePacket.entity.newValue).toEqual(packetContext.packet.entity);
     });
 

@@ -7,7 +7,7 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
         config = ozpIwc.util.clone(baseConfig);
         config.resource= "testResource";
         config.entity= {'foo': 1};
-        config.contentType= "testContentType";
+        config.contentType= "test/testType+json";
         config.permissions= {'perms':"yes"};
         config.version= 1;
         
@@ -15,13 +15,12 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
     });
 
     it("defaults to an empty value", function() {
-        value = new classUnderTest();
+        value = new classUnderTest(baseConfig);
         expect(value.resource).toBeUndefined();
         expect(value.entity).toBeUndefined();
         expect(value.contentType).toBeUndefined();
         expect(value.permissions).toEqual({});
         expect(value.version).toEqual(0);
-
     });
 
     it("initializes from config", function() {
@@ -121,7 +120,7 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
         });        
         value.set({
             'entity': {'bar': 2},
-            'contentType': "test/testType-v2+json",
+            'contentType': "test/testType+json",
             'permissions': ['morePerms']
         });
         value.set({

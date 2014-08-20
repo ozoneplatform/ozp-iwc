@@ -24,7 +24,7 @@ debuggerModule.controller("debuggerController",["$scope","iwcClient",function(sc
         
         
 debuggerModule.controller("packetLogController",["$scope",function(scope) {
-    scope.logging=false;
+    scope.logging=true;
     scope.viewFilter="";
     scope.packets=[];
     scope.maxShown=50;
@@ -64,10 +64,10 @@ debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(
             'action': "list",
             'resource': key.resource
         },function(response) {
-            if(response.action==="ok") {
+            if(response.response==="ok") {
                 key.children=response.entity;
             }else {
-                key.children="Not Supported: " + response.action;
+                key.children="Not Supported: " + response.response;
             }
         });
     };
@@ -97,7 +97,7 @@ debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(
                 'action': "watch",
                 'resource': key.resource
             },function(response) {
-                if(response.action === 'changed') {
+                if(response.response === 'changed') {
                     scope.$evalAsync(function() {
                         key.entity=response.entity.newValue;
                         key.permissions=response.permissions;

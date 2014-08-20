@@ -166,7 +166,7 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
         packetContext.packet.parsedResource.handlerRes = this.createKey(packetContext.packet.resource + '/');
     } else if (packetContext.packet.parsedResource.intentValueType !== 'handler') {
         packetContext.replyTo({
-            'action': 'badResource'
+            'response': 'badResource'
         });
         return null;
     }
@@ -175,7 +175,7 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
     handler.set(packetContext);
 
     packetContext.replyTo({
-        'action': 'ok',
+        'response': 'ok',
         'entity': handler.resource
     });
 };
@@ -195,7 +195,7 @@ ozpIwc.IntentsApi.prototype.handleUnregister = function (node, packetContext) {
         this.data[definitionPath].entity.handlers.splice(index, 1);
     }
     delete this.data[handlerPath];
-    packetContext.replyTo({'action': 'ok'});
+    packetContext.replyTo({'response': 'ok'});
 };
 
 /**
@@ -221,12 +221,12 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
                 var handler = node.handlers[handlerPreference];
                 this.data[handler].invoke(packet);
             } else {
-                packetContext.replyTo({'action': 'badResource'});
+                packetContext.replyTo({'response': 'badResource'});
             }
             break;
 
         default:
-            packetContext.replyTo({'action': 'badResource'});
+            packetContext.replyTo({'response': 'badResource'});
             break;
     }
 };
@@ -242,7 +242,7 @@ ozpIwc.IntentsApi.prototype.handleListen = function (node, packetContext) {
 //    var parse = this.parseResource(packetContext.packet.resource);
 //    if (parse.intentValueType !== 'definition') {
 //        return packetContext.replyTo({
-//            'action': 'badResource'
+//            'response': 'badResource'
 //        });
 //    }
 };
@@ -258,7 +258,7 @@ ozpIwc.IntentsApi.prototype.handleBroadcast = function (node, packetContext) {
 //    var parse = this.parseResource(packetContext.packet.resource);
 //    if (parse.intentValueType !== 'definition') {
 //        return packetContext.replyTo({
-//            'action': 'badResource'
+//            'response': 'badResource'
 //        });
 //    }
 //    for (var i in node.handlers) {

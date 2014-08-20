@@ -1,6 +1,15 @@
 describe("Leader Group Participant",function() {
 	var fakeRouter;
-	
+    
+    /* 
+     * @todo This test doesn't work with postMessage trick for setImmediate.
+     * I believe this is due to the way Jasmine hooks the setTimeout and setInterval functions
+     * to make them synchronous.  Force this to fallback to the setTimeout(0) method tests the
+     * async operation within the bounds of the framework.
+     */
+    
+	var oldSetImmediate=ozpIwc.util.setImmediate;
+    
 	var tick=function(t) {
 		fakeRouter.pump();
 		jasmine.clock().tick(t);
@@ -50,7 +59,14 @@ describe("Leader Group Participant",function() {
 	};
     beforeEach(function() {
         fakeRouter=new FakeRouter();
+        ozpIwc.util.setImmediate=function(f) {
+            window.setTimeout(f,0);
+        };
     });
+    
+    afterEach(function() {
+       ozpIwc.util.setImmediate=oldSetImmediate;
+     });
 	it("is not leader when created",function() {
 		var leader=makeLeader(1);
 		expect(leader.isLeader()).toEqual(false);

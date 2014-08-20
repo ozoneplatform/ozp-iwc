@@ -7,7 +7,7 @@
 
         <script src="../../js/ozpIwc-bus.js"></script>
         <script type="text/javascript">
-            ozpIwc.defaultLeaderPriority = 100;
+            ozpIwc.defaultLeaderPriority = 1000;
         </script>
 
         <script src="../../js/defaultWiring.js"></script>
@@ -60,6 +60,7 @@
                         <td class="msgId">Message ID</td>
                         <td class="replyTo">Reply To</td>
                         <td class="action">Action</td>
+                        <td class="response">Response</td>
                         <td class="resource">Resource</td>
                         <td class="contentType">Content Type</td>
                     </tr></thead><tbody>
@@ -72,6 +73,7 @@
                         <td class="msgId">{{packet.data.msgId}}</td>
                         <td class="replyTo">{{packet.data.replyTo}}</td>
                         <td class="action">{{packet.data.action}}</td>
+                        <td class="response">{{packet.data.response}}</td>
                         <td class="resource">{{packet.data.resource}}</td>
                         <td class="contentType">{{packet.data.contentType}}</td>
                     </tr>

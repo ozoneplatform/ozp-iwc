@@ -42,15 +42,13 @@ ozpIwc.TransportPacketContext.prototype.replyTo=function(response) {
     var now=new Date().getTime();
     response.ver = response.ver || 1;
     response.time = response.time || now;
-    // TODO: track the last used timestamp and make sure we don't send a duplicate messageId
-    // default the msgId to the current timestamp
-    response.msgId = response.msgId || now;
     response.replyTo=response.replyTo || this.packet.msgId;
     response.src=response.src || this.packet.dst;
     response.dst=response.dst || this.packet.src;
     if(this.dstParticipant) {
         this.dstParticipant.send(response);
     } else{
+        response.msgId = response.msgId || now;
         this.router.send(response);
     }
     return response;
@@ -259,7 +257,6 @@ ozpIwc.Router.prototype.registerMulticast=function(participant,multicastGroups) 
         var g=self.participants[groupName];
         if(!g) {
             g=self.participants[groupName]=new ozpIwc.MulticastParticipant(groupName);
-            g.connectToRouter(this,groupName);
         }
         g.addMember(participant);
         if (participant.address) {

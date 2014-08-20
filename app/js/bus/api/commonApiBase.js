@@ -6,15 +6,16 @@
 ozpIwc.CommonApiBase = function(config) {
 	config = config || {};
 	this.participant=config.participant;
-
-    this.participant.on("receive",ozpIwc.CommonApiBase.prototype.routePacket,this);
     this.participant.on("unloadState",ozpIwc.CommonApiBase.prototype.unloadState,this);
     this.participant.on("acquireState",ozpIwc.CommonApiBase.prototype.setState,this);
+	this.participant.on("receiveApiPacket",ozpIwc.CommonApiBase.prototype.routePacket,this);
 
 	this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
-
-	this.data={};
+    
+    
+    this.collectionNodes=[];
+    this.data={};
 };
 /**
  * Creates a new value for the given packet's request.  Subclasses must override this
@@ -25,7 +26,7 @@ ozpIwc.CommonApiBase = function(config) {
  * @param {ozpIwc.TransportPacket} packet
  * @returns {ozpIwc.CommonApiValue} an object implementing the commonApiValue interfaces
  */
-ozpIwc.CommonApiBase.prototype.makeValue=function(packet) {
+ozpIwc.CommonApiBase.prototype.makeValue=function(/*packet*/) {
 	throw new Error("Subclasses of CommonApiBase must implement the makeValue(packet) function.");
 };
 
@@ -61,8 +62,9 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
 		// @TODO check that the recipient has permission to both the new and old values
 		var reply={
 			'dst'   : watcher.src,
+            'src'   : this.participant.name,
 		    'replyTo' : watcher.msgId,
-			'action': 'changed',
+			'response': 'changed',
 			'resource': node.resource,
 			'permissions': node.permissions,
 			'entity': changes
@@ -147,7 +149,14 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 	if(packetContext.leaderState !== 'leader')	{
 		// if not leader, just drop it.
 		return;
-	}	
+	}
+    
+    if(packet.response && !packet.action) {
+        console.log(this.participant.name + " dropping response packet ",packet);
+        // if it's a response packet that didn't wire an explicit handler, drop the sucker
+        return;
+    }
+    
 	var handler;
     this.events.trigger("receive",packetContext);
 
@@ -166,21 +175,38 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 	if(!handler || typeof(this[handler]) !== 'function') {
        handler="defaultHandler";
 	}
-
-	var node=this.findOrMakeValue(packetContext.packet);
+    var node;
+    try {
+        node=this.findOrMakeValue(packetContext.packet);
+    } catch(e) {
+        if(e.errorAction) {
+            packetContext.replyTo({
+                'response': e.errorAction,
+                'entity': e.message
+            });
+            return;
+        } else {
+            throw e;
+        }
+    }
+    if(packetContext.packet.resource && !this.validateResource(node,packetContext)) {
+        packetContext.replyTo({'response': 'badResource'});
+        return;
+    }
 	this.invokeHandler(node,packetContext,this[handler]);
 	
 };
 
 ozpIwc.CommonApiBase.prototype.defaultHandler=function(node,packetContext) {
+    console.log(this.participant.name + "/" + this.participant.address + " Received unexpected packet", packetContext);
     packetContext.replyTo({
-        'action': 'badAction',
+        'response': 'badAction',
         'entity': packetContext.packet.action
     });
 };
 
 
-ozpIwc.CommonApiBase.prototype.validateResource=function(node,packetContext) {
+ozpIwc.CommonApiBase.prototype.validateResource=function(/* node,packetContext */) {
 	return true;
 };
 
@@ -199,35 +225,60 @@ ozpIwc.CommonApiBase.prototype.validatePreconditions=function(node,packetContext
 ozpIwc.CommonApiBase.prototype.invokeHandler=function(node,packetContext,handler) {
 	var async =this.isPermitted(node,packetContext);
 		async.failure(function() {
-			packetContext.replyTo({'action':'noPerm'});				
+			packetContext.replyTo({'response':'noPerm'});				
 		})
 		.success(function() {
-			if(!this.validateResource(node,packetContext)) {
-				packetContext.replyTo({'action': 'badResource'});
-				return;
-			}
 			if(!this.validatePreconditions(node,packetContext)) {
-				packetContext.replyTo({'action': 'noMatch'});
+				packetContext.replyTo({'response': 'noMatch'});
 				return;
 			}
 
 			var snapshot=node.snapshot();
-			handler.call(this,node,packetContext);
+            try {
+                handler.call(this,node,packetContext);
+            } catch(e) {
+                if(e.errorAction) {
+                    packetContext.replyTo({
+                        'response': e.errorAction,
+                        'entity': e.message
+                    });
+                } else {
+                    throw e;
+                }
+            }
 			var changes=node.changesSince(snapshot);
 			
 			if(changes)	{
 				this.notifyWatchers(node,changes);
-			}	
+            }
+            // update all the collection values
+            this.collectionNodes.forEach(function(resource) {
+                var node=this.data[resource];
+                var snapshot=node.snapshot();
+                node.updateContent(this);
+                var changes=node.changesSince(snapshot);
+                if(changes) {
+                    this.notifyWatchers(node,changes);
+                }
+            },this);
+            
+            
 		},this);	
 };
 
+ozpIwc.CommonApiBase.prototype.addCollectionNode=function(resource,node) {
+    this.data[resource]=node;
+    node.resource=resource;
+    this.collectionNodes.push(resource);
+    node.updateContent(this);
+};
 
 /**
  * @param {ozpIwc.CommonApiValue} node
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.handleGet=function(node,packetContext) {
-	packetContext.replyTo(node.toPacket({'action': 'ok'}));
+	packetContext.replyTo(node.toPacket({'response': 'ok'}));
 };
 
 /**
@@ -236,7 +287,7 @@ ozpIwc.CommonApiBase.prototype.handleGet=function(node,packetContext) {
  */
 ozpIwc.CommonApiBase.prototype.handleSet=function(node,packetContext) {
 	node.set(packetContext.packet);
-	packetContext.replyTo({'action':'ok'});
+	packetContext.replyTo({'response':'ok'});
 };
 
 /**
@@ -245,7 +296,7 @@ ozpIwc.CommonApiBase.prototype.handleSet=function(node,packetContext) {
  */
 ozpIwc.CommonApiBase.prototype.handleDelete=function(node,packetContext) {
 	node.deleteData();
-	packetContext.replyTo({'action':'ok'});
+	packetContext.replyTo({'response':'ok'});
 };
 
 /**
@@ -256,7 +307,7 @@ ozpIwc.CommonApiBase.prototype.handleWatch=function(node,packetContext) {
 	node.watch(packetContext.packet);
 	
 	// @TODO: Reply with the entity? Immediately send a change notice to the new watcher?  
-	packetContext.replyTo({'action': 'ok'});
+	packetContext.replyTo({'response': 'ok'});
 };
 
 /**
@@ -266,7 +317,7 @@ ozpIwc.CommonApiBase.prototype.handleWatch=function(node,packetContext) {
 ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
 	node.unwatch(packetContext.packet);
 	
-	packetContext.replyTo({'action':'ok'});
+	packetContext.replyTo({'response':'ok'});
 };
 
 /**
@@ -306,7 +357,8 @@ ozpIwc.CommonApiBase.prototype.setState = function(state) {
  */
 ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
     packetContext.replyTo({
-        'action':'ok',
+        'response':'ok',
         'entity': Object.keys(this.data)
     });
 };
+

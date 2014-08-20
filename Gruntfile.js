@@ -17,6 +17,7 @@ module.exports = function(grunt) {
             bus: [
                 '<%= src.metrics %>',
                 'app/js/bus/jquery-2.1.0.min.js',
+                'app/js/bus/setImmediate.js',
                 'app/js/common/event.js',
                 'app/js/common/**/*.js',
                 'app/js/bus/util/**/*.js',
@@ -27,6 +28,8 @@ module.exports = function(grunt) {
                 'app/js/bus/transport/router.js',
                 'app/js/bus/transport/**/*.js',
                 'app/js/bus/storage/**/*.js',
+                'app/js/bus/api/commonApiValue.js',
+                'app/js/bus/api/commonApiCollectionValue.js',
                 'app/js/bus/api/*.js',
                 'app/js/bus/api/**/*.js',
                 'app/js/bus/*/**/*.js'
@@ -131,8 +134,8 @@ module.exports = function(grunt) {
         },
         watch: {
             concatFiles: {
-                files: ['Gruntfile.js', '<%= src.all %>'],
-                tasks: ['concat']
+                files: ['Gruntfile.js', '<%= src.all %>','app/**/*'],
+                tasks: ['concat','copy']
             },
             test: {
                 files: ['Gruntfile.js', '<%= output.allJs %>', '<%= src.test %>'],
@@ -149,7 +152,11 @@ module.exports = function(grunt) {
             },
             all: [
                 'Gruntfile.js',
-                '<%= src.all %>'
+                '<%= src.all %>',
+                '!app/js/common/es5-sham.min.js',
+                '!app/js/common/es5-shim.min.js',
+                '!app/js/common/promise-1.0.0.js'
+                
             ],
             test: {
                 src: ['<%= src.test %>']
@@ -208,6 +215,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['clean', 'concat', 'uglify', 'copy', 'jsdoc']);
-    grunt.registerTask('test', ['concat', 'uglify', 'connect', 'watch']);
+    grunt.registerTask('test', ['concat', 'uglify', 'copy','connect', 'watch']);
 
 };

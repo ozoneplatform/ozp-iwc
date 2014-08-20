@@ -42,6 +42,8 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
     this.send = function(packet, callback) {
         packet = ozpIwc.InternalParticipant.prototype.send.call(this, packet, callback);
         this.sentPackets.push(packet);
+        // tick to trigger the async send
+        tick(0);
         return packet;
     };
 
@@ -99,6 +101,8 @@ var FakeRouter = function() {
     this.packetQueue=[];
     this.participants=[];
     this.send = function(packet) {
+        				console.log("Sending(" + packet.src + "): ",packet);
+
         if (this.packetQueue.length === 0 || Math.random() > this.jitter) {
             this.packetQueue.push(packet);
         } else {
@@ -116,10 +120,10 @@ var FakeRouter = function() {
         while (this.packetQueue.length) {
             processed++;
             var packet = this.packetQueue.shift();
-//				console.log("PACKET(" + packet.src + "): " + packet.entity.type);
+				console.log("PACKET(" + packet.src + "): ",packet);
             this.participants.forEach(function(l) {
                 if (l.address !== packet.src) {
-                    l.receiveFromRouter({'packet': packet});
+                    l.receiveFromRouter(new TestPacketContext({'packet': packet}));
                 }
             });
         }

@@ -13,13 +13,15 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	ozpIwc.Participant.apply(this,arguments);
 	this.origin=this.name=config.origin;
 	this.sourceWindow=config.sourceWindow;
-	this.credentials=config.credentials;
+    this.credentials=config.credentials;
 	this.participantType="postMessageProxy";
     this.securityAttributes.origin=this.origin;
     this.on("connectedToRouter",function() {
         this.securityAttributes.sendAs=this.address;
         this.securityAttributes.receiveAs=this.address;
     },this);
+    
+    this.heartBeatStatus.origin=this.origin;
 });
 
 /**
@@ -76,13 +78,6 @@ ozpIwc.PostMessageParticipant.prototype.handleTransportPacket=function(packet) {
 		}
 	};
 	this.sendToRecipient(reply);
-    var value = ozpIwc.namesApi.findOrMakeValue({resource: '/address/' + this.address, contentType: "ozp-address-collection-v1+json", entity: this});
-    var packet = {
-        src: this.address,
-        entity: this,
-        dst: "names.api"
-    };
-    value.set(packet);
 };
 
 
@@ -197,7 +192,12 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 	var packet=event.data;
 
 	if(typeof(event.data)==="string") {
-		packet=JSON.parse(event.data);
+		try {
+            packet=JSON.parse(event.data);
+        } catch(e) {
+            // assume that it's some other library using the bus and let it go
+            return;
+        }
 	}
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {

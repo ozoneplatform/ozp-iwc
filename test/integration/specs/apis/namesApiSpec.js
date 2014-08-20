@@ -105,7 +105,7 @@ describe("Names API", function () {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentPacket.msgId);
-                    expect(reply.action).toEqual('ok');
+                    expect(reply.response).toEqual('ok');
 
                     done();
                     return null;
@@ -145,7 +145,7 @@ describe("Names API", function () {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentDeletePacket.msgId);
-                    expect(reply.action).toEqual('ok');
+                    expect(reply.response).toEqual('ok');
 
                     done();
                     return null;
@@ -177,7 +177,7 @@ describe("Names API", function () {
                     called = true;
 
                     expect(reply.replyTo).toEqual(sentUnwatchPacket.msgId);
-                    expect(reply.action).toEqual('ok');
+                    expect(reply.response).toEqual('ok');
 
                     done();
                     return null;

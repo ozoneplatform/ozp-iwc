@@ -189,7 +189,7 @@ describe("Intent API Class", function () {
             apiBase.handleSet(handlerNode, packetContext);
             expect(packetContext.responses[0])
                 .toEqual(jasmine.objectContaining({
-                    'action': "ok"
+                    'response': "ok"
                 }));
             expect(handlerNode.entity.type).toEqual(packetContext.packet.entity.type);
             expect(handlerNode.entity.action).toEqual(packetContext.packet.entity.action);
@@ -243,10 +243,10 @@ describe("Intent API Class", function () {
             apiBase.handleDelete(handlerNode, packetContext);
             expect(packetContext.responses[0])
                 .toEqual(jasmine.objectContaining({
-                    'action': "ok"
+                    'response': "ok"
                 }));
             expect(handlerNode.type).toBeUndefined();
-            expect(handlerNode.action).toBeUndefined();
+            expect(handlerNode.response).toBeUndefined();
             expect(handlerNode.label).toBeUndefined();
             expect(handlerNode.icon).toBeUndefined();
             expect(handlerNode.invokeIntent).toBeUndefined();
@@ -260,7 +260,7 @@ describe("Intent API Class", function () {
             apiBase.handleRegister(handlerNode, packetContext);
 
             expect(handlerNode.type).toEqual(packetContext.packet.entity.type);
-            expect(handlerNode.action).toEqual(packetContext.packet.entity.action);
+            expect(handlerNode.response).toEqual(packetContext.packet.entity.action);
             expect(handlerNode.icon).toEqual(packetContext.packet.entity.icon);
             expect(handlerNode.label).toEqual(packetContext.packet.entity.label);
             expect(handlerNode.invokeIntent).toEqual(packetContext.packet.entity.invokeIntent);
@@ -296,7 +296,7 @@ describe("Intent API Class", function () {
             apiBase.handleRegister(definitionNode, packetContext);
             expect(packetContext.responses[0])
                 .toEqual(jasmine.objectContaining({
-                    'action': "ok"
+                    'response': "ok"
                 }));
 
             var handlerResource = packetContext.responses[0].entity;
