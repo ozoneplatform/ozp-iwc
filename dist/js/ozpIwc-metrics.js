@@ -217,10 +217,8 @@ ozpIwc.util.extend=function(baseClass,newConstructor) {
  * Invokes the callback handler on another event loop as soon as possible.
 */
 ozpIwc.util.setImmediate=function(f) {
-// @TODO the unit tests don't account for the asynchronous nature of setImmediate and fail
-// figure out a better way to test and re-enable this
-    window.setTimeout(f,0);
-//    window.setImmediate(f);
+//    window.setTimeout(f,0);
+    window.setImmediate(f);
 };
 
 /**
