@@ -4,3 +4,4 @@ doc
 app/js/ozpIwc-*.js
 dist/js/ozpIwc-*.js
 .idea/
+hal-browser
