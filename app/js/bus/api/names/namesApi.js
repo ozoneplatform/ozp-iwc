@@ -9,19 +9,19 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
         }
     });
     
-    this.addCollectionNode("/address",new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode("/address",new ozpIwc.CommonApiCollectionValue({
         pattern: /^\/address\/.*$/,
         contentType: "application/ozpIwc-address-v1+json"
     }));
-    this.addCollectionNode("/multicast",new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode("/multicast",new ozpIwc.CommonApiCollectionValue({
         pattern: /^\/multicast\/.*$/,
         contentType: "application/ozpIwc-multicast-address-v1+json"        
     }));
-    this.addCollectionNode("/router",new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode("/router",new ozpIwc.CommonApiCollectionValue({
         pattern: /^\/router\/.*$/,
         contentType: "application/ozpIwc-router-v1+json"        
     }));
-    this.addCollectionNode("/api",new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode("/api",new ozpIwc.CommonApiCollectionValue({
         pattern: /^\/api\/.*$/,
         contentType: "application/ozpIwc-api-descriptor-v1+json"        
     }));

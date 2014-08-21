@@ -6,18 +6,13 @@ ozpIwc.CommonApiCollectionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,funct
     this.entity=[];
 });
 
-ozpIwc.CommonApiCollectionValue.prototype.updateContent=function(api) {
-    var changed=false;
-    this.entity=[];
-    for(var k in api.data) {
-        if(k.match(this.pattern)) {
-            this.entity.push(k);
-            changed=true;
-        }
-    }
-    if(changed) {
-        this.version++;
-    }
+ozpIwc.CommonApiCollectionValue.prototype.isUpdateNeeded=function(node) {
+    return node.resource.match(this.pattern);
+};
+
+ozpIwc.CommonApiCollectionValue.prototype.updateContent=function(changedNodes) {
+    this.version++;
+    this.entity=changedNodes.map(function(changedNode) { return changedNode.resource; });
 };
 
 ozpIwc.CommonApiCollectionValue.prototype.set=function() {

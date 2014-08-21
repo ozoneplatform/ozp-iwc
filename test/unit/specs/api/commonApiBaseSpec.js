@@ -374,7 +374,7 @@ describe("Common API Base class",function() {
                 'contentType' : "application/json",
                 'version' : 1
             });
-            apiBase.addCollectionNode("/foo",collectionNode);
+            apiBase.addDynamicNode("/foo",collectionNode);
         });
     
         it("get on collection nodes list their contents",function() {
@@ -447,7 +447,6 @@ describe("Common API Base class",function() {
             expect(changePacket.entity.newValue).toEqual([ "/foo/1", "/foo/2", "/foo/3", "/foo/4" ]);
             expect(changePacket.entity.oldValue).toEqual([ "/foo/1", "/foo/2", "/foo/3"]);
         });
-        it("returns noPerm on set");
         
     });
 

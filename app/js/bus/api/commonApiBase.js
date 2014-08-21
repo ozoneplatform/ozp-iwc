@@ -14,7 +14,7 @@ ozpIwc.CommonApiBase = function(config) {
     this.events.mixinOnOff(this);
     
     
-    this.collectionNodes=[];
+    this.dynamicNodes=[];
     this.data={};
 };
 /**
@@ -58,6 +58,9 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
  * @param {object} evt.node - The node being changed.
  */
 ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
+    if(!changes) {
+        return;
+    }
 	node.eachWatcher(function(watcher) {
 		// @TODO check that the recipient has permission to both the new and old values
 		var reply={
@@ -246,31 +249,42 @@ ozpIwc.CommonApiBase.prototype.invokeHandler=function(node,packetContext,handler
                     throw e;
                 }
             }
-			var changes=node.changesSince(snapshot);
-			
-			if(changes)	{
-				this.notifyWatchers(node,changes);
-            }
+			this.notifyWatchers(node,node.changesSince(snapshot));
+
             // update all the collection values
-            this.collectionNodes.forEach(function(resource) {
+            this.dynamicNodes.forEach(function(resource) {
                 var node=this.data[resource];
-                var snapshot=node.snapshot();
-                node.updateContent(this);
-                var changes=node.changesSince(snapshot);
-                if(changes) {
-                    this.notifyWatchers(node,changes);
+                if(node) {
+                    this.updateDynamicNode(node);
                 }
+                                
             },this);
             
             
 		},this);	
 };
 
-ozpIwc.CommonApiBase.prototype.addCollectionNode=function(resource,node) {
+ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
+    var ofInterest=[];
+
+    for(var k in this.data) {
+        if(node.isUpdateNeeded(this.data[k])){
+            ofInterest.push(this.data[k]);
+        }                        
+    }
+
+    if(ofInterest) {
+        var snapshot=node.snapshot();
+        node.updateContent(ofInterest);
+        this.notifyWatchers(node,node.changesSince(snapshot));
+    }
+};
+
+ozpIwc.CommonApiBase.prototype.addDynamicNode=function(resource,node) {
     this.data[resource]=node;
     node.resource=resource;
-    this.collectionNodes.push(resource);
-    node.updateContent(this);
+    this.dynamicNodes.push(resource);
+    this.updateDynamicNode(node);
 };
 
 /**
