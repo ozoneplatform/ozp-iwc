@@ -57,7 +57,10 @@ module.exports = function(grunt) {
             allJs: ['<%=output.busJs %>', '<%=output.clientJs %>', '<%=output.metricsJs %>'],
             allJsMin: ['<%=output.busJsMin %>', '<%=output.clientJsMin %>', '<%=output.metricsJsMin %>']
         },
-        concat: {
+        concat_sourcemap: {
+            options: {
+                sourcesContent: true
+            },
             bus: {
                 src: '<%= src.bus %>',
                 dest: '<%= output.busJs %>'
@@ -72,16 +75,21 @@ module.exports = function(grunt) {
             }
         },
         uglify: {
+            options: {
+                sourceMap:true,
+                sourceMapIncludeSources: true,
+                sourceMapIn: function(m) { return m+".map";}
+            },
             bus: {
-                src: '<%= concat.bus.dest %>',
+                src: '<%= concat_sourcemap.bus.dest %>',
                 dest: '<%= output.busJsMin %>'
             },
             client: {
-                src: '<%= concat.client.dest %>',
+                src: '<%= concat_sourcemap.client.dest %>',
                 dest: '<%= output.clientJsMin %>'
             },
             metrics: {
-                src: '<%= concat.metrics.dest %>',
+                src: '<%= concat_sourcemap.metrics.dest %>',
                 dest: '<%= output.metricsJsMin %>'
             }
         },
@@ -135,7 +143,7 @@ module.exports = function(grunt) {
         watch: {
             concatFiles: {
                 files: ['Gruntfile.js', '<%= src.all %>','app/**/*'],
-                tasks: ['concat','copy']
+                tasks: ['concat_sourcemap','copy']
             },
             test: {
                 files: ['Gruntfile.js', '<%= output.allJs %>', '<%= src.test %>'],
@@ -214,7 +222,7 @@ module.exports = function(grunt) {
     grunt.initConfig(config);
 
     // Default task(s).
-    grunt.registerTask('build', ['clean', 'concat', 'uglify', 'copy']);
+    grunt.registerTask('build', ['clean', 'concat_sourcemap', 'uglify', 'copy']);
     grunt.registerTask('dist', ['build', 'jsdoc']);
     grunt.registerTask('test', ['build','connect', 'watch']);
     grunt.registerTask('default', ['dist']);

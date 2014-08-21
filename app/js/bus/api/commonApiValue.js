@@ -163,7 +163,7 @@ ozpIwc.CommonApiValue.prototype.isUpdateNeeded=function(node) {
 
 /**
  * Update this node based upon the changes made to changedNodes.
- * @param {[ozpIwc.CommonApiValue]} changedNodes - Array of all nodes for which isUpdatedNeeded returned true.
+ * @param {ozpIwc.CommonApiValue[]} changedNodes - Array of all nodes for which isUpdatedNeeded returned true.
  * @returns {ozpIwc.CommonApiValue.changes}
  */
 ozpIwc.CommonApiValue.prototype.updateContent=function(changedNodes) {

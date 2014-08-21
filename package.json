@@ -6,7 +6,7 @@
   "devDependencies": {
     "grunt": "0.4.x",
     "grunt-contrib-uglify": "*",
-    "grunt-contrib-concat": "*",
+    "grunt-concat-sourcemap": "*",
     "grunt-jsdoc": "*",
     "grunt-contrib-watch": "*",
     "grunt-contrib-connect": "*",
