@@ -128,7 +128,7 @@ module.exports = function(grunt) {
             dist: {
                 src: ['<%= src.bus %>', '<%= src.client %>'],
                 options: {
-                    destination: 'doc'
+                    destination: 'dist/doc'
                 }
             }
         },
@@ -214,7 +214,9 @@ module.exports = function(grunt) {
     grunt.initConfig(config);
 
     // Default task(s).
-    grunt.registerTask('default', ['clean', 'concat', 'uglify', 'copy', 'jsdoc']);
-    grunt.registerTask('test', ['concat', 'uglify', 'copy','connect', 'watch']);
+    grunt.registerTask('build', ['clean', 'concat', 'uglify', 'copy']);
+    grunt.registerTask('dist', ['build', 'jsdoc']);
+    grunt.registerTask('test', ['build','connect', 'watch']);
+    grunt.registerTask('default', ['dist']);
 
 };
