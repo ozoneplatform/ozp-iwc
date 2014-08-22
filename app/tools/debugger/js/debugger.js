@@ -24,7 +24,7 @@ debuggerModule.controller("debuggerController",["$scope","iwcClient",function(sc
         
         
 debuggerModule.controller("packetLogController",["$scope",function(scope) {
-    scope.logging=true;
+    scope.logging=false;
     scope.viewFilter="";
     scope.packets=[];
     scope.maxShown=50;

@@ -29,6 +29,8 @@ describe("Leader Group Participant",function() {
 		}
 	};
 	
+    var log=function(){}; // console.log
+    
 	var makeLeader=function(priority) {
 		var l=new ozpIwc.LeaderGroupParticipant({
 			electionAddress:"ea",
@@ -37,16 +39,16 @@ describe("Leader Group Participant",function() {
 		});
 		fakeRouter.registerParticipant(l);
 		l.on("startElection", function() {
-			console.log("startElection[" + l.address + "]");
+			log("startElection[" + l.address + "]");
 		});
 		l.on("endElection",function() {
-			console.log("endElection[" + l.address + "]");
+			log("endElection[" + l.address + "]");
 		});
 		l.on("newLeader",function() {
-			console.log("newLeader[" + l.address + "]");
+			log("newLeader[" + l.address + "]");
 		});
 		l.on("becameLeader",function() {
-			console.log("becameLeader[" + l.address + "]");
+			log("becameLeader[" + l.address + "]");
 		});
 		
 		l.TEST_nonElectionPackets=[];

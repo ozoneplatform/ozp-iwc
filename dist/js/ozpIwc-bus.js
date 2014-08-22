@@ -5484,7 +5484,19 @@ ozpIwc.CommonApiBase.prototype.createKey=function(prefix) {
  */
 ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 	var packet=packetContext.packet;
-
+    this.events.trigger("receive",packetContext);
+    var self=this;
+    var errorWrap=function(f) {
+        try {
+            f.apply(self);
+        } catch(e) {
+            packetContext.replyTo({
+                'response': e.errorAction || "unknownError",
+                'entity': e.message
+            });
+            return;
+        }
+    };
 	if(packetContext.leaderState !== 'leader')	{
 		// if not leader, just drop it.
 		return;
@@ -5495,18 +5507,50 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         // if it's a response packet that didn't wire an explicit handler, drop the sucker
         return;
     }
+    var node;
     
-	var handler;
-    this.events.trigger("receive",packetContext);
+    errorWrap(function() {
+        var handler=this.findHandler(packetContext);
+        this.validateResource(node,packetContext);
+        node=this.findOrMakeValue(packetContext.packet);
 
-    if(packet.resource===null || packet.resource===undefined) {
+        this.isPermitted(node,packetContext)
+            .success(function() {
+                errorWrap(function() {
+                    this.validatePreconditions(node,packetContext);
+                    var snapshot=node.snapshot();
+                    handler.call(this,node,packetContext);
+                    this.notifyWatchers(node,node.changesSince(snapshot));
+
+                    // update all the collection values
+                    this.dynamicNodes.forEach(function(resource) {
+                        var node=this.data[resource];
+                        if(node) {
+                            this.updateDynamicNode(node);
+                        }
+                    },this);
+                });
+            },this)
+            .failure(function() {
+                packetContext.replyTo({'response':'noPerm'});				
+            });
+    });
+};
+
+ozpIwc.CommonApiBase.prototype.findHandler=function(packetContext) {
+    var action=packetContext.packet.action;
+    var resource=packetContext.packet.resource;
+    
+    var handler;
+
+    if(resource===null || resource===undefined) {
         handler="rootHandle";
     } else {
         handler="handle";
     }
     
-	if(packet.action) {
-		handler+=packet.action.charAt(0).toUpperCase() + packet.action.slice(1).toLowerCase();
+	if(action) {
+		handler+=action.charAt(0).toUpperCase() + action.slice(1).toLowerCase();
 	} else {
         handler="defaultHandler";
     }
@@ -5514,35 +5558,10 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 	if(!handler || typeof(this[handler]) !== 'function') {
        handler="defaultHandler";
 	}
-    var node;
-    try {
-        node=this.findOrMakeValue(packetContext.packet);
-    } catch(e) {
-        if(e.errorAction) {
-            packetContext.replyTo({
-                'response': e.errorAction,
-                'entity': e.message
-            });
-            return;
-        } else {
-            throw e;
-        }
-    }
-    if(packetContext.packet.resource && !this.validateResource(node,packetContext)) {
-        packetContext.replyTo({'response': 'badResource'});
-        return;
-    }
-	this.invokeHandler(node,packetContext,this[handler]);
-	
+    return this[handler];
 };
 
-ozpIwc.CommonApiBase.prototype.defaultHandler=function(node,packetContext) {
-    console.log(this.participant.name + "/" + this.participant.address + " Received unexpected packet", packetContext);
-    packetContext.replyTo({
-        'response': 'badAction',
-        'entity': packetContext.packet.action
-    });
-};
+
 
 
 ozpIwc.CommonApiBase.prototype.validateResource=function(/* node,packetContext */) {
@@ -5550,54 +5569,13 @@ ozpIwc.CommonApiBase.prototype.validateResource=function(/* node,packetContext *
 };
 
 ozpIwc.CommonApiBase.prototype.validatePreconditions=function(node,packetContext) {
-	return !packetContext.packet.ifTag || packetContext.packet.ifTag===node.version;
+	if(packetContext.packet.ifTag && packetContext.packet.ifTag!==node.version) {
+        throw new ozpIwc.ApiError('noMatch',"Latest version is " + node.version);
+    }
 };
 
-/**
- * Invoke the proper handler for the packet after determining that
- * they handler has permission to perform this action.
- * @param {ozpIwc.CommonApiValue} node
- * @param {ozpIwc.TransportPacketContext} packetContext
- * @param {function} handler
- * @returns {undefined}
- */
-ozpIwc.CommonApiBase.prototype.invokeHandler=function(node,packetContext,handler) {
-	var async =this.isPermitted(node,packetContext);
-		async.failure(function() {
-			packetContext.replyTo({'response':'noPerm'});				
-		})
-		.success(function() {
-			if(!this.validatePreconditions(node,packetContext)) {
-				packetContext.replyTo({'response': 'noMatch'});
-				return;
-			}
-
-			var snapshot=node.snapshot();
-            try {
-                handler.call(this,node,packetContext);
-            } catch(e) {
-                if(e.errorAction) {
-                    packetContext.replyTo({
-                        'response': e.errorAction,
-                        'entity': e.message
-                    });
-                } else {
-                    throw e;
-                }
-            }
-			this.notifyWatchers(node,node.changesSince(snapshot));
-
-            // update all the collection values
-            this.dynamicNodes.forEach(function(resource) {
-                var node=this.data[resource];
-                if(node) {
-                    this.updateDynamicNode(node);
-                }
-                                
-            },this);
-            
-            
-		},this);	
+ozpIwc.CommonApiBase.prototype.validateContentType=function(node,packetContext) {
+    return true;
 };
 
 ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
@@ -5621,6 +5599,13 @@ ozpIwc.CommonApiBase.prototype.addDynamicNode=function(resource,node) {
     node.resource=resource;
     this.dynamicNodes.push(resource);
     this.updateDynamicNode(node);
+};
+
+ozpIwc.CommonApiBase.prototype.defaultHandler=function(node,packetContext) {
+    packetContext.replyTo({
+        'response': 'badAction',
+        'entity': packetContext.packet.action
+    });
 };
 
 /**

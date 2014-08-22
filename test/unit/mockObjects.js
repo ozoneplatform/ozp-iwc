@@ -101,7 +101,7 @@ var FakeRouter = function() {
     this.packetQueue=[];
     this.participants=[];
     this.send = function(packet) {
-        				console.log("Sending(" + packet.src + "): ",packet);
+//        				console.log("Sending(" + packet.src + "): ",packet);
 
         if (this.packetQueue.length === 0 || Math.random() > this.jitter) {
             this.packetQueue.push(packet);

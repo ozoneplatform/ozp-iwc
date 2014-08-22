@@ -271,7 +271,7 @@ describe("Common API Base class",function() {
             }));
         });
         it("returns badResource if an invalid resource is used",function() {
-            spyOn(apiBase,'validatePreconditions').and.returnValue(false);
+            spyOn(apiBase,'validateResource').and.throwError(new ozpIwc.ApiError("noMatch","blah"));
             var context=new TestPacketContext({
                 'leaderState': "leader",
                 'packet': {
@@ -306,6 +306,7 @@ describe("Common API Base class",function() {
             
             expect(apiBase.participant.sentPackets.length).toEqual(1);
             var changePacket=apiBase.participant.sentPackets[0];
+            expect(changePacket).toBeDefined();
             expect(changePacket.response).toEqual("changed");
             expect(changePacket.entity.newValue).toEqual({'bar':2});
             expect(changePacket.entity.oldValue).toEqual({'foo':1});
