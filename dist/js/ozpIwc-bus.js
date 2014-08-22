@@ -5308,6 +5308,10 @@ ozpIwc.CommonApiValue.prototype.updateContent=function(changedNodes) {
     return null;
 };
 
+ozpIwc.CommonApiValue.prototype.deserialize=function(serverData) {
+};
+
+
 ozpIwc.CommonApiCollectionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
 	ozpIwc.CommonApiValue.apply(this,arguments);
     this.persist=false;    
@@ -5349,10 +5353,47 @@ ozpIwc.CommonApiBase = function(config) {
 	this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
     
-    
     this.dynamicNodes=[];
     this.data={};
 };
+
+ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
+    // fetch the base endpoint. it should be a HAL Json object that all of the 
+    // resources and keys in it
+    
+    var endpoint=ozpIwc.endpoints.endpoint(this.endpointName);
+    if(!endpoint) {
+        console.error("Cannot load from endpoint " + this.endpointName);
+        return;
+    }
+    
+    endpoint.get("/").success(function(data) {
+        var rootPath = data._links.self.href;
+        for (var i in data._embedded['ozp:dataObjects']) {
+            var object = data._embedded['ozp:dataObjects'][i];
+            object.children = object.children || [];
+            var resource=object._links.self.href.replace(rootPath, '');
+            var node = this.findOrMakeValue({
+                    'resource': resource,
+                    'entity': object.entity,
+                    'contentType': object.contentType
+                });
+
+            var snapshot=node.snapshot();
+            node.deserialize(node,loadPacket);
+            this.notifyWatchers(node,node.changesSince(snapshot));
+        }
+        // update all the collection values
+        this.dynamicNodes.forEach(function(resource) {
+            this.updateDynamicNode(this.data[resource]);
+        },this);
+        
+    },this);
+    
+    
+};
+
+
 /**
  * Creates a new value for the given packet's request.  Subclasses must override this
  * function to return the proper value based upon the packet's resource, content type, or
@@ -5524,10 +5565,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 
                     // update all the collection values
                     this.dynamicNodes.forEach(function(resource) {
-                        var node=this.data[resource];
-                        if(node) {
-                            this.updateDynamicNode(node);
-                        }
+                        this.updateDynamicNode(this.data[resource]);
                     },this);
                 });
             },this)
@@ -5579,6 +5617,9 @@ ozpIwc.CommonApiBase.prototype.validateContentType=function(node,packetContext) 
 };
 
 ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
+    if(!node) {
+        return;
+    }
     var ofInterest=[];
 
     for(var k in this.data) {
@@ -5740,13 +5781,8 @@ ozpIwc.Endpoints.prototype.endpoint=function(name) {
 };
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-    var self = this;
-    if (config.href && config.loadServerDataEmbedded) {
-        this.loadServerDataEmbedded({href: config.href})
-            .success(function () {
-                //Add on load code here
-            });
-    }
+    this.endpointName="data";
+    this.loadFromServer();
 });
 
 ozpIwc.DataApi.prototype.makeValue = function(packet){
@@ -5798,47 +5834,6 @@ ozpIwc.DataApi.prototype.handleRemovechild=function(node,packetContext) {
     });
 };
 
-/**
- * Expects a complete Data API data store tree returned from the specified href. Data must be of hal/json type and the
- * stored tree must be in the '_embedded' property.
- *
- * @param config {Object}
- * @param config.href {String}
- * @returns {ozpIwc.AsyncAction}
- */
-ozpIwc.DataApi.prototype.loadServerDataEmbedded = function (config) {
-    var self = this;
-    var asyncResponse = new ozpIwc.AsyncAction();
-    ozpIwc.util.ajax({
-        href: config.href,
-        method: "GET"
-    })
-        .success(function (data) {
-            // Take the root path from where the intent data is stored so that we can remove it from each object that
-            // becomes a intent value.
-            var rootPath = data._links.self.href;
-            for (var i in data._embedded['ozp:dataObjects']) {
-                var object = data._embedded['ozp:dataObjects'][i];
-                object.children = object.children || [];
-
-                var loadPacket = {
-                    packet: {
-                        resource: object._links.self.href.replace(rootPath, ''),
-                        entity: object.entity
-                    }
-                };
-                var node = self.findOrMakeValue(loadPacket.packet);
-
-                for (var i = 0; i < object.children.length; i++){
-                    node.addChild(object.children[i]);
-                }
-                node.set(loadPacket.packet);
-            }
-            asyncResponse.resolve("success");
-        });
-
-    return asyncResponse;
-};
 
 ozpIwc.DataApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
 	ozpIwc.CommonApiValue.apply(this,arguments);
@@ -5906,6 +5901,15 @@ ozpIwc.DataApiValue.prototype.changesSince=function(snapshot) {
 	}
     return changes;
 };
+
+
+ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
+    this.entity=serverData.entity;
+    this.contentType=serverData.contentType || this.contentType;
+	this.permissions=serverData.permissions || this.permissions;
+	this.version=serverData.version || this.version;
+};
+
 /**
  * The Intents API. Subclasses The Common Api Base.
  * @class
@@ -6612,7 +6616,7 @@ ozpIwc.SystemApiValue.prototype.set=function(packet) {
                 if (id) {
                     this.entity = packet.entity;
                     var node = this.systemApi.findOrMakeValue({resource: '/application'});
-                    node.set({entity: id})
+                    node.set({entity: id});
                 } else {
                     this.entity = this.entity || [];
                     if (this.entity.indexOf(packet.entity) < 0) {

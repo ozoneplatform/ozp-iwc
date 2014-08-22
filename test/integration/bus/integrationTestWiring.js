@@ -139,6 +139,7 @@ if (ozpIwc.Participant) {
     });
 
 }
+ozpIwc.endpoints=new ozpIwc.Endpoints();
 
 if(ozpIwc.KeyBroadcastLocalStorageLink) {
     ozpIwc.defaultLocalStorageLink=new ozpIwc.KeyBroadcastLocalStorageLink({

@@ -41,7 +41,7 @@ if(ozpIwc.Router) {
     ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi.participant);
 }
 
-
+ozpIwc.endpoints=new ozpIwc.Endpoints();
 
 if(ozpIwc.KeyBroadcastLocalStorageLink) {
     ozpIwc.defaultLocalStorageLink=new ozpIwc.KeyBroadcastLocalStorageLink({

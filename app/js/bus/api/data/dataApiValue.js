@@ -65,3 +65,11 @@ ozpIwc.DataApiValue.prototype.changesSince=function(snapshot) {
 	}
     return changes;
 };
+
+
+ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
+    this.entity=serverData.entity;
+    this.contentType=serverData.contentType || this.contentType;
+	this.permissions=serverData.permissions || this.permissions;
+	this.version=serverData.version || this.version;
+};

@@ -169,3 +169,6 @@ ozpIwc.CommonApiValue.prototype.isUpdateNeeded=function(node) {
 ozpIwc.CommonApiValue.prototype.updateContent=function(changedNodes) {
     return null;
 };
+
+ozpIwc.CommonApiValue.prototype.deserialize=function(serverData) {
+};

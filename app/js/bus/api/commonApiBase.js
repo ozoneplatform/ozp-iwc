@@ -13,10 +13,47 @@ ozpIwc.CommonApiBase = function(config) {
 	this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
     
-    
     this.dynamicNodes=[];
     this.data={};
 };
+
+ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
+    // fetch the base endpoint. it should be a HAL Json object that all of the 
+    // resources and keys in it
+    
+    var endpoint=ozpIwc.endpoints.endpoint(this.endpointName);
+    if(!endpoint) {
+        console.error("Cannot load from endpoint " + this.endpointName);
+        return;
+    }
+    
+    endpoint.get("/").success(function(data) {
+        var rootPath = data._links.self.href;
+        for (var i in data._embedded['ozp:dataObjects']) {
+            var object = data._embedded['ozp:dataObjects'][i];
+            object.children = object.children || [];
+            var resource=object._links.self.href.replace(rootPath, '');
+            var node = this.findOrMakeValue({
+                    'resource': resource,
+                    'entity': object.entity,
+                    'contentType': object.contentType
+                });
+
+            var snapshot=node.snapshot();
+            node.deserialize(node,loadPacket);
+            this.notifyWatchers(node,node.changesSince(snapshot));
+        }
+        // update all the collection values
+        this.dynamicNodes.forEach(function(resource) {
+            this.updateDynamicNode(this.data[resource]);
+        },this);
+        
+    },this);
+    
+    
+};
+
+
 /**
  * Creates a new value for the given packet's request.  Subclasses must override this
  * function to return the proper value based upon the packet's resource, content type, or
@@ -188,10 +225,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 
                     // update all the collection values
                     this.dynamicNodes.forEach(function(resource) {
-                        var node=this.data[resource];
-                        if(node) {
-                            this.updateDynamicNode(node);
-                        }
+                        this.updateDynamicNode(this.data[resource]);
                     },this);
                 });
             },this)
@@ -243,6 +277,9 @@ ozpIwc.CommonApiBase.prototype.validateContentType=function(node,packetContext) 
 };
 
 ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
+    if(!node) {
+        return;
+    }
     var ofInterest=[];
 
     for(var k in this.data) {
