@@ -1,31 +1,59 @@
 ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
     ozpIwc.CommonApiBase.apply(this, arguments);
-    
+
     // map the alias "/me" to "/address/{packet.src}" upon receiving the packet
-    this.on("receive", function(packetContext) {
+    this.on("receive", function (packetContext) {
         var packet = packetContext.packet;
         if (packet.resource) {
             packet.resource = packet.resource.replace(/\/me/, packetContext.packet.src);
         }
     });
-    
-    this.addDynamicNode("/address",new ozpIwc.CommonApiCollectionValue({
+
+    this.addDynamicNode("/address", new ozpIwc.CommonApiCollectionValue({
         pattern: /^\/address\/.*$/,
         contentType: "application/ozpIwc-address-v1+json"
     }));
-    this.addDynamicNode("/multicast",new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode("/multicast", new ozpIwc.CommonApiCollectionValue({
         pattern: /^\/multicast\/.*$/,
-        contentType: "application/ozpIwc-multicast-address-v1+json"        
+        contentType: "application/ozpIwc-multicast-address-v1+json"
     }));
-    this.addDynamicNode("/router",new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode("/router", new ozpIwc.CommonApiCollectionValue({
         pattern: /^\/router\/.*$/,
-        contentType: "application/ozpIwc-router-v1+json"        
+        contentType: "application/ozpIwc-router-v1+json"
     }));
-    this.addDynamicNode("/api",new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode("/api", new ozpIwc.CommonApiCollectionValue({
         pattern: /^\/api\/.*$/,
-        contentType: "application/ozpIwc-api-descriptor-v1+json"        
+        contentType: "application/ozpIwc-api-descriptor-v1+json"
     }));
-
+    //temporary injector code. Remove when api loader is implemented
+    var packet = {
+        resource: '/api/data.api',
+        entity: {'actions': ['get', 'set', 'delete', 'watch', 'unwatch', 'addChild', 'removeChild']},
+        contentType: 'application/ozpIwc-api-descriptor-v1+json'
+    }
+    var node=this.findOrMakeValue(packet);
+    node.set(packet);
+    packet = {
+        resource: '/api/intents.api',
+        entity: {'actions': ['get','set','delete','watch','unwatch','register','unregister','invoke']},
+        contentType: 'application/ozpIwc-api-descriptor-v1+json'
+    }
+    node=this.findOrMakeValue(packet);
+    node.set(packet);
+    packet = {
+        resource: '/api/names.api',
+        entity: {'actions': ['get','set','delete','watch','unwatch']},
+        contentType: 'application/ozpIwc-api-descriptor-v1+json'
+    }
+    node=this.findOrMakeValue(packet);
+    node.set(packet);
+    packet = {
+        resource: '/api/system.api',
+        entity: { 'actions': ['get','watch','unwatch']},
+        contentType: 'application/ozpIwc-api-descriptor-v1+json'
+    }
+    node=this.findOrMakeValue(packet);
+    node.set(packet);
 });
 
 ozpIwc.NamesApi.prototype.validateResource=function(node,packetContext) {

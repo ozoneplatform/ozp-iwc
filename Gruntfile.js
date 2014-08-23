@@ -151,7 +151,7 @@ module.exports = function(grunt) {
             test: {
                 files: ['Gruntfile.js', '<%= output.allJs %>', '<%= src.test %>'],
                 options: {
-                    livereload: true
+                    livereload: false
                 }
             }
         },
