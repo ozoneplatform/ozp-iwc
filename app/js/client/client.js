@@ -275,24 +275,25 @@ var invokeApi=function(action,resource,fragment,callback) {
         }
         var resolved=false;
         try {
-            self.send(packet, function (response) {
-                if (response.action === 'ok' && !resolved) {
-                    resolveCB(response);
+            self.send(packet, function (reply) {
+                if (reply.response === 'ok' && !resolved) {
+                    resolveCB(reply);
                     resolved=true;
-                } else if (/(bad|no).*/.test(response.action) && !resolved) {
-                    rejectCB(response.action);
+                } else if (/(bad|no).*/.test(reply.response) && !resolved) {
+                    rejectCB(reply.response);
                     resolved=true;
                 }
-                if (callback && !(/(bad|no).*/.test(response.action))) {
-                    callback(response);
+                if (callback && !(/(bad|no).*/.test(reply.response))) {
+                    callback(reply);
                     return true;//persist
                 }
                 return false;
             });
         }  catch (error) {
-            //Would be nice to check that the promise is not already resolved, since we don't know
-            //where the exception will occur, but there is no isResolved() or equivalent method
-            rejectCB(error);
+            if (!resolved) {
+                rejectCB(error);
+                resolved=true;
+            }
         }
     }
     return p;
