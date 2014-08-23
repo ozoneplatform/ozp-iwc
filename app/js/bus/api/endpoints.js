@@ -1,40 +1,47 @@
 var ozpIwc=ozpIwc || {};
 
-ozpIwc.Endpoint=function(config) {
-    if(!config || !config.baseUrl) {
-        throw new Error("BaseUrl is required");
-    }
-    this.baseUrl=config.baseUrl;
+ozpIwc.Endpoint=function(endpointRegistry) {
+    this.endpointRegistry=endpointRegistry;
 };
 
 ozpIwc.Endpoint.prototype.get=function(resource) {
-    return ozpIwc.util.ajax({
-        href: this.baseUrl+resource,
-        method: 'GET'
+    var self=this;
+    return this.endpointRegistry.loadPromise.then(function() {
+        return ozpIwc.util.ajax({
+            href: self.baseUrl + resource,
+            method: 'GET'
+        });
     });
 };
 
-ozpIwc.Endpoints=function(config) {
+ozpIwc.EndpointRegistry=function(config) {
     config=config || {};
     var apiRoot=config.apiRoot || 'api';
     this.endPoints={};
-    ozpIwc.util.ajax({
+    var self=this;
+    this.loadPromise=ozpIwc.util.ajax({
         href: apiRoot,
         method: 'GET'
-    }).success(function(data) {
+    }).then(function(data) {
         for (var ep in data._links) {
             if (ep !== 'self') {
-                this.endPoints[ep]=new ozpIwc.Endpoint({'baseUrl': data._links[ep]});
+                self.endpoint(ep).baseUrl=data._links[ep].href;
             }
         }
-    },this).failure(function(error) {
-        console.log("AJAX load failure for " + apiRoot + ": " + error);
     });
 };
 
-ozpIwc.Endpoints.prototype.endpoint=function(name) {
-    if (name in this.endPoints) {
-        return this.endPoints[name];
+ozpIwc.EndpointRegistry.prototype.endpoint=function(name) {
+    var endpoint=this.endPoints[name];
+    if(!endpoint) {
+        endpoint=this.endPoints[name]=new ozpIwc.Endpoint(this);
     }
-    return null;
+    return endpoint;
+};
+
+ozpIwc.initEndpoints=function(apiRoot) {
+    var registry=new ozpIwc.EndpointRegistry({'apiRoot':apiRoot});
+    ozpIwc.endpoint=function(name) {
+        return registry.endpoint(name);
+    };
 };

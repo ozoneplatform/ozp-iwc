@@ -29,7 +29,9 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
 });
 
 ozpIwc.NamesApi.prototype.validateResource=function(node,packetContext) {
-    return packetContext.packet.resource.match(/^\/(api|address|multicast|router|me)/);
+    if(packetContext.packet.resource && !packetContext.packet.resource.match(/^\/(api|address|multicast|router|me)/)){
+        throw new ozpIwc.ApiError('badResource',"Invalide resource for name.api: " + packetContext.packet.resource);
+    }
 };
 
 ozpIwc.NamesApi.prototype.makeValue = function(packet) {

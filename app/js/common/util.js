@@ -141,29 +141,26 @@ ozpIwc.util.parseQueryParams=function(query) {
 };
 
 ozpIwc.util.ajax = function (config) {
+    return new Promise(function(resolve,reject) {
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function() {
+            if (request.readyState !== 4) {
+                return;
+            }
 
-    var result = new ozpIwc.AsyncAction();
-    var request = new XMLHttpRequest();
+            if (request.status === 200) {
+                resolve(JSON.parse(this.responseText));
+            } else {
+                reject(this);
+            }
+        };
+        request.open(config.method, config.href, true);
 
-    request.onreadystatechange = function() {
-        if (request.readyState !== 4) {
-            return;
+        if(config.method === "POST") {
+            request.send(config.data);
         }
-
-        if (request.status === 200) {
-            result.resolve("success", JSON.parse(this.responseText));
-        } else {
-            result.resolve("failure", this.statusText, this.responseText);
-        }
-    };
-    request.open(config.method, config.href, true);
-
-    if(config.method === "POST") {
-        request.send(config.data);
-    }
-    request.setRequestHeader("Content-Type", "application/json");
-    request.setRequestHeader("Cache-Control", "no-cache");
-    request.send();
-
-    return result;
+        request.setRequestHeader("Content-Type", "application/json");
+        request.setRequestHeader("Cache-Control", "no-cache");
+        request.send();
+    });
 };

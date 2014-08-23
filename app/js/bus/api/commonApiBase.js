@@ -20,40 +20,37 @@ ozpIwc.CommonApiBase = function(config) {
 ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
-    
-    var endpoint=ozpIwc.endpoints.endpoint(this.endpointName);
-    if(!endpoint) {
-        console.error("Cannot load from endpoint " + this.endpointName);
+    if(!this.endpointName) {
         return;
     }
-    
-    endpoint.get("/").success(function(data) {
-        var rootPath = data._links.self.href;
-        for (var i in data._embedded['ozp:dataObjects']) {
-            var object = data._embedded['ozp:dataObjects'][i];
-            object.children = object.children || [];
-            var resource=object._links.self.href.replace(rootPath, '');
-            var node = this.findOrMakeValue({
-                    'resource': resource,
-                    'entity': object.entity,
-                    'contentType': object.contentType
-                });
+    var self=this;
+    ozpIwc.endpoint(this.endpointName).get("/")
+        .then(function(data) {
+            var rootPath = data._links.self.href;
+            for (var i in data._embedded['ozp:dataObjects']) {
+                var object = data._embedded['ozp:dataObjects'][i];
+                object.children = object.children || [];
+                var resource=object._links.self.href.replace(rootPath, '');
+                var node = self.findOrMakeValue({
+                        'resource': resource,
+                        'entity': object.entity,
+                        'contentType': object.contentType
+                    });
 
-            var snapshot=node.snapshot();
-            node.deserialize(node,loadPacket);
-            this.notifyWatchers(node,node.changesSince(snapshot));
-        }
-        // update all the collection values
-        this.dynamicNodes.forEach(function(resource) {
-            this.updateDynamicNode(this.data[resource]);
-        },this);
-        
-    },this);
-    
-    
+                var snapshot=node.snapshot();
+                node.deserialize(node,object);
+                self.notifyWatchers(node,node.changesSince(snapshot));
+            }
+            // update all the collection values
+            self.dynamicNodes.forEach(function(resource) {
+                self.updateDynamicNode(self.data[resource]);
+            });        
+    }).catch(function(e) {
+        console.error("Could not load from api",e);
+    });
 };
-
-
+    
+    
 /**
  * Creates a new value for the given packet's request.  Subclasses must override this
  * function to return the proper value based upon the packet's resource, content type, or
@@ -191,6 +188,9 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         try {
             f.apply(self);
         } catch(e) {
+//            if(!e instanceof ozpIwc.ApiError) {
+                console.error("Unexpected error:",e);
+//            }
             packetContext.replyTo({
                 'response': e.errorAction || "unknownError",
                 'entity': e.message

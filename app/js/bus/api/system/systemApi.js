@@ -2,7 +2,7 @@ var ozpIwc=ozpIwc || {};
 
 ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
-    this.participant.securityAttributes=config.securityAttributes;
+//    this.participant.securityAttributes=config.securityAttributes;
     if (config.userHref) {
         this.loadServerDataEmbedded({href: config.userHref, resource: '/user'})
             .success(function () {

@@ -4,8 +4,13 @@ module.exports = function(grunt) {
     var config = {
         pkg: grunt.file.readJSON('package.json'),
         src: {
-            metrics: [
+            common: [
+                'app/js/common/event.js',
                 'app/js/common/**/*.js',
+                'bower_components/es6-promise/promise.js'
+            ],
+            metrics: [
+                '<%= src.common %>',
                 'app/js/metrics/statistics/sample.js',
                 'app/js/metrics/statistics/binary_heap.js',
                 'app/js/metrics/statistics/exponentiallyDecayingSample.js',
@@ -15,11 +20,9 @@ module.exports = function(grunt) {
                 'app/js/metrics/metricsRegistry.js'
             ],
             bus: [
+                '<%= src.common %>',
                 '<%= src.metrics %>',
-                'app/js/bus/jquery-2.1.0.min.js',
                 'app/js/bus/setImmediate.js',
-                'app/js/common/event.js',
-                'app/js/common/**/*.js',
                 'app/js/bus/util/**/*.js',
                 'app/js/bus/security/**/*.js',
                 'app/js/bus/network/**/*.js',
@@ -35,7 +38,7 @@ module.exports = function(grunt) {
                 'app/js/bus/*/**/*.js'
             ],
             client: [
-                'app/js/common/**/*.js',
+                '<%= src.common %>',
                 'app/js/client/**/*.js'
             ],
             test: [
