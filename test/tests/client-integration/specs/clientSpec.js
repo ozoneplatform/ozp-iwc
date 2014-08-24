@@ -42,14 +42,6 @@ describe("IWC Client", function() {
             console.log("Got reply",response);
             gate();
         });
-        client.api('data.api').get("")
-            .then(function(reply) {
-                console.log("Got reply",response);
-                gate();
-            })
-            .catch(function(error) {
-                expect(error).toEqual('');
-            });
         
         client.on("connected",gate);
         

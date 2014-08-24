@@ -6516,7 +6516,7 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
     node.set(packet);
     packet = {
         resource: '/api/system.api',
-        entity: { 'actions': ['get','watch','unwatch']},
+        entity: { 'actions': ['get','set','delete','watch','unwatch']},
         contentType: 'application/ozpIwc-api-descriptor-v1+json'
     }
     node=this.findOrMakeValue(packet);
