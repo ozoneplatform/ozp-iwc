@@ -3,6 +3,7 @@
 doc
 app/js/ozpIwc-*.js
 dist/js/ozpIwc-*.js
+dist/js/ozpIwc-*.map
 .idea/
 hal-browser
 bower_components
