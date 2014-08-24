@@ -1,7 +1,5 @@
 var ozpIwc=ozpIwc || {};
 
-var self;
-
 //TODO get these from the api registry when available
 var intents_methods=['register','unregister','invoke','listen','broadcast'];
 
@@ -40,7 +38,7 @@ ozpIwc.Client=function(config) {
     this.window = window;
     this.apiMap={};
     this.wrapperMap={};
-    self=this;
+    var self=this;
 
     this.on('gotAddress',function() {
         var numApis;
@@ -248,7 +246,9 @@ ozpIwc.Client.prototype.setApiInfo=function(apiName,last) {
 };
 
 (function() {
+    var self;
     ozpIwc.Client.prototype.api=function(apiName) {
+        self=this;
         var wrapper=this.wrapperMap[apiName];
         if (!wrapper) {
             wrapper=this.wrapperMap[apiName]=augment(this.apiMap[apiName].actions,invokeApi);
