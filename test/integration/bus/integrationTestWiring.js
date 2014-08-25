@@ -139,7 +139,8 @@ if (ozpIwc.Participant) {
     });
 
 }
-ozpIwc.endpoints=new ozpIwc.Endpoints();
+
+ozpIwc.initEndpoints(ozpIwc.apiRootUrl || "api");
 
 if(ozpIwc.KeyBroadcastLocalStorageLink) {
     ozpIwc.defaultLocalStorageLink=new ozpIwc.KeyBroadcastLocalStorageLink({
