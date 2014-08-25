@@ -24,15 +24,15 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
         return;
     }
     var self=this;
-    ozpIwc.endpoint(this.endpointName).get("/")
+
+    var endpoint=ozpIwc.endpoint(this.endpointName);
+    
+    endpoint.get("/")
         .then(function(data) {
             var rootPath = data._links.self.href;
-            for (var i in data._embedded['ozp:dataObjects']) {
-                var object = data._embedded['ozp:dataObjects'][i];
-                object.children = object.children || [];
-                var resource=object._links.self.href.replace(rootPath, '');
+            var updateResource=function(object) {
                 var node = self.findOrMakeValue({
-                        'resource': resource,
+                        'resource': object._links.self.href.replace(rootPath,''),
                         'entity': object.entity,
                         'contentType': object.contentType
                     });
@@ -40,6 +40,20 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
                 var snapshot=node.snapshot();
                 node.deserialize(node,object);
                 self.notifyWatchers(node,node.changesSince(snapshot));
+            };
+            if(data._embedded) {
+                for (var i in data._embedded['item']) {
+                    var object = data._embedded['item'][i];
+                    updateResource(object);
+                }
+            }
+            if(data._links) {
+                for (var i in data._links['item']) {
+                    var object = data._links['item'][i];
+                    endpoint.get(object.href).then(function(objectResource){
+                        updateResource(objectResource);
+                    });
+                }
             }
             // update all the collection values
             self.dynamicNodes.forEach(function(resource) {
@@ -49,7 +63,7 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
         console.error("Could not load from api",e);
     });
 };
-    
+
     
 /**
  * Creates a new value for the given packet's request.  Subclasses must override this

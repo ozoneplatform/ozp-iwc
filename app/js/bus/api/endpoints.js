@@ -6,9 +6,13 @@ ozpIwc.Endpoint=function(endpointRegistry) {
 
 ozpIwc.Endpoint.prototype.get=function(resource) {
     var self=this;
+
     return this.endpointRegistry.loadPromise.then(function() {
+        if(!resource.startsWith(self.baseUrl)) {
+            resource=self.baseUrl + resource;
+        }
         return ozpIwc.util.ajax({
-            href: self.baseUrl + resource,
+            href:  resource,
             method: 'GET'
         });
     });

@@ -1,8 +1,16 @@
 module.exports = function(grunt) {
+    var sampleDataBase={
+                            "path":"data-schemas/mock",
+                            options: {
+                                directory: false,
+                                index: "index.json"
+                            }
+                        };
 
     // Project configuration.
     var config = {
         pkg: grunt.file.readJSON('package.json'),
+        
         src: {
             common: [
                 'app/js/common/event.js',
@@ -177,19 +185,17 @@ module.exports = function(grunt) {
             app: {
                 options: {
                     port: 13000,
-                    base: ["dist", "sampleData" ],
-                    index: "index.html",
-                    debug: true
+                    base: [sampleDataBase,'dist']
                 }
             },
             tests: {
-                options: {port: 14000, base: ["dist", "test","sampleData"]}
+                options: {port: 14000, base: ["dist", "test",sampleDataBase]}
             },
             mockParticipant: {
                 options: {port: 14001, base: ["dist","test/mockParticipant"]}
             },
             testBus: {
-                options:{ port: 14002, base: ["test/integration/bus","dist","sampleData"] }
+                options:{ port: 14002, base: ["test/integration/bus","dist",sampleDataBase] }
             },
             doc: {
                 options: { port: 13001, base: "doc" }
