@@ -29,20 +29,14 @@ describe("Data API", function () {
             'action' : "set",
             'entity' : { 'foo' : 1 }
         }
-        participant.send(packet,function() {
-            client.api('data.api').set(packet.resource,{entity: packet.entity})
-                .then(function (reply) {
-                    expect(reply.response).toEqual('ok');
-                    client.api('data.api').get(packet.resource)
-                        .then(function(reply) {
-                            expect(reply.entity).toEqual(packet.entity);
-                            done();
-                        })
-                        .catch(function(error) {
-                            expect(error).toEqual('');
-                    });
+        participant.send(packet,function(reply) {
+            expect(reply.response).toEqual('ok');
+            client.api('data.api').get(packet.resource)
+                .then(function(reply) {
+                    expect(reply.entity).toEqual(packet.entity);
+                    done();
                 })
-                .catch(function (error) {
+                .catch(function(error) {
                     expect(error).toEqual('');
                 });
 
