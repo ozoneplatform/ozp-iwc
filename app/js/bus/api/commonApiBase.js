@@ -30,9 +30,10 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
     endpoint.get("/")
         .then(function(data) {
             var rootPath = data._links.self.href;
-            var updateResource=function(object) {
+            var updateResource=function(object,path) {
+                var resource=path.replace(rootPath,'');
                 var node = self.findOrMakeValue({
-                        'resource': object._links.self.href.replace(rootPath,''),
+                        'resource': resource,
                         'entity': object.entity,
                         'contentType': object.contentType
                     });
@@ -44,14 +45,14 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
             if(data._embedded) {
                 for (var i in data._embedded['item']) {
                     var object = data._embedded['item'][i];
-                    updateResource(object);
+                    updateResource(object,object._links.self.href);
                 }
             }
             if(data._links) {
                 for (var i in data._links['item']) {
                     var object = data._links['item'][i];
                     endpoint.get(object.href).then(function(objectResource){
-                        updateResource(objectResource);
+                        updateResource(objectResource,object.href);
                     });
                 }
             }

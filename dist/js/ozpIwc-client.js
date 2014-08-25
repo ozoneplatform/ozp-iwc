@@ -2063,6 +2063,7 @@ ozpIwc.log=ozpIwc.log || {
 	}
 };
 
+!function(){var a,b,c,d;!function(){var e={},f={};a=function(a,b,c){e[a]={deps:b,callback:c}},d=c=b=function(a){function c(b){if("."!==b.charAt(0))return b;for(var c=b.split("/"),d=a.split("/").slice(0,-1),e=0,f=c.length;f>e;e++){var g=c[e];if(".."===g)d.pop();else{if("."===g)continue;d.push(g)}}return d.join("/")}if(d._eak_seen=e,f[a])return f[a];if(f[a]={},!e[a])throw new Error("Could not find module "+a);for(var g,h=e[a],i=h.deps,j=h.callback,k=[],l=0,m=i.length;m>l;l++)"exports"===i[l]?k.push(g={}):k.push(b(c(i[l])));var n=j.apply(this,k);return f[a]=g||n}}(),a("promise/all",["./utils","exports"],function(a,b){"use strict";function c(a){var b=this;if(!d(a))throw new TypeError("You must pass an array to all.");return new b(function(b,c){function d(a){return function(b){f(a,b)}}function f(a,c){h[a]=c,0===--i&&b(h)}var g,h=[],i=a.length;0===i&&b([]);for(var j=0;j<a.length;j++)g=a[j],g&&e(g.then)?g.then(d(j),c):f(j,g)})}var d=a.isArray,e=a.isFunction;b.all=c}),a("promise/asap",["exports"],function(a){"use strict";function b(){return function(){process.nextTick(e)}}function c(){var a=0,b=new i(e),c=document.createTextNode("");return b.observe(c,{characterData:!0}),function(){c.data=a=++a%2}}function d(){return function(){j.setTimeout(e,1)}}function e(){for(var a=0;a<k.length;a++){var b=k[a],c=b[0],d=b[1];c(d)}k=[]}function f(a,b){var c=k.push([a,b]);1===c&&g()}var g,h="undefined"!=typeof window?window:{},i=h.MutationObserver||h.WebKitMutationObserver,j="undefined"!=typeof global?global:void 0===this?window:this,k=[];g="undefined"!=typeof process&&"[object process]"==={}.toString.call(process)?b():i?c():d(),a.asap=f}),a("promise/config",["exports"],function(a){"use strict";function b(a,b){return 2!==arguments.length?c[a]:(c[a]=b,void 0)}var c={instrument:!1};a.config=c,a.configure=b}),a("promise/polyfill",["./promise","./utils","exports"],function(a,b,c){"use strict";function d(){var a;a="undefined"!=typeof global?global:"undefined"!=typeof window&&window.document?window:self;var b="Promise"in a&&"resolve"in a.Promise&&"reject"in a.Promise&&"all"in a.Promise&&"race"in a.Promise&&function(){var b;return new a.Promise(function(a){b=a}),f(b)}();b||(a.Promise=e)}var e=a.Promise,f=b.isFunction;c.polyfill=d}),a("promise/promise",["./config","./utils","./all","./race","./resolve","./reject","./asap","exports"],function(a,b,c,d,e,f,g,h){"use strict";function i(a){if(!v(a))throw new TypeError("You must pass a resolver function as the first argument to the promise constructor");if(!(this instanceof i))throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");this._subscribers=[],j(a,this)}function j(a,b){function c(a){o(b,a)}function d(a){q(b,a)}try{a(c,d)}catch(e){d(e)}}function k(a,b,c,d){var e,f,g,h,i=v(c);if(i)try{e=c(d),g=!0}catch(j){h=!0,f=j}else e=d,g=!0;n(b,e)||(i&&g?o(b,e):h?q(b,f):a===D?o(b,e):a===E&&q(b,e))}function l(a,b,c,d){var e=a._subscribers,f=e.length;e[f]=b,e[f+D]=c,e[f+E]=d}function m(a,b){for(var c,d,e=a._subscribers,f=a._detail,g=0;g<e.length;g+=3)c=e[g],d=e[g+b],k(b,c,d,f);a._subscribers=null}function n(a,b){var c,d=null;try{if(a===b)throw new TypeError("A promises callback cannot return that same promise.");if(u(b)&&(d=b.then,v(d)))return d.call(b,function(d){return c?!0:(c=!0,b!==d?o(a,d):p(a,d),void 0)},function(b){return c?!0:(c=!0,q(a,b),void 0)}),!0}catch(e){return c?!0:(q(a,e),!0)}return!1}function o(a,b){a===b?p(a,b):n(a,b)||p(a,b)}function p(a,b){a._state===B&&(a._state=C,a._detail=b,t.async(r,a))}function q(a,b){a._state===B&&(a._state=C,a._detail=b,t.async(s,a))}function r(a){m(a,a._state=D)}function s(a){m(a,a._state=E)}var t=a.config,u=(a.configure,b.objectOrFunction),v=b.isFunction,w=(b.now,c.all),x=d.race,y=e.resolve,z=f.reject,A=g.asap;t.async=A;var B=void 0,C=0,D=1,E=2;i.prototype={constructor:i,_state:void 0,_detail:void 0,_subscribers:void 0,then:function(a,b){var c=this,d=new this.constructor(function(){});if(this._state){var e=arguments;t.async(function(){k(c._state,d,e[c._state-1],c._detail)})}else l(this,d,a,b);return d},"catch":function(a){return this.then(null,a)}},i.all=w,i.race=x,i.resolve=y,i.reject=z,h.Promise=i}),a("promise/race",["./utils","exports"],function(a,b){"use strict";function c(a){var b=this;if(!d(a))throw new TypeError("You must pass an array to race.");return new b(function(b,c){for(var d,e=0;e<a.length;e++)d=a[e],d&&"function"==typeof d.then?d.then(b,c):b(d)})}var d=a.isArray;b.race=c}),a("promise/reject",["exports"],function(a){"use strict";function b(a){var b=this;return new b(function(b,c){c(a)})}a.reject=b}),a("promise/resolve",["exports"],function(a){"use strict";function b(a){if(a&&"object"==typeof a&&a.constructor===this)return a;var b=this;return new b(function(b){b(a)})}a.resolve=b}),a("promise/utils",["exports"],function(a){"use strict";function b(a){return c(a)||"object"==typeof a&&null!==a}function c(a){return"function"==typeof a}function d(a){return"[object Array]"===Object.prototype.toString.call(a)}var e=Date.now||function(){return(new Date).getTime()};a.objectOrFunction=b,a.isFunction=c,a.isArray=d,a.now=e}),b("promise/polyfill").polyfill()}();
 /** @namespace */
 var ozpIwc=ozpIwc || {};
 
@@ -2915,6 +2916,11 @@ requireModule('promise/polyfill').polyfill();
 }());
 var ozpIwc=ozpIwc || {};
 
+//TODO get these from the api registry when available
+var intents_methods=['register','unregister','invoke','listen','broadcast'];
+
+var data_methods=['list','push','pop','unshift','shift'];
+
 /**
  * @class
  * This class will be heavily modified in the future.
@@ -2925,32 +2931,53 @@ var ozpIwc=ozpIwc || {};
  * @param {boolean} [config.autoPeer=true] - Whether to automatically find and connect to a peer
  */
 ozpIwc.Client=function(config) {
-	config=config || {};
-	this.address="$nobody";
-	this.replyCallbacks={};
-	this.peerUrl=config.peerUrl;
-	var a=document.createElement("a");
-	a.href = this.peerUrl;
-	this.peerOrigin=a.protocol + "//" + a.hostname;
-	if(a.port)
-		this.peerOrigin+= ":" + a.port;
-	
-	
-	this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
-	this.msgIdSequence=0;
-	this.events=new ozpIwc.Event();
-	this.events.mixinOnOff(this);
-	this.receivedPackets=0;
-	this.receivedBytes=0;
-	this.sentPackets=0;
-	this.sentBytes=0;
-	this.startTime=ozpIwc.util.now();
-    this.window = window;
-	var self=this;
+    config=config || {};
+    this.address="$nobody";
+    this.replyCallbacks={};
+    this.peerUrl=config.peerUrl;
+    var a=document.createElement("a");
+    a.href = this.peerUrl;
+    this.peerOrigin=a.protocol + "//" + a.hostname;
+    if(a.port)
+        this.peerOrigin+= ":" + a.port;
 
-	if(this.autoPeer) {
-		this.findPeer();
-	}
+
+    this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
+    this.msgIdSequence=0;
+    this.events=new ozpIwc.Event();
+    this.events.mixinOnOff(this);
+    this.receivedPackets=0;
+    this.receivedBytes=0;
+    this.sentPackets=0;
+    this.sentBytes=0;
+    this.startTime=ozpIwc.util.now();
+    this.window = window;
+    this.apiMap={};
+    this.wrapperMap={};
+    var self=this;
+
+    this.on('gotAddress',function() {
+        var numApis;
+        var getApiInfo=function() {
+            self.send({dst: 'names.api', resource: '/api', action: 'get'}, function (reply) {
+                numApis = reply.entity.length;
+                console.log("number of apis: " + numApis);
+                for (var i in reply.entity) {
+                    var callback = self.setApiInfo(reply.entity[i].split('/')[2], i >= numApis - 1);
+                    self.send({dst: 'names.api', resource: reply.entity[i], action: 'get'}, callback);
+                }
+                if (numApis == 0) {
+                    setTimeout(getApiInfo(), 200);
+                }
+                return null;//de-register callback
+            });
+        }
+        setTimeout(getApiInfo());
+    });
+
+    if(this.autoPeer) {
+        this.findPeer();
+    }
 
     this.postMessageHandler = function(event) {
         if(event.origin !== self.peerOrigin){
@@ -2968,11 +2995,11 @@ ozpIwc.Client=function(config) {
             // ignore!
         }
     };
-	// receive postmessage events
-	window.addEventListener("message", this.postMessageHandler, false);
-    
+    // receive postmessage events
+    window.addEventListener("message", this.postMessageHandler, false);
+
     this.preconnectionQueue=[];
-    
+
     this.on("connected",function() {
         self.preconnectionQueue.forEach(function(p) {
             console.log("Sending from queue: ",p);
@@ -3020,32 +3047,32 @@ ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromise) {
         return promise;
     }
     var now=new Date().getTime();
-	var id="p:"+this.msgIdSequence++; // makes the code below read better
-	var packet={
-		ver: 1,
-		src: this.address,
-		msgId: id,
-		time: now
-	};
+    var id="p:"+this.msgIdSequence++; // makes the code below read better
+    var packet={
+        ver: 1,
+        src: this.address,
+        msgId: id,
+        time: now
+    };
 
-	for(var k in fields) {
-		packet[k]=fields[k];
-	}
+    for(var k in fields) {
+        packet[k]=fields[k];
+    }
 
-	if(callback) {
-		this.replyCallbacks[id]=callback;
-	}
-	var data=packet;
+    if(callback) {
+        this.replyCallbacks[id]=callback;
+    }
+    var data=packet;
     if (!ozpIwc.util.structuredCloneSupport()) {
         data=JSON.stringify(packet);
     }
-	this.peer.postMessage(data,'*');
-	this.sentBytes+=data.length;
-	this.sentPackets++;
-	return packet;
+    this.peer.postMessage(data,'*');
+    this.sentBytes+=data.length;
+    this.sentPackets++;
+    return packet;
 };
 ozpIwc.Client.prototype.isConnected=function(){
-	return this.address !== "$nobody";
+    return this.address !== "$nobody";
 };
 /**
  * Cancel a callback registration
@@ -3062,11 +3089,11 @@ ozpIwc.Client.prototype.cancelCallback=function(msgId) {
 
 
 ozpIwc.Client.prototype.on=function(event,callback) {
-	if(event==="connected" && this.isConnected()) {
-		callback(this);
-		return;
-	}
-	return this.events.on.apply(this.events,arguments);
+    if(event==="connected" && this.isConnected()) {
+        callback(this);
+        return;
+    }
+    return this.events.on.apply(this.events,arguments);
 };
 
 ozpIwc.Client.prototype.off=function(event,callback) {
@@ -3113,12 +3140,106 @@ ozpIwc.Client.prototype.findPeer=function() {
 };
 
 ozpIwc.Client.prototype.requestAddress=function(){
-	// send connect to get our address
-	var self=this;
-	this.send({dst:"$transport"},function(message) {
-		self.address=message.dst;
-		self.events.trigger("connected",self);
+    // send connect to get our address
+    var self=this;
+    this.send({dst:"$transport"},function(message) {
+        self.address=message.dst;
+        self.events.trigger("gotAddress",self);
         return null;//de-register callback
-	});
+    });
 };
+
+ozpIwc.Client.prototype.setApiInfo=function(apiName,last) {
+    var self=this;
+    return function(packet) {
+        self.apiMap[apiName]=packet.entity;
+        if (last) {
+            self.events.trigger("connected",self);
+            return false
+        }
+        return true;
+    }
+};
+
+(function() {
+    var self;
+    ozpIwc.Client.prototype.api=function(apiName) {
+        self=this;
+        var wrapper=this.wrapperMap[apiName];
+        if (!wrapper) {
+            wrapper=this.wrapperMap[apiName]=augment(this.apiMap[apiName].actions,invokeApi);
+        }
+        wrapper.apiName=apiName;
+        return wrapper;
+    }
+
+    var makeCommonWrapper = function () {
+        return augment({}, ['get', 'set', 'delete', 'watch', 'unwatch'], invokeApi)
+    }
+
+    var augment = function (methods, callback) {
+        var obj = {};
+        for (var m in methods) {
+            addMethod(obj, methods[m], callback);
+        }
+        return obj;
+    }
+
+    var addMethod = function (obj, method, callback) {
+        obj[method] = function (resource, fragment, cb) {
+            return callback.call(obj, method, resource, fragment, cb);
+        };
+    }
+
+    var invokeApi = function (action, resource, fragment, callback) {
+        fragment = fragment || {};
+        fragment.entity = fragment.entity || {};
+        resource = resource || '';
+        var resolveCB = function () {
+        };
+        var rejectCB = function () {
+        };
+        var p = new Promise(function (resolve, reject) {
+            resolveCB = resolve;
+            rejectCB = reject;
+        });
+        var that = this;
+        if (that.error) {
+            rejectCB(that.error);
+        } else {
+            var packet = {
+                'dst': that.apiName,
+                'action': action,
+                'resource': resource
+
+            };
+            for (var k in fragment) {
+                packet[k] = fragment[k];
+            }
+            var resolved = false;
+            try {
+                self.send(packet, function (reply) {
+                    if (reply.response === 'ok' && !resolved) {
+                        resolveCB(reply);
+                        resolved = true;
+                    } else if (/(bad|no).*/.test(reply.response) && !resolved) {
+                        rejectCB(reply.response);
+                        resolved = true;
+                    }
+                    if (callback && !(/(bad|no).*/.test(reply.response))) {
+                        callback(reply);
+                        return true;//persist
+                    }
+                    return false;
+                });
+            } catch (error) {
+                if (!resolved) {
+                    rejectCB(error);
+                    resolved = true;
+                }
+            }
+        }
+        return p;
+    }
+})();
 //# sourceMappingURL=ozpIwc-client.js.map
