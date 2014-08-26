@@ -46,6 +46,9 @@ describe("Endpoint Registry",function() {
             e.endpoint(d[0]).get(d[1]).then(function() {
                 expect(ozpIwc.util.ajax).toHaveBeenCalledWith(jasmine.objectContaining({'href':d[2]}));
                 done();
+            }).catch(function(e) {
+                expect(e).toBe("not have occurred");
+                done();
             });
         });
     });

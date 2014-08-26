@@ -6445,7 +6445,7 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
     var self=this;
 
     return this.endpointRegistry.loadPromise.then(function() {
-        if(!resource.startsWith(self.baseUrl)) {
+        if(resource.indexOf(self.baseUrl)!==0) {
             resource=self.baseUrl + resource;
         }
         return ozpIwc.util.ajax({
