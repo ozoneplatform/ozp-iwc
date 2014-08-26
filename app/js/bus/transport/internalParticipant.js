@@ -47,9 +47,7 @@ ozpIwc.InternalParticipant.prototype.send=function(originalPacket,callback) {
 		this.replyCallbacks[packet.msgId]=callback;
 	}
     var self=this;
-	ozpIwc.util.setImmediate(function() {
-        ozpIwc.Participant.prototype.send.call(self,packet);
-    });
+    ozpIwc.Participant.prototype.send.call(self,packet);
 
 	return packet;
 };

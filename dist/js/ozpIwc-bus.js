@@ -2319,9 +2319,7 @@ ozpIwc.InternalParticipant.prototype.send=function(originalPacket,callback) {
 		this.replyCallbacks[packet.msgId]=callback;
 	}
     var self=this;
-	ozpIwc.util.setImmediate(function() {
-        ozpIwc.Participant.prototype.send.call(self,packet);
-    });
+    ozpIwc.Participant.prototype.send.call(self,packet);
 
 	return packet;
 };
@@ -2704,24 +2702,27 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 			this.electionQueue=[];
 	},this);
 	
-	this.on("becameLeader",function() {
+	this.on("workQueue",function() {
 		this.electionQueue.forEach(function(p) {
 			this.forwardToTarget(p);
 		},this);
 		this.electionQueue=[];
 	},this);
 
-	this.on("newLeader",function() {
+	this.on("emptyQueue",function() {
 		this.electionQueue=[];
 	},this);
+
+    //Latch to state during an election, if someone is going to beat me I stop trying to become the leader.
+    this.alreadyLost = false;
+
 	var self=this;
-	
-	// handoff when we shut down
+//	handoff when we shut down
 	window.addEventListener("beforeunload",function() {
         //Priority has to be the minimum possible
         self.priority=-Number.MAX_VALUE;
         self.leaderPriority=-Number.MAX_VALUE;
-        if(self.leaderState === "leader") {
+        if(self.leaderState === "leader" || self.leaderState === "actingLeader") {
             self.events.trigger("unloadState");
         }
 	});
@@ -2771,13 +2772,15 @@ ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
 ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, config) {
     config = config || {};
     var state = config.state || {};
+    var previousLeader = config.previousLeader || false;
 	this.send({
 		'src': this.address,
 		'dst': this.electionAddress,
 		'action': type,
 		'entity': {
 			'priority': this.priority,
-            'state': state
+            'state': state,
+            'previousLeader': previousLeader
 		}
 	});
 };
@@ -2797,31 +2800,17 @@ ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
 	if(this.inElection()) {
 		return;
 	}
-	this.leaderState="election";
-	this.events.trigger("startElection");
+    this.events.trigger("startElection");
 
     this.victoryDebounce = null;
-	
+
 	var self=this;
 	// if no one overrules us, declare victory
 	this.electionTimer=window.setTimeout(function() {
 		self.cancelElection();
-        self.leaderState = "leader";
-        self.leader=self.address;
-        self.leaderPriority=self.priority;
-        self.events.trigger("becameLeader");
-
-        self.sendElectionMessage("victory");
-
-        // Debouncing before setting state.
-        self.victoryDebounce = window.setTimeout(function(){
-            if (self.leaderState === "leader") {
-                if (self.stateStore && Object.keys(self.stateStore).length > 0) {
-                    self.events.trigger("acquireState", self.stateStore);
-                    self.stateStore = {};
-                }
-            }
-        },100);
+        if(!self.alreadyLost) {
+            self.events.trigger("becameLeader");
+        }
 	},this.electionTimeout);
 
 	this.sendElectionMessage("election", {state: state});
@@ -2836,8 +2825,6 @@ ozpIwc.LeaderGroupParticipant.prototype.cancelElection=function() {
 	if(this.electionTimer) {
         window.clearTimeout(this.electionTimer);
         this.electionTimer=null;
-        window.clearTimeout(this.victoryDebounce);
-        this.victoryDebounce=null;
         this.events.trigger("endElection");
 	}
 };
@@ -2870,7 +2857,7 @@ ozpIwc.LeaderGroupParticipant.prototype.routePacket=function(packetContext) {
 };
 
 ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) {
-	if(this.leaderState === "election" || this.leaderState === "connecting") {
+	if(this.leaderState === "election" || this.leaderState === "connecting" || this.leaderState === "leaderSync") {
 		this.electionQueue.push(packetContext);
 		return;
 	}
@@ -2889,13 +2876,18 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
     //If a state was received, store it case participant becomes the leader
     if(Object.keys(electionMessage.entity.state).length > 0){
         this.stateStore = electionMessage.entity.state;
+        this.events.trigger("receivedState");
+    }
+    if(electionMessage.entity.previousLeader){
+        this.previousLeaderAddress = electionMessage.entity.previousLeader;
     }
 	// is the new election lower priority than us?
-	if(this.priorityLessThan(electionMessage.entity.priority,this.priority)) {
+	if(this.priorityLessThan(electionMessage.entity.priority,this.priority) && !this.alreadyLost) {
 		// Quell the rebellion!
 		this.startElection();
 	} else {
 		// Abandon dreams of leadership
+        this.alreadyLost = true;
 		this.cancelElection();
 	}
 };
@@ -2908,13 +2900,12 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
 ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMessage) {
 	if(this.priorityLessThan(victoryMessage.entity.priority,this.priority)) {
 		// someone usurped our leadership! start an election!
-		this.startElection();
+            this.startElection();
 	} else {
 		// submit to the bully
 		this.leader=victoryMessage.src;
 		this.leaderPriority=victoryMessage.entity.priority;
 		this.cancelElection();
-		this.leaderState="member";
 		this.events.trigger("newLeader");
         this.stateStore = {};
 	}
@@ -2926,6 +2917,13 @@ ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
 	status.leaderState=this.leaderState;
 	status.leaderPriority=this.priority;
 	return status;
+};
+
+ozpIwc.LeaderGroupParticipant.prototype.changeState=function(state) {
+    if(state !== this.leaderState){
+        console.log(this.address + "\t\tOld:" + this.leaderState + "\t\tNew:" + state);
+        this.leaderState = state;
+    }
 };
 var ozpIwc=ozpIwc || {};
 
@@ -3442,6 +3440,9 @@ ozpIwc.CommonApiBase = function(config) {
     this.participant.on("unloadState",ozpIwc.CommonApiBase.prototype.unloadState,this);
     this.participant.on("acquireState",ozpIwc.CommonApiBase.prototype.setState,this);
 	this.participant.on("receiveApiPacket",ozpIwc.CommonApiBase.prototype.routePacket,this);
+    this.participant.on("becameLeader", ozpIwc.CommonApiBase.prototype.becameLeader,this);
+    this.participant.on("newLeader", ozpIwc.CommonApiBase.prototype.newLeader,this);
+    this.participant.on("startElection", ozpIwc.CommonApiBase.prototype.startElection,this);
 
 	this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
@@ -3579,7 +3580,9 @@ ozpIwc.CommonApiBase.prototype.createKey=function(prefix) {
 ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 	var packet=packetContext.packet;
 
-	if(packetContext.leaderState !== 'leader')	{
+    if(packet.dst === "data.api.election")
+        console.log(packet);
+	if(packetContext.leaderState !== 'leader' && packetContext.leaderState !== 'actingLeader'  ){
 		// if not leader, just drop it.
 		return;
 	}
@@ -3758,7 +3761,7 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
  * to be consumed by all, then used by the new leader.
  */
 ozpIwc.CommonApiBase.prototype.unloadState = function(){
-    this.participant.startElection({state:this.data});
+    this.participant.startElection({state:this.data, previousLeader: this.participant.address});
     this.data = {};
 };
 
@@ -3795,7 +3798,80 @@ ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
     });
 };
 
+/**
+ *
+ */
+ozpIwc.CommonApiBase.prototype.startElection = function(){
+    if (this.participant.leaderState === "leader" || this.participant.leaderState === "actingLeader") {
+        this.participant.changeState("actingLeader");
+    } else {
+        this.participant.changeState("election");
+    }
+};
 
+/**
+ *
+ */
+ozpIwc.CommonApiBase.prototype.becameLeader= function(){
+    // Was I the leader at the start of the election?
+    if (this.participant.leaderState === "actingLeader") {
+        // Continue leading
+        this.participant.changeState("leader");
+    } else if (this.participant.leaderState === "election" && !this.alreadyLost) {
+        this.participant.changeState("preleaderSync");
+        var part = this.participant;
+        var self = this;
+
+        // Debounce, if multiple participants think they are to be leader a victory message will set them to
+        // their proper state.
+        this.participant.victoryDebounce = window.setTimeout(function(){
+            // If not supposed to lead will be driven to "member"
+            if(part.leaderState !== "preleaderSync"){
+                part.alreadyLost = true;
+                return;
+            }
+            part.changeState("leaderSync");
+
+            if (part.stateStore) {
+                // Previous leader sent out their state, it was stored in the participant
+                console.log("Setting state");
+                self.setState(part.stateStore);
+                part.stateStore = {};
+            } else if (part.previousLeader) {
+                // There was a previous leader but we haven't seen their state. Wait for it.
+                var recvFunc = function(){
+                    self.setState(part.stateStore);
+                    console.log("State has been set!");
+                    part.off("receivedState",recvFunc);
+                };
+                part.on("receivedState",recvFunc);
+                window.setTimeout(function(){
+                    part.off("receivedState",recvFunc);
+                },1000);
+            }
+
+            part.changeState("leader");
+            part.leader = part.address;
+            part.leaderPriority = part.priority;
+            part.events.trigger("workQueue");
+            part.alreadyLost = false;
+        },250);
+    }
+
+    this.participant.sendElectionMessage("victory");
+};
+
+ozpIwc.CommonApiBase.prototype.newLeader = function() {
+    if (this.participant.leaderState === "actingLeader") {
+        this.participant.sendElectionMessage({previousLeader: this.participant.address, state: this.data});
+    } else if (this.participant.leaderState === "leaderSync") {
+        //got debounced.
+        window.clearTimeout(this.participant.victoryDebounce);
+    }
+    this.participant.changeState("member");
+    this.participant.events.trigger("emptyQueue");
+    this.participant.alreadyLost = false;
+};
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
     var self = this;

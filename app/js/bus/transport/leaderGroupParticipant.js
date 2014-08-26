@@ -47,24 +47,27 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 			this.electionQueue=[];
 	},this);
 	
-	this.on("becameLeader",function() {
+	this.on("workQueue",function() {
 		this.electionQueue.forEach(function(p) {
 			this.forwardToTarget(p);
 		},this);
 		this.electionQueue=[];
 	},this);
 
-	this.on("newLeader",function() {
+	this.on("emptyQueue",function() {
 		this.electionQueue=[];
 	},this);
+
+    //Latch to state during an election, if someone is going to beat me I stop trying to become the leader.
+    this.alreadyLost = false;
+
 	var self=this;
-	
-	// handoff when we shut down
+//	handoff when we shut down
 	window.addEventListener("beforeunload",function() {
         //Priority has to be the minimum possible
         self.priority=-Number.MAX_VALUE;
         self.leaderPriority=-Number.MAX_VALUE;
-        if(self.leaderState === "leader") {
+        if(self.leaderState === "leader" || self.leaderState === "actingLeader") {
             self.events.trigger("unloadState");
         }
 	});
@@ -114,13 +117,15 @@ ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
 ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, config) {
     config = config || {};
     var state = config.state || {};
+    var previousLeader = config.previousLeader || false;
 	this.send({
 		'src': this.address,
 		'dst': this.electionAddress,
 		'action': type,
 		'entity': {
 			'priority': this.priority,
-            'state': state
+            'state': state,
+            'previousLeader': previousLeader
 		}
 	});
 };
@@ -140,31 +145,17 @@ ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
 	if(this.inElection()) {
 		return;
 	}
-	this.leaderState="election";
-	this.events.trigger("startElection");
+    this.events.trigger("startElection");
 
     this.victoryDebounce = null;
-	
+
 	var self=this;
 	// if no one overrules us, declare victory
 	this.electionTimer=window.setTimeout(function() {
 		self.cancelElection();
-        self.leaderState = "leader";
-        self.leader=self.address;
-        self.leaderPriority=self.priority;
-        self.events.trigger("becameLeader");
-
-        self.sendElectionMessage("victory");
-
-        // Debouncing before setting state.
-        self.victoryDebounce = window.setTimeout(function(){
-            if (self.leaderState === "leader") {
-                if (self.stateStore && Object.keys(self.stateStore).length > 0) {
-                    self.events.trigger("acquireState", self.stateStore);
-                    self.stateStore = {};
-                }
-            }
-        },100);
+        if(!self.alreadyLost) {
+            self.events.trigger("becameLeader");
+        }
 	},this.electionTimeout);
 
 	this.sendElectionMessage("election", {state: state});
@@ -179,8 +170,6 @@ ozpIwc.LeaderGroupParticipant.prototype.cancelElection=function() {
 	if(this.electionTimer) {
         window.clearTimeout(this.electionTimer);
         this.electionTimer=null;
-        window.clearTimeout(this.victoryDebounce);
-        this.victoryDebounce=null;
         this.events.trigger("endElection");
 	}
 };
@@ -213,7 +202,7 @@ ozpIwc.LeaderGroupParticipant.prototype.routePacket=function(packetContext) {
 };
 
 ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) {
-	if(this.leaderState === "election" || this.leaderState === "connecting") {
+	if(this.leaderState === "election" || this.leaderState === "connecting" || this.leaderState === "leaderSync") {
 		this.electionQueue.push(packetContext);
 		return;
 	}
@@ -232,13 +221,18 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
     //If a state was received, store it case participant becomes the leader
     if(Object.keys(electionMessage.entity.state).length > 0){
         this.stateStore = electionMessage.entity.state;
+        this.events.trigger("receivedState");
+    }
+    if(electionMessage.entity.previousLeader){
+        this.previousLeaderAddress = electionMessage.entity.previousLeader;
     }
 	// is the new election lower priority than us?
-	if(this.priorityLessThan(electionMessage.entity.priority,this.priority)) {
+	if(this.priorityLessThan(electionMessage.entity.priority,this.priority) && !this.alreadyLost) {
 		// Quell the rebellion!
 		this.startElection();
 	} else {
 		// Abandon dreams of leadership
+        this.alreadyLost = true;
 		this.cancelElection();
 	}
 };
@@ -251,13 +245,12 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
 ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMessage) {
 	if(this.priorityLessThan(victoryMessage.entity.priority,this.priority)) {
 		// someone usurped our leadership! start an election!
-		this.startElection();
+            this.startElection();
 	} else {
 		// submit to the bully
 		this.leader=victoryMessage.src;
 		this.leaderPriority=victoryMessage.entity.priority;
 		this.cancelElection();
-		this.leaderState="member";
 		this.events.trigger("newLeader");
         this.stateStore = {};
 	}
@@ -269,4 +262,11 @@ ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
 	status.leaderState=this.leaderState;
 	status.leaderPriority=this.priority;
 	return status;
+};
+
+ozpIwc.LeaderGroupParticipant.prototype.changeState=function(state) {
+    if(state !== this.leaderState){
+        console.log(this.address + "\t\tOld:" + this.leaderState + "\t\tNew:" + state);
+        this.leaderState = state;
+    }
 };

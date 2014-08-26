@@ -32,13 +32,13 @@ if(ozpIwc.Peer) {
 }
 
 if(ozpIwc.Router) {
-    ozpIwc.namesApi=new ozpIwc.NamesApi({
-        'participant': new ozpIwc.LeaderGroupParticipant({'name': "names.api"})
-    });
+//    ozpIwc.namesApi=new ozpIwc.NamesApi({
+//        'participant': new ozpIwc.LeaderGroupParticipant({'name': "names.api"})
+//    });
     ozpIwc.defaultRouter=new ozpIwc.Router({
         peer:ozpIwc.defaultPeer
     });
-    ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi.participant);
+//    ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi.participant);
 }
 
 
@@ -72,24 +72,24 @@ if(ozpIwc.DataApi && ozpIwc.LeaderGroupParticipant) {
 }
 
 if(ozpIwc.IntentsApi) {
-    ozpIwc.intentsApi=new ozpIwc.IntentsApi({
-        'participant': new ozpIwc.LeaderGroupParticipant({
-            'name': "intents.api"
-        }),
-        'href': ozpIwc.apiRoot._links.intents.href,
-        'loadServerDataEmbedded': true
-    });
-    ozpIwc.defaultRouter.registerParticipant(ozpIwc.intentsApi.participant);
+//    ozpIwc.intentsApi=new ozpIwc.IntentsApi({
+//        'participant': new ozpIwc.LeaderGroupParticipant({
+//            'name': "intents.api"
+//        }),
+//        'href': ozpIwc.apiRoot._links.intents.href,
+//        'loadServerDataEmbedded': true
+//    });
+//    ozpIwc.defaultRouter.registerParticipant(ozpIwc.intentsApi.participant);
 }
 if(ozpIwc.SystemApi && ozpIwc.LeaderGroupParticipant) {
-    ozpIwc.systemApi=new ozpIwc.SystemApi({
-        'participant': new ozpIwc.LeaderGroupParticipant({'name': "system.api"}),
-        'userHref': ozpIwc.apiRoot._links.user.href,
-        'systemHref': ozpIwc.apiRoot._links.system.href,
-        'securityAttributes': {'modifyAuthority': 'apiLoader'}
-    });
-
-    ozpIwc.defaultRouter.registerParticipant(ozpIwc.systemApi.participant);
+//    ozpIwc.systemApi=new ozpIwc.SystemApi({
+//        'participant': new ozpIwc.LeaderGroupParticipant({'name': "system.api"}),
+//        'userHref': ozpIwc.apiRoot._links.user.href,
+//        'systemHref': ozpIwc.apiRoot._links.system.href,
+//        'securityAttributes': {'modifyAuthority': 'apiLoader'}
+//    });
+//
+//    ozpIwc.defaultRouter.registerParticipant(ozpIwc.systemApi.participant);
 }
 //
 //if(ozpIwc.NamesApi) {
