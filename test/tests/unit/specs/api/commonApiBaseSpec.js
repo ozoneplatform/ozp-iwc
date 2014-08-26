@@ -354,6 +354,7 @@ describe("Common API Base class",function() {
     });
     describe("Collection values",function() {
         var collectionNode=new ozpIwc.CommonApiCollectionValue({
+                resource: "/foo",
                 pattern: /^\/foo\/.*$/
             });
         beforeEach(function() {
@@ -375,7 +376,7 @@ describe("Common API Base class",function() {
                 'contentType' : "application/json",
                 'version' : 1
             });
-            apiBase.addDynamicNode("/foo",collectionNode);
+            apiBase.addDynamicNode(collectionNode);
         });
     
         it("get on collection nodes list their contents",function() {

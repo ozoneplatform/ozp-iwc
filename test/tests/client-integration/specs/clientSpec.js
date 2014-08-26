@@ -33,13 +33,11 @@ describe("IWC Client", function() {
         });
         
         var gate = done_semaphore(2, done);
-        console.log("In test");
         client.send({
             'dst': "data.api",
             'action': "get",
             'resource': ""
         },function(response) {
-            console.log("Got reply",response);
             gate();
         });
         

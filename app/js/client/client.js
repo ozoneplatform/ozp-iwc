@@ -1,10 +1,5 @@
 var ozpIwc=ozpIwc || {};
 
-//TODO get these from the api registry when available
-var intents_methods=['register','unregister','invoke','listen','broadcast'];
-
-var data_methods=['list','push','pop','unshift','shift'];
-
 /**
  * @class
  * This class will be heavily modified in the future.
@@ -45,7 +40,6 @@ ozpIwc.Client=function(config) {
         var getApiInfo=function() {
             self.send({dst: 'names.api', resource: '/api', action: 'get'}, function (reply) {
                 numApis = reply.entity.length;
-                console.log("number of apis: " + numApis);
                 for (var i in reply.entity) {
                     var callback = self.setApiInfo(reply.entity[i].split('/')[2], i >= numApis - 1);
                     self.send({dst: 'names.api', resource: reply.entity[i], action: 'get'}, callback);
@@ -86,7 +80,6 @@ ozpIwc.Client=function(config) {
 
     this.on("connected",function() {
         self.preconnectionQueue.forEach(function(p) {
-            console.log("Sending from queue: ",p);
             self.send(p.fields,p.callback,p.promise);
         });
         self.preconnectionQueue=null;
@@ -102,6 +95,7 @@ ozpIwc.Client=function(config) {
  * @returns {undefined}
  */
 ozpIwc.Client.prototype.receive=function(packet) {
+    console.log("Got ",packet);
     if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
         if (!this.replyCallbacks[packet.replyTo](packet)) {
             this.cancelCallback(packet.replyTo);
@@ -122,7 +116,6 @@ ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromise) {
     var promise= preexistingPromise; // || new Promise();
     if(!(this.isConnected() || fields.dst=="$transport")) {
         // when send is switched to promises, create the promise first and return it here, as well
-        console.log("Queuing to be sent later:",arguments);
         this.preconnectionQueue.push({
             'fields': fields,
             'callback': callback,
@@ -155,6 +148,7 @@ ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromise) {
     this.sentPackets++;
     return packet;
 };
+
 ozpIwc.Client.prototype.isConnected=function(){
     return this.address !== "$nobody";
 };
@@ -237,92 +231,58 @@ ozpIwc.Client.prototype.setApiInfo=function(apiName,last) {
     var self=this;
     return function(packet) {
         self.apiMap[apiName]=packet.entity;
+        self.apiMap[apiName].apiName=apiName;
         if (last) {
             self.events.trigger("connected",self);
-            return false
+            return false;
         }
         return true;
-    }
+    };
 };
 
 (function() {
-    var self;
     ozpIwc.Client.prototype.api=function(apiName) {
-        self=this;
         var wrapper=this.wrapperMap[apiName];
         if (!wrapper) {
-            wrapper=this.wrapperMap[apiName]=augment(this.apiMap[apiName].actions,invokeApi);
+            var api=this.apiMap[apiName];
+            wrapper={};
+            for (var i=0;i<api.actions.length;++i){
+                var action=api.actions[i];
+                wrapper[action]=augment(api.apiName,action,this);
+            }
+            
+            this.wrapperMap[apiName]=wrapper;
         }
         wrapper.apiName=apiName;
         return wrapper;
-    }
+    };
 
-    var makeCommonWrapper = function () {
-        return augment({}, ['get', 'set', 'delete', 'watch', 'unwatch'], invokeApi)
-    }
-
-    var augment = function (methods, callback) {
-        var obj = {};
-        for (var m in methods) {
-            addMethod(obj, methods[m], callback);
-        }
-        return obj;
-    }
-
-    var addMethod = function (obj, method, callback) {
-        obj[method] = function (resource, fragment, cb) {
-            return callback.call(obj, method, resource, fragment, cb);
-        };
-    }
-
-    var invokeApi = function (action, resource, fragment, callback) {
-        fragment = fragment || {};
-        fragment.entity = fragment.entity || {};
-        resource = resource || '';
-        var resolveCB = function () {
-        };
-        var rejectCB = function () {
-        };
-        var p = new Promise(function (resolve, reject) {
-            resolveCB = resolve;
-            rejectCB = reject;
-        });
-        var that = this;
-        if (that.error) {
-            rejectCB(that.error);
-        } else {
-            var packet = {
-                'dst': that.apiName,
-                'action': action,
-                'resource': resource
-
-            };
-            for (var k in fragment) {
-                packet[k] = fragment[k];
-            }
-            var resolved = false;
-            try {
-                self.send(packet, function (reply) {
-                    if (reply.response === 'ok' && !resolved) {
-                        resolveCB(reply);
-                        resolved = true;
-                    } else if (/(bad|no).*/.test(reply.response) && !resolved) {
-                        rejectCB(reply.response);
-                        resolved = true;
-                    }
-                    if (callback && !(/(bad|no).*/.test(reply.response))) {
-                        callback(reply);
-                        return true;//persist
-                    }
-                    return false;
-                });
-            } catch (error) {
-                if (!resolved) {
-                    rejectCB(error);
-                    resolved = true;
+    var augment = function (dst,action,client) {
+        return function (resource, fragment, otherCallback) {
+            return new Promise(function (resolve, reject) {
+                var packet = {
+                    'dst': dst,
+                    'action': action,
+                    'resource': resource,
+                    'entity': {}
+                };
+                for (var k in fragment) {
+                    packet[k] = fragment[k];
                 }
-            }
-        }
-        return p;
-    }
+                client.send(packet, function (reply) {
+                    if (reply.response === 'ok') {
+                        resolve(reply);
+                    } else if (/(bad|no).*/.test(reply.response)) {
+                        reject(reply);
+                    }
+                    if (otherCallback) {
+                        return otherCallback(reply);
+                    }
+                    return !!otherCallback;
+                });
+            });
+
+                };
+        return obj;
+    };
 })();

@@ -167,40 +167,6 @@ describe("System API", function () {
                 });
         });
 
-
-        it('Client watches & un-watches keys', function (done) {
-            var called = false;
-
-            client.api('system.api').watch(testResource,{entity: testEntity},function(reply) {
-                if (reply.response === 'changed') {
-                    expect(reply.entity.newValue).toEqual(testEntity);
-                    client.api('system.api').unwatch(testResource)
-                        .then(function (reply) {
-                            if (!called) {
-                                expect(reply.response).toEqual('ok');
-                                called=true;
-                                done();
-                            }
-                        })
-                        .catch(function (error) {
-                            expect(error).toEqual('');
-                        });
-                    return true;
-                }
-            })
-                .then(function(reply) {
-                    client.api('system.api').set(testResource,{entity: testEntity,'securityAttributes': securityAttributes})
-                        .then(function(reply) {
-                            expect(reply.response).toEqual('ok');
-                        })
-                        .catch(function(error) {
-                            expect(error).toEqual('');
-                        });
-                })
-                .catch(function(error) {
-                    expect(error).toEqual('');
-                });
-        });
     });
 
 });

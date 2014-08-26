@@ -6225,9 +6225,9 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         try {
             f.apply(self);
         } catch(e) {
-//            if(!e instanceof ozpIwc.ApiError) {
-                console.error("Unexpected error:",e);
-//            }
+            if(!e.errorAction) {
+                console.log("Unexpected error:",e);
+            }
             packetContext.replyTo({
                 'response': e.errorAction || "unknownError",
                 'entity': e.message
@@ -6332,10 +6332,9 @@ ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
     }
 };
 
-ozpIwc.CommonApiBase.prototype.addDynamicNode=function(resource,node) {
-    this.data[resource]=node;
-    node.resource=resource;
-    this.dynamicNodes.push(resource);
+ozpIwc.CommonApiBase.prototype.addDynamicNode=function(node) {
+    this.data[node.resource]=node;
+    this.dynamicNodes.push(node.resource);
     this.updateDynamicNode(node);
 };
 
@@ -6629,67 +6628,7 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
  */
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
-    this.events.on("receive", ozpIwc.IntentsApi.prototype.parseResource, this);
-    var self = this;
-    if (config.href && config.loadServerDataEmbedded) {
-        this.loadServerDataEmbedded({href: config.href})
-            .success(function () {
-                //Add on load code here
-            });
-    } else if (config.href && config.loadServerData) {
-        this.loadServerData({href: config.href})
-            .success(function () {
-                //Add on load code here
-            });
-    }
-
-
 });
-
-/**
- * Internal method, not intended for API use. Used for handling resource path parsing.
- * @param  {string} resource - the resource path to be evaluated.
- * @returns {object} parsedResource
- * @returns {string} parsedResource.type - the type of the resource
- * @returns {string} parsedResource.subtype - the subtype of the resource
- * @returns {string} parsedResource.verb - the verb (action) of the resource
- * @returns {string} parsedResource.handler - the handler of the resource
- * @returns {string} parsedResource.capabilityRes - the resource path of this resource's capability
- * @returns {string} parsedResource.definitionRes - the resource path of this resource's definition
- * @returns {string} parsedResource.handlerRes - the resource path of this resource's handler
- * @returns {string} parsedResource.intentValueType - returns the value type given the resource path (capability, definition, handler)
- */
-ozpIwc.IntentsApi.prototype.parseResource = function (packetContext) {
-    if(!packetContext.packet.resource) {
-        return;
-    }
-    var resourceSplit = packetContext.packet.resource.split('/');
-    var result = {
-        type: resourceSplit[1],
-        subtype: resourceSplit[2],
-        verb: resourceSplit[3],
-        handler: resourceSplit[4]
-    };
-    if (result.type && result.subtype) {
-        if (result.verb) {
-            if (result.handler) {
-                result.intentValueType = 'handler';
-                result.handlerRes = '/' + resourceSplit[1] + '/' + resourceSplit[2] + '/' + resourceSplit[3] + '/' + resourceSplit[4];
-                result.definitionRes = '/' + resourceSplit[1] + '/' + resourceSplit[2] + '/' + resourceSplit[3];
-                result.capabilityRes = '/' + resourceSplit[1] + '/' + resourceSplit[2];
-            } else {
-                result.intentValueType = 'definition';
-                result.definitionRes = '/' + resourceSplit[1] + '/' + resourceSplit[2] + '/' + resourceSplit[3];
-                result.capabilityRes = '/' + resourceSplit[1] + '/' + resourceSplit[2];
-            }
-        } else {
-            result.intentValueType = 'capabilities';
-            result.capabilityRes = '/' + resourceSplit[1] + '/' + resourceSplit[2];
-        }
-        packetContext.packet.parsedResource = result;
-    }
-    return packetContext;
-};
 
 /**
  * Takes the resource of the given packet and creates an empty value in the IntentsApi. Chaining of creation is
@@ -6698,82 +6637,36 @@ ozpIwc.IntentsApi.prototype.parseResource = function (packetContext) {
  * @returns {IntentsApiHandlerValue|IntentsAPiDefinitionValue|IntentsApiCapabilityValue}
  */
 ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
-    if (!packet.packetResource) {
-        packet = ozpIwc.IntentsApi.prototype.parseResource({packet: packet}).packet;
-    }
-    switch (packet.parsedResource.intentValueType) {
-        case 'handler':
-            return this.getHandler(packet);
-        case 'definition':
-            return this.getDefinition(packet);
-        case 'capabilities':
-            return this.getCapability(packet);
+    // resource of form /majorType/minorType/action?/handler?
+    var path=packet.resource.split(/\//);
+    path.shift(); // shift off the empty element before the first slash
+    switch (path.length) {
+        case 2:
+            var node=new ozpIwc.IntentsApiTypeValue({
+                resource:packet.resource,
+                intentType: path[0] + "/" + path[1]                
+            });
+            this.addDynamicNode(node);
+            return node;
+        case 3:
+            var node=new ozpIwc.IntentsApiDefinitionValue({
+                resource:packet.resource,
+                intentType: path[0] + "/" + path[1],
+                intentAction: path[2]
+            });
+            this.addDynamicNode(node);
+            return node;
+        case 4:
+            return new ozpIwc.IntentsApiHandlerValue({
+                resource:packet.resource,
+                intentType: path[0] + "/" + path[1],
+                intentAction: path[2]
+            });
         default:
-            return null;
+            throw new ozpIwc.ApiError("badResource","Invalid resource: " + packet.resource)
     }
 };
 
-/**
- * Internal method, not intended for API use. Uses constructor parameter to determine what is constructed if the
- * resource does not exist.
- * @param {string} resource - the resource path of the desired value.
- * @param {Function} constructor - constructor function to be used if value does not exist.
- * @returns {IntentsApiHandlerValue|IntentsAPiDefinitionValue|IntentsApiCapabilityValue} node - node has only the resource parameter initialized.
- */
-ozpIwc.IntentsApi.prototype.getGeneric = function (resource, constructor) {
-    var node = this.data[resource];
-    if (!node) {
-        node = this.data[resource] = new constructor({resource: resource});
-    }
-    return node;
-};
-
-/**
- * Returns the given capability in the IntentsApi. Constructs a new one if it does not exist.
- * @param {object} parsedResource - the  parsed resource of the desired value. Created from parsedResource().
- * @returns {IntentsApiCapabilityValue} value - the capability value requested.
- */
-ozpIwc.IntentsApi.prototype.getCapability = function (packet) {
-    return this.getGeneric(packet.parsedResource.capabilityRes, ozpIwc.IntentsApiCapabilityValue);
-};
-
-/**
- * Returns the given definition in the IntentsApi. Constructs a new one if it does not exist. Constructs a capability
- * if necessary.
- * @param {object} parsedResource - the  parsed resource of the desired value. Created from parsedResource().
- * @returns {IntentsAPiDefinitionValue} value - the definition value requested.
- */
-ozpIwc.IntentsApi.prototype.getDefinition = function (packet) {
-    var capability = this.getCapability(packet);
-    capability.entity = capability.entity || {};
-    capability.entity.definitions = capability.entity.definitions || [];
-
-    var definitionIndex = capability.entity.definitions.indexOf(packet.parsedResource.definitionRes);
-    if (definitionIndex === -1) {
-        capability.pushDefinition(packet.parsedResource.definitionRes);
-    }
-
-    return this.getGeneric(packet.parsedResource.definitionRes, ozpIwc.IntentsApiDefinitionValue);
-};
-
-/**
- * Returns the given handler in the IntentsApi. Constructs a new one if it does not exist. Constructs a definition
- * and capability if necessary.
- * @param {object} parsedResource - the  parsed resource of the desired value. Created from parsedResource().
- * @returns {IntentsApiHandlerValue} value - the handler value requested.
- */
-ozpIwc.IntentsApi.prototype.getHandler = function (packet) {
-    var definition = this.getDefinition(packet);
-    definition.entity = definition.entity || {};
-    definition.entity.handlers = definition.entity.handlers || [];
-
-    var handlerIndex = definition.entity.handlers.indexOf(packet.parsedResource.handlerRes);
-    if (handlerIndex === -1) {
-        definition.pushHandler(packet.parsedResource.handlerRes);
-    }
-
-    return this.getGeneric(packet.parsedResource.handlerRes, ozpIwc.IntentsApiHandlerValue);
-};
 
 /**
  * Creates and registers a handler to the given definition resource path.
@@ -6782,41 +6675,20 @@ ozpIwc.IntentsApi.prototype.getHandler = function (packet) {
  * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
  */
 ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
-    if (packetContext.packet.parsedResource.intentValueType === 'definition') {
-        packetContext.packet.parsedResource.handlerRes = this.createKey(packetContext.packet.resource + '/');
-    } else if (packetContext.packet.parsedResource.intentValueType !== 'handler') {
-        packetContext.replyTo({
-            'response': 'badResource'
-        });
-        return null;
-    }
+	var key=this.createKey(node.resource+"/");
 
-    var handler = this.getHandler(packetContext.packet);
-    handler.set(packetContext);
-
+	// save the new child
+	var childNode=this.makeValue({'resource':key});
+	childNode.set(packetContext.packet);
+	
     packetContext.replyTo({
-        'response': 'ok',
-        'entity': handler.resource
+        'response':'ok',
+        'entity' : {
+            'resource': childNode.resource
+        }
     });
 };
 
-/**
- * Unregisters and destroys the handler assigned to the given handler resource path.
- * @param {object} node - the handler value to unregister from its definition.
- * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
- */
-ozpIwc.IntentsApi.prototype.handleUnregister = function (node, packetContext) {
-    var definitionPath = packetContext.packet.parsedResource.definitionRes;
-    var handlerPath = packetContext.packet.parsedResource.handlerRes;
-
-    var index = this.data[definitionPath].entity.handlers.indexOf(handlerPath);
-
-    if (index > -1) {
-        this.data[definitionPath].entity.handlers.splice(index, 1);
-    }
-    delete this.data[handlerPath];
-    packetContext.replyTo({'response': 'ok'});
-};
 
 /**
  * Invokes the appropriate handler for the intent from one of the following methods:
@@ -6829,194 +6701,9 @@ ozpIwc.IntentsApi.prototype.handleUnregister = function (node, packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
  */
 ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
-    switch (packetContext.packet.parsedResource.intentValueType) {
-        case 'handler':
-            node.invoke(packetContext.packet);
-            break;
 
-        case 'definition':
-            //TODO get user preference of which handler to use?
-            var handlerPreference = 0;
-            if (node.handlers.length > 0) {
-                var handler = node.handlers[handlerPreference];
-                this.data[handler].invoke(packet);
-            } else {
-                packetContext.replyTo({'response': 'badResource'});
-            }
-            break;
-
-        default:
-            packetContext.replyTo({'response': 'badResource'});
-            break;
-    }
 };
 
-/**
- * Listen for broadcast intents.
- * @todo unimplemented
- * @param {object} node - ?
- * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
- */
-ozpIwc.IntentsApi.prototype.handleListen = function (node, packetContext) {
-    //TODO handleListen()
-//    var parse = this.parseResource(packetContext.packet.resource);
-//    if (parse.intentValueType !== 'definition') {
-//        return packetContext.replyTo({
-//            'response': 'badResource'
-//        });
-//    }
-};
-
-/**
- * Handle a broadcast intent.
- * @todo unimplemented
- * @param {object} node - ?
- * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
- */
-ozpIwc.IntentsApi.prototype.handleBroadcast = function (node, packetContext) {
-    //TODO handleBroadcast()
-//    var parse = this.parseResource(packetContext.packet.resource);
-//    if (parse.intentValueType !== 'definition') {
-//        return packetContext.replyTo({
-//            'response': 'badResource'
-//        });
-//    }
-//    for (var i in node.handlers) {
-//        this.data[node.handlers[i]].invoke(packetContext.packet);
-//    }
-};
-
-
-/**
- * Expects a complete Intents data store tree returned from the specified href. Data must be of hal/json type and the
- * stored tree must be in the '_embedded' property.
- *
- * @param config {Object}
- * @param config.href {String}
- * @returns {ozpIwc.AsyncAction}
- */
-ozpIwc.IntentsApi.prototype.loadServerDataEmbedded = function (config) {
-    var self = this;
-    var asyncResponse = new ozpIwc.AsyncAction();
-    ozpIwc.util.ajax({
-        href: config.href,
-        method: "GET"
-    })
-        .success(function (data) {
-            // Take the root path from where the intent data is stored so that we can remove it from each object that
-            // becomes a intent value.
-            var rootPath = data._links.self.href;
-            for (var i in data._embedded['ozp:intentTypes']) {
-                var type = data._embedded['ozp:intentTypes'][i];
-                for (var j in type._embedded['ozp:intentSubTypes']) {
-                    var subType = type._embedded['ozp:intentSubTypes'][j];
-                    for (var k in subType._embedded['ozp:intentActions']) {
-                        var action = subType._embedded['ozp:intentActions'][k];
-                        var loadPacket = {
-                            packet: {
-                                resource: action._links.self.href.replace(rootPath, ''),
-                                entity: action
-                            }
-                        };
-
-                        self.parseResource(loadPacket);
-                        var def = self.getDefinition(loadPacket.packet);
-                        def.set(loadPacket.packet);
-                    }
-                }
-            }
-            asyncResponse.resolve("success");
-        });
-
-    return asyncResponse;
-};
-
-/**
- * Expects the root of an intents data store to be returned from the specified href. Data must be of hal/json
- * type and the stored tree is gathered through the '_links' property.
- *
- * @param config {Object}
- * @param config.href {String}
- * @returns {ozpIwc.AsyncAction}
- */
-ozpIwc.IntentsApi.prototype.loadServerData = function (config) {
-    var self = this;
-    var asyncResponse = new ozpIwc.AsyncAction();
-    var counter = {
-        types: {
-            total: 0,
-            received: 0
-        },
-        subTypes: {
-            total: 0,
-            received: 0
-        },
-        actions: {
-            total: 0,
-            received: 0
-        }
-    };
-    // Get API root
-    ozpIwc.util.ajax({
-        href: config.href,
-        method: "GET"
-    })
-        .success(function (data) {
-            // Take the root path from where the intent data is stored so that we can remove it from each object that
-            // becomes a intent value.
-            var rootPath = data._links.self.href;
-
-            counter.types.total += data._links['ozp:intentTypes'].length;
-            for (var i in data._links['ozp:intentTypes']) {
-                ozpIwc.util.ajax({
-                    href: data._links['ozp:intentTypes'][i].href,
-                    method: "GET"
-                })
-                    .success(function (data) {
-                        counter.types.received++;
-                        // Get subTypes
-                        counter.subTypes.total += data._links['ozp:intentSubTypes'].length;
-                        for (var j in data._links['ozp:intentSubTypes']) {
-                            ozpIwc.util.ajax({
-                                href: data._links['ozp:intentSubTypes'][j].href,
-                                method: "GET"
-                            })
-                                .success(function (data) {
-                                    counter.subTypes.received++;
-                                    //Get Actions
-                                    counter.actions.total += data._links['ozp:intentActions'].length;
-                                    for (var k in data._links['ozp:intentActions']) {
-                                        ozpIwc.util.ajax({
-                                            href: data._links['ozp:intentActions'][k].href,
-                                            method: "GET"
-                                        })
-                                            .success(function (data) {
-
-                                                counter.actions.received++;
-                                                //Build out the API with the retrieved values
-                                                var loadPacket = {
-                                                    packet: {
-                                                        resource: data._links.self.href.replace(rootPath, ''),
-                                                        entity: data
-                                                    }
-                                                };
-                                                self.parseResource(loadPacket);
-                                                var def = self.getDefinition(loadPacket.packet);
-                                                def.set(loadPacket.packet);
-                                                if (counter.actions.received === counter.actions.total &&
-                                                    counter.subTypes.received === counter.subTypes.total &&
-                                                    counter.types.received == counter.types.total) {
-                                                    asyncResponse.resolve("success");
-                                                }
-                                            });
-                                    }
-                                });
-                        }
-                    });
-            }
-        });
-    return asyncResponse;
-};
 
 /**
  * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
@@ -7025,149 +6712,76 @@ ozpIwc.IntentsApi.prototype.loadServerData = function (config) {
  *@param {object} config.entity
  * @param {string} config.entity.definitions - the list of definitions in this intent capability.
  */
-ozpIwc.IntentsApiCapabilityValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function (config) {
-    ozpIwc.CommonApiValue.apply(this, arguments);
-});
-
-/**
- * Adds a definition to the end of the capability's list of definitions.
- * @param {string} definition - name of the definition added to this capability.
- */
-ozpIwc.IntentsApiCapabilityValue.prototype.pushDefinition = function (definition) {
-    this.entity.definitions = this.entity.definitions || [];
-    this.entity.definitions.push(definition);
-    this.version++;
-};
-
-/**
- * Adds a definition to the beginning of the capability's list of definitions.
- * @param {string} definition - name of the definition added to this capability.
- */
-ozpIwc.IntentsApiCapabilityValue.prototype.unshiftDefinition = function (definition) {
-    this.entity.definitions = this.entity.definitions || [];
-    this.entity.definitions.unshift(definition);
-    this.version++;
-};
-
-/**
- * Removes a definition from the end of the capability's list of definitions.
- * @returns {string} definition - name of the definition removed from this capability.
- */
-ozpIwc.IntentsApiCapabilityValue.prototype.popDefinition = function () {
-    if (this.entity.definitions && this.entity.definitions.length > 0) {
-        this.version++;
-        return this.entity.definitions.pop();
-    }
-};
-
-/**
- * Removes a definition from the beginning of the capability's list of definitions.
- * @returns {string} definition - name of the definition removed from this capability.
- */
-ozpIwc.IntentsApiCapabilityValue.prototype.shiftDefinition = function () {
-    if (this.entity.definitions && this.entity.definitions.length > 0) {
-        this.version++;
-        return this.entity.definitions.shift();
-    }
-};
-
-/**
- * Lists all definitions of the given capability.
- * @returns {Array} definitions - list of definitions in this capability.
- */
-ozpIwc.IntentsApiCapabilityValue.prototype.listDefinitions = function () {
-    return this.entity.definitions;
-};
-/**
- * The definition value for an intent. adheres to the ozp-intents-definition-v1+json content type.
- * @class
- * @param {object} config
- * @param {object} config.entity
- * @param {string} config.entity.type - the type of this intent definition.
- * @param {string} config.entity.action - the action of this intent definition.
- * @param {string} config.entity.icon - the icon for this intent definition.
- * @param {string} config.entity.label - the label for this intent definition.
- * @param {string} config.entity.handlers - the list of handlers for the definition.
- */
 ozpIwc.IntentsApiDefinitionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function (config) {
-    ozpIwc.CommonApiValue.apply(this, arguments);
+    config=config || {};
+    config.allowedContentTypes=["application/ozpIwc-intents-definition-v1+json"];
+    config.contentType="application/ozpIwc-intents-definition-v1+json";
+    ozpIwc.CommonApiValue.call(this, config);
+    this.pattern=new RegExp(this.resource+"/[^/]*");
+    this.entity={
+        type: config.intentType,
+        action: config.intentAction,        
+        handlers: []
+    };
 });
 
-/**
- *
- * Adds a handler to the end of the definition's list of handler.
- * @param {string} definition - name of the handler added to this definition.
- */
-ozpIwc.IntentsApiDefinitionValue.prototype.pushHandler = function (handler) {
-    this.entity.handlers = this.entity.handlers || [];
-    this.entity.handlers.push(handler);
+ozpIwc.IntentsApiDefinitionValue.prototype.isUpdateNeeded=function(node) {
+    return this.pattern.test(node.resource);
+};
+
+ozpIwc.IntentsApiDefinitionValue.prototype.updateContent=function(changedNodes) {
     this.version++;
-};
-
-/**
- * Adds a handler to the beginning of the definition's list of handler.
- * @param {string} definition - name of the handler added to this definition.
- */
-ozpIwc.IntentsApiDefinitionValue.prototype.unshiftHandler = function (handler) {
-    this.entity.handlers = this.entity.handlers || [];
-    this.entity.handlers.unshift(handler);
-    this.version++;
-};
-
-/**
- * Removes a handler from the end of the definition's list of handlers.
- * @returns {string} handler - name of the handler removed from this definition.
- */
-ozpIwc.IntentsApiDefinitionValue.prototype.popHandler = function () {
-    if (this.entity.handlers && this.entity.handlers.length > 0) {
-        this.version++;
-        return this.entity.handlers.pop();
-    }
-};
-
-/**
- * Removes a handler from the beginning of the definition's list of handlers.
- * @returns {string} handler - name of the handler removed from this definition.
- */
-ozpIwc.IntentsApiDefinitionValue.prototype.shiftHandler = function () {
-    if (this.entity.handlers && this.entity.handlers.length > 0) {
-        this.version++;
-        return this.entity.handlers.shift();
-    }
-};
-
-/**
- * Lists all handlers of the given intent definition.
- * @returns {Array} handlers - list of handlers in this capability.
- */
-ozpIwc.IntentsApiDefinitionValue.prototype.listHandlers = function () {
-    return this.entity.handlers;
+    this.entity.handlers=changedNodes.map(function(changedNode) { 
+        return changedNode.resource; 
+    });
 };
 /**
- * The handler value for an intent. adheres to the ozp-intents-handler-v1+json content type.
+ * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
  * @class
  * @param {object} config
- * @param {object} config.entity
- * @param {string} config.entity.type - the type of this intent handler.
- * @param {string} config.entity.action - the action of this intent handler.
- * @param {string} config.entity.icon - the icon for this intent handler.
- * @param {string} config.entity.label - the label for this intent handler.
- * @param {string} config.entity.invokeIntent - the resource that will be called when handling an invoked intent.
+ *@param {object} config.entity
+ * @param {string} config.entity.definitions - the list of definitions in this intent capability.
  */
 ozpIwc.IntentsApiHandlerValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function (config) {
+    config=config || {};
+    config.allowedContentTypes=["application/ozpIwc-intents-handler-v1+json"];
+    config.contentType="application/ozpIwc-intents-handler-v1+json";
     ozpIwc.CommonApiValue.apply(this, arguments);
+    this.entity={
+        type: config.intentType,
+        action: config.intentAction
+    };
+});
+/**
+ * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
+ * @class
+ * @param {object} config
+ *@param {object} config.entity
+ * @param {string} config.entity.definitions - the list of definitions in this intent capability.
+ */
+ozpIwc.IntentsApiTypeValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function (config) {
+    config=config || {};
+    config.allowedContentTypes=["application/ozpIwc-intents-contentType-v1+json"];
+    config.contentType="application/ozpIwc-intents-contentType-v1+json";
+
+    ozpIwc.CommonApiValue.apply(this, arguments);
+    this.pattern=new RegExp(this.resource+"/[^/]*");
+    this.entity={
+        type: config.intentType,
+        actions: []
+    };
 });
 
-/**
- * Invokes the handler with the given packet information.
- * @param {object} packet - information passed to the activity receiving the intent.
- */
-ozpIwc.IntentsApiHandlerValue.prototype.invoke = function (packet) {
-    this.set(packet);
-//    console.error('Invoking of intents.api handlers is not implemented.' +
-//        'Override ozpIwc.IntentsApiHandlerValue.invoke to implement');
+ozpIwc.IntentsApiTypeValue.prototype.isUpdateNeeded=function(node) {
+    return this.pattern.test(node.resource);
 };
 
+ozpIwc.IntentsApiTypeValue.prototype.updateContent=function(changedNodes) {
+    this.version++;
+    this.entity.actions=changedNodes.map(function(changedNode) { 
+        return changedNode.resource; 
+    });
+};
 ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
     ozpIwc.CommonApiBase.apply(this, arguments);
 
@@ -7175,23 +6789,27 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
     this.on("receive", function (packetContext) {
         var packet = packetContext.packet;
         if (packet.resource) {
-            packet.resource = packet.resource.replace(/\/me/, packetContext.packet.src);
+            packet.resource = packet.resource.replace(/$\/me^/, packetContext.packet.src);
         }
     });
 
-    this.addDynamicNode("/address", new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/address",
         pattern: /^\/address\/.*$/,
         contentType: "application/ozpIwc-address-v1+json"
     }));
-    this.addDynamicNode("/multicast", new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/multicast",
         pattern: /^\/multicast\/.*$/,
         contentType: "application/ozpIwc-multicast-address-v1+json"
     }));
-    this.addDynamicNode("/router", new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/router",
         pattern: /^\/router\/.*$/,
         contentType: "application/ozpIwc-router-v1+json"
     }));
-    this.addDynamicNode("/api", new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/api",
         pattern: /^\/api\/.*$/,
         contentType: "application/ozpIwc-api-descriptor-v1+json"
     }));

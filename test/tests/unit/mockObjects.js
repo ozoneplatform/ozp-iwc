@@ -120,7 +120,7 @@ var FakeRouter = function() {
         while (this.packetQueue.length) {
             processed++;
             var packet = this.packetQueue.shift();
-				console.log("PACKET(" + packet.src + "): ",packet);
+//				console.log("PACKET(" + packet.src + "): ",packet);
             this.participants.forEach(function(l) {
                 if (l.address !== packet.src) {
                     l.receiveFromRouter(new TestPacketContext({'packet': packet}));

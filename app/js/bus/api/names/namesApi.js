@@ -5,23 +5,27 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
     this.on("receive", function (packetContext) {
         var packet = packetContext.packet;
         if (packet.resource) {
-            packet.resource = packet.resource.replace(/\/me/, packetContext.packet.src);
+            packet.resource = packet.resource.replace(/$\/me^/, packetContext.packet.src);
         }
     });
 
-    this.addDynamicNode("/address", new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/address",
         pattern: /^\/address\/.*$/,
         contentType: "application/ozpIwc-address-v1+json"
     }));
-    this.addDynamicNode("/multicast", new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/multicast",
         pattern: /^\/multicast\/.*$/,
         contentType: "application/ozpIwc-multicast-address-v1+json"
     }));
-    this.addDynamicNode("/router", new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/router",
         pattern: /^\/router\/.*$/,
         contentType: "application/ozpIwc-router-v1+json"
     }));
-    this.addDynamicNode("/api", new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/api",
         pattern: /^\/api\/.*$/,
         contentType: "application/ozpIwc-api-descriptor-v1+json"
     }));

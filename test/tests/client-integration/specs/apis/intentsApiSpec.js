@@ -33,7 +33,7 @@ describe("intents.api integration", function () {
         icon: "http://example.com/view-text-plain.png",
         label: "View Plain Text",
         invokeIntent: "system.api/application/123-412"
-    }
+    };
 
     var setEntity={
         label: 'changed label',
@@ -46,136 +46,33 @@ describe("intents.api integration", function () {
     it('registers handlers', function (done) {
         var called = false;
 
-        client.api('intents.api').register('/a/b/c', {entity: registerEntity})
-            .then(function (reply) {
-                if (!called) {
-                    called = true;
-
-                    expect(reply.response).toEqual('ok');
-                    expect(reply.entity).toContain('/a/b/c');
-                    done();
-                }
-            })
-            .catch(function (error) {
-                expect(error).toEqual('');
-            });
-    });
-
-    it('unregisters handlers', function (done) {
-        var called = false;
-
-        client.api('intents.api').register('/a/b/c',{entity: registerEntity})
-            .then(function(reply) {
-                client.api('intents.api').unregister('/a/b/c',reply.entity)
-                    .then(function(reply) {
-                        if (!called) {
-                            called = true;
-
-                            expect(reply.response).toEqual('ok');
-                            done();
-                        }
-                    })
-                    .catch(function(error) {
-                        expect(error).toEqual('');
-                    });
-            })
-            .catch(function(error) {
-                expect(error).toEqual('');
-            });
-
-    });
-
-    it('sets handler properties', function (done) {
-        var called = false;
-
-        client.api('intents.api').register('/a/b/c',{entity: registerEntity})
-            .then(function(reply) {
-                client.api('intents.api').set(reply.entity,{entity: setEntity})
-                    .then(function(reply) {
-                        if (!called) {
-                            called = true;
-                            expect(reply.response).toEqual('ok');
-                            done();
-                        }
-                    })
-                    .catch(function(error) {
-                        expect(error).toEqual('');
-                    });
-            })
-            .catch(function(error) {
-                expect(error).toEqual('');
-            });
-    });
-
-    it('gets handler properties', function (done) {
-        var called = false;
-
-        client.api('intents.api').register('/a/b/c',{entity: registerEntity})
-            .then(function(reply) {
-                client.api('intents.api').set(reply.entity,{entity: setEntity})
-                    .then(function(reply) {
-                        client.api('intents.api').get('/a/b/c',reply.entity)
-                            .then(function(reply) {
-                                if (!called) {
-                                    called = true;
-                                    label: 'changed label',
-                                        expect(reply.entity).toEqual(reply.entity);
-                                    done();
-                                }
-                            })
-                            .catch(function(error) {
-                                expect(error).toEqual('');
-                            });
-                    })
-                    .catch(function(error) {
-                        expect(error).toEqual('');
-                    });
-            })
-            .catch(function(error) {
-                expect(error).toEqual('');
-            });
+        client.api('intents.api').register('/text/plain/view', {
+            contentType: "application/ozpIwc-intents-handler-v1+json",
+            entity: registerEntity
+        }).then(function (reply) {
+            expect(reply.response).toEqual('ok');
+            expect(reply.entity.resource).toMatch('/text/plain/view');
+            done();
+        })
+        .catch(function (error) {
+            expect(error).toEqual('');
+            done();
+        });
     });
 
     it('deletes handlers', function (done) {
-        var called = false;
+        client.api('intents.api').register('/text/plain/view',{
+            contentType: "application/ozpIwc-intents-handler-v1+json",
+            entity: registerEntity
+        }).then(function(reply) {
+            return client.api('intents.api').delete(reply.entity.resource);
+        }).then(function(reply) {
+            expect(reply.response).toEqual('ok');
+        }).catch(function(error) {
+            expect(error).toEqual('');
+        }).then(done,done);
 
-        client.api('intents.api').register('/a/b/c',{entity: registerEntity})
-            .then(function(reply) {
-                client.api('intents.api').delete('/a/b/c',reply.entity)
-                    .then(function(reply) {
-                        if (!called) {
-                            expect(reply.response).toEqual('ok');
-                            done();
-                        }
-                    })
-                    .catch(function(error) {
-                        expect(error).toEqual('');
-                    });
-            })
-            .catch(function(error) {
-                expect(error).toEqual('');
-            });
     });
 
-    xit('Invokes specific handlers', function (done) {
-        var called = false;
-
-        client.api('intents.api').register('/a/b/c',{entity: registerEntity})
-            .then(function(reply) {
-                client.api('intents.api').invoke(reply.entity,{})
-                    .then(function(reply) {
-                        if (!called) {
-                            expect(reply.response).toEqual('ok');
-                            done();
-                        }
-                    })
-                    .catch(function(error) {
-                        expect(error).toEqual('');
-                    });
-            })
-            .catch(function(error) {
-                expect(error).toEqual('');
-            });
-    });
 
 });

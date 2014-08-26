@@ -203,9 +203,9 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         try {
             f.apply(self);
         } catch(e) {
-//            if(!e instanceof ozpIwc.ApiError) {
-                console.error("Unexpected error:",e);
-//            }
+            if(!e.errorAction) {
+                console.log("Unexpected error:",e);
+            }
             packetContext.replyTo({
                 'response': e.errorAction || "unknownError",
                 'entity': e.message
@@ -310,10 +310,9 @@ ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
     }
 };
 
-ozpIwc.CommonApiBase.prototype.addDynamicNode=function(resource,node) {
-    this.data[resource]=node;
-    node.resource=resource;
-    this.dynamicNodes.push(resource);
+ozpIwc.CommonApiBase.prototype.addDynamicNode=function(node) {
+    this.data[node.resource]=node;
+    this.dynamicNodes.push(node.resource);
     this.updateDynamicNode(node);
 };
 

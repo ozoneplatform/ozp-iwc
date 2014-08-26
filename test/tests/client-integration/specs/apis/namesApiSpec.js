@@ -178,41 +178,5 @@ describe("Names API", function () {
                 });
         });
 
-
-        it('Client watches & un-watches keys', function (done) {
-            var called = false;
-
-            client.api('names.api').watch(testId,{}, function(reply) {
-                if (reply.response === 'changed') {
-                    expect(reply.entity.newValue).toEqual(testFragment.entity);
-                    client.api('names.api').unwatch(testId)
-                        .then(function(reply) {
-                            expect(reply.response).toEqual('ok');
-                            if (!called) {
-                                called=true;
-                                done();
-                            }
-                        })
-                        .catch(function(error) {
-                            expect(error).toEqual('');
-                        });
-                    return true;
-                }
-            })
-                .then(function(reply) {
-                    if (reply.response === 'ok') {
-                        client.api('names.api').set(testId, testFragment)
-                            .then(function (reply) {
-                                expect(reply.response).toEqual('ok');
-                            })
-                            .catch(function (error) {
-                                expect(error).toEqual('');
-                            });
-                    }
-                })
-                .catch(function(error) {
-                    expect(error).toEqual('');
-                });
-        });
     });
 });

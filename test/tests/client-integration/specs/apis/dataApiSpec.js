@@ -28,18 +28,17 @@ describe("Data API", function () {
             'resource': "/test",
             'action' : "set",
             'entity' : { 'foo' : 1 }
-        }
-        participant.send(packet,function(reply) {
-            expect(reply.response).toEqual('ok');
-            client.api('data.api').get(packet.resource)
+        };
+        participant.send(packet,function() {
+            
+            client.api('data.api')
+                .get(packet.resource)
                 .then(function(reply) {
                     expect(reply.entity).toEqual(packet.entity);
                     done();
-                })
-                .catch(function(error) {
-                    expect(error).toEqual('');
+                }).catch(function(error) {
+                    expect(error).toEqual('not have happened');
                 });
-
         });
     });
 
@@ -50,20 +49,18 @@ describe("Data API", function () {
             'action' : "set",
             'entity' : { 'foo' : 1 }
         };
-        client.api('data.api').watch(packet.resource,null,function(reply) {
+        client.api('data.api').watch(packet.resource,{},function(reply) {
             if(reply.response==="changed") {
                 expect(reply.entity.newValue).toEqual(packet.entity);
                 expect(reply.entity.oldValue).toEqual({});
                 done();
             }
             return true;
-        })
-            .then(function(reply) {
+        }).then(function(reply) {
                 participant.send(packet);
-            })
-            .catch(function(error) {
+        }).catch(function(error) {
                 expect(error).toEqual('');
-            });
+        });
 
     });
 
@@ -174,7 +171,7 @@ describe("Data API", function () {
                         })
                         .catch(function (error) {
                             expect(error).toEqual('');
-                        })
+                        });
                 })
                 .catch(function (error) {
                     expect(error).toEqual('');
@@ -191,41 +188,6 @@ describe("Data API", function () {
                         done();
                     }
                 }).catch(function (error) {
-                    expect(error).toEqual('');
-                });
-        });
-
-
-        it('Client watches & un-watches keys', function (done) {
-            var called = false;
-
-            client.api('data.api').watch('/test', {}, function (packet) {
-                if (packet.response === "changed") {
-                    expect(packet.entity.newValue).toEqual('testData');
-                    client.api('data.api').unwatch('/test', {})
-                        .then(function (packet2) {
-                            if (!called) {
-                                called = true;
-
-                                expect(packet2.response).toEqual('ok');
-
-                                done();
-                            }
-                        })
-                        .catch(function (error) {
-                            expect(error).toEqual('');
-                        });
-                }
-            })
-                .catch(function(error) {
-                    expect(error).toEqual('')
-                });
-
-            client.api('data.api').set('/test', {entity: 'testData'})
-                .then(function (packet) {
-                    expect(packet.response).toEqual('ok');
-                })
-                .catch(function (error) {
                     expect(error).toEqual('');
                 });
         });
