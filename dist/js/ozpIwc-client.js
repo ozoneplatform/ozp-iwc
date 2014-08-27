@@ -2939,39 +2939,36 @@ ozpIwc.Client=function(config) {
 
     this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
     this.msgIdSequence=0;
+
     this.events=new ozpIwc.Event();
     this.events.mixinOnOff(this);
+    
     this.receivedPackets=0;
     this.receivedBytes=0;
     this.sentPackets=0;
     this.sentBytes=0;
+    
     this.startTime=ozpIwc.util.now();
-    this.window = window;
-    this.apiMap={};
+
+    // @todo pull these from the names.api
+    this.apiMap={
+        "data.api" : { 'address': 'data.api',
+            'actions': ["get","set","delete","watch","unwatch","list","addChild","removeChild"]
+        },
+        "system.api" : { 'address': 'system.api',
+            'actions': ["get","set","delete","watch","unwatch","launch"]
+        },
+        "names.api" : { 'address': 'names.api',
+            'actions': ["get","set","delete","watch","unwatch"]
+        }, 
+        "intents.api" : { 'address': 'intents.api',
+            'actions': ["get","set","delete","watch","unwatch","register","invoke"]
+        }
+    };
     this.wrapperMap={};
+    
     var self=this;
 
-    this.on('gotAddress',function() {
-        var numApis;
-        var getApiInfo=function() {
-            self.send({dst: 'names.api', resource: '/api', action: 'get'}, function (reply) {
-                numApis = reply.entity.length;
-                for (var i in reply.entity) {
-                    var callback = self.setApiInfo(reply.entity[i].split('/')[2], i >= numApis - 1);
-                    self.send({dst: 'names.api', resource: reply.entity[i], action: 'get'}, callback);
-                }
-                if (numApis == 0) {
-                    setTimeout(getApiInfo(), 200);
-                }
-                return null;//de-register callback
-            });
-        }
-        setTimeout(getApiInfo());
-    });
-
-    if(this.autoPeer) {
-        this.findPeer();
-    }
 
     this.postMessageHandler = function(event) {
         if(event.origin !== self.peerOrigin){
@@ -2994,13 +2991,13 @@ ozpIwc.Client=function(config) {
 
     this.preconnectionQueue=[];
 
-    this.on("connected",function() {
-        self.preconnectionQueue.forEach(function(p) {
-            self.send(p.fields,p.callback,p.promise);
-        });
-        self.preconnectionQueue=null;
-    });
+    if(this.autoPeer) {
+        this.connect();
+    }
+
 };
+
+
 
 /**
  * Receive a packet from the connected peer.  If the packet is a reply, then
@@ -3101,25 +3098,55 @@ ozpIwc.Client.prototype.disconnect=function() {
     }
 };
 
+ozpIwc.Client.prototype.connect=function(peers) {
+    if(this.connectPromise) {
+        return this.connectPromise;
+    }
+    var self=this;
+    this.connectPromise=this.findPeer().then(function() {
+        return new Promise(function(resolve,reject) {
+            self.send({dst:"$transport"},function(message) {
+                self.address=message.dst;
+                self.events.trigger("gotAddress",self);
+                resolve(self.address);
+            });
+        });
+    }).then(function() {
+        self.preconnectionQueue.forEach(function(p) {
+            self.send(p.fields,p.callback,p.promise);
+        });
+        self.preconnectionQueue=null;
+    }).then(function() {
+        self.events.trigger("connected");
+    }).catch(function(error) {
+        console.log("Failed to connect to bus ",error);
+    });
+};
+
 ozpIwc.Client.prototype.createIframePeer=function(peerUrl) {
     var self=this;
-    var createIframeShim=function() {
-        self.iframe=document.createElement("iframe");
-        self.iframe.src=peerUrl+"/iframe_peer.html";
-        self.iframe.height=1;
-        self.iframe.width=1;
-        self.iframe.style.setProperty ("display", "none", "important")
-        self.iframe.addEventListener("load",function() { self.requestAddress(); },false);
-        document.body.appendChild(self.iframe);
-        self.peer=self.iframe.contentWindow;
+    return new Promise(function(resolve,reject) {
+        var createIframeShim=function() {
+            self.iframe=document.createElement("iframe");
+            self.iframe.addEventListener("load",function() {
+                resolve();
+            });
+            self.iframe.src=peerUrl+"/iframe_peer.html";
+            self.iframe.height=1;
+            self.iframe.width=1;
+            self.iframe.style.setProperty ("display", "none", "important");
+            document.body.appendChild(self.iframe);
+            self.peer=self.iframe.contentWindow;
+            
 
-    };
-    // need at least the body tag to be loaded, so wait until it's loaded
-    if(document.readyState === 'complete' ) {
-        createIframeShim();
-    } else {
-        window.addEventListener("load",createIframeShim,false);
-    }
+        };
+        // need at least the body tag to be loaded, so wait until it's loaded
+        if(document.readyState === 'complete' ) {
+            createIframeShim();
+        } else {
+            window.addEventListener("load",createIframeShim,false);
+        }
+    });
 };
 
 ozpIwc.Client.prototype.findPeer=function() {
@@ -3128,31 +3155,8 @@ ozpIwc.Client.prototype.findPeer=function() {
 //		this.peer=window.parent;
 //		this.requestAddress();
 //	} else {
-    this.createIframePeer(this.peerUrl);
+    return this.createIframePeer(this.peerUrl);
 //	}
-};
-
-ozpIwc.Client.prototype.requestAddress=function(){
-    // send connect to get our address
-    var self=this;
-    this.send({dst:"$transport"},function(message) {
-        self.address=message.dst;
-        self.events.trigger("gotAddress",self);
-        return null;//de-register callback
-    });
-};
-
-ozpIwc.Client.prototype.setApiInfo=function(apiName,last) {
-    var self=this;
-    return function(packet) {
-        self.apiMap[apiName]=packet.entity;
-        self.apiMap[apiName].apiName=apiName;
-        if (last) {
-            self.events.trigger("connected",self);
-            return false;
-        }
-        return true;
-    };
 };
 
 (function() {
@@ -3163,7 +3167,7 @@ ozpIwc.Client.prototype.setApiInfo=function(apiName,last) {
             wrapper={};
             for (var i=0;i<api.actions.length;++i){
                 var action=api.actions[i];
-                wrapper[action]=augment(api.apiName,action,this);
+                wrapper[action]=augment(api.address,action,this);
             }
             
             this.wrapperMap[apiName]=wrapper;
