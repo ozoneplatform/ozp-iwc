@@ -58,6 +58,10 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
 ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
+    if(!data) {
+        return;
+    }
+    
     var self=this;
     if(data._embedded && data._embedded['item']) {
         for (var i in data._embedded['item']) {

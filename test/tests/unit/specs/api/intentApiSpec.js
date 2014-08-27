@@ -91,5 +91,79 @@ describe("Intent API Class", function () {
         expect(testPacket.responses[0].response).toEqual("ok");
         expect(testPacket.responses[0].entity.resource).toMatch(/text\/plain\/view\/.*/);
     });
+    
+    describe("Invoking handlers",function() {
+        var handlerResource;
+        beforeEach(function() {
+            var registerPacket=new TestPacketContext({
+                'packet': {
+                    'resource': "/text/plain/view",
+                    'action': "register",
+                    'contentType' : "application/ozpIwc-intents-handler-v1+json",
+                    'entity': {
+                        'type': "text/plain",
+                        'action' : "view",
+                        'invokeIntent': {
+                            dst: "system.api",
+                            resource: "/intentHandler",
+                            action: "view"
+                        }
+                    }
+                },
+                'leaderState': "leader"
+            });
 
+            apiBase.routePacket(registerPacket);
+            handlerResource=registerPacket.responses[0].entity.resource;
+            expect(handlerResource).toBeDefined();
+        });
+        it("Invokes handlers directly",function() {
+            var testPacket=new TestPacketContext({
+                'packet': {
+                    'resource': handlerResource,
+                    'action': "invoke",
+                    'contentType' : "text/plain",
+                    'entity': "Some Text"
+                },
+                'leaderState': "leader"
+            });
+            apiBase.routePacket(testPacket);
+
+            expect(apiBase.participant.sentPackets[0].action).toEqual("view");
+            expect(apiBase.participant.sentPackets[0].resource).toEqual("/intentHandler");
+            expect(apiBase.participant.sentPackets[0].contentType).toEqual("text/plain");
+            expect(apiBase.participant.sentPackets[0].entity).toEqual("Some Text");
+        });
+        it("Handler's return value is forwarded to the invoker",function() {
+
+            var testPacket=new TestPacketContext({
+                'packet': {
+                    'resource': handlerResource,
+                    'action': "invoke",
+                    'contentType' : "text/plain",
+                    'entity': "Some Text"
+                },
+                'leaderState': "leader"
+            });
+            apiBase.routePacket(testPacket);
+
+            var invokePacket=apiBase.participant.sentPackets[0];
+            
+            apiBase.participant.receiveFromRouter(new TestPacketContext({
+                'packet': {
+                    'src': "fakeHandler",
+                    'response': "ok",
+                    'replyTo': invokePacket.msgId,
+                    'contentType' : "text/winnar",
+                    'entity': "You won!"
+                },
+                'leaderState': "leader"
+            }));
+            
+            var fowardedPacket=testPacket.responses[0];
+            expect(fowardedPacket.contentType).toEqual("text/winnar");
+            expect(fowardedPacket.entity).toEqual("You won!");
+
+        });
+    });
 });

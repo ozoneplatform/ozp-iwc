@@ -6080,6 +6080,10 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
 ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
+    if(!data) {
+        return;
+    }
+    
     var self=this;
     if(data._embedded && data._embedded['item']) {
         for (var i in data._embedded['item']) {
@@ -6689,7 +6693,7 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
 	var key=this.createKey(node.resource+"/");
 
 	// save the new child
-	var childNode=this.makeValue({'resource':key});
+	var childNode=this.findOrMakeValue({'resource':key});
 	childNode.set(packetContext.packet);
 	
     packetContext.replyTo({
@@ -6712,7 +6716,24 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
  */
 ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
-
+    // check to see if there's an invokeIntent package
+    var packet=ozpIwc.util.clone(node.entity.invokeIntent);
+    
+    // assign the entity and contentType from the packet Context
+    packet.entity=ozpIwc.util.clone(packetContext.packet.entity);
+    packet.contentType=packetContext.packet.contentType;
+    packet.permissions=packetContext.packet.entity;
+    
+    this.participant.send(packet,function(response) {
+        var blacklist=['src','dst','msgId','replyTo'];
+        var packet={};
+        for(var k in response) {
+            if(blacklist.indexOf(k) === -1) {
+                packet[k]=response[k];
+            }
+        }
+        packetContext.replyTo(packet);
+    });
 };
 
 
