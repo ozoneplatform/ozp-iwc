@@ -34,7 +34,7 @@ describe("System API",function() {
         userNode=null;
         systemNode=null;
     });
-
+    
 //    it("sets an application",function() {
 //        var packetContext=new TestPacketContext({
 //            'packet': {

@@ -9,6 +9,7 @@
  */
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
+    this.loadFromServer("intents");
 });
 
 /**
@@ -47,7 +48,6 @@ ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
             throw new ozpIwc.ApiError("badResource","Invalid resource: " + packet.resource)
     }
 };
-
 
 /**
  * Creates and registers a handler to the given definition resource path.

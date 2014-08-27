@@ -3,7 +3,7 @@
  */
 
 
-describe("intents.api integration", function () {
+describe("Intents API", function () {
     var client;
     var participant;
 

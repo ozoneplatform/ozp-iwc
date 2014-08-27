@@ -33,27 +33,8 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
     var self=this;
     endpoint.get("/")
         .then(function(data) {
-            var rootPath = data._links.self.href;
-            var updateResource=function(object,path) {
-                var node = self.findNodeForServerResource(object,path,rootPath);
+            self.loadLinkedObjectsFromServer(endpoint,data);
 
-                var snapshot=node.snapshot();
-                node.deserialize(node,object);
-                self.notifyWatchers(node,node.changesSince(snapshot));
-            };
-            if(data._embedded) {
-                for (var i in data._embedded['item']) {
-                    var object = data._embedded['item'][i];
-                    updateResource(object,object._links.self.href);
-                }
-            }
-            if(data._links) {
-                data._links['item'].forEach(function(object) {
-                    endpoint.get(object.href).then(function(objectResource){
-                        updateResource(objectResource,object.href);
-                    });
-                });
-            }
             // update all the collection values
             self.dynamicNodes.forEach(function(resource) {
                 self.updateDynamicNode(self.data[resource]);
@@ -61,6 +42,39 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
     }).catch(function(e) {
         console.error("Could not load from api (" + endpointName + "): " + e.message,e);
     });
+};
+
+ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint) {
+    var node = this.findNodeForServerResource(object,path,endpoint.baseUrl);
+
+    var snapshot=node.snapshot();
+    node.deserialize(node,object);
+    console.log("loaded " + path + " as " + node.resource);
+
+    this.notifyWatchers(node,node.changesSince(snapshot));
+    this.loadLinkedObjectsFromServer(endpoint,object);
+};
+
+ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data) {
+    // fetch the base endpoint. it should be a HAL Json object that all of the 
+    // resources and keys in it
+    var self=this;
+    if(data._embedded && data._embedded['item']) {
+        for (var i in data._embedded['item']) {
+            var object = data._embedded['item'][i];
+            this.updateResourceFromServer(object,object._links.self.href,endpoint);
+        }
+    }
+    if(data._links && data._links['item']) {
+        data._links['item'].forEach(function(object) {
+            var href=object.href;
+            endpoint.get(href).then(function(objectResource){
+                self.updateResourceFromServer(objectResource,href,endpoint);
+            }).catch(function(error) {
+                console.error("unable to load " + object.href + " because: ",error);
+            });
+        });
+    }
 };
 
     

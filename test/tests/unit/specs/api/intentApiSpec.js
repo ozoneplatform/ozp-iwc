@@ -1,14 +1,21 @@
 describe("Intent API Class", function () {
 
     var apiBase;
-
+    var oldEndpoints;
     beforeEach(function () {
+        oldEndpoints=ozpIwc.endpoint;
+        ozpIwc.endpoint=function() {
+            return {
+                get: function() { return Promise.resolve(); }
+            };            
+        };
         apiBase = new ozpIwc.IntentsApi({
             'participant': new TestParticipant()
         });
     });
 
     afterEach(function () {
+        ozpIwc.endpoint=oldEndpoints;
         apiBase = null;
     });
     
