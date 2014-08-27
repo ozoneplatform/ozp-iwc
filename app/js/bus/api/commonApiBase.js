@@ -365,7 +365,7 @@ ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
 };
 
 /**
- *
+ * Puts the API's participant into it's election state.
  */
 ozpIwc.CommonApiBase.prototype.startElection = function(){
     if (this.participant.leaderState === "leader" || this.participant.leaderState === "actingLeader") {
@@ -376,7 +376,7 @@ ozpIwc.CommonApiBase.prototype.startElection = function(){
 };
 
 /**
- *
+ * Handles setting the API's participant to the leader state.
  */
 ozpIwc.CommonApiBase.prototype.setToLeader = function(){
     this.participant.changeState("leader");
@@ -387,7 +387,9 @@ ozpIwc.CommonApiBase.prototype.setToLeader = function(){
 };
 
 /**
- *
+ *  Handles taking over control of the API's participant group as the leader.
+ *      - If this API instance was the leader prior to election and won the election normal functionality resumes.
+ *      - If this API instance received state from a leaving leader participant, it will consume said participants state
  */
 ozpIwc.CommonApiBase.prototype.becameLeader= function(){
     // Was I the leader at the start of the election?
@@ -397,39 +399,48 @@ ozpIwc.CommonApiBase.prototype.becameLeader= function(){
     } else if (this.participant.leaderState === "election" && !this.alreadyLost) {
         this.participant.changeState("leaderSync");
 
-            if (this.participant.stateStore) {
-                // Previous leader sent out their state, it was stored in the participant
-                this.setState(this.participant.stateStore);
-                this.participant.stateStore = {};
-                this.setToLeader();
+        if (this.participant.stateStore) {
+            // Previous leader sent out their state, it was stored in the participant
+            this.setState(this.participant.stateStore);
+            this.participant.stateStore = {};
+            this.setToLeader();
 
-            } else if (this.participant.previousLeader) {
-                // There was a previous leader but we haven't seen their state. Wait for it.
-                var recvFunc = function(){
-                    this.setState(this.participant.stateStore);
-                    this.participant.off("receivedState",recvFunc);
-                    this.setToLeader();
-                };
-                this.participant.on("receivedState",recvFunc);
-                var self = this;
-                window.setTimeout(function(){
-                    // TODO: Fails silently, change?
-                    self.participant.off("receivedState",recvFunc);
-                    self.setToLeader();
-                },1000);
+        } else if (this.participant.previousLeader) {
+            // There was a previous leader but we haven't seen their state. Wait for it.
+            var self = this;
+            this.receiveStateTimer = null;
+            var recvFunc = function(){
+                self.setState(self.participant.stateStore);
+                self.participant.off("receivedState",recvFunc);
+                self.setToLeader();
+                window.clearInterval(self.receiveStateTimer);
+                self.receiveStateTimer = null;
+            };
+            this.participant.on("receivedState",recvFunc);
+            var self = this;
+            this.receiveStateTimer = window.setTimeout(function(){
+                console.error(this.participant.name, this.participant.address, "Failed to retrieve state.");
+                self.participant.off("receivedState",recvFunc);
+                self.setToLeader();
+            },1000);
 
-            }else {
-                // This is the first of the bus, winner doesn't grab any previous state
-                this.setToLeader();
-            }
+        }else {
+            // This is the first of the bus, winner doesn't grab any previous state
+            this.setToLeader();
+        }
     }
 
     this.participant.sendElectionMessage("victory");
 };
 
+/**
+ * Handles a new leader being assigned to this API's participant group.
+ *      - If this API instance was leader prior to the election, its state will be sent off to the new leader.
+ *      - If this API instance wasn't the leader prior to the election it will resume normal functionality
+ */
 ozpIwc.CommonApiBase.prototype.newLeader = function() {
     if (this.participant.leaderState === "actingLeader") {
-        this.participant.sendElectionMessage({previousLeader: this.participant.address, state: this.data});
+        this.participant.sendElectionMessage("election",{previousLeader: this.participant.address, state: this.data});
     }
     this.participant.changeState("member");
     this.participant.events.trigger("emptyQueue");

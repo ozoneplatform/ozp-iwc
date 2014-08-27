@@ -32,7 +32,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 	// Election times and how to score them
 	this.priority = config.priority || ozpIwc.defaultLeaderPriority || -ozpIwc.util.now();
 	this.priorityLessThan = config.priorityLessThan || function(l,r) { return l < r; };
-	this.electionTimeout=config.electionTimeout || 1000; // 1 second
+	this.electionTimeout=config.electionTimeout || 500; // 1 second
 	this.leaderState="connecting";
 	this.electionQueue=[];
 	
@@ -118,7 +118,7 @@ ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, confi
     config = config || {};
     var state = config.state || {};
     var previousLeader = config.previousLeader || false;
-	this.send({
+    this.send({
 		'src': this.address,
 		'dst': this.electionAddress,
 		'action': type,
@@ -158,7 +158,7 @@ ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
         }
 	},this.electionTimeout);
 
-	this.sendElectionMessage("election", {state: state});
+	this.sendElectionMessage("election", {state: state, previousLeader: this.isLeader()});
 };
 
 /**
@@ -224,13 +224,16 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
         this.events.trigger("receivedState");
     }
     if(electionMessage.entity.previousLeader){
-        this.previousLeaderAddress = electionMessage.entity.previousLeader;
+        this.previousLeader = electionMessage.entity.previousLeader;
     }
 	// is the new election lower priority than us?
 	if(this.priorityLessThan(electionMessage.entity.priority,this.priority) && !this.alreadyLost) {
 		// Quell the rebellion!
 		this.startElection();
-	} else {
+	} else if (this.leaderState === "leader" || this.leaderState === "actingLeader") {
+        this.sendElectionMessage("election", {previousLeader: true});
+//        this.startElection();
+    } else {
 		// Abandon dreams of leadership
         this.alreadyLost = true;
 		this.cancelElection();
