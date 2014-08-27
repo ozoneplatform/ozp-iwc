@@ -32,7 +32,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 	// Election times and how to score them
 	this.priority = config.priority || ozpIwc.defaultLeaderPriority || -ozpIwc.util.now();
 	this.priorityLessThan = config.priorityLessThan || function(l,r) { return l < r; };
-	this.electionTimeout=config.electionTimeout || 250; // quarter second
+	this.electionTimeout=config.electionTimeout || 1000; // 1 second
 	this.leaderState="connecting";
 	this.electionQueue=[];
 	
