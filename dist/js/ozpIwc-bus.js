@@ -6039,26 +6039,25 @@ ozpIwc.CommonApiBase = function(config) {
     this.data={};
 };
 
-ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
+ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
+    var resource=objectPath.replace(rootPath,'');
+    return this.findOrMakeValue({
+        'resource': resource,
+        'entity': serverObject.entity,
+        'contentType': serverObject.contentType
+    });
+};
+
+ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
-    if(!this.endpointName) {
-        return;
-    }
+    var endpoint=ozpIwc.endpoint(endpointName);
     var self=this;
-
-    var endpoint=ozpIwc.endpoint(this.endpointName);
-    
     endpoint.get("/")
         .then(function(data) {
             var rootPath = data._links.self.href;
             var updateResource=function(object,path) {
-                var resource=path.replace(rootPath,'');
-                var node = self.findOrMakeValue({
-                        'resource': resource,
-                        'entity': object.entity,
-                        'contentType': object.contentType
-                    });
+                var node = self.findNodeForServerResource(object,path,rootPath);
 
                 var snapshot=node.snapshot();
                 node.deserialize(node,object);
@@ -6071,19 +6070,18 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
                 }
             }
             if(data._links) {
-                for (var i in data._links['item']) {
-                    var object = data._links['item'][i];
+                data._links['item'].forEach(function(object) {
                     endpoint.get(object.href).then(function(objectResource){
                         updateResource(objectResource,object.href);
                     });
-                }
+                });
             }
             // update all the collection values
             self.dynamicNodes.forEach(function(resource) {
                 self.updateDynamicNode(self.data[resource]);
             });        
     }).catch(function(e) {
-        console.error("Could not load from api",e);
+        console.error("Could not load from api (" + endpointName + "): " + e.message,e);
     });
 };
 
@@ -6488,8 +6486,7 @@ ozpIwc.initEndpoints=function(apiRoot) {
 };
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-    this.endpointName="data";
-    this.loadFromServer();
+    this.loadFromServer("data");
 });
 
 ozpIwc.DataApi.prototype.makeValue = function(packet){
@@ -6882,155 +6879,70 @@ var ozpIwc=ozpIwc || {};
 
 ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
-//    this.participant.securityAttributes=config.securityAttributes;
-    if (config.userHref) {
-        this.loadServerDataEmbedded({href: config.userHref, resource: '/user'})
-            .success(function () {
-                //Add on load code here
-            });
-    }
-    if (config.systemHref) {
-        this.loadServerDataEmbedded({href: config.systemHref, resource: '/system'})
-            .success(function () {
-                //Add on load code here
-            });
-    }
+    
+    
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/application",
+        pattern: /^\/application\/.*$/,
+        contentType: "application/ozpIwc-application-list-v1+json"
+    }));
+    
+    this.loadFromServer("applications");
+    // @todo populate user and system endpoints
+    this.data["/user"]=new ozpIwc.CommonApiValue({
+        resource: "/user",
+        contentType: "application/ozpIwc-user-v1+json",
+        entity: {
+            "name": "DataFaked BySystemApi",
+            "userName": "fixmefixmefixme"
+        }
+    });
+    this.data["/system"]=new ozpIwc.CommonApiValue({
+        resource: "/system",
+        contentType: "application/ozpIwc-system-info-v1+json",
+        entity: {
+            "version": "1.0",
+            "name": "Fake Data from SystemAPI FIXME"
+        }
+    });    
 });
+
+ozpIwc.SystemApi.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
+    var resource="/application" + objectPath.replace(rootPath,'');
+    return this.findOrMakeValue({
+        'resource': resource,
+        'entity': serverObject,
+        'contentType': "ozpIwc-application-definition-v1+json"
+    });
+};
 
 ozpIwc.SystemApi.prototype.makeValue = function(packet){
-    return new ozpIwc.SystemApiValue({resource: packet.resource, entity: packet.entity, contentType: packet.contentType, systemApi: this});
+    return new ozpIwc.SystemApiApplicationValue({
+        resource: packet.resource, 
+        entity: packet.entity, 
+        contentType: packet.contentType, 
+        systemApi: this
+    });
 };
 
-ozpIwc.SystemApi.prototype.isPermitted=function(node,packetContext) {
-    var originalNode=node;
-    var originalPacketContext=packetContext;
-    if (packetContext.packet.action==='set' || packetContext.packet.action==='delete') {
-        node.permissions.modifyAuthority='apiLoader';
-        if (packetContext.packet.securityAttributes) {
-            packetContext.srcSubject=packetContext.srcSubject || {};
-            Object.keys(packetContext.packet.securityAttributes).forEach(function(key) {
-                packetContext.srcSubject[key]=packetContext.packet.securityAttributes[key];
-            });
-        }
-    } else {
-        delete node.permissions.modifyAuthority;
-    }
-    for (var i in arguments) {
-        if (arguments[i] === originalNode) {
-            arguments[i]=node;
-        } else if (arguments[i] === originalPacketContext) {
-            arguments[i]=packetContext;
-        }
-    }
-    var retVal=ozpIwc.CommonApiBase.prototype.isPermitted.apply(this,arguments);
-    delete node.permissions.modifyAuthority;
-    return retVal
-}
 
-/**
- * Loads the user and system data from the specified href. Data must be of hal/json type and
- * the keys 'user' and 'system' in the '_embedded' property must have object values that
- * correspond to user and system, respectively.
- *
- * @param config {Object}
- * @param config.href {String}
- * @returns {ozpIwc.AsyncAction}
- */
-ozpIwc.SystemApi.prototype.loadServerDataEmbedded = function (config) {
-    var self = this;
-    var asyncResponse = new ozpIwc.AsyncAction();
-    ozpIwc.util.ajax({
-        href: config.href,
-        method: "GET"
-    })
-        .success(function (data) {
-            var value=self.findOrMakeValue({'resource': config.resource});
-            value.set({entity: data});
-            asyncResponse.resolve("success");
-        })
-        .failure(function(data) {
-            console.log("AJAX failure response: " + data)
-            asyncResponse.resolve("failure",data);
-        });
-
-    return asyncResponse;
+ozpIwc.SystemApi.prototype.handleSet = function() {
+    throw new ozpIwc.ApiError("badAction", "Cannot modify the system API");
 };
 
-ozpIwc.SystemApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
+ozpIwc.SystemApi.prototype.handleDelete = function() {
+    throw new ozpIwc.ApiError("badAction", "Cannot modify the system API");
+};
+
+ozpIwc.SystemApiApplicationValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
     ozpIwc.CommonApiValue.apply(this,arguments);
-    config=config || {};
-    this.systemApi=config.systemApi || ozpIwc.systemApi;
 });
 
-ozpIwc.SystemApiValue.prototype.set=function(packet) {
-    if(this.isValidContentType(packet.contentType)) {
-        this.permissions=packet.permissions || this.permissions;
-        this.contentType=packet.contentType;
-        if (this.resource) {
-            if (this.resource.indexOf('/application') === 0) {
-                var id = this.applicationId();
-                if (id) {
-                    this.entity = packet.entity;
-                    var node = this.systemApi.findOrMakeValue({resource: '/application'});
-                    node.set({entity: id});
-                } else {
-                    this.entity = this.entity || [];
-                    if (this.entity.indexOf(packet.entity) < 0) {
-                        this.entity.push(packet.entity);
-                    }
-                }
-            } else {
-                this.entity = packet.entity;
-            }
-            this.version++;
-        }
-    }
-}
 
-ozpIwc.SystemApiValue.prototype.deleteData=function(packet) {
-    if (this.resource) {
-        if (this.resource.indexOf('/application') === 0) {
-            var id = this.applicationId();
-            if (id) {
-                var originalEntity=this.entity;
-                ozpIwc.CommonApiValue.prototype.deleteData.apply(this,arguments);
-                if (originalEntity) {
-                    var node = this.systemApi.findOrMakeValue({resource: '/application'});
-                    node.deleteData({entity: id})
-                }
-            } else {
-                if (!this.entity) {
-                    return;
-                }
-                var elementRemoved=false;
-                this.entity=this.entity.filter(function(element) {
-                    var keep=element !== packet.entity;
-                    if (!keep) {
-                        elementRemoved=true;
-                    }
-                    this.version=0;
-                    return keep;
-                });
-                if (elementRemoved){
-                    var node = this.systemApi.findOrMakeValue({resource: '/application/'+packet.entity});
-                    node.deleteData();
-                }
-            }
-        } else {
-            ozpIwc.CommonApiValue.prototype.deleteData.apply(this,arguments);
-        }
-        this.version=0;
-    }
+ozpIwc.SystemApiApplicationValue.prototype.deserialize=function(serverData) {
+    this.entity=serverData.entity;
+    this.contentType=serverData.contentType || this.contentType;
+	this.permissions=serverData.permissions || this.permissions;
+	this.version=serverData.version || this.version;
 };
-
-ozpIwc.SystemApiValue.prototype.applicationId=function() {
-    var regexp=/\/application\/(.*)/;
-    var res=regexp.exec(this.resource);
-    if (res && res.length > 1) {
-        return res[1];
-    }
-    return null;
-};
-
-
 //# sourceMappingURL=ozpIwc-bus.js.map

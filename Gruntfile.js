@@ -110,32 +110,11 @@ module.exports = function(grunt) {
             jssrc: {
                 files: [
                     {
-                        src: ['app/js/bus/defaultWiring.js'],
-                        dest: './dist/js/',
-                        cwd: '.',
-                        expand: true,
-                        flatten: true
-                    }
-                ]
-            },
-            iframepeer: {
-                files: [
-                    {
-                        src: ['app/iframe_peer.html'],
+                        src: ['js/defaultWiring.js','iframe_peer.html','tools/**/*'],
                         dest: './dist/',
-                        cwd: '.',
+                        cwd: 'app',
                         expand: true,
-                        flatten: true
-                    }
-                ]
-            },
-            tools: {
-                files: [
-                    {
-                        src: ['**'],
-                        dest: './dist/tools',
-                        cwd: 'app/tools/',
-                        expand: true
+                        nonull:true
                     }
                 ]
             }
@@ -154,12 +133,18 @@ module.exports = function(grunt) {
         watch: {
             concatFiles: {
                 files: ['Gruntfile.js', '<%= src.all %>','app/**/*'],
-                tasks: ['concat_sourcemap','copy']
+                tasks: ['concat_sourcemap', 'copy'],
+                options: {
+                    interrupt: true,
+                    spawn: false
+                }
+                
             },
             test: {
-                files: ['Gruntfile.js', '<%= output.allJs %>', '<%= src.test %>'],
+                files: ['Gruntfile.js', 'dist/**/*', '<%= src.test %>'],
                 options: {
-                    livereload: false
+                    livereload: true,
+                    spawn: false
                 }
             }
         },
@@ -195,7 +180,7 @@ module.exports = function(grunt) {
                 options: {port: 14001, base: ["dist","test/mockParticipant"]}
             },
             testBus: {
-                options:{ port: 14002, base: ["test/integration/bus","dist",sampleDataBase] }
+                options:{ port: 14002, base: ['dist'] }
             },
             doc: {
                 options: { port: 13001, base: "doc" }
@@ -231,9 +216,10 @@ module.exports = function(grunt) {
     grunt.initConfig(config);
 
     // Default task(s).
-    grunt.registerTask('build', ['clean', 'concat_sourcemap', 'uglify', 'copy']);
-    grunt.registerTask('dist', ['build', 'jsdoc']);
-    grunt.registerTask('test', ['build','connect', 'watch']);
+    grunt.registerTask('build', ['concat_sourcemap', 'uglify', 'copy']);
+    grunt.registerTask('dist', ['jshint','build', 'jsdoc']);
+    grunt.registerTask('testOnly', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
+    grunt.registerTask('test', ['build','connect','watch']);
     grunt.registerTask('default', ['dist']);
 
 };

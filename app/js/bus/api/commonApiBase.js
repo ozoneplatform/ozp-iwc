@@ -17,26 +17,25 @@ ozpIwc.CommonApiBase = function(config) {
     this.data={};
 };
 
-ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
+ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
+    var resource=objectPath.replace(rootPath,'');
+    return this.findOrMakeValue({
+        'resource': resource,
+        'entity': serverObject.entity,
+        'contentType': serverObject.contentType
+    });
+};
+
+ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
-    if(!this.endpointName) {
-        return;
-    }
+    var endpoint=ozpIwc.endpoint(endpointName);
     var self=this;
-
-    var endpoint=ozpIwc.endpoint(this.endpointName);
-    
     endpoint.get("/")
         .then(function(data) {
             var rootPath = data._links.self.href;
             var updateResource=function(object,path) {
-                var resource=path.replace(rootPath,'');
-                var node = self.findOrMakeValue({
-                        'resource': resource,
-                        'entity': object.entity,
-                        'contentType': object.contentType
-                    });
+                var node = self.findNodeForServerResource(object,path,rootPath);
 
                 var snapshot=node.snapshot();
                 node.deserialize(node,object);
@@ -49,19 +48,18 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
                 }
             }
             if(data._links) {
-                for (var i in data._links['item']) {
-                    var object = data._links['item'][i];
+                data._links['item'].forEach(function(object) {
                     endpoint.get(object.href).then(function(objectResource){
                         updateResource(objectResource,object.href);
                     });
-                }
+                });
             }
             // update all the collection values
             self.dynamicNodes.forEach(function(resource) {
                 self.updateDynamicNode(self.data[resource]);
             });        
     }).catch(function(e) {
-        console.error("Could not load from api",e);
+        console.error("Could not load from api (" + endpointName + "): " + e.message,e);
     });
 };
 

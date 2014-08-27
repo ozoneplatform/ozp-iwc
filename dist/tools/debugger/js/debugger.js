@@ -15,7 +15,7 @@ debuggerModule.factory("iwcClient",function() {
 debuggerModule.controller("debuggerController",["$scope","iwcClient",function(scope,client) {
     scope.client=client;
     scope.apis=[
-        {'address': "data.api"},
+        {'address': "data.api",'hasChildren':true},
         {'address': "intents.api"},
         {'address': "system.api"},
         {'address': "names.api"}

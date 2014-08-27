@@ -3011,7 +3011,6 @@ ozpIwc.Client=function(config) {
  * @returns {undefined}
  */
 ozpIwc.Client.prototype.receive=function(packet) {
-    console.log("Got ",packet);
     if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
         if (!this.replyCallbacks[packet.replyTo](packet)) {
             this.cancelCallback(packet.replyTo);

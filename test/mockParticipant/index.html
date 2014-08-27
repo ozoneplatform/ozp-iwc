@@ -2,14 +2,14 @@
 <html>
 <head>
     <title>Mock Participant for OZP IWC integration testing</title>
-    <script type="text/javascript" src="//localhost:13000/js/ozpIwc-bus.js"></script>
-    <script type="text/javascript" src="//localhost:13000/js/ozpIwc-metrics.js"></script>
-    <script type="text/javascript" src="//localhost:13000/js/ozpIwc-client.js"></script>
+    <script type="text/javascript" src="/js/ozpIwc-bus.js"></script>
+    <script type="text/javascript" src="/js/ozpIwc-metrics.js"></script>
+    <script type="text/javascript" src="/js/ozpIwc-client.js"></script>
     <script type="text/javascript">
         var client = new ozpIwc.Client({peerUrl: "http://localhost:14002"});
         var testAddress = "";
         var sendToParent=function(data) {
-            console.log("Sending to test",data);
+//            console.log("Sending to test",data);
             parent.postMessage(data,"*");
         };
         
@@ -18,7 +18,7 @@
                 if(event.source !== window.parent) {
                     return;
                 }
-            console.log("Fake IWC App received: ",event.data);
+//            console.log("Fake IWC App received: ",event.data);
 
                 switch(event.data.msgType) {
                     case "run": 

@@ -133,7 +133,7 @@
                         <td>Content Type</td>
                         <td>Permissions</td>
                         <td>Entity</td>
-                        <td>Children</td>
+                        <td ng-show="api.hasChildren">Children</td>
                     </tr></thead>
                 <tbody>
                     <tr ng-repeat="key in keys | orderBy:'resource' | filter:viewFilter ">
@@ -159,7 +159,7 @@
                         <td>{{key.contentType}}</td>
                         <td><pre>{{key.permissions | json}}</pre></td>
                         <td><pre>{{ key.entity | json }}</pre></td>
-                        <td><pre>{{ key.children | json}}</pre></td>
+                        <td ng-show="api.hasChildren"><pre>{{ key.children | json}}</pre></td>
                     </tr>
                 </tbody>
             </table>

@@ -58,7 +58,6 @@ describe("KeyBroadcastLocalStorageLink", function () {
             link.sendImpl = function (packet) {
                 if (!called) {
                     called = true;
-                    console.log(packet);
                     expect(packet.data.total).toEqual(expectedFragments);
                     done();
                 }
@@ -146,7 +145,6 @@ describe("KeyBroadcastLocalStorageLink", function () {
 
             //Route the packet directly to the receive (for unit test purpose)
             link.sendImpl = function (packet) {
-                console.log(packet.sequence);
                 link.handleFragment(packet);
             };
 
@@ -167,7 +165,6 @@ describe("KeyBroadcastLocalStorageLink", function () {
 
             var droppedPacketCount = ozpIwc.metrics.counter('network.packets.dropped').value;
             var droppedFragmentCount = ozpIwc.metrics.counter('network.fragments.dropped').value;
-            console.log(droppedFragmentCount);
 
             link.handleFragment(networkPacket);
             var expectedFragments = link.fragments[fragmentIndex].total;
@@ -179,7 +176,6 @@ describe("KeyBroadcastLocalStorageLink", function () {
 
             expect(ozpIwc.metrics.counter('network.packets.dropped').value).toEqual(droppedPacketCount + 1);
             expect(ozpIwc.metrics.counter('network.fragments.dropped').value).toEqual(droppedFragmentCount + expectedFragments);
-            console.log(ozpIwc.metrics.counter('network.packets.dropped').value);
         });
 
         it("converts fragments back into a TransportPacket", function() {
