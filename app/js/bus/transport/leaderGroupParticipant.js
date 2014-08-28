@@ -32,7 +32,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 	// Election times and how to score them
 	this.priority = config.priority || ozpIwc.defaultLeaderPriority || -ozpIwc.util.now();
 	this.priorityLessThan = config.priorityLessThan || function(l,r) { return l < r; };
-	this.electionTimeout=config.electionTimeout || 1000; // 1 second
+	this.electionTimeout=config.electionTimeout || 1000; // quarter second
 	this.leaderState="connecting";
 	this.electionQueue=[];
 	
@@ -47,14 +47,14 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 			this.electionQueue=[];
 	},this);
 	
-	this.on("workQueue",function() {
+	this.on("becameLeader",function() {
 		this.electionQueue.forEach(function(p) {
 			this.forwardToTarget(p);
 		},this);
 		this.electionQueue=[];
 	},this);
 
-	this.on("emptyQueue",function() {
+	this.on("newLeader",function() {
 		this.electionQueue=[];
 	},this);
 
@@ -67,6 +67,16 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
         //Priority has to be the minimum possible
         self.priority=-Number.MAX_VALUE;
         self.leaderPriority=-Number.MAX_VALUE;
+        self.send = function(originalPacket,callback) {
+            var packet=this.fixPacket(originalPacket);
+            if(callback) {
+                this.replyCallbacks[packet.msgId]=callback;
+            }
+            ozpIwc.Participant.prototype.send.call(this,packet);
+
+            return packet;
+        };
+
         if(self.leaderState === "leader" || self.leaderState === "actingLeader") {
             self.events.trigger("unloadState");
         }
@@ -106,7 +116,11 @@ ozpIwc.LeaderGroupParticipant.prototype.inElection=function() {
  * @returns {Boolean}
  */
 ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
-	return this.leader === this.address;
+    if (this.leaderState !== "actingLeader" || this.leaderState !== "leader" || this.leaderState != "member"){
+        return "I DONT KNOW YET";
+    } else {
+        return this.leader === this.address;
+    }
 };
 
 /**
@@ -153,9 +167,7 @@ ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
 	// if no one overrules us, declare victory
 	this.electionTimer=window.setTimeout(function() {
 		self.cancelElection();
-        if(!self.alreadyLost) {
-            self.events.trigger("becameLeader");
-        }
+        self.events.trigger("becameLeaderStep");
 	},this.electionTimeout);
 
 	this.sendElectionMessage("election", {state: state, previousLeader: this.isLeader()});
@@ -254,7 +266,7 @@ ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMes
 		this.leader=victoryMessage.src;
 		this.leaderPriority=victoryMessage.entity.priority;
 		this.cancelElection();
-		this.events.trigger("newLeader");
+		this.events.trigger("newLeaderStep");
         this.stateStore = {};
 	}
 };
@@ -269,6 +281,7 @@ ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
 
 ozpIwc.LeaderGroupParticipant.prototype.changeState=function(state) {
     if(state !== this.leaderState){
+        console.log(this.address, this.leaderState, state);
         this.leaderState = state;
     }
 };

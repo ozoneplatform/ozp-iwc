@@ -8,8 +8,8 @@ ozpIwc.CommonApiBase = function(config) {
 	this.participant=config.participant;
     this.participant.on("unloadState",ozpIwc.CommonApiBase.prototype.unloadState,this);
 	this.participant.on("receiveApiPacket",ozpIwc.CommonApiBase.prototype.routePacket,this);
-    this.participant.on("becameLeader", ozpIwc.CommonApiBase.prototype.becameLeader,this);
-    this.participant.on("newLeader", ozpIwc.CommonApiBase.prototype.newLeader,this);
+    this.participant.on("becameLeaderStep", ozpIwc.CommonApiBase.prototype.becameLeader,this);
+    this.participant.on("newLeaderStep", ozpIwc.CommonApiBase.prototype.newLeader,this);
     this.participant.on("startElection", ozpIwc.CommonApiBase.prototype.startElection,this);
 
 	this.events = new ozpIwc.Event();
@@ -446,10 +446,10 @@ ozpIwc.CommonApiBase.prototype.startElection = function(){
  * Handles setting the API's participant to the leader state.
  */
 ozpIwc.CommonApiBase.prototype.setToLeader = function(){
-    this.participant.changeState("leader");
     this.participant.leader = this.participant.address;
     this.participant.leaderPriority = this.participant.priority;
-    this.participant.events.trigger("workQueue");
+    this.participant.changeState("leader");
+    this.participant.events.trigger("becameLeader");
 };
 
 /**
@@ -461,6 +461,8 @@ ozpIwc.CommonApiBase.prototype.becameLeader= function(){
     // Was I the leader at the start of the election?
     if (this.participant.leaderState === "actingLeader") {
         // Continue leading
+        this.participant.leader = this.participant.address;
+        this.participant.leaderPriority=this.participant.priority;
         this.participant.changeState("leader");
 
     } else if (this.participant.leaderState === "election") {
@@ -503,9 +505,9 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
 
         this.participant.on("receivedState",recvFunc);
 
-
+        var self = this;
         this.receiveStateTimer = window.setTimeout(function(){
-            if(this.participant.stateStore && Object.keys(this.participant.stateStore).length > 0){
+            if(self.participant.stateStore && Object.keys(self.participant.stateStore).length > 0){
                 recvFunc();
             } else {
                 console.error(self.participant.name, self.participant.address, "Failed to retrieve state.");
@@ -530,5 +532,5 @@ ozpIwc.CommonApiBase.prototype.newLeader = function() {
         this.participant.sendElectionMessage("election",{previousLeader: this.participant.address, state: this.data});
     }
     this.participant.changeState("member");
-    this.participant.events.trigger("emptyQueue");
+    this.participant.events.trigger("newLeader");
 };
