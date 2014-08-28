@@ -32,7 +32,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 	// Election times and how to score them
 	this.priority = config.priority || ozpIwc.defaultLeaderPriority || -ozpIwc.util.now();
 	this.priorityLessThan = config.priorityLessThan || function(l,r) { return l < r; };
-	this.electionTimeout=config.electionTimeout || 500; // 1 second
+	this.electionTimeout=config.electionTimeout || 1000; // 1 second
 	this.leaderState="connecting";
 	this.electionQueue=[];
 	
@@ -226,16 +226,16 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
     if(electionMessage.entity.previousLeader){
         this.previousLeader = electionMessage.entity.previousLeader;
     }
+
+
 	// is the new election lower priority than us?
-	if(this.priorityLessThan(electionMessage.entity.priority,this.priority) && !this.alreadyLost) {
+	if(this.priorityLessThan(electionMessage.entity.priority,this.priority)) {
 		// Quell the rebellion!
 		this.startElection();
 	} else if (this.leaderState === "leader" || this.leaderState === "actingLeader") {
         this.sendElectionMessage("election", {previousLeader: true});
-//        this.startElection();
     } else {
 		// Abandon dreams of leadership
-        this.alreadyLost = true;
 		this.cancelElection();
 	}
 };
@@ -269,7 +269,6 @@ ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
 
 ozpIwc.LeaderGroupParticipant.prototype.changeState=function(state) {
     if(state !== this.leaderState){
-        console.log(this.address + "\t\tOld:" + this.leaderState + "\t\tNew:" + state);
         this.leaderState = state;
     }
 };

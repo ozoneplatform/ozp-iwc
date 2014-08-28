@@ -370,6 +370,8 @@ ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
 ozpIwc.CommonApiBase.prototype.startElection = function(){
     if (this.participant.leaderState === "leader" || this.participant.leaderState === "actingLeader") {
         this.participant.changeState("actingLeader");
+    } else if(this.participant.leaderState === "leaderSync") {
+      // do nothing.
     } else {
         this.participant.changeState("election");
     }
@@ -383,7 +385,6 @@ ozpIwc.CommonApiBase.prototype.setToLeader = function(){
     this.participant.leader = this.participant.address;
     this.participant.leaderPriority = this.participant.priority;
     this.participant.events.trigger("workQueue");
-    this.participant.alreadyLost = false;
 };
 
 /**
@@ -396,43 +397,64 @@ ozpIwc.CommonApiBase.prototype.becameLeader= function(){
     if (this.participant.leaderState === "actingLeader") {
         // Continue leading
         this.participant.changeState("leader");
-    } else if (this.participant.leaderState === "election" && !this.alreadyLost) {
+
+    } else if (this.participant.leaderState === "election") {
         this.participant.changeState("leaderSync");
+        var self = this;
 
-        if (this.participant.stateStore) {
-            // Previous leader sent out their state, it was stored in the participant
-            this.setState(this.participant.stateStore);
-            this.participant.stateStore = {};
-            this.setToLeader();
-
-        } else if (this.participant.previousLeader) {
-            // There was a previous leader but we haven't seen their state. Wait for it.
-            var self = this;
-            this.receiveStateTimer = null;
-            var recvFunc = function(){
-                self.setState(self.participant.stateStore);
-                self.participant.off("receivedState",recvFunc);
-                self.setToLeader();
-                window.clearInterval(self.receiveStateTimer);
-                self.receiveStateTimer = null;
-            };
-            this.participant.on("receivedState",recvFunc);
-            var self = this;
-            this.receiveStateTimer = window.setTimeout(function(){
-                console.error(this.participant.name, this.participant.address, "Failed to retrieve state.");
-                self.participant.off("receivedState",recvFunc);
-                self.setToLeader();
-            },1000);
-
-        }else {
-            // This is the first of the bus, winner doesn't grab any previous state
-            this.setToLeader();
-        }
+        window.setTimeout(function(){
+            if(self.participant.leaderState === "leaderSync"){
+                self.leaderSync();
+            }
+        },250);
     }
 
     this.participant.sendElectionMessage("victory");
 };
 
+/**
+ * Handles the syncronizing of API data from previous leaders.
+ */
+ozpIwc.CommonApiBase.prototype.leaderSync = function () {
+
+    // Previous leader sent out their state, it was stored in the participant
+    if (this.participant.stateStore && Object.keys(this.participant.stateStore).length > 0) {
+        this.setState(this.participant.stateStore);
+        this.participant.stateStore = {};
+        this.setToLeader();
+
+    } else if (this.participant.previousLeader) {
+        // There was a previous leader but we haven't seen their state. Wait for it.
+        this.receiveStateTimer = null;
+        var self = this;
+
+        var recvFunc = function(){
+            self.setState(self.participant.stateStore);
+            self.participant.off("receivedState",recvFunc);
+            self.setToLeader();
+            window.clearInterval(self.receiveStateTimer);
+            self.receiveStateTimer = null;
+        };
+
+        this.participant.on("receivedState",recvFunc);
+
+
+        this.receiveStateTimer = window.setTimeout(function(){
+            if(this.participant.stateStore && Object.keys(this.participant.stateStore).length > 0){
+                recvFunc();
+            } else {
+                console.error(self.participant.name, self.participant.address, "Failed to retrieve state.");
+            }
+
+            self.participant.off("receivedState",recvFunc);
+            self.setToLeader();
+        },250);
+
+    }else {
+        // This is the first of the bus, winner doesn't grab any previous state
+        this.setToLeader();
+    }
+};
 /**
  * Handles a new leader being assigned to this API's participant group.
  *      - If this API instance was leader prior to the election, its state will be sent off to the new leader.
@@ -444,5 +466,4 @@ ozpIwc.CommonApiBase.prototype.newLeader = function() {
     }
     this.participant.changeState("member");
     this.participant.events.trigger("emptyQueue");
-    this.participant.alreadyLost = false;
 };
