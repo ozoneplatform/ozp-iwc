@@ -2230,6 +2230,15 @@ ozpIwc.util.ajax = function (config) {
         request.send();
     });
 };
+
+ozpIwc.util.determineOrigin=function(url) {
+    var a=document.createElement("a");
+    a.href = url;
+    var origin=a.protocol + "//" + a.hostname;
+    if(a.port)
+        origin+= ":" + a.port;
+    return origin;
+};
 (function() {
 var define, requireModule, require, requirejs;
 

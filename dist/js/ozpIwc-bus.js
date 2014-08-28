@@ -2230,6 +2230,15 @@ ozpIwc.util.ajax = function (config) {
         request.send();
     });
 };
+
+ozpIwc.util.determineOrigin=function(url) {
+    var a=document.createElement("a");
+    a.href = url;
+    var origin=a.protocol + "//" + a.hostname;
+    if(a.port)
+        origin+= ":" + a.port;
+    return origin;
+};
 (function() {
 var define, requireModule, require, requirejs;
 
@@ -6062,7 +6071,7 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
                 self.updateDynamicNode(self.data[resource]);
             });        
     }).catch(function(e) {
-        console.error("Could not load from api (" + endpointName + "): " + e.message,e);
+        //console.error("Could not load from api (" + endpointName + "): " + e.message,e);
     });
 };
 
@@ -6071,7 +6080,6 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
 
     var snapshot=node.snapshot();
     node.deserialize(node,object);
-    console.log("loaded " + path + " as " + node.resource);
 
     this.notifyWatchers(node,node.changesSince(snapshot));
     this.loadLinkedObjectsFromServer(endpoint,object);

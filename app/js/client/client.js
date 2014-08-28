@@ -13,14 +13,27 @@ ozpIwc.Client=function(config) {
     config=config || {};
     this.address="$nobody";
     this.replyCallbacks={};
-    this.peerUrl=config.peerUrl;
-    var a=document.createElement("a");
-    a.href = this.peerUrl;
-    this.peerOrigin=a.protocol + "//" + a.hostname;
-    if(a.port)
-        this.peerOrigin+= ":" + a.port;
-
-
+    // coerce config.peerUrl to a function
+    
+    var configUrl=config.peerUrl;
+    if(typeof(configUrl) === "string") {
+        this.peerUrlCheck=function(url,resolve) {
+            resolve(configUrl);
+        };
+    } else if(Array.isArray(configUrl)) {
+        this.peerUrlCheck=function(url,resolve) {
+            if(configUrl.indexOf(url) >= 0) {
+                resolve(url);
+            }
+            resolve(configUrl[0]);
+        };
+    } else if(typeof(configUrl) === "function") {
+        this.peerUrlCheck=configUrl;
+    } else {
+        throw new Error("PeerUrl must be a string, array of strings, or function");
+    }
+    
+    
     this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
     this.msgIdSequence=0;
 
@@ -57,27 +70,6 @@ ozpIwc.Client=function(config) {
     };
     this.wrapperMap={};
     
-    var self=this;
-
-
-    this.postMessageHandler = function(event) {
-        if(event.origin !== self.peerOrigin){
-            return;
-        }
-        try {
-            var message=event.data;
-            if (typeof(message) === 'string') {
-                message=JSON.parse(event.data);
-            }
-            self.receive(message);
-            self.receivedBytes+=(event.data.length * 2);
-            self.receivedPackets++;
-        } catch(e) {
-            // ignore!
-        }
-    };
-    // receive postmessage events
-    window.addEventListener("message", this.postMessageHandler, false);
 
     this.preconnectionQueue=[];
 
@@ -193,32 +185,58 @@ ozpIwc.Client.prototype.disconnect=function() {
     window.removeEventListener("message",this.postMessageHandler,false);
     if(this.iframe) {
         document.body.removeChild(this.iframe);
+        this.iframe=null;
     }
 };
 
+
 ozpIwc.Client.prototype.connect=function() {
-    if(this.connectPromise) {
-        return this.connectPromise;
-    }
-    var self=this;
-    this.connectPromise=this.findPeer().then(function() {
-        return new Promise(function(resolve,reject) {
-            self.send({dst:"$transport"},function(message) {
-                self.address=message.dst;
-                self.events.trigger("gotAddress",self);
-                resolve(self.address);
+    if(!this.connectPromise) {
+        var self=this;
+        this.connectPromise=new Promise(function(resolve) {
+            self.peerUrlCheck(self.launchParams.peer,resolve);
+        }).then(function(url) {
+            self.peerUrl=url;
+            self.peerOrigin=ozpIwc.util.determineOrigin(url);
+            return self.findPeer();
+        }).then(function() {
+            this.postMessageHandler = function(event) {
+                if(event.origin !== self.peerOrigin){
+                    return;
+                }
+                try {
+                    var message=event.data;
+                    if (typeof(message) === 'string') {
+                        message=JSON.parse(event.data);
+                    }
+                    self.receive(message);
+                    self.receivedBytes+=(event.data.length * 2);
+                    self.receivedPackets++;
+                } catch(e) {
+                    // ignore!
+                }
+            };
+            // receive postmessage events
+            window.addEventListener("message", this.postMessageHandler, false);
+            return new Promise(function(resolve,reject) {
+                self.send({dst:"$transport"},function(message) {
+                    self.address=message.dst;
+                    self.events.trigger("gotAddress",self);
+                    resolve(self.address);
+                });
             });
+        }).then(function() {
+            self.preconnectionQueue.forEach(function(p) {
+                self.send(p.fields,p.callback,p.promise);
+            });
+            self.preconnectionQueue=null;
+        }).then(function() {
+            self.events.trigger("connected");
+        }).catch(function(error) {
+            console.log("Failed to connect to bus ",error);
         });
-    }).then(function() {
-        self.preconnectionQueue.forEach(function(p) {
-            self.send(p.fields,p.callback,p.promise);
-        });
-        self.preconnectionQueue=null;
-    }).then(function() {
-        self.events.trigger("connected");
-    }).catch(function(error) {
-        console.log("Failed to connect to bus ",error);
-    });
+    }
+    return this.connectPromise; 
 };
 
 ozpIwc.Client.prototype.createIframePeer=function(peerUrl) {

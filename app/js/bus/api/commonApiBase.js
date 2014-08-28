@@ -40,7 +40,7 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
                 self.updateDynamicNode(self.data[resource]);
             });        
     }).catch(function(e) {
-        console.error("Could not load from api (" + endpointName + "): " + e.message,e);
+        //console.error("Could not load from api (" + endpointName + "): " + e.message,e);
     });
 };
 
@@ -49,7 +49,6 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
 
     var snapshot=node.snapshot();
     node.deserialize(node,object);
-    console.log("loaded " + path + " as " + node.resource);
 
     this.notifyWatchers(node,node.changesSince(snapshot));
     this.loadLinkedObjectsFromServer(endpoint,object);
