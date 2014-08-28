@@ -2230,6 +2230,15 @@ ozpIwc.util.ajax = function (config) {
         request.send();
     });
 };
+
+ozpIwc.util.determineOrigin=function(url) {
+    var a=document.createElement("a");
+    a.href = url;
+    var origin=a.protocol + "//" + a.hostname;
+    if(a.port)
+        origin+= ":" + a.port;
+    return origin;
+};
 /*
  * The MIT License (MIT) Copyright (c) 2012 Mike Ihbe
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 

@@ -42,7 +42,7 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
                 self.updateDynamicNode(self.data[resource]);
             });        
     }).catch(function(e) {
-        console.error("Could not load from api (" + endpointName + "): " + e.message,e);
+        //console.error("Could not load from api (" + endpointName + "): " + e.message,e);
     });
 };
 
@@ -51,7 +51,6 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
 
     var snapshot=node.snapshot();
     node.deserialize(node,object);
-    console.log("loaded " + path + " as " + node.resource);
 
     this.notifyWatchers(node,node.changesSince(snapshot));
     this.loadLinkedObjectsFromServer(endpoint,object);
@@ -60,6 +59,10 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
 ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
+    if(!data) {
+        return;
+    }
+    
     var self=this;
     if(data._embedded && data._embedded['item']) {
         for (var i in data._embedded['item']) {

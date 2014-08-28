@@ -2230,6 +2230,15 @@ ozpIwc.util.ajax = function (config) {
         request.send();
     });
 };
+
+ozpIwc.util.determineOrigin=function(url) {
+    var a=document.createElement("a");
+    a.href = url;
+    var origin=a.protocol + "//" + a.hostname;
+    if(a.port)
+        origin+= ":" + a.port;
+    return origin;
+};
 /*
  * The MIT License (MIT) Copyright (c) 2012 Mike Ihbe
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -5380,7 +5389,7 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
                 self.updateDynamicNode(self.data[resource]);
             });        
     }).catch(function(e) {
-        console.error("Could not load from api (" + endpointName + "): " + e.message,e);
+        //console.error("Could not load from api (" + endpointName + "): " + e.message,e);
     });
 };
 
@@ -5389,7 +5398,6 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
 
     var snapshot=node.snapshot();
     node.deserialize(node,object);
-    console.log("loaded " + path + " as " + node.resource);
 
     this.notifyWatchers(node,node.changesSince(snapshot));
     this.loadLinkedObjectsFromServer(endpoint,object);
@@ -5398,6 +5406,10 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
 ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
+    if(!data) {
+        return;
+    }
+    
     var self=this;
     if(data._embedded && data._embedded['item']) {
         for (var i in data._embedded['item']) {
@@ -6110,7 +6122,7 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
 	var key=this.createKey(node.resource+"/");
 
 	// save the new child
-	var childNode=this.makeValue({'resource':key});
+	var childNode=this.findOrMakeValue({'resource':key});
 	childNode.set(packetContext.packet);
 	
     packetContext.replyTo({
@@ -6133,7 +6145,24 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
  */
 ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
-
+    // check to see if there's an invokeIntent package
+    var packet=ozpIwc.util.clone(node.entity.invokeIntent);
+    
+    // assign the entity and contentType from the packet Context
+    packet.entity=ozpIwc.util.clone(packetContext.packet.entity);
+    packet.contentType=packetContext.packet.contentType;
+    packet.permissions=packetContext.packet.entity;
+    
+    this.participant.send(packet,function(response) {
+        var blacklist=['src','dst','msgId','replyTo'];
+        var packet={};
+        for(var k in response) {
+            if(blacklist.indexOf(k) === -1) {
+                packet[k]=response[k];
+            }
+        }
+        packetContext.replyTo(packet);
+    });
 };
 
 
