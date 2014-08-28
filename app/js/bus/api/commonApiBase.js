@@ -211,8 +211,23 @@ ozpIwc.CommonApiBase.prototype.createKey=function(prefix) {
  */
 ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 	var packet=packetContext.packet;
-
-	if(packetContext.leaderState !== 'leader' && packetContext.leaderState !== 'actingLeader'  )	{
+    this.events.trigger("receive",packetContext);
+    var self=this;
+    var errorWrap=function(f) {
+        try {
+            f.apply(self);
+        } catch(e) {
+            if(!e.errorAction) {
+                console.log("Unexpected error:",e);
+            }
+            packetContext.replyTo({
+                'response': e.errorAction || "unknownError",
+                'entity': e.message
+            });
+            return;
+        }
+    };
+    if(packetContext.leaderState !== 'leader' && packetContext.leaderState !== 'actingLeader'  )	{
 		// if not leader, just drop it.
 		return;
 	}
