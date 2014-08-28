@@ -2947,9 +2947,15 @@ ozpIwc.Client=function(config) {
     this.receivedBytes=0;
     this.sentPackets=0;
     this.sentBytes=0;
-    
-    this.startTime=ozpIwc.util.now();
 
+    this.startTime=ozpIwc.util.now();
+    
+    this.launchParams={};
+    
+    this.readLaunchParams(window.name);
+    this.readLaunchParams(window.location.search);
+    this.readLaunchParams(window.location.hash);
+    
     // @todo pull these from the names.api
     this.apiMap={
         "data.api" : { 'address': 'data.api',
@@ -2997,8 +3003,16 @@ ozpIwc.Client=function(config) {
 
 };
 
-
-
+ozpIwc.Client.prototype.readLaunchParams=function(rawString) {
+    // of the form ozpIwc.VARIABLE=VALUE, where:
+    //   VARIABLE is alphanumeric + "_"
+    //   VALUE does not contain & or #
+    var re=/ozpIwc.(\w+)=([^&#]+)/g;
+    var m;
+    while((m=re.exec(rawString)) !== null) {
+        this.launchParams[m[1]]=JSON.parse(decodeURIComponent(m[2]));
+    }
+};
 /**
  * Receive a packet from the connected peer.  If the packet is a reply, then
  * the callback for that reply is invoked.  Otherwise, it fires a receive event
@@ -3098,7 +3112,7 @@ ozpIwc.Client.prototype.disconnect=function() {
     }
 };
 
-ozpIwc.Client.prototype.connect=function(peers) {
+ozpIwc.Client.prototype.connect=function() {
     if(this.connectPromise) {
         return this.connectPromise;
     }
