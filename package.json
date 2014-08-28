@@ -6,10 +6,10 @@
   "devDependencies": {
     "grunt": "0.4.x",
     "grunt-contrib-uglify": "*",
-    "grunt-contrib-concat": "*",
+    "grunt-concat-sourcemap": "*",
     "grunt-jsdoc": "*",
     "grunt-contrib-watch": "*",
-    "grunt-contrib-connect": "*",
+    "grunt-contrib-connect": "git+https://github.com/gruntjs/grunt-contrib-connect",
     "grunt-contrib-jshint": "*",
     "grunt-contrib-copy": "*",
     "grunt-contrib-clean": "*",

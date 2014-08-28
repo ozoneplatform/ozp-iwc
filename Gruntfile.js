@@ -1,11 +1,24 @@
 module.exports = function(grunt) {
+    var sampleDataBase={
+                            "path":"data-schemas/mock",
+                            options: {
+                                directory: false,
+                                index: "index.json"
+                            }
+                        };
 
     // Project configuration.
     var config = {
         pkg: grunt.file.readJSON('package.json'),
+        
         src: {
-            metrics: [
+            common: [
+                'app/js/common/event.js',
                 'app/js/common/**/*.js',
+                'bower_components/es6-promise/promise.js'
+            ],
+            metrics: [
+                '<%= src.common %>',
                 'app/js/metrics/statistics/sample.js',
                 'app/js/metrics/statistics/binary_heap.js',
                 'app/js/metrics/statistics/exponentiallyDecayingSample.js',
@@ -15,11 +28,9 @@ module.exports = function(grunt) {
                 'app/js/metrics/metricsRegistry.js'
             ],
             bus: [
+                '<%= src.common %>',
                 '<%= src.metrics %>',
-                'app/js/bus/jquery-2.1.0.min.js',
                 'app/js/bus/setImmediate.js',
-                'app/js/common/event.js',
-                'app/js/common/**/*.js',
                 'app/js/bus/util/**/*.js',
                 'app/js/bus/security/**/*.js',
                 'app/js/bus/network/**/*.js',
@@ -35,7 +46,7 @@ module.exports = function(grunt) {
                 'app/js/bus/*/**/*.js'
             ],
             client: [
-                'app/js/common/**/*.js',
+                '<%= src.common %>',
                 'app/js/client/**/*.js'
             ],
             test: [
@@ -57,7 +68,10 @@ module.exports = function(grunt) {
             allJs: ['<%=output.busJs %>', '<%=output.clientJs %>', '<%=output.metricsJs %>'],
             allJsMin: ['<%=output.busJsMin %>', '<%=output.clientJsMin %>', '<%=output.metricsJsMin %>']
         },
-        concat: {
+        concat_sourcemap: {
+            options: {
+                sourcesContent: true
+            },
             bus: {
                 src: '<%= src.bus %>',
                 dest: '<%= output.busJs %>'
@@ -72,16 +86,21 @@ module.exports = function(grunt) {
             }
         },
         uglify: {
+            options: {
+                sourceMap:true,
+                sourceMapIncludeSources: true,
+                sourceMapIn: function(m) { return m+".map";}
+            },
             bus: {
-                src: '<%= concat.bus.dest %>',
+                src: '<%= concat_sourcemap.bus.dest %>',
                 dest: '<%= output.busJsMin %>'
             },
             client: {
-                src: '<%= concat.client.dest %>',
+                src: '<%= concat_sourcemap.client.dest %>',
                 dest: '<%= output.clientJsMin %>'
             },
             metrics: {
-                src: '<%= concat.metrics.dest %>',
+                src: '<%= concat_sourcemap.metrics.dest %>',
                 dest: '<%= output.metricsJsMin %>'
             }
         },
@@ -91,32 +110,11 @@ module.exports = function(grunt) {
             jssrc: {
                 files: [
                     {
-                        src: ['app/js/bus/defaultWiring.js'],
-                        dest: './dist/js/',
-                        cwd: '.',
-                        expand: true,
-                        flatten: true
-                    }
-                ]
-            },
-            iframepeer: {
-                files: [
-                    {
-                        src: ['app/iframe_peer.html'],
+                        src: ['js/defaultWiring.js','iframe_peer.html','tools/**/*'],
                         dest: './dist/',
-                        cwd: '.',
+                        cwd: 'app',
                         expand: true,
-                        flatten: true
-                    }
-                ]
-            },
-            tools: {
-                files: [
-                    {
-                        src: ['**'],
-                        dest: './dist/tools',
-                        cwd: 'app/tools/',
-                        expand: true
+                        nonull:true
                     }
                 ]
             }
@@ -128,19 +126,25 @@ module.exports = function(grunt) {
             dist: {
                 src: ['<%= src.bus %>', '<%= src.client %>'],
                 options: {
-                    destination: 'doc'
+                    destination: 'dist/doc'
                 }
             }
         },
         watch: {
             concatFiles: {
                 files: ['Gruntfile.js', '<%= src.all %>','app/**/*'],
-                tasks: ['concat','copy']
+                tasks: ['concat_sourcemap', 'copy'],
+                options: {
+                    interrupt: true,
+                    spawn: false
+                }
+                
             },
             test: {
-                files: ['Gruntfile.js', '<%= output.allJs %>', '<%= src.test %>'],
+                files: ['Gruntfile.js', 'dist/**/*', '<%= src.test %>'],
                 options: {
-                    livereload: true
+                    livereload: true,
+                    spawn: false
                 }
             }
         },
@@ -166,19 +170,17 @@ module.exports = function(grunt) {
             app: {
                 options: {
                     port: 13000,
-                    base: ["dist", "sampleData" ],
-                    index: "index.html",
-                    debug: true
+                    base: [sampleDataBase,'dist']
                 }
             },
             tests: {
-                options: {port: 14000, base: ["dist", "test","sampleData"]}
+                options: {port: 14000, base: ["dist", "test",sampleDataBase]}
             },
             mockParticipant: {
                 options: {port: 14001, base: ["dist","test/mockParticipant"]}
             },
             testBus: {
-                options:{ port: 14002, base: ["test/integration/bus","dist","sampleData"] }
+                options:{ port: 14002, base: ['dist'] }
             },
             doc: {
                 options: { port: 13001, base: "doc" }
@@ -214,7 +216,10 @@ module.exports = function(grunt) {
     grunt.initConfig(config);
 
     // Default task(s).
-    grunt.registerTask('default', ['clean', 'concat', 'uglify', 'copy', 'jsdoc']);
-    grunt.registerTask('test', ['concat', 'uglify', 'copy','connect', 'watch']);
+    grunt.registerTask('build', ['concat_sourcemap', 'uglify', 'copy']);
+    grunt.registerTask('dist', ['jshint','build', 'jsdoc']);
+    grunt.registerTask('testOnly', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
+    grunt.registerTask('test', ['build','connect','watch']);
+    grunt.registerTask('default', ['dist']);
 
 };

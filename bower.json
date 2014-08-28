@@ -22,5 +22,6 @@
     "test"
   ],
   "dependencies": {
+    "es6-promise" : "~1"
   }
 }

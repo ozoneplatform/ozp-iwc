@@ -1,35 +1,69 @@
 ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
     ozpIwc.CommonApiBase.apply(this, arguments);
-    
+
     // map the alias "/me" to "/address/{packet.src}" upon receiving the packet
-    this.on("receive", function(packetContext) {
+    this.on("receive", function (packetContext) {
         var packet = packetContext.packet;
         if (packet.resource) {
-            packet.resource = packet.resource.replace(/\/me/, packetContext.packet.src);
+            packet.resource = packet.resource.replace(/$\/me^/, packetContext.packet.src);
         }
     });
-    
-    this.addCollectionNode("/address",new ozpIwc.CommonApiCollectionValue({
+
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/address",
         pattern: /^\/address\/.*$/,
         contentType: "application/ozpIwc-address-v1+json"
     }));
-    this.addCollectionNode("/multicast",new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/multicast",
         pattern: /^\/multicast\/.*$/,
-        contentType: "application/ozpIwc-multicast-address-v1+json"        
+        contentType: "application/ozpIwc-multicast-address-v1+json"
     }));
-    this.addCollectionNode("/router",new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/router",
         pattern: /^\/router\/.*$/,
-        contentType: "application/ozpIwc-router-v1+json"        
+        contentType: "application/ozpIwc-router-v1+json"
     }));
-    this.addCollectionNode("/api",new ozpIwc.CommonApiCollectionValue({
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/api",
         pattern: /^\/api\/.*$/,
-        contentType: "application/ozpIwc-api-descriptor-v1+json"        
+        contentType: "application/ozpIwc-api-descriptor-v1+json"
     }));
-
+    //temporary injector code. Remove when api loader is implemented
+    var packet = {
+        resource: '/api/data.api',
+        entity: {'actions': ['get', 'set', 'delete', 'watch', 'unwatch', 'addChild', 'removeChild']},
+        contentType: 'application/ozpIwc-api-descriptor-v1+json'
+    }
+    var node=this.findOrMakeValue(packet);
+    node.set(packet);
+    packet = {
+        resource: '/api/intents.api',
+        entity: {'actions': ['get','set','delete','watch','unwatch','register','unregister','invoke']},
+        contentType: 'application/ozpIwc-api-descriptor-v1+json'
+    }
+    node=this.findOrMakeValue(packet);
+    node.set(packet);
+    packet = {
+        resource: '/api/names.api',
+        entity: {'actions': ['get','set','delete','watch','unwatch']},
+        contentType: 'application/ozpIwc-api-descriptor-v1+json'
+    }
+    node=this.findOrMakeValue(packet);
+    node.set(packet);
+    packet = {
+        resource: '/api/system.api',
+        entity: { 'actions': ['get','set','delete','watch','unwatch']},
+        contentType: 'application/ozpIwc-api-descriptor-v1+json'
+    }
+    node=this.findOrMakeValue(packet);
+    node.set(packet);
 });
 
 ozpIwc.NamesApi.prototype.validateResource=function(node,packetContext) {
-    return packetContext.packet.resource.match(/^\/(api|address|multicast|router|me)/);
+    if(packetContext.packet.resource && !packetContext.packet.resource.match(/^\/(api|address|multicast|router|me)/)){
+        throw new ozpIwc.ApiError('badResource',"Invalide resource for name.api: " + packetContext.packet.resource);
+    }
 };
 
 ozpIwc.NamesApi.prototype.makeValue = function(packet) {

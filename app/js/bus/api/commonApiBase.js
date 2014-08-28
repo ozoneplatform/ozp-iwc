@@ -15,10 +15,71 @@ ozpIwc.CommonApiBase = function(config) {
 	this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
     
-    
-    this.collectionNodes=[];
+    this.dynamicNodes=[];
     this.data={};
 };
+
+ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
+    var resource=objectPath.replace(rootPath,'');
+    return this.findOrMakeValue({
+        'resource': resource,
+        'entity': serverObject.entity,
+        'contentType': serverObject.contentType
+    });
+};
+
+ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
+    // fetch the base endpoint. it should be a HAL Json object that all of the 
+    // resources and keys in it
+    var endpoint=ozpIwc.endpoint(endpointName);
+    var self=this;
+    endpoint.get("/")
+        .then(function(data) {
+            self.loadLinkedObjectsFromServer(endpoint,data);
+
+            // update all the collection values
+            self.dynamicNodes.forEach(function(resource) {
+                self.updateDynamicNode(self.data[resource]);
+            });        
+    }).catch(function(e) {
+        console.error("Could not load from api (" + endpointName + "): " + e.message,e);
+    });
+};
+
+ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint) {
+    var node = this.findNodeForServerResource(object,path,endpoint.baseUrl);
+
+    var snapshot=node.snapshot();
+    node.deserialize(node,object);
+    console.log("loaded " + path + " as " + node.resource);
+
+    this.notifyWatchers(node,node.changesSince(snapshot));
+    this.loadLinkedObjectsFromServer(endpoint,object);
+};
+
+ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data) {
+    // fetch the base endpoint. it should be a HAL Json object that all of the 
+    // resources and keys in it
+    var self=this;
+    if(data._embedded && data._embedded['item']) {
+        for (var i in data._embedded['item']) {
+            var object = data._embedded['item'][i];
+            this.updateResourceFromServer(object,object._links.self.href,endpoint);
+        }
+    }
+    if(data._links && data._links['item']) {
+        data._links['item'].forEach(function(object) {
+            var href=object.href;
+            endpoint.get(href).then(function(objectResource){
+                self.updateResourceFromServer(objectResource,href,endpoint);
+            }).catch(function(error) {
+                console.error("unable to load " + object.href + " because: ",error);
+            });
+        });
+    }
+};
+
+    
 /**
  * Creates a new value for the given packet's request.  Subclasses must override this
  * function to return the proper value based upon the packet's resource, content type, or
@@ -60,6 +121,9 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
  * @param {object} evt.node - The node being changed.
  */
 ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
+    if(!changes) {
+        return;
+    }
 	node.eachWatcher(function(watcher) {
 		// @TODO check that the recipient has permission to both the new and old values
 		var reply={
@@ -148,7 +212,7 @@ ozpIwc.CommonApiBase.prototype.createKey=function(prefix) {
 ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 	var packet=packetContext.packet;
 
-	if(packetContext.leaderState !== 'leader' && packetContext.leaderState !== 'actingLeader'  ){
+	if(packetContext.leaderState !== 'leader' && packetContext.leaderState !== 'actingLeader'  )	{
 		// if not leader, just drop it.
 		return;
 	}
@@ -158,18 +222,47 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         // if it's a response packet that didn't wire an explicit handler, drop the sucker
         return;
     }
+    var node;
     
-	var handler;
-    this.events.trigger("receive",packetContext);
+    errorWrap(function() {
+        var handler=this.findHandler(packetContext);
+        this.validateResource(node,packetContext);
+        node=this.findOrMakeValue(packetContext.packet);
 
-    if(packet.resource===null || packet.resource===undefined) {
+        this.isPermitted(node,packetContext)
+            .success(function() {
+                errorWrap(function() {
+                    this.validatePreconditions(node,packetContext);
+                    var snapshot=node.snapshot();
+                    handler.call(this,node,packetContext);
+                    this.notifyWatchers(node,node.changesSince(snapshot));
+
+                    // update all the collection values
+                    this.dynamicNodes.forEach(function(resource) {
+                        this.updateDynamicNode(this.data[resource]);
+                    },this);
+                });
+            },this)
+            .failure(function() {
+                packetContext.replyTo({'response':'noPerm'});				
+            });
+    });
+};
+
+ozpIwc.CommonApiBase.prototype.findHandler=function(packetContext) {
+    var action=packetContext.packet.action;
+    var resource=packetContext.packet.resource;
+    
+    var handler;
+
+    if(resource===null || resource===undefined) {
         handler="rootHandle";
     } else {
         handler="handle";
     }
     
-	if(packet.action) {
-		handler+=packet.action.charAt(0).toUpperCase() + packet.action.slice(1).toLowerCase();
+	if(action) {
+		handler+=action.charAt(0).toUpperCase() + action.slice(1).toLowerCase();
 	} else {
         handler="defaultHandler";
     }
@@ -177,35 +270,10 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 	if(!handler || typeof(this[handler]) !== 'function') {
        handler="defaultHandler";
 	}
-    var node;
-    try {
-        node=this.findOrMakeValue(packetContext.packet);
-    } catch(e) {
-        if(e.errorAction) {
-            packetContext.replyTo({
-                'response': e.errorAction,
-                'entity': e.message
-            });
-            return;
-        } else {
-            throw e;
-        }
-    }
-    if(packetContext.packet.resource && !this.validateResource(node,packetContext)) {
-        packetContext.replyTo({'response': 'badResource'});
-        return;
-    }
-	this.invokeHandler(node,packetContext,this[handler]);
-	
+    return this[handler];
 };
 
-ozpIwc.CommonApiBase.prototype.defaultHandler=function(node,packetContext) {
-    console.log(this.participant.name + "/" + this.participant.address + " Received unexpected packet", packetContext);
-    packetContext.replyTo({
-        'response': 'badAction',
-        'entity': packetContext.packet.action
-    });
-};
+
 
 
 ozpIwc.CommonApiBase.prototype.validateResource=function(/* node,packetContext */) {
@@ -213,66 +281,45 @@ ozpIwc.CommonApiBase.prototype.validateResource=function(/* node,packetContext *
 };
 
 ozpIwc.CommonApiBase.prototype.validatePreconditions=function(node,packetContext) {
-	return !packetContext.packet.ifTag || packetContext.packet.ifTag===node.version;
+	if(packetContext.packet.ifTag && packetContext.packet.ifTag!==node.version) {
+        throw new ozpIwc.ApiError('noMatch',"Latest version is " + node.version);
+    }
 };
 
-/**
- * Invoke the proper handler for the packet after determining that
- * they handler has permission to perform this action.
- * @param {ozpIwc.CommonApiValue} node
- * @param {ozpIwc.TransportPacketContext} packetContext
- * @param {function} handler
- * @returns {undefined}
- */
-ozpIwc.CommonApiBase.prototype.invokeHandler=function(node,packetContext,handler) {
-	var async =this.isPermitted(node,packetContext);
-		async.failure(function() {
-			packetContext.replyTo({'response':'noPerm'});				
-		})
-		.success(function() {
-			if(!this.validatePreconditions(node,packetContext)) {
-				packetContext.replyTo({'response': 'noMatch'});
-				return;
-			}
-
-			var snapshot=node.snapshot();
-            try {
-                handler.call(this,node,packetContext);
-            } catch(e) {
-                if(e.errorAction) {
-                    packetContext.replyTo({
-                        'response': e.errorAction,
-                        'entity': e.message
-                    });
-                } else {
-                    throw e;
-                }
-            }
-			var changes=node.changesSince(snapshot);
-			
-			if(changes)	{
-				this.notifyWatchers(node,changes);
-            }
-            // update all the collection values
-            this.collectionNodes.forEach(function(resource) {
-                var node=this.data[resource];
-                var snapshot=node.snapshot();
-                node.updateContent(this);
-                var changes=node.changesSince(snapshot);
-                if(changes) {
-                    this.notifyWatchers(node,changes);
-                }
-            },this);
-            
-            
-		},this);	
+ozpIwc.CommonApiBase.prototype.validateContentType=function(node,packetContext) {
+    return true;
 };
 
-ozpIwc.CommonApiBase.prototype.addCollectionNode=function(resource,node) {
-    this.data[resource]=node;
-    node.resource=resource;
-    this.collectionNodes.push(resource);
-    node.updateContent(this);
+ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
+    if(!node) {
+        return;
+    }
+    var ofInterest=[];
+
+    for(var k in this.data) {
+        if(node.isUpdateNeeded(this.data[k])){
+            ofInterest.push(this.data[k]);
+        }                        
+    }
+
+    if(ofInterest) {
+        var snapshot=node.snapshot();
+        node.updateContent(ofInterest);
+        this.notifyWatchers(node,node.changesSince(snapshot));
+    }
+};
+
+ozpIwc.CommonApiBase.prototype.addDynamicNode=function(node) {
+    this.data[node.resource]=node;
+    this.dynamicNodes.push(node.resource);
+    this.updateDynamicNode(node);
+};
+
+ozpIwc.CommonApiBase.prototype.defaultHandler=function(node,packetContext) {
+    packetContext.replyTo({
+        'response': 'badAction',
+        'entity': packetContext.packet.action
+    });
 };
 
 /**

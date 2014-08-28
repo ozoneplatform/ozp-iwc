@@ -150,3 +150,25 @@ ozpIwc.CommonApiValue.prototype.changesSince=function(snapshot) {
 			'oldValue': snapshot.entity
 	};
 };
+
+/**
+ * Returns true if the value of this is impacted by the value of node.
+ * For nodes that base their value off of other nodes, override this function.
+ * @param {type} node 
+ * @returns boolean
+ */
+ozpIwc.CommonApiValue.prototype.isUpdateNeeded=function(node) {
+    return false;
+};
+
+/**
+ * Update this node based upon the changes made to changedNodes.
+ * @param {ozpIwc.CommonApiValue[]} changedNodes - Array of all nodes for which isUpdatedNeeded returned true.
+ * @returns {ozpIwc.CommonApiValue.changes}
+ */
+ozpIwc.CommonApiValue.prototype.updateContent=function(changedNodes) {
+    return null;
+};
+
+ozpIwc.CommonApiValue.prototype.deserialize=function(serverData) {
+};

@@ -1,65 +1,30 @@
 /**
- * The definition value for an intent. adheres to the ozp-intents-definition-v1+json content type.
+ * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
  * @class
  * @param {object} config
- * @param {object} config.entity
- * @param {string} config.entity.type - the type of this intent definition.
- * @param {string} config.entity.action - the action of this intent definition.
- * @param {string} config.entity.icon - the icon for this intent definition.
- * @param {string} config.entity.label - the label for this intent definition.
- * @param {string} config.entity.handlers - the list of handlers for the definition.
+ *@param {object} config.entity
+ * @param {string} config.entity.definitions - the list of definitions in this intent capability.
  */
 ozpIwc.IntentsApiDefinitionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function (config) {
-    ozpIwc.CommonApiValue.apply(this, arguments);
+    config=config || {};
+    config.allowedContentTypes=["application/ozpIwc-intents-definition-v1+json"];
+    config.contentType="application/ozpIwc-intents-definition-v1+json";
+    ozpIwc.CommonApiValue.call(this, config);
+    this.pattern=new RegExp(this.resource+"/[^/]*");
+    this.entity={
+        type: config.intentType,
+        action: config.intentAction,        
+        handlers: []
+    };
 });
 
-/**
- *
- * Adds a handler to the end of the definition's list of handler.
- * @param {string} definition - name of the handler added to this definition.
- */
-ozpIwc.IntentsApiDefinitionValue.prototype.pushHandler = function (handler) {
-    this.entity.handlers = this.entity.handlers || [];
-    this.entity.handlers.push(handler);
+ozpIwc.IntentsApiDefinitionValue.prototype.isUpdateNeeded=function(node) {
+    return this.pattern.test(node.resource);
+};
+
+ozpIwc.IntentsApiDefinitionValue.prototype.updateContent=function(changedNodes) {
     this.version++;
-};
-
-/**
- * Adds a handler to the beginning of the definition's list of handler.
- * @param {string} definition - name of the handler added to this definition.
- */
-ozpIwc.IntentsApiDefinitionValue.prototype.unshiftHandler = function (handler) {
-    this.entity.handlers = this.entity.handlers || [];
-    this.entity.handlers.unshift(handler);
-    this.version++;
-};
-
-/**
- * Removes a handler from the end of the definition's list of handlers.
- * @returns {string} handler - name of the handler removed from this definition.
- */
-ozpIwc.IntentsApiDefinitionValue.prototype.popHandler = function () {
-    if (this.entity.handlers && this.entity.handlers.length > 0) {
-        this.version++;
-        return this.entity.handlers.pop();
-    }
-};
-
-/**
- * Removes a handler from the beginning of the definition's list of handlers.
- * @returns {string} handler - name of the handler removed from this definition.
- */
-ozpIwc.IntentsApiDefinitionValue.prototype.shiftHandler = function () {
-    if (this.entity.handlers && this.entity.handlers.length > 0) {
-        this.version++;
-        return this.entity.handlers.shift();
-    }
-};
-
-/**
- * Lists all handlers of the given intent definition.
- * @returns {Array} handlers - list of handlers in this capability.
- */
-ozpIwc.IntentsApiDefinitionValue.prototype.listHandlers = function () {
-    return this.entity.handlers;
+    this.entity.handlers=changedNodes.map(function(changedNode) { 
+        return changedNode.resource; 
+    });
 };

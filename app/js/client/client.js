@@ -10,32 +10,52 @@ var ozpIwc=ozpIwc || {};
  * @param {boolean} [config.autoPeer=true] - Whether to automatically find and connect to a peer
  */
 ozpIwc.Client=function(config) {
-	config=config || {};
-	this.address="$nobody";
-	this.replyCallbacks={};
-	this.peerUrl=config.peerUrl;
-	var a=document.createElement("a");
-	a.href = this.peerUrl;
-	this.peerOrigin=a.protocol + "//" + a.hostname;
-	if(a.port)
-		this.peerOrigin+= ":" + a.port;
-	
-	
-	this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
-	this.msgIdSequence=0;
-	this.events=new ozpIwc.Event();
-	this.events.mixinOnOff(this);
-	this.receivedPackets=0;
-	this.receivedBytes=0;
-	this.sentPackets=0;
-	this.sentBytes=0;
-	this.startTime=ozpIwc.util.now();
-    this.window = window;
-	var self=this;
+    config=config || {};
+    this.address="$nobody";
+    this.replyCallbacks={};
+    this.peerUrl=config.peerUrl;
+    var a=document.createElement("a");
+    a.href = this.peerUrl;
+    this.peerOrigin=a.protocol + "//" + a.hostname;
+    if(a.port)
+        this.peerOrigin+= ":" + a.port;
 
-	if(this.autoPeer) {
-		this.findPeer();
-	}
+
+    this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
+    this.msgIdSequence=0;
+    this.events=new ozpIwc.Event();
+    this.events.mixinOnOff(this);
+    this.receivedPackets=0;
+    this.receivedBytes=0;
+    this.sentPackets=0;
+    this.sentBytes=0;
+    this.startTime=ozpIwc.util.now();
+    this.window = window;
+    this.apiMap={};
+    this.wrapperMap={};
+    var self=this;
+
+    this.on('gotAddress',function() {
+        var numApis;
+        var getApiInfo=function() {
+            self.send({dst: 'names.api', resource: '/api', action: 'get'}, function (reply) {
+                numApis = reply.entity.length;
+                for (var i in reply.entity) {
+                    var callback = self.setApiInfo(reply.entity[i].split('/')[2], i >= numApis - 1);
+                    self.send({dst: 'names.api', resource: reply.entity[i], action: 'get'}, callback);
+                }
+                if (numApis == 0) {
+                    setTimeout(getApiInfo(), 200);
+                }
+                return null;//de-register callback
+            });
+        }
+        setTimeout(getApiInfo());
+    });
+
+    if(this.autoPeer) {
+        this.findPeer();
+    }
 
     this.postMessageHandler = function(event) {
         if(event.origin !== self.peerOrigin){
@@ -53,14 +73,13 @@ ozpIwc.Client=function(config) {
             // ignore!
         }
     };
-	// receive postmessage events
-	window.addEventListener("message", this.postMessageHandler, false);
-    
+    // receive postmessage events
+    window.addEventListener("message", this.postMessageHandler, false);
+
     this.preconnectionQueue=[];
-    
+
     this.on("connected",function() {
         self.preconnectionQueue.forEach(function(p) {
-            console.log("Sending from queue: ",p);
             self.send(p.fields,p.callback,p.promise);
         });
         self.preconnectionQueue=null;
@@ -96,7 +115,6 @@ ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromise) {
     var promise= preexistingPromise; // || new Promise();
     if(!(this.isConnected() || fields.dst=="$transport")) {
         // when send is switched to promises, create the promise first and return it here, as well
-        console.log("Queuing to be sent later:",arguments);
         this.preconnectionQueue.push({
             'fields': fields,
             'callback': callback,
@@ -105,32 +123,33 @@ ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromise) {
         return promise;
     }
     var now=new Date().getTime();
-	var id="p:"+this.msgIdSequence++; // makes the code below read better
-	var packet={
-		ver: 1,
-		src: this.address,
-		msgId: id,
-		time: now
-	};
+    var id="p:"+this.msgIdSequence++; // makes the code below read better
+    var packet={
+        ver: 1,
+        src: this.address,
+        msgId: id,
+        time: now
+    };
 
-	for(var k in fields) {
-		packet[k]=fields[k];
-	}
+    for(var k in fields) {
+        packet[k]=fields[k];
+    }
 
-	if(callback) {
-		this.replyCallbacks[id]=callback;
-	}
-	var data=packet;
+    if(callback) {
+        this.replyCallbacks[id]=callback;
+    }
+    var data=packet;
     if (!ozpIwc.util.structuredCloneSupport()) {
         data=JSON.stringify(packet);
     }
-	this.peer.postMessage(data,'*');
-	this.sentBytes+=data.length;
-	this.sentPackets++;
-	return packet;
+    this.peer.postMessage(data,'*');
+    this.sentBytes+=data.length;
+    this.sentPackets++;
+    return packet;
 };
+
 ozpIwc.Client.prototype.isConnected=function(){
-	return this.address !== "$nobody";
+    return this.address !== "$nobody";
 };
 /**
  * Cancel a callback registration
@@ -147,11 +166,11 @@ ozpIwc.Client.prototype.cancelCallback=function(msgId) {
 
 
 ozpIwc.Client.prototype.on=function(event,callback) {
-	if(event==="connected" && this.isConnected()) {
-		callback(this);
-		return;
-	}
-	return this.events.on.apply(this.events,arguments);
+    if(event==="connected" && this.isConnected()) {
+        callback(this);
+        return;
+    }
+    return this.events.on.apply(this.events,arguments);
 };
 
 ozpIwc.Client.prototype.off=function(event,callback) {
@@ -198,11 +217,71 @@ ozpIwc.Client.prototype.findPeer=function() {
 };
 
 ozpIwc.Client.prototype.requestAddress=function(){
-	// send connect to get our address
-	var self=this;
-	this.send({dst:"$transport"},function(message) {
-		self.address=message.dst;
-		self.events.trigger("connected",self);
+    // send connect to get our address
+    var self=this;
+    this.send({dst:"$transport"},function(message) {
+        self.address=message.dst;
+        self.events.trigger("gotAddress",self);
         return null;//de-register callback
-	});
+    });
 };
+
+ozpIwc.Client.prototype.setApiInfo=function(apiName,last) {
+    var self=this;
+    return function(packet) {
+        self.apiMap[apiName]=packet.entity;
+        self.apiMap[apiName].apiName=apiName;
+        if (last) {
+            self.events.trigger("connected",self);
+            return false;
+        }
+        return true;
+    };
+};
+
+(function() {
+    ozpIwc.Client.prototype.api=function(apiName) {
+        var wrapper=this.wrapperMap[apiName];
+        if (!wrapper) {
+            var api=this.apiMap[apiName];
+            wrapper={};
+            for (var i=0;i<api.actions.length;++i){
+                var action=api.actions[i];
+                wrapper[action]=augment(api.apiName,action,this);
+            }
+            
+            this.wrapperMap[apiName]=wrapper;
+        }
+        wrapper.apiName=apiName;
+        return wrapper;
+    };
+
+    var augment = function (dst,action,client) {
+        return function (resource, fragment, otherCallback) {
+            return new Promise(function (resolve, reject) {
+                var packet = {
+                    'dst': dst,
+                    'action': action,
+                    'resource': resource,
+                    'entity': {}
+                };
+                for (var k in fragment) {
+                    packet[k] = fragment[k];
+                }
+                client.send(packet, function (reply) {
+                    if (reply.response === 'ok') {
+                        resolve(reply);
+                    } else if (/(bad|no).*/.test(reply.response)) {
+                        reject(reply);
+                    }
+                    if (otherCallback) {
+                        return otherCallback(reply);
+                    }
+                    return !!otherCallback;
+                });
+            });
+
+                };
+        return obj;
+    };
+})();

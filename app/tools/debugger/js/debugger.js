@@ -15,7 +15,7 @@ debuggerModule.factory("iwcClient",function() {
 debuggerModule.controller("debuggerController",["$scope","iwcClient",function(scope,client) {
     scope.client=client;
     scope.apis=[
-        {'address': "data.api"},
+        {'address': "data.api",'hasChildren':true},
         {'address': "intents.api"},
         {'address': "system.api"},
         {'address': "names.api"}
@@ -24,7 +24,7 @@ debuggerModule.controller("debuggerController",["$scope","iwcClient",function(sc
         
         
 debuggerModule.controller("packetLogController",["$scope",function(scope) {
-    scope.logging=true;
+    scope.logging=false;
     scope.viewFilter="";
     scope.packets=[];
     scope.maxShown=50;
