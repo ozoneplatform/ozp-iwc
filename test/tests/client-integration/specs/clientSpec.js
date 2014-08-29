@@ -130,7 +130,7 @@ describe("IWC Client", function() {
             });
         });
     });
-    describe("peer selection",function() {
+    describe("launch parameters",function() {
         var testPeerUrl="http://" + window.location.hostname + ":14002";
 
         
@@ -163,16 +163,21 @@ describe("IWC Client", function() {
              });
         });
         
-        it("when ozpIwc.peer is in the window.name and whitelisted in the array, choose it",function(done) {
-             window.name="ozpIwc.peer=\"" + testPeerUrl + "\"";
+        it("fetches the mailbox when passed ozpIwc.mailbox",function(done) {
+             window.name="ozpIwc.mailbox=\"data.api/mailbox/1234abcdefg\"";
              client=new ozpIwc.Client({
-                 peerUrl: ["http://ozp.example.com",testPeerUrl],
+                 peerUrl: "http://localhost:14002",
                  autoPeer: false
              });
              window.name="";
+             spyOn(client,"send").and.callThrough();
              client.connect().then(function() {
-                expect(client.peerUrl).toEqual(testPeerUrl);
-                done();
+                expect(client.send).toHaveBeenCalledWith(jasmine.objectContaining({
+                    'dst': "data.api",
+                    'resource' : "/mailbox/1234abcdefg",
+                    'action' : "get"
+                }),jasmine.any(Function));
+                 done();
              }).catch(function(error) {
                  console.log("Error " ,error);
                  expect(error).toEqual("did not happen");
