@@ -44,10 +44,12 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 	this.name=config.name;
 	
 	this.on("startElection",function() {
-			this.electionQueue=[];
+        this.electionQueue=[];
 	},this);
 	
 	this.on("becameLeader",function() {
+        this.leader = this.address;
+        this.leaderPriority = this.priority;
 		this.electionQueue.forEach(function(p) {
 			this.forwardToTarget(p);
 		},this);
@@ -88,7 +90,11 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
     });
 	this.on("connectedToRouter",function() {
         this.router.registerMulticast(this,[this.electionAddress,this.name]);
-        this.startElection();
+        var self = this;
+        ozpIwc.util.setImmediate(function(){
+            self.startElection();
+        });
+
     },this);
     this.on("receive",this.routePacket,this);
 });
@@ -108,7 +114,7 @@ ozpIwc.LeaderGroupParticipant.prototype.getElectionQueue=function() {
  * @returns {Boolean} True if in an election state, otherwise false
  */
 ozpIwc.LeaderGroupParticipant.prototype.inElection=function() {
-	return !!this.electionTimer;
+	return !!this.electionTimer || this.leaderState === "actingLeader" || this.leaderState === "election" || this.leaderState === "leaderSync";
 };
 
 /**
@@ -116,11 +122,8 @@ ozpIwc.LeaderGroupParticipant.prototype.inElection=function() {
  * @returns {Boolean}
  */
 ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
-    if (this.leaderState !== "actingLeader" || this.leaderState !== "leader" || this.leaderState != "member"){
-        return "I DONT KNOW YET";
-    } else {
-        return this.leader === this.address;
-    }
+//    console.log(this.leader, this.address);
+    return this.leader === this.address;
 };
 
 /**
@@ -131,7 +134,7 @@ ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
 ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, config) {
     config = config || {};
     var state = config.state || {};
-    var previousLeader = config.previousLeader || false;
+    var previousLeader = config.previousLeader || this.leader;
     this.send({
 		'src': this.address,
 		'dst': this.electionAddress,
@@ -170,7 +173,7 @@ ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
         self.events.trigger("becameLeaderStep");
 	},this.electionTimeout);
 
-	this.sendElectionMessage("election", {state: state, previousLeader: this.isLeader()});
+	this.sendElectionMessage("election", {state: state, previousLeader: this.leader});
 };
 
 /**
@@ -215,7 +218,9 @@ ozpIwc.LeaderGroupParticipant.prototype.routePacket=function(packetContext) {
 
 ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) {
 	if(this.leaderState === "election" || this.leaderState === "connecting" || this.leaderState === "leaderSync") {
+//        console.log(this.address, "pushing to queue:", packetContext);
 		this.electionQueue.push(packetContext);
+//        console.log(this.address, "queue size: ", this.electionQueue.length);
 		return;
 	}
 	packetContext.leaderState=this.leaderState;
@@ -281,7 +286,7 @@ ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
 
 ozpIwc.LeaderGroupParticipant.prototype.changeState=function(state) {
     if(state !== this.leaderState){
-        console.log(this.address, this.leaderState, state);
+//        console.log(this.address, this.leaderState, state);
         this.leaderState = state;
     }
 };

@@ -446,8 +446,6 @@ ozpIwc.CommonApiBase.prototype.startElection = function(){
  * Handles setting the API's participant to the leader state.
  */
 ozpIwc.CommonApiBase.prototype.setToLeader = function(){
-    this.participant.leader = this.participant.address;
-    this.participant.leaderPriority = this.participant.priority;
     this.participant.changeState("leader");
     this.participant.events.trigger("becameLeader");
 };
@@ -461,9 +459,7 @@ ozpIwc.CommonApiBase.prototype.becameLeader= function(){
     // Was I the leader at the start of the election?
     if (this.participant.leaderState === "actingLeader") {
         // Continue leading
-        this.participant.leader = this.participant.address;
-        this.participant.leaderPriority=this.participant.priority;
-        this.participant.changeState("leader");
+        this.setToLeader();
 
     } else if (this.participant.leaderState === "election") {
         this.participant.changeState("leaderSync");
@@ -510,7 +506,7 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
             if(self.participant.stateStore && Object.keys(self.participant.stateStore).length > 0){
                 recvFunc();
             } else {
-                console.error(self.participant.name, self.participant.address, "Failed to retrieve state.");
+                console.error(self.participant.name, self.participant.address, "Failed to retrieve state from", self.participant.previousLeader);
             }
 
             self.participant.off("receivedState",recvFunc);

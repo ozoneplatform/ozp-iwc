@@ -19,9 +19,6 @@ describe("Leader Group Participant",function() {
 	var moveTime=function(step) {
 		var elected=false;
 		var round=0;
-        for(var i in fakeRouter.participants){
-            console.log(fakeRouter.participants[i]);
-        }
 		while(!elected) {
 //			console.log("============= Round " + round + " ===================");
 			round++;
@@ -32,13 +29,14 @@ describe("Leader Group Participant",function() {
 		}
 	};
 
-    var log=function(){}; // console.log
+    var log=function(){console.log(arguments);}; // console.log
     
 	var makeLeader=function(priority) {
 		var l=new ozpIwc.LeaderGroupParticipant({
 			electionAddress:"ea",
 			name: "foo"+fakeRouter.participants.length,
-			'priority': priority
+			'priority': priority,
+            electionTimeour: 250
 		});
 		fakeRouter.registerParticipant(l);
 		l.on("startElection", function() {
@@ -53,13 +51,19 @@ describe("Leader Group Participant",function() {
 		l.on("becameLeader",function() {
 			log("becameLeader[" + l.address + "]");
 		});
+        l.on("becameLeaderStep",function(){
+            l.events.trigger("becameLeader");
+        });
+        l.on("newLeaderStep",function(){
+            l.events.trigger("newLeader");
+        });
 		
 		l.TEST_nonElectionPackets=[];
 		l.on("receive",function(packet) {
 			l.TEST_nonElectionPackets.push(packet);
 			return [];
 		});
-            console.log(l.leaderState);
+
 		return l;
 	};
     beforeEach(function() {
@@ -74,7 +78,7 @@ describe("Leader Group Participant",function() {
      });
 	it("is not leader when created",function() {
 		var leader=makeLeader(1);
-        tick(2000);
+        tick(1000);
 		expect(leader.isLeader()).toEqual(false);
 	});
 
@@ -82,7 +86,8 @@ describe("Leader Group Participant",function() {
 	it("is leader after one member election",function() {
 		var leader=makeLeader(1);
 		leader.startElection();
-        tick(2000);
+        tick(1000);
+
 		expect(leader.isLeader()).toEqual(true);
 	});
 
@@ -91,7 +96,7 @@ describe("Leader Group Participant",function() {
 		var calls=0;
 		leader.on("startElection",function() { calls=true;});
 		leader.startElection();
-        tick(2000);
+        tick(1000);
 		expect(leader.isLeader()).toEqual(true);
 	});
 
@@ -110,14 +115,14 @@ describe("Leader Group Participant",function() {
 	it("higher priority will take over",function() {
 		var member=makeLeader(1);
 		member.startElection();
-        tick(2000);
+        tick(1000);
 		
 		expect(member.isLeader()).toEqual(true);
 
 
 		var leader=makeLeader(2);
 		leader.startElection();
-        tick(2000);
+        tick(1000);
 		
 		expect(leader.isLeader()).toEqual(true);
 		expect(member.isLeader()).toEqual(false);
@@ -132,7 +137,7 @@ describe("Leader Group Participant",function() {
 		
 		lowbie.startElection();
 
-        tick(2000);
+        tick(1000);
 		
 		for(var i=0; i< fakeRouter.participants.length-1; ++i) {
 			expect(fakeRouter.participants[i].isLeader()).toEqual(false);
@@ -162,7 +167,8 @@ describe("Leader Group Participant",function() {
              * a victory message and wait 250ms (see if someone overthrows), and if getting leadership from someone else
              * wait 250ms for their state transfer.
              */
-			//moveTime(10);
+//			moveTime(250);
+//            tick(1000);
 
 			for(var i=0; i< fakeRouter.participants.length-1; ++i) {
 				if(fakeRouter.participants[i].isLeader()) {
@@ -178,6 +184,7 @@ describe("Leader Group Participant",function() {
 	describe("dispatch to the target",function() {
 		it("sends event on non-election packet", function() {
 				var leader=makeLeader(1);
+                tick(1000);
 				leader.leaderState="leader";
 				leader.receiveFromRouter({ packet:{
 					src: "foo",
