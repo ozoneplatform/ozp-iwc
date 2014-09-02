@@ -4675,7 +4675,6 @@ ozpIwc.LeaderGroupParticipant.prototype.inElection=function() {
  * @returns {Boolean}
  */
 ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
-//    console.log(this.leader, this.address);
     return this.leader === this.address;
 };
 
@@ -4771,9 +4770,7 @@ ozpIwc.LeaderGroupParticipant.prototype.routePacket=function(packetContext) {
 
 ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) {
 	if(this.leaderState === "election" || this.leaderState === "connecting" || this.leaderState === "leaderSync") {
-//        console.log(this.address, "pushing to queue:", packetContext);
 		this.electionQueue.push(packetContext);
-//        console.log(this.address, "queue size: ", this.electionQueue.length);
 		return;
 	}
 	packetContext.leaderState=this.leaderState;
