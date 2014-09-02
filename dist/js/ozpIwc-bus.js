@@ -7002,6 +7002,14 @@ ozpIwc.SystemApi.prototype.findNodeForServerResource=function(serverObject,objec
 };
 
 ozpIwc.SystemApi.prototype.makeValue = function(packet){
+    if(packet.resource.indexOf("/mailbox") === 0) {
+        return new ozpIwc.SystemApiMailboxValue({
+            resource: packet.resource, 
+            entity: packet.entity, 
+            contentType: packet.contentType
+        });
+    }
+    
     return new ozpIwc.SystemApiApplicationValue({
         resource: packet.resource, 
         entity: packet.entity, 
@@ -7019,6 +7027,25 @@ ozpIwc.SystemApi.prototype.handleDelete = function() {
     throw new ozpIwc.ApiError("badAction", "Cannot modify the system API");
 };
 
+ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
+    var key=this.createKey("/mailbox/");
+
+	// save the new child
+	var mailboxNode=this.findOrMakeValue({'resource':key});
+	mailboxNode.set(packetContext.packet);
+    
+    this.launchApplication(node,mailboxNode);
+    packetContext.replyTo({'action': "ok"});
+};
+
+ozpIwc.SystemApi.prototype.launchApplication=function(node,mailboxNode) {
+    var launchParams=[
+//        "ozpIwc.peer="+encodeURIComponent(window.location.protocol + "//" + window.location.host+window.location.pathname),
+        "ozpIwc.mailbox="+encodeURIComponent(mailboxNode.resource)
+    ];
+    
+    window.open(node.entity['_links'].describes.href,launchParams.join("&"));    
+};
 ozpIwc.SystemApiApplicationValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
     ozpIwc.CommonApiValue.apply(this,arguments);
 });
@@ -7030,4 +7057,7 @@ ozpIwc.SystemApiApplicationValue.prototype.deserialize=function(serverData) {
 	this.permissions=serverData.permissions || this.permissions;
 	this.version=serverData.version || this.version;
 };
+ozpIwc.SystemApiMailboxValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
+    ozpIwc.CommonApiValue.apply(this,arguments);
+});
 //# sourceMappingURL=ozpIwc-bus.js.map
