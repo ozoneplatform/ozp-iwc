@@ -82,14 +82,31 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
  */
 ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
+    if(typeof(node.getHandlers) !== "function") {
+        throw new ozpIwc.ApiError("badResource","Resource is not an invokable intent");
+    }
+    
+    var handlerNodes=node.getHandlers(packetContext);
+    
+    if(handlerNodes.length === 1) {
+        this.invokeIntentHandler(handlerNodes[0],packetContext);
+    } else {
+        this.chooseIntentHandler(handlerNodes,packetContext);
+    }
+};
+
+
+
+ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (node, packetContext) {
     // check to see if there's an invokeIntent package
     var packet=ozpIwc.util.clone(node.entity.invokeIntent);
     
     // assign the entity and contentType from the packet Context
     packet.entity=ozpIwc.util.clone(packetContext.packet.entity);
     packet.contentType=packetContext.packet.contentType;
-    packet.permissions=packetContext.packet.entity;
+    packet.permissions=packetContext.packet.permissions;
     
+
     this.participant.send(packet,function(response) {
         var blacklist=['src','dst','msgId','replyTo'];
         var packet={};
@@ -100,5 +117,9 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
         }
         packetContext.replyTo(packet);
     });
+};
+
+ozpIwc.IntentsApi.prototype.chooseIntentHandler = function (nodeList, packetContext) {
+    throw new ozpIwc.ApiError("noImplementation","Selecting an intent is not yet implemented");
 };
 

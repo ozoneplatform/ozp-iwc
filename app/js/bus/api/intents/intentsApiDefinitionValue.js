@@ -11,6 +11,7 @@ ozpIwc.IntentsApiDefinitionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, fun
     config.contentType="application/ozpIwc-intents-definition-v1+json";
     ozpIwc.CommonApiValue.call(this, config);
     this.pattern=new RegExp(this.resource+"/[^/]*");
+    this.handlers=[];
     this.entity={
         type: config.intentType,
         action: config.intentAction,        
@@ -24,7 +25,12 @@ ozpIwc.IntentsApiDefinitionValue.prototype.isUpdateNeeded=function(node) {
 
 ozpIwc.IntentsApiDefinitionValue.prototype.updateContent=function(changedNodes) {
     this.version++;
+    this.handlers=changedNodes;
     this.entity.handlers=changedNodes.map(function(changedNode) { 
         return changedNode.resource; 
     });
+};
+
+ozpIwc.IntentsApiDefinitionValue.prototype.getHandlers=function(packetContext) {
+    return [this.handlers];
 };

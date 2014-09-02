@@ -6365,7 +6365,10 @@ ozpIwc.CommonApiBase.prototype.addDynamicNode=function(node) {
 ozpIwc.CommonApiBase.prototype.defaultHandler=function(node,packetContext) {
     packetContext.replyTo({
         'response': 'badAction',
-        'entity': packetContext.packet.action
+        'entity': {
+            'action': packetContext.packet.action,
+            'originalRequest' : packetContext.packet
+        }
     });
 };
 
@@ -6724,14 +6727,31 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
  */
 ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
+    if(typeof(node.getHandlers) !== "function") {
+        throw new ozpIwc.ApiError("badResource","Resource is not an invokable intent");
+    }
+    
+    var handlerNodes=node.getHandlers(packetContext);
+    
+    if(handlerNodes.length === 1) {
+        this.invokeIntentHandler(handlerNodes[0],packetContext);
+    } else {
+        this.chooseIntentHandler(handlerNodes,packetContext);
+    }
+};
+
+
+
+ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (node, packetContext) {
     // check to see if there's an invokeIntent package
     var packet=ozpIwc.util.clone(node.entity.invokeIntent);
     
     // assign the entity and contentType from the packet Context
     packet.entity=ozpIwc.util.clone(packetContext.packet.entity);
     packet.contentType=packetContext.packet.contentType;
-    packet.permissions=packetContext.packet.entity;
+    packet.permissions=packetContext.packet.permissions;
     
+
     this.participant.send(packet,function(response) {
         var blacklist=['src','dst','msgId','replyTo'];
         var packet={};
@@ -6742,6 +6762,10 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
         }
         packetContext.replyTo(packet);
     });
+};
+
+ozpIwc.IntentsApi.prototype.chooseIntentHandler = function (nodeList, packetContext) {
+    throw new ozpIwc.ApiError("noImplementation","Selecting an intent is not yet implemented");
 };
 
 
@@ -6758,6 +6782,7 @@ ozpIwc.IntentsApiDefinitionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, fun
     config.contentType="application/ozpIwc-intents-definition-v1+json";
     ozpIwc.CommonApiValue.call(this, config);
     this.pattern=new RegExp(this.resource+"/[^/]*");
+    this.handlers=[];
     this.entity={
         type: config.intentType,
         action: config.intentAction,        
@@ -6771,9 +6796,14 @@ ozpIwc.IntentsApiDefinitionValue.prototype.isUpdateNeeded=function(node) {
 
 ozpIwc.IntentsApiDefinitionValue.prototype.updateContent=function(changedNodes) {
     this.version++;
+    this.handlers=changedNodes;
     this.entity.handlers=changedNodes.map(function(changedNode) { 
         return changedNode.resource; 
     });
+};
+
+ozpIwc.IntentsApiDefinitionValue.prototype.getHandlers=function(packetContext) {
+    return [this.handlers];
 };
 /**
  * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
@@ -6792,6 +6822,18 @@ ozpIwc.IntentsApiHandlerValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, functi
         action: config.intentAction
     };
 });
+
+ozpIwc.IntentsApiHandlerValue.prototype.getHandlers=function(packetContext) {
+    return [this];
+};
+
+ozpIwc.IntentsApiHandlerValue.prototype.set=function(packet) {
+    ozpIwc.CommonApiValue.prototype.set.apply(this,arguments);
+    this.entity.invokeIntent = this.entity.invokeIntent  || {};
+    this.entity.invokeIntent.dst = this.entity.invokeIntent.dst || packet.src;
+    this.entity.invokeIntent.resource = this.entity.invokeIntent.resource || "/intents" + packet.resource;
+    this.entity.invokeIntent.action = this.entity.invokeIntent.action || "invoke";
+};
 /**
  * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
  * @class

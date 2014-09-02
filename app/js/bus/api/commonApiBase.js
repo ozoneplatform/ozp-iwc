@@ -334,7 +334,10 @@ ozpIwc.CommonApiBase.prototype.addDynamicNode=function(node) {
 ozpIwc.CommonApiBase.prototype.defaultHandler=function(node,packetContext) {
     packetContext.replyTo({
         'response': 'badAction',
-        'entity': packetContext.packet.action
+        'entity': {
+            'action': packetContext.packet.action,
+            'originalRequest' : packetContext.packet
+        }
     });
 };
 
