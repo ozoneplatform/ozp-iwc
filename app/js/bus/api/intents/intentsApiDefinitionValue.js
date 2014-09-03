@@ -10,7 +10,7 @@ ozpIwc.IntentsApiDefinitionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, fun
     config.allowedContentTypes=["application/ozpIwc-intents-definition-v1+json"];
     config.contentType="application/ozpIwc-intents-definition-v1+json";
     ozpIwc.CommonApiValue.call(this, config);
-    this.pattern=new RegExp(this.resource+"/[^/]*");
+    this.pattern=new RegExp(ozpIwc.util.escapeRegex(this.resource)+"/[^/]*");
     this.handlers=[];
     this.entity={
         type: config.intentType,

@@ -2239,6 +2239,10 @@ ozpIwc.util.determineOrigin=function(url) {
         origin+= ":" + a.port;
     return origin;
 };
+
+ozpIwc.util.escapeRegex=function(str) {
+    return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
 (function() {
 var define, requireModule, require, requirejs;
 
@@ -6668,28 +6672,49 @@ ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
     // resource of form /majorType/minorType/action?/handler?
     var path=packet.resource.split(/\//);
     path.shift(); // shift off the empty element before the first slash
+    var self=this;
+    var createType=function(resource) {
+        var node=new ozpIwc.IntentsApiTypeValue({
+            resource: resource,
+            intentType: path[0] + "/" + path[1]                
+        });
+        self.addDynamicNode(node);
+        return node;
+    };
+    var createDefinition=function(resource) {
+        var type="/" +path[0]+"/" + path[1];
+        if(!self.data[type]) {
+            self.data[type]=createType(type);
+        }
+        var node=new ozpIwc.IntentsApiDefinitionValue({
+            resource: resource,
+            intentType: path[0]+"/" + path[1] + "/" + path[2],
+            intentAction: path[2]
+        });
+        self.addDynamicNode(node);
+        return node;
+    };
+    var createHandler=function(resource) {
+        var definition="/" +path[0]+"/" + path[1] + "/" + path[2];
+        if(!self.data[definition]) {
+            self.data[definition]=createDefinition(definition);
+        }
+        
+        return new ozpIwc.IntentsApiHandlerValue({
+            resource: resource,
+            intentType: path[0] + "/" + path[1],
+            intentAction: path[2]
+        });
+    };
+    
     switch (path.length) {
         case 2:
-            var node=new ozpIwc.IntentsApiTypeValue({
-                resource:packet.resource,
-                intentType: path[0] + "/" + path[1]                
-            });
-            this.addDynamicNode(node);
-            return node;
+            return createType(packet.resource);
         case 3:
-            var node=new ozpIwc.IntentsApiDefinitionValue({
-                resource:packet.resource,
-                intentType: path[0] + "/" + path[1],
-                intentAction: path[2]
-            });
-            this.addDynamicNode(node);
-            return node;
+
+            return createDefinition(packet.resource);
         case 4:
-            return new ozpIwc.IntentsApiHandlerValue({
-                resource:packet.resource,
-                intentType: path[0] + "/" + path[1],
-                intentAction: path[2]
-            });
+            return createHandler(packet.resource);
         default:
             throw new ozpIwc.ApiError("badResource","Invalid resource: " + packet.resource)
     }
@@ -6782,7 +6807,7 @@ ozpIwc.IntentsApiDefinitionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, fun
     config.allowedContentTypes=["application/ozpIwc-intents-definition-v1+json"];
     config.contentType="application/ozpIwc-intents-definition-v1+json";
     ozpIwc.CommonApiValue.call(this, config);
-    this.pattern=new RegExp(this.resource+"/[^/]*");
+    this.pattern=new RegExp(ozpIwc.util.escapeRegex(this.resource)+"/[^/]*");
     this.handlers=[];
     this.entity={
         type: config.intentType,
@@ -6848,7 +6873,7 @@ ozpIwc.IntentsApiTypeValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function 
     config.contentType="application/ozpIwc-intents-contentType-v1+json";
 
     ozpIwc.CommonApiValue.apply(this, arguments);
-    this.pattern=new RegExp(this.resource+"/[^/]*");
+    this.pattern=new RegExp(ozpIwc.util.escapeRegex(this.resource)+"/[^/]*");
     this.entity={
         type: config.intentType,
         actions: []

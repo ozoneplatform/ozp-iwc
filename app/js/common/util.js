@@ -173,3 +173,7 @@ ozpIwc.util.determineOrigin=function(url) {
         origin+= ":" + a.port;
     return origin;
 };
+
+ozpIwc.util.escapeRegex=function(str) {
+    return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
