@@ -392,8 +392,14 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
  * to be consumed by all, then used by the new leader.
  */
 ozpIwc.CommonApiBase.prototype.unloadState = function(){
-    this.participant.startElection({state:this.data, previousLeader: this.participant.address});
-    this.data = {};
+
+    if(this.participant.activeStates.leader) {
+        this.participant.sendElectionMessage("election",{state: this.data, previousLeader: this.participant.address});
+        this.data = {};
+    } else {
+        this.participant.priority = -Number.MAX_VALUE;
+        this.participant.sendElectionMessage("election");
+    }
 };
 
 /**

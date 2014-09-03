@@ -107,7 +107,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
     var self=this;
 	window.addEventListener("beforeunload",function() {
         //Priority has to be the minimum possible
-        self.priority=-Number.MAX_VALUE;
+        self.priority=self.priority - 1000000;//Number.MAX_VALUE;
         self.send = function(originalPacket,callback) {
             var packet=this.fixPacket(originalPacket);
             if(callback) {
@@ -118,9 +118,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
             return packet;
         };
 
-        if(self.activeStates.leader) {
-            self.events.trigger("unloadState");
-        }
+        self.events.trigger("unloadState");
 	});
 
 
@@ -279,7 +277,7 @@ ozpIwc.LeaderGroupParticipant.prototype.routePacket=function(packetContext) {
 			this.handleElectionMessage(packet);
 		} else if(packet.action === "victory") {
 			this.handleVictoryMessage(packet);
-		}
+        }
     } else {
         this.forwardToTarget(packetContext);
 	}		
@@ -303,7 +301,7 @@ ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) 
  * @returns {undefined}
  */
 ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionMessage) {
-//    console.log(this.address, electionMessage.src, electionMessage.entity.priority, this.priority, electionMessage.entity.now);
+//    console.log(this.address, electionMessage);
     //If a state was received, store it case participant becomes the leader
     if(Object.keys(electionMessage.entity.state).length > 0){
         this.stateStore = electionMessage.entity.state;
@@ -318,6 +316,10 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
 
 	// is the new election lower priority than us?
 	if(this.priorityLessThan(electionMessage.entity.priority,this.priority)) {
+        if(electionMessage.entity.priority === -Number.MAX_VALUE){
+            this.cancelElection();
+            this.activeStates.election = false;
+        }
         // Quell the rebellion!
         this.startElection();
 
