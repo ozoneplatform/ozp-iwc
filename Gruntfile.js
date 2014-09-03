@@ -183,7 +183,7 @@ module.exports = function(grunt) {
                 options:{ port: 14002, base: ['dist'] }
             },
             doc: {
-                options: { port: 13001, base: "doc" }
+                options: { port: 13001, base: "dist/doc" }
             },
             demo1: {
                 options: { port: 15000, base: ["dist","demo/bouncingBalls"] }

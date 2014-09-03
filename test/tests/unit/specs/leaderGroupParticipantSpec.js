@@ -38,6 +38,7 @@ describe("Leader Group Participant",function() {
 			'priority': priority
 		});
 		l.on("startElection", function() {
+            l.changeState("election");
 			log("startElection[" + l.address + "]");
 		});
 		l.on("endElection",function() {
@@ -50,7 +51,7 @@ describe("Leader Group Participant",function() {
 			log("becameLeader[" + l.address + "]");
 		});
         l.on("becameLeaderStep",function(){
-            l.sendElectionMessage("victory");
+            l.sendVictoryMessage();
             l.changeState("leader");
             l.events.trigger("becameLeader");
         });
@@ -132,7 +133,7 @@ describe("Leader Group Participant",function() {
 	it("twelve members will elect the correct leader with the lowest one starting the election",function() {
 		depth=100;
 		var lowbie=makeLeader(1);
-		for(var i=10; i< 20; ++i) {
+		for(var i=10; i< 50; ++i) {
 			makeLeader(i);
 		}
 		var leader=makeLeader(100);
