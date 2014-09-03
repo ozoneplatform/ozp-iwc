@@ -6727,7 +6727,7 @@ ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
  * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
  */
 ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
-	var key=this.createKey(node.resource+"/");
+	var key=node.resource+"/"+packetContext.packet.src;
 
 	// save the new child
 	var childNode=this.findOrMakeValue({'resource':key});
@@ -7033,6 +7033,7 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
     intents.forEach(function(i) {
         this.participant.send({
             'dst' : "intents.api",
+            'src' : "system.api",
             'action': "register",
             'resource': "/"+i.type+"/"+i.action,
             'contentType': "application/ozpIwc-intents-handler-v1+json",

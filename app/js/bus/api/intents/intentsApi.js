@@ -77,7 +77,7 @@ ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
  * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
  */
 ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
-	var key=this.createKey(node.resource+"/");
+	var key=node.resource+"/"+packetContext.packet.src;
 
 	// save the new child
 	var childNode=this.findOrMakeValue({'resource':key});
