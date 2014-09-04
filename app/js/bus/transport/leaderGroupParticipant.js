@@ -189,6 +189,15 @@ ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, confi
     config = config || {};
     var state = config.state || {};
     var previousLeader = config.previousLeader || this.leader;
+
+    // TODO: no state should have circular references, this will eventually go away.
+    try {
+        JSON.stringify(state);
+    } catch (ex) {
+        console.error(this.name,this.address,"failed to send state.", ex);
+        state = {};
+    }
+
     this.send({
 		'src': this.address,
 		'dst': this.electionAddress,
