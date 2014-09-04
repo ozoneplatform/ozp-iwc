@@ -4555,6 +4555,14 @@ var ozpIwc=ozpIwc || {};
 
 /**
  * Baseclass for APIs that need leader election.  Uses the Bully algorithm for leader election.
+ *
+ * Implementer is responsible for handling two events:
+ *    <li> <b>"becameLeaderEvent"</b> - participant has finished its election process and is to become the leader. Handle
+ *    any logic necessary above the LeaderGroupParticipant and then trigger the participant's event <b>"becameLeader"</b>
+ *    <i>(ex. participant.events.trigger("becameLeader")</i></li>
+ *    <li> <b>"newLeaderEvent"</b> - participant has finished its election process and is to become a member. Handle any logic necessary above
+ *    the LeaderGroupParticipant then trigger the participant's event <b>"newLeader"</b>
+ *    <i>(ex. participant.events.trigger("newLeader")</i></li>
  * @class
  * @param {object} config
  * @param {String} config.name 
@@ -4635,11 +4643,13 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 	this.name=config.name;
 
 
+    this.toggleDrop = false;
+
     // Election Events
 	this.on("startElection",function() {
-        this.electionQueue=[];
+        this.toggleDrop = false;
 	},this);
-	
+
 	this.on("becameLeader",function() {
         this.leader = this.address;
         this.leaderPriority = this.priority;
@@ -4653,14 +4663,15 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 		this.electionQueue=[];
 	},this);
 
-    this.toggleDrop = false;
 
 
     // Handle passing of state on unload
     var self=this;
 	window.addEventListener("beforeunload",function() {
         //Priority has to be the minimum possible
-        self.priority=self.priority - 1000000;//Number.MAX_VALUE;
+        self.priority=-Number.MAX_VALUE;
+
+        // Unload events can't use setTimeout's. Therefore make all sending happen with normal execution
         self.send = function(originalPacket,callback) {
             var packet=this.fixPacket(originalPacket);
             if(callback) {
@@ -4738,8 +4749,7 @@ ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, confi
 		'entity': {
 			'priority': this.priority,
             'state': state,
-            'previousLeader': previousLeader,
-            'now': ozpIwc.util.now()
+            'previousLeader': previousLeader
 		}
 	});
 };
@@ -4765,7 +4775,9 @@ ozpIwc.LeaderGroupParticipant.prototype.sendVictoryMessage = function(){
     } else {
         return false;
     }
-}
+};
+
+
 /**
  * Attempt to start a new election.
  * @protected
@@ -4782,13 +4794,12 @@ ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
 		return;
 	}
     this.events.trigger("startElection");
-    this.toggleDrop = false;
 
 	var self=this;
 	// if no one overrules us, declare victory
 	this.electionTimer=window.setTimeout(function() {
 		self.cancelElection();
-        self.events.trigger("becameLeaderStep");
+        self.events.trigger("becameLeaderEvent");
 	},this.electionTimeout);
 
 	this.sendElectionMessage("election", {state: state, previousLeader: this.leader});
@@ -4854,12 +4865,15 @@ ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) 
  * @returns {undefined}
  */
 ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionMessage) {
-//    console.log(this.address, electionMessage);
+
     //If a state was received, store it case participant becomes the leader
     if(Object.keys(electionMessage.entity.state).length > 0){
         this.stateStore = electionMessage.entity.state;
         this.events.trigger("receivedState");
     }
+
+    // If knowledge of a previousLeader was received, store it case participant becomes the leader and requests state
+    // from said participant.
     if(electionMessage.entity.previousLeader){
         if (electionMessage.entity.previousLeader !== this.address) {
             this.previousLeader = electionMessage.entity.previousLeader;
@@ -4872,20 +4886,29 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
         if(electionMessage.entity.priority === -Number.MAX_VALUE){
             this.cancelElection();
             this.activeStates.election = false;
+        } else {
+            if(!this.inElection())
+            this.electionQueue=[];
         }
         // Quell the rebellion!
         this.startElection();
 
     } else if(this.activeStates.leader) {
+        // If this participant is currently the leader but will loose the election, it sends out notification that their
+        // is currently a leader (for state retrieval purposes)
         this.sendElectionMessage("election", {previousLeader: true});
 
     } else {
+
+        // Abandon dreams of leadership
+        this.cancelElection();
+
+        // If set, after canceling, the participant will force itself to a membership state. Used to debounce invalid
+        // leadership attempts due to high network traffic.
         if(this.toggleDrop){
-            this.events.trigger("newLeaderStep");
             this.toggleDrop = false;
+            this.events.trigger("newLeaderEvent");
         }
-		// Abandon dreams of leadership
-		this.cancelElection();
 	}
 
 };
@@ -4905,7 +4928,7 @@ ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMes
 		this.leader=victoryMessage.src;
 		this.leaderPriority=victoryMessage.entity.priority;
 		this.cancelElection();
-		this.events.trigger("newLeaderStep");
+		this.events.trigger("newLeaderEvent");
         this.stateStore = {};
 	}
 };
@@ -4926,17 +4949,21 @@ ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
 
 /**
  * Changes the current state of the participant.
- * @param state
+ * @param state {string} The state to change to.
+ * @param config {object} properties to change in the participant should the state transition be valid
  * @returns {boolean}
- *      Will return true if a state transition occured.
+ *      Will return true if a state transition occurred.
  *      Will not change state and return false if:
  *      <li>the new state was the current state</li>
  *      <li>the new state is not a registered state @see ozpIwc.LeaderGroupParticipant</li>
  */
-ozpIwc.LeaderGroupParticipant.prototype.changeState=function(state) {
+ozpIwc.LeaderGroupParticipant.prototype.changeState=function(state,config) {
     if(state !== this.leaderState){
-//        console.log(this.address, this.leaderState, state, ozpIwc.util.now());
+//        console.log(this.address, this.leaderState, state);
         if(this._validateState(state)){
+            for(var key in config){
+                this[key] = config[key];
+            }
             return true;
         }
     }
@@ -4969,6 +4996,7 @@ ozpIwc.LeaderGroupParticipant.prototype._validateState = function(state){
     if(validState){
         this.activeStates = newState;
         this.leaderState = state;
+        return true;
     } else {
         console.error(this.address, this.name, "does not have state:", state);
         return false;
@@ -5506,8 +5534,8 @@ ozpIwc.CommonApiBase = function(config) {
 	this.participant=config.participant;
     this.participant.on("unloadState",ozpIwc.CommonApiBase.prototype.unloadState,this);
 	this.participant.on("receiveApiPacket",ozpIwc.CommonApiBase.prototype.routePacket,this);
-    this.participant.on("becameLeaderStep", ozpIwc.CommonApiBase.prototype.becameLeader,this);
-    this.participant.on("newLeaderStep", ozpIwc.CommonApiBase.prototype.newLeader,this);
+    this.participant.on("becameLeaderEvent", ozpIwc.CommonApiBase.prototype.becameLeader,this);
+    this.participant.on("newLeaderEvent", ozpIwc.CommonApiBase.prototype.newLeader,this);
     this.participant.on("startElection", ozpIwc.CommonApiBase.prototype.startElection,this);
 
 	this.events = new ozpIwc.Event();
@@ -5895,22 +5923,10 @@ ozpIwc.CommonApiBase.prototype.unloadState = function(){
         this.participant.sendElectionMessage("election",{state: this.data, previousLeader: this.participant.address});
         this.data = {};
     } else {
-        this.participant.priority = -Number.MAX_VALUE;
         this.participant.sendElectionMessage("election");
     }
 };
 
-/**
- * Called when the leader participant looses its leadership. This occurs when a new participant joins with a higher
- * priority
- */
-ozpIwc.CommonApiBase.prototype.transferState = function(){
-    this.participant.sendElectionMessage("prevLeader", {
-        state:this.data,
-        prevLeader: this.participant.address
-    });
-    this.data = {};
-};
 
 /**
  * Sets the APIs data property. Removes current values, then constructs each API value anew.
@@ -5945,6 +5961,8 @@ ozpIwc.CommonApiBase.prototype.startElection = function(){
         this.participant.changeState("election");
     }
 };
+
+
 /**
  *  Handles taking over control of the API's participant group as the leader.
  *      <li>If this API instance's participant was the leader prior to election and won, normal functionality resumes.</li>
@@ -5960,23 +5978,23 @@ ozpIwc.CommonApiBase.prototype.becameLeader= function(){
         this.setToLeader();
 
     } else if (this.participant.leaderState === "election") {
-        var self = this;
-        this.participant.toggleDrop = true;
-            self.leaderSync();
+        this.leaderSync();
     }
 };
 
 
 /**
  * Handles a new leader being assigned to this API's participant group.
- *      <li>If this API instance was leader prior to the election, its state will be sent off to the new leader.</li>
+ *      <li>@TODO: If this API instance was leader prior to the election, its state will be sent off to the new leader.</li>
  *      <li>If this API instance wasn't the leader prior to the election it will resume normal functionality.</li>
  * @fires ozpIwc.leaderGroupParticipant#newLeader
  */
 ozpIwc.CommonApiBase.prototype.newLeader = function() {
 //    console.log(this.participant.address, "newLeader");
+
+    // If this API was the leader, send its state to the new leader
     if (this.participant.leaderState === "actingLeader") {
-        this.participant.sendElectionMessage("election",{previousLeader: this.participant.address, state: this.data});
+        this.participant.sendElectionMessage("election", {previousLeader: this.participant.address, state: this.data});
     }
     this.participant.changeState("member");
     this.participant.events.trigger("newLeader");
@@ -5989,14 +6007,9 @@ ozpIwc.CommonApiBase.prototype.newLeader = function() {
  * @fires ozpIwc.leaderGroupParticipant#becameLeader
  */
 ozpIwc.CommonApiBase.prototype.setToLeader = function(){
+//    console.log(this.participant.address, "setToLeader");
     var self = this;
     window.setTimeout(function() {
-        if (self.participant.leaderState !== "actingLeader" && self.participant.leaderState !== "leader" && self.participant.leaderState !== "leaderSync") {
-//            console.error(self.participant.address, self.participant.leaderState, "not leader");
-            return;
-        }
-
-//        console.log(self.participant.address, "setToLeader");
         self.participant.changeState("leader");
         self.participant.events.trigger("becameLeader");
     },0);
@@ -6010,15 +6023,16 @@ ozpIwc.CommonApiBase.prototype.setToLeader = function(){
  */
 ozpIwc.CommonApiBase.prototype.leaderSync = function () {
 //    console.log(this.participant.address, "leaderSync");
-    this.participant.changeState("leaderSync");
+    this.participant.changeState("leaderSync",{toggleDrop: true});
 
     var self = this;
     window.setTimeout(function() {
 
+        // If the election synchronizing pushed this API out of leadership, don't try to become leader.
         if(self.participant.leaderState !== "leaderSync") {
-//            console.error(self.participant.address, self.participant.leaderState, "not leaderSync");
             return;
         }
+
         // Previous leader sent out their state, it was stored in the participant
         if (self.participant.stateStore && Object.keys(self.participant.stateStore).length > 0) {
             self.setState(self.participant.stateStore);
@@ -6032,27 +6046,26 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
             var recvFunc = function () {
                 self.setState(self.participant.stateStore);
                 self.participant.off("receivedState", recvFunc);
-//                console.error("I set my state");
                 self.setToLeader();
                 window.clearInterval(self.receiveStateTimer);
                 self.receiveStateTimer = null;
             };
 
             self.participant.on("receivedState", recvFunc);
-            var that = self;
+
             self.receiveStateTimer = window.setTimeout(function () {
-                if (that.participant.stateStore && Object.keys(that.participant.stateStore).length > 0) {
+                if (self.participant.stateStore && Object.keys(self.participant.stateStore).length > 0) {
                     recvFunc();
                 } else {
-//                    console.error(that.participant.name, that.participant.address, "Failed to retrieve state from", that.participant.previousLeader);
+                    console.error(self.participant.name, self.participant.address, "Failed to retrieve state from", self.participant.previousLeader);
                 }
 
-                that.participant.off("receivedState", recvFunc);
-                that.setToLeader();
+                self.participant.off("receivedState", recvFunc);
+                self.setToLeader();
             }, 250);
 
         } else {
-            // This is the first of the bus, winner doesn't grab any previous state
+            // This is the first of the bus, winner doesn't obtain any previous state
             self.setToLeader();
         }
     },0);

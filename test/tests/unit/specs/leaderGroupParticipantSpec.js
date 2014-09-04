@@ -50,12 +50,12 @@ describe("Leader Group Participant",function() {
 		l.on("becameLeader",function() {
 			log("becameLeader[" + l.address + "]");
 		});
-        l.on("becameLeaderStep",function(){
+        l.on("becameLeaderEvent",function(){
             l.sendVictoryMessage();
             l.changeState("leader");
             l.events.trigger("becameLeader");
         });
-        l.on("newLeaderStep",function(){
+        l.on("newLeaderEvent",function(){
             l.changeState("member");
             l.events.trigger("newLeader");
         });
