@@ -46,8 +46,8 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
         this.participant.send({
             'dst' : "intents.api",
             'src' : "system.api",
-            'action': "register",
-            'resource': "/"+i.type+"/"+i.action,
+            'action': "set",
+            'resource': "/"+i.type+"/"+i.action+"/system.api"+node.resource.replace(/\//g,'.'),
             'contentType': "application/ozpIwc-intents-handler-v1+json",
             'entity': {
                 'type': i.type,
