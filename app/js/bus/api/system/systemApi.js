@@ -3,14 +3,17 @@ var ozpIwc=ozpIwc || {};
 ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
     
-    
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/application",
         pattern: /^\/application\/.*$/,
         contentType: "application/ozpIwc-application-list-v1+json"
     }));
     
+    this.on("changedNode",this.updateIntents,this);
+       
     this.loadFromServer("applications");
+    
+    
     // @todo populate user and system endpoints
     this.data["/user"]=new ozpIwc.CommonApiValue({
         resource: "/user",
@@ -30,6 +33,38 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     });    
 });
 
+
+ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
+    if(!node.getIntentsRegistrations) {
+        return;
+    }
+    var intents=node.getIntentsRegistrations();
+    if(!intents) {
+        return;
+    }
+    intents.forEach(function(i) {
+        this.participant.send({
+            'dst' : "intents.api",
+            'src' : "system.api",
+            'action': "register",
+            'resource': "/"+i.type+"/"+i.action,
+            'contentType': "application/ozpIwc-intents-handler-v1+json",
+            'entity': {
+                'type': i.type,
+                'action': i.action,
+                'icon': i.icon,
+                'label': i.label,
+                '_links': node.entity['_links'],
+                'invokeIntent': {
+                    'action' : 'launch',
+                    'resource' : node.resource
+                }
+            }
+        });
+    },this);
+    
+};
+
 ozpIwc.SystemApi.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
     var resource="/application" + objectPath.replace(rootPath,'');
     return this.findOrMakeValue({
@@ -40,6 +75,14 @@ ozpIwc.SystemApi.prototype.findNodeForServerResource=function(serverObject,objec
 };
 
 ozpIwc.SystemApi.prototype.makeValue = function(packet){
+    if(packet.resource.indexOf("/mailbox") === 0) {
+        return new ozpIwc.SystemApiMailboxValue({
+            resource: packet.resource, 
+            entity: packet.entity, 
+            contentType: packet.contentType
+        });
+    }
+        
     return new ozpIwc.SystemApiApplicationValue({
         resource: packet.resource, 
         entity: packet.entity, 
@@ -55,4 +98,24 @@ ozpIwc.SystemApi.prototype.handleSet = function() {
 
 ozpIwc.SystemApi.prototype.handleDelete = function() {
     throw new ozpIwc.ApiError("badAction", "Cannot modify the system API");
+};
+
+ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
+    var key=this.createKey("/mailbox/");
+
+	// save the new child
+	var mailboxNode=this.findOrMakeValue({'resource':key});
+	mailboxNode.set(packetContext.packet);
+    
+    this.launchApplication(node,mailboxNode);
+    packetContext.replyTo({'action': "ok"});
+};
+
+ozpIwc.SystemApi.prototype.launchApplication=function(node,mailboxNode) {
+    var launchParams=[
+//        "ozpIwc.peer="+encodeURIComponent(window.location.protocol + "//" + window.location.host+window.location.pathname),
+        "ozpIwc.mailbox="+encodeURIComponent(mailboxNode.resource)
+    ];
+    
+    window.open(node.entity['_links'].describes.href,launchParams.join("&"));    
 };

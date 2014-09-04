@@ -196,10 +196,13 @@ ozpIwc.Client.prototype.connect=function() {
         this.connectPromise=new Promise(function(resolve) {
             self.peerUrlCheck(self.launchParams.peer,resolve);
         }).then(function(url) {
+            // now that we know the url to connect to, find a peer element
+            // currently, this is only via creating an iframe.
             self.peerUrl=url;
             self.peerOrigin=ozpIwc.util.determineOrigin(url);
-            return self.findPeer();
+            return self.createIframePeer();
         }).then(function() {
+            // start listening to the bus and ask for an address
             this.postMessageHandler = function(event) {
                 if(event.origin !== self.peerOrigin){
                     return;
@@ -226,10 +229,34 @@ ozpIwc.Client.prototype.connect=function() {
                 });
             });
         }).then(function() {
+            // dump any queued sends, trigger that we are fully connected
             self.preconnectionQueue.forEach(function(p) {
                 self.send(p.fields,p.callback,p.promise);
             });
             self.preconnectionQueue=null;
+            
+            if(!self.launchParams.mailbox) {
+                return;
+            }
+            
+            // fetch the mailbox
+            var firstSlashPos=self.launchParams.mailbox.indexOf('/');
+            var dst=self.launchParams.mailbox.substr(0,firstSlashPos);
+            var resource=self.launchParams.mailbox.substr(firstSlashPos);
+            return new Promise(function(resolve,reject) {
+                self.send({
+                    'dst': dst,
+                    'resource': resource,
+                    'action': "get"
+                },function(response) {
+                    if(response.response==='ok') {
+                        for(var k in response.entity) {
+                            self.launchParams[k]=response.entity[k];
+                        }
+                    }
+                    resolve();
+                });
+            });
         }).then(function() {
             self.events.trigger("connected");
         }).catch(function(error) {
@@ -239,7 +266,7 @@ ozpIwc.Client.prototype.connect=function() {
     return this.connectPromise; 
 };
 
-ozpIwc.Client.prototype.createIframePeer=function(peerUrl) {
+ozpIwc.Client.prototype.createIframePeer=function() {
     var self=this;
     return new Promise(function(resolve,reject) {
         var createIframeShim=function() {
@@ -247,7 +274,7 @@ ozpIwc.Client.prototype.createIframePeer=function(peerUrl) {
             self.iframe.addEventListener("load",function() {
                 resolve();
             });
-            self.iframe.src=peerUrl+"/iframe_peer.html";
+            self.iframe.src=self.peerUrl+"/iframe_peer.html";
             self.iframe.height=1;
             self.iframe.width=1;
             self.iframe.style.setProperty ("display", "none", "important");
@@ -263,16 +290,6 @@ ozpIwc.Client.prototype.createIframePeer=function(peerUrl) {
             window.addEventListener("load",createIframeShim,false);
         }
     });
-};
-
-ozpIwc.Client.prototype.findPeer=function() {
-    // check if we have a parent, get address there if so
-//	if(window.parent!==window) {
-//		this.peer=window.parent;
-//		this.requestAddress();
-//	} else {
-    return this.createIframePeer(this.peerUrl);
-//	}
 };
 
 (function() {

@@ -22,28 +22,49 @@ ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
     // resource of form /majorType/minorType/action?/handler?
     var path=packet.resource.split(/\//);
     path.shift(); // shift off the empty element before the first slash
+    var self=this;
+    var createType=function(resource) {
+        var node=new ozpIwc.IntentsApiTypeValue({
+            resource: resource,
+            intentType: path[0] + "/" + path[1]                
+        });
+        self.addDynamicNode(node);
+        return node;
+    };
+    var createDefinition=function(resource) {
+        var type="/" +path[0]+"/" + path[1];
+        if(!self.data[type]) {
+            self.data[type]=createType(type);
+        }
+        var node=new ozpIwc.IntentsApiDefinitionValue({
+            resource: resource,
+            intentType: path[0]+"/" + path[1] + "/" + path[2],
+            intentAction: path[2]
+        });
+        self.addDynamicNode(node);
+        return node;
+    };
+    var createHandler=function(resource) {
+        var definition="/" +path[0]+"/" + path[1] + "/" + path[2];
+        if(!self.data[definition]) {
+            self.data[definition]=createDefinition(definition);
+        }
+        
+        return new ozpIwc.IntentsApiHandlerValue({
+            resource: resource,
+            intentType: path[0] + "/" + path[1],
+            intentAction: path[2]
+        });
+    };
+    
     switch (path.length) {
         case 2:
-            var node=new ozpIwc.IntentsApiTypeValue({
-                resource:packet.resource,
-                intentType: path[0] + "/" + path[1]                
-            });
-            this.addDynamicNode(node);
-            return node;
+            return createType(packet.resource);
         case 3:
-            var node=new ozpIwc.IntentsApiDefinitionValue({
-                resource:packet.resource,
-                intentType: path[0] + "/" + path[1],
-                intentAction: path[2]
-            });
-            this.addDynamicNode(node);
-            return node;
+
+            return createDefinition(packet.resource);
         case 4:
-            return new ozpIwc.IntentsApiHandlerValue({
-                resource:packet.resource,
-                intentType: path[0] + "/" + path[1],
-                intentAction: path[2]
-            });
+            return createHandler(packet.resource);
         default:
             throw new ozpIwc.ApiError("badResource","Invalid resource: " + packet.resource)
     }
@@ -56,7 +77,7 @@ ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
  * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
  */
 ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
-	var key=this.createKey(node.resource+"/");
+	var key=node.resource+"/"+packetContext.packet.src;
 
 	// save the new child
 	var childNode=this.findOrMakeValue({'resource':key});
@@ -82,14 +103,31 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext - the packet received by the router.
  */
 ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
+    if(typeof(node.getHandlers) !== "function") {
+        throw new ozpIwc.ApiError("badResource","Resource is not an invokable intent");
+    }
+    
+    var handlerNodes=node.getHandlers(packetContext);
+    
+    if(handlerNodes.length === 1) {
+        this.invokeIntentHandler(handlerNodes[0],packetContext);
+    } else {
+        this.chooseIntentHandler(handlerNodes,packetContext);
+    }
+};
+
+
+
+ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (node, packetContext) {
     // check to see if there's an invokeIntent package
     var packet=ozpIwc.util.clone(node.entity.invokeIntent);
     
     // assign the entity and contentType from the packet Context
     packet.entity=ozpIwc.util.clone(packetContext.packet.entity);
     packet.contentType=packetContext.packet.contentType;
-    packet.permissions=packetContext.packet.entity;
+    packet.permissions=packetContext.packet.permissions;
     
+
     this.participant.send(packet,function(response) {
         var blacklist=['src','dst','msgId','replyTo'];
         var packet={};
@@ -100,5 +138,9 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
         }
         packetContext.replyTo(packet);
     });
+};
+
+ozpIwc.IntentsApi.prototype.chooseIntentHandler = function (nodeList, packetContext) {
+    throw new ozpIwc.ApiError("noImplementation","Selecting an intent is not yet implemented");
 };
 

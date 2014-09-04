@@ -32,6 +32,7 @@ describe("Client",function() {
         var client;
 
         beforeEach(function() {
+            window.name="";
             client=new ozpIwc.Client({peerUrl:"http://" + window.location.hostname + ":13000"});
         });
         afterEach(function() {

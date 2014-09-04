@@ -4,35 +4,98 @@ describe("System API",function() {
     var applicationNode;
     var userNode;
     var systemNode;
+    var oldEndpoints;
     beforeEach(function() {
+        oldEndpoints=ozpIwc.endpoint;
+        ozpIwc.endpoint=function() {
+            return {
+                get: function() { return Promise.resolve(); }
+            };            
+        };
         systemApi=new ozpIwc.SystemApi({
             'participant': new TestParticipant()
         });
 
-        applicationNode=systemApi.findOrMakeValue({
+        systemApi.data["/application/abcApp"]=applicationNode=systemApi.findOrMakeValue({
             'resource': "/application/abcApp",
             'contentType' : "ozp-application-definition-v1+json",
-            'version' : 1
+            'version' : 1,
+            'entity' : {
+                "name" : "Blue Bouncing Ball",
+                "description" : "A blue bouncing ball",
+                "type" : "application",
+                "state" : "active",
+                "uiHints": {
+                    "width" : 400,
+                    "height" : 400,
+                    "singleton" : false
+                },
+                "tags": [
+                    "demo"
+                ],
+                "intents": [
+                    {
+                        "type": "application/ozp-demo-ball+json",
+                        "action": "view",
+                        "icon": "http://localhost:15000/largeIcon.png",
+                        "label": "Blue Ball"
+                    }
+                ],
+                "icons" : {
+                    "small": "http://localhost:15000/largeIcon.png",
+                    "large": "http://localhost:15000/smallIcon.png"
+                },
+                "screenShots" : [
+                    {
+                        "href" : "http://localhost:15000/screenShot.png",
+                        "title" : "A screenshot"
+                    }
+                ],
+                "launchUrls" : {
+                    "default": "http://localhost:15000/?color=blue",
+                    "test" : "http://test.localhost:15000/?color=blue"
+                },
+                "_links": {
+                    "self" : { "href": "/api/application/v1/12345"},
+                    "describes" : { "href": "http://localhost:15000/?color=blue"}
+                }
+            }
         });
 
-        userNode=systemApi.findOrMakeValue({
-            'resource': "/user",
-            'contentType' : "ozp-user-definition-v1+json",
-            'version' : 1
-        });
-
-        systemNode=systemApi.findOrMakeValue({
-            'resource': "/system",
-            'contentType' : "ozp-system-definition-v1+json",
-            'version' : 1
-        });
     });
 
     afterEach(function() {
+        ozpIwc.endpoint=oldEndpoints;
         systemApi=null;
         applicationNode=null;
         userNode=null;
         systemNode=null;
+    });
+    
+    it("launches an application",function() {
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'entity' : {
+                    'foo': 1
+                }
+            },
+            action: 'launch'
+        });
+        spyOn(window,"open");
+        
+        systemApi.handleLaunch(applicationNode,packetContext);
+        expect(window.open.calls.mostRecent().args[0]).toEqual("http://localhost:15000/?color=blue");
+        expect(window.open.calls.mostRecent().args[1]).toMatch(/ozpIwc.mailbox=(%2[fF]mailbox%2[fF]([a-z0-9]+))/);
+        var mailboxPath=decodeURIComponent(
+            /ozpIwc.mailbox=(%2[fF]mailbox%2[fF]([a-z0-9]+))/.exec(
+                window.open.calls.mostRecent().args[1]
+            )[1]
+        );
+        
+        var mailbox=systemApi.data[mailboxPath];
+        expect(mailbox).toBeDefined();
+        expect(mailbox.entity).toEqual({'foo':1});
+        
     });
     
 //    it("sets an application",function() {
