@@ -94,51 +94,6 @@ ozpIwc.CancelableEvent.prototype.cancel=function(reason) {
 	return this;
 };
 
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-
-
-/**
- * A deferred action, but not in the sense of the Javascript standard.
- * @class
- */
-ozpIwc.AsyncAction=function() {
-	this.callbacks={};
-};
-
-ozpIwc.AsyncAction.prototype.when=function(state,callback,self) {
-    self=self || this;
-	
-	if(this.resolution === state) {
-		callback.apply(self,this.value);
-	} else {
-		this.callbacks[state]=function() { return callback.apply(self,arguments); };
-	}
-	return this;
-};
-
-
-ozpIwc.AsyncAction.prototype.resolve=function(status) {
-	if(this.resolution) {
-		throw "Cannot resolve an already resolved AsyncAction";
-	}
-	var callback=this.callbacks[status];
-	this.resolution=status;
-	this.value=Array.prototype.slice.call(arguments,1);
-	
-	if(callback) {
-		callback.apply(this,this.value);
-	}
-	return this;
-};
-
-ozpIwc.AsyncAction.prototype.success=function(callback,self) {
-	return this.when("success",callback,self);
-};
-
-ozpIwc.AsyncAction.prototype.failure=function(callback,self) {
-	return this.when("failure",callback,self);
-};
 /*!
  * https://github.com/es-shims/es5-shim
  * @license es5-shim Copyright 2009-2014 by contributors, MIT License
@@ -2042,41 +1997,12 @@ if (parseInt(ws + '08') !== 8 || parseInt(ws + '0x16') !== 22) {
 
 }));
 
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-
-/**
- * @type {object}
- * @property {function} log - Normal log output.
- * @property {function} error - Error output.
- */
-ozpIwc.log=ozpIwc.log || {
-	log: function() {
-		if(window.console && typeof(window.console.log)==="function") {
-			window.console.log.apply(window.console,arguments);
-		}
-	},
-	error: function() {
-		if(window.console && typeof(window.console.error)==="function") {
-			window.console.error.apply(window.console,arguments);
-		}
-	}
-};
-
 !function(){var a,b,c,d;!function(){var e={},f={};a=function(a,b,c){e[a]={deps:b,callback:c}},d=c=b=function(a){function c(b){if("."!==b.charAt(0))return b;for(var c=b.split("/"),d=a.split("/").slice(0,-1),e=0,f=c.length;f>e;e++){var g=c[e];if(".."===g)d.pop();else{if("."===g)continue;d.push(g)}}return d.join("/")}if(d._eak_seen=e,f[a])return f[a];if(f[a]={},!e[a])throw new Error("Could not find module "+a);for(var g,h=e[a],i=h.deps,j=h.callback,k=[],l=0,m=i.length;m>l;l++)"exports"===i[l]?k.push(g={}):k.push(b(c(i[l])));var n=j.apply(this,k);return f[a]=g||n}}(),a("promise/all",["./utils","exports"],function(a,b){"use strict";function c(a){var b=this;if(!d(a))throw new TypeError("You must pass an array to all.");return new b(function(b,c){function d(a){return function(b){f(a,b)}}function f(a,c){h[a]=c,0===--i&&b(h)}var g,h=[],i=a.length;0===i&&b([]);for(var j=0;j<a.length;j++)g=a[j],g&&e(g.then)?g.then(d(j),c):f(j,g)})}var d=a.isArray,e=a.isFunction;b.all=c}),a("promise/asap",["exports"],function(a){"use strict";function b(){return function(){process.nextTick(e)}}function c(){var a=0,b=new i(e),c=document.createTextNode("");return b.observe(c,{characterData:!0}),function(){c.data=a=++a%2}}function d(){return function(){j.setTimeout(e,1)}}function e(){for(var a=0;a<k.length;a++){var b=k[a],c=b[0],d=b[1];c(d)}k=[]}function f(a,b){var c=k.push([a,b]);1===c&&g()}var g,h="undefined"!=typeof window?window:{},i=h.MutationObserver||h.WebKitMutationObserver,j="undefined"!=typeof global?global:void 0===this?window:this,k=[];g="undefined"!=typeof process&&"[object process]"==={}.toString.call(process)?b():i?c():d(),a.asap=f}),a("promise/config",["exports"],function(a){"use strict";function b(a,b){return 2!==arguments.length?c[a]:(c[a]=b,void 0)}var c={instrument:!1};a.config=c,a.configure=b}),a("promise/polyfill",["./promise","./utils","exports"],function(a,b,c){"use strict";function d(){var a;a="undefined"!=typeof global?global:"undefined"!=typeof window&&window.document?window:self;var b="Promise"in a&&"resolve"in a.Promise&&"reject"in a.Promise&&"all"in a.Promise&&"race"in a.Promise&&function(){var b;return new a.Promise(function(a){b=a}),f(b)}();b||(a.Promise=e)}var e=a.Promise,f=b.isFunction;c.polyfill=d}),a("promise/promise",["./config","./utils","./all","./race","./resolve","./reject","./asap","exports"],function(a,b,c,d,e,f,g,h){"use strict";function i(a){if(!v(a))throw new TypeError("You must pass a resolver function as the first argument to the promise constructor");if(!(this instanceof i))throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");this._subscribers=[],j(a,this)}function j(a,b){function c(a){o(b,a)}function d(a){q(b,a)}try{a(c,d)}catch(e){d(e)}}function k(a,b,c,d){var e,f,g,h,i=v(c);if(i)try{e=c(d),g=!0}catch(j){h=!0,f=j}else e=d,g=!0;n(b,e)||(i&&g?o(b,e):h?q(b,f):a===D?o(b,e):a===E&&q(b,e))}function l(a,b,c,d){var e=a._subscribers,f=e.length;e[f]=b,e[f+D]=c,e[f+E]=d}function m(a,b){for(var c,d,e=a._subscribers,f=a._detail,g=0;g<e.length;g+=3)c=e[g],d=e[g+b],k(b,c,d,f);a._subscribers=null}function n(a,b){var c,d=null;try{if(a===b)throw new TypeError("A promises callback cannot return that same promise.");if(u(b)&&(d=b.then,v(d)))return d.call(b,function(d){return c?!0:(c=!0,b!==d?o(a,d):p(a,d),void 0)},function(b){return c?!0:(c=!0,q(a,b),void 0)}),!0}catch(e){return c?!0:(q(a,e),!0)}return!1}function o(a,b){a===b?p(a,b):n(a,b)||p(a,b)}function p(a,b){a._state===B&&(a._state=C,a._detail=b,t.async(r,a))}function q(a,b){a._state===B&&(a._state=C,a._detail=b,t.async(s,a))}function r(a){m(a,a._state=D)}function s(a){m(a,a._state=E)}var t=a.config,u=(a.configure,b.objectOrFunction),v=b.isFunction,w=(b.now,c.all),x=d.race,y=e.resolve,z=f.reject,A=g.asap;t.async=A;var B=void 0,C=0,D=1,E=2;i.prototype={constructor:i,_state:void 0,_detail:void 0,_subscribers:void 0,then:function(a,b){var c=this,d=new this.constructor(function(){});if(this._state){var e=arguments;t.async(function(){k(c._state,d,e[c._state-1],c._detail)})}else l(this,d,a,b);return d},"catch":function(a){return this.then(null,a)}},i.all=w,i.race=x,i.resolve=y,i.reject=z,h.Promise=i}),a("promise/race",["./utils","exports"],function(a,b){"use strict";function c(a){var b=this;if(!d(a))throw new TypeError("You must pass an array to race.");return new b(function(b,c){for(var d,e=0;e<a.length;e++)d=a[e],d&&"function"==typeof d.then?d.then(b,c):b(d)})}var d=a.isArray;b.race=c}),a("promise/reject",["exports"],function(a){"use strict";function b(a){var b=this;return new b(function(b,c){c(a)})}a.reject=b}),a("promise/resolve",["exports"],function(a){"use strict";function b(a){if(a&&"object"==typeof a&&a.constructor===this)return a;var b=this;return new b(function(b){b(a)})}a.resolve=b}),a("promise/utils",["exports"],function(a){"use strict";function b(a){return c(a)||"object"==typeof a&&null!==a}function c(a){return"function"==typeof a}function d(a){return"[object Array]"===Object.prototype.toString.call(a)}var e=Date.now||function(){return(new Date).getTime()};a.objectOrFunction=b,a.isFunction=c,a.isArray=d,a.now=e}),b("promise/polyfill").polyfill()}();
 /** @namespace */
 var ozpIwc=ozpIwc || {};
 
 /** @namespace */
 ozpIwc.util=ozpIwc.util || {};
-
-/**
- * Generates a large hexidecimal string to serve as a unique ID.  Not a guid.
- * @returns {String}
- */
-ozpIwc.util.generateId=function() {
-    return Math.floor(Math.random() * 0xffffffff).toString(16);
-};
 
 /**
  * Used to get the current epoch time.  Tests overrides this
@@ -2101,14 +2027,6 @@ ozpIwc.util.extend=function(baseClass,newConstructor) {
     newConstructor.prototype = Object.create(baseClass.prototype);
     newConstructor.prototype.constructor = newConstructor;
     return newConstructor;
-};
-
-/**
- * Invokes the callback handler on another event loop as soon as possible.
-*/
-ozpIwc.util.setImmediate=function(f) {
-//    window.setTimeout(f,0);
-    window.setImmediate(f);
 };
 
 /**
@@ -2159,41 +2077,6 @@ ozpIwc.util.clone=function(value) {
 };
 
 
-/**
- * Returns true if every needle is found in the haystack.
- * @param {array} haystack - The array to search.
- * @param {array} needles - All of the values to search.
- * @param {function} [equal] - What constitutes equality.  Defaults to a===b.
- * @returns {boolean}
- */
-ozpIwc.util.arrayContainsAll=function(haystack,needles,equal) {
-    equal=equal || function(a,b) { return a===b;};
-    return needles.every(function(needle) { 
-        return haystack.some(function(hay) { 
-            return equal(hay,needle);
-        });
-    });
-};
-
-
-/**
- * Returns true if the value every attribute in needs is equal to 
- * value of the same attribute in haystack.
- * @param {array} haystack - The object that must contain all attributes and values.
- * @param {array} needles - The reference object for the attributes and values.
- * @param {function} [equal] - What constitutes equality.  Defaults to a===b.
- * @returns {boolean}
- */
-ozpIwc.util.objectContainsAll=function(haystack,needles,equal) {
-    equal=equal || function(a,b) { return a===b;};
-    
-    for(var attribute in needles) {
-        if(!equal(haystack[attribute],needles[attribute])) {
-            return false;
-        }
-    }
-    return true;
-};
 
 ozpIwc.util.parseQueryParams=function(query) {
     query = query || window.location.search;
@@ -2204,31 +2087,6 @@ ozpIwc.util.parseQueryParams=function(query) {
 		params[match[1]]=decodeURIComponent(match[2]);
 	}
     return params;
-};
-
-ozpIwc.util.ajax = function (config) {
-    return new Promise(function(resolve,reject) {
-        var request = new XMLHttpRequest();
-        request.onreadystatechange = function() {
-            if (request.readyState !== 4) {
-                return;
-            }
-
-            if (request.status === 200) {
-                resolve(JSON.parse(this.responseText));
-            } else {
-                reject(this);
-            }
-        };
-        request.open(config.method, config.href, true);
-
-        if(config.method === "POST") {
-            request.send(config.data);
-        }
-        request.setRequestHeader("Content-Type", "application/json");
-        request.setRequestHeader("Cache-Control", "no-cache");
-        request.send();
-    });
 };
 
 ozpIwc.util.determineOrigin=function(url) {
@@ -3708,6 +3566,103 @@ ozpIwc.MetricsRegistry.prototype.allMetrics=function() {
 
 ozpIwc.metrics=new ozpIwc.MetricsRegistry();
 
+/** @namespace */
+var ozpIwc=ozpIwc || {};
+
+/** @namespace */
+ozpIwc.util=ozpIwc.util || {};
+
+ozpIwc.util.ajax = function (config) {
+    return new Promise(function(resolve,reject) {
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function() {
+            if (request.readyState !== 4) {
+                return;
+            }
+
+            if (request.status === 200) {
+                resolve(JSON.parse(this.responseText));
+            } else {
+                reject(this);
+            }
+        };
+        request.open(config.method, config.href, true);
+
+        if(config.method === "POST") {
+            request.send(config.data);
+        }
+        request.setRequestHeader("Content-Type", "application/json");
+        request.setRequestHeader("Cache-Control", "no-cache");
+        request.send();
+    });
+};
+
+/** @namespace */
+var ozpIwc=ozpIwc || {};
+
+
+/**
+ * A deferred action, but not in the sense of the Javascript standard.
+ * @class
+ */
+ozpIwc.AsyncAction=function() {
+	this.callbacks={};
+};
+
+ozpIwc.AsyncAction.prototype.when=function(state,callback,self) {
+    self=self || this;
+	
+	if(this.resolution === state) {
+		callback.apply(self,this.value);
+	} else {
+		this.callbacks[state]=function() { return callback.apply(self,arguments); };
+	}
+	return this;
+};
+
+
+ozpIwc.AsyncAction.prototype.resolve=function(status) {
+	if(this.resolution) {
+		throw "Cannot resolve an already resolved AsyncAction";
+	}
+	var callback=this.callbacks[status];
+	this.resolution=status;
+	this.value=Array.prototype.slice.call(arguments,1);
+	
+	if(callback) {
+		callback.apply(this,this.value);
+	}
+	return this;
+};
+
+ozpIwc.AsyncAction.prototype.success=function(callback,self) {
+	return this.when("success",callback,self);
+};
+
+ozpIwc.AsyncAction.prototype.failure=function(callback,self) {
+	return this.when("failure",callback,self);
+};
+/** @namespace */
+var ozpIwc=ozpIwc || {};
+
+/**
+ * @type {object}
+ * @property {function} log - Normal log output.
+ * @property {function} error - Error output.
+ */
+ozpIwc.log=ozpIwc.log || {
+	log: function() {
+		if(window.console && typeof(window.console.log)==="function") {
+			window.console.log.apply(window.console,arguments);
+		}
+	},
+	error: function() {
+		if(window.console && typeof(window.console.error)==="function") {
+			window.console.error.apply(window.console,arguments);
+		}
+	}
+};
+
 (function (global, undefined) {
     "use strict";
 
@@ -3884,6 +3839,69 @@ ozpIwc.metrics=new ozpIwc.MetricsRegistry();
     attachTo.clearImmediate = clearImmediate;
 }(new Function("return this")()));
 
+/** @namespace */
+var ozpIwc=ozpIwc || {};
+
+/** @namespace */
+ozpIwc.util=ozpIwc.util || {};
+
+/**
+ * Generates a large hexidecimal string to serve as a unique ID.  Not a guid.
+ * @returns {String}
+ */
+ozpIwc.util.generateId=function() {
+    return Math.floor(Math.random() * 0xffffffff).toString(16);
+};
+
+/**
+ * Invokes the callback handler on another event loop as soon as possible.
+*/
+ozpIwc.util.setImmediate=function(f) {
+//    window.setTimeout(f,0);
+    window.setImmediate(f);
+};
+
+/**
+ * Returns true if every needle is found in the haystack.
+ * @param {array} haystack - The array to search.
+ * @param {array} needles - All of the values to search.
+ * @param {function} [equal] - What constitutes equality.  Defaults to a===b.
+ * @returns {boolean}
+ */
+ozpIwc.util.arrayContainsAll=function(haystack,needles,equal) {
+    equal=equal || function(a,b) { return a===b;};
+    return needles.every(function(needle) { 
+        return haystack.some(function(hay) { 
+            return equal(hay,needle);
+        });
+    });
+};
+
+
+/**
+ * Returns true if the value every attribute in needs is equal to 
+ * value of the same attribute in haystack.
+ * @param {array} haystack - The object that must contain all attributes and values.
+ * @param {array} needles - The reference object for the attributes and values.
+ * @param {function} [equal] - What constitutes equality.  Defaults to a===b.
+ * @returns {boolean}
+ */
+ozpIwc.util.objectContainsAll=function(haystack,needles,equal) {
+    equal=equal || function(a,b) { return a===b;};
+    
+    for(var attribute in needles) {
+        if(!equal(haystack[attribute],needles[attribute])) {
+            return false;
+        }
+    }
+    return true;
+};
+
+(function() {
+    ozpIwc.BUS_ROOT=window.location.protocol + "//" 
+            + window.location.host
+            +window.location.pathname.replace(/[^\/]+$/,"");
+})();
 
 ozpIwc.abacPolicies={};
 
@@ -7079,7 +7097,6 @@ ozpIwc.SystemApi.prototype.makeValue = function(packet){
     });
 };
 
-
 ozpIwc.SystemApi.prototype.handleSet = function() {
     throw new ozpIwc.ApiError("badAction", "Cannot modify the system API");
 };
@@ -7101,7 +7118,7 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
 
 ozpIwc.SystemApi.prototype.launchApplication=function(node,mailboxNode) {
     var launchParams=[
-//        "ozpIwc.peer="+encodeURIComponent(window.location.protocol + "//" + window.location.host+window.location.pathname),
+        "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),
         "ozpIwc.mailbox="+encodeURIComponent(mailboxNode.resource)
     ];
     

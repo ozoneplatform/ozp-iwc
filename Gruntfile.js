@@ -30,7 +30,6 @@ module.exports = function(grunt) {
             bus: [
                 '<%= src.common %>',
                 '<%= src.metrics %>',
-                'app/js/bus/setImmediate.js',
                 'app/js/bus/util/**/*.js',
                 'app/js/bus/security/**/*.js',
                 'app/js/bus/network/**/*.js',

@@ -9,6 +9,11 @@ describe("Event",function() {
 		event=null;
 	});
 	
+    it("sets the BUS_ROOT",function() {
+        expect(ozpIwc.BUS_ROOT).toMatch("/tests/unit/$");
+        expect(ozpIwc.BUS_ROOT).not.toMatch(".html?");
+    });
+    
 	it("single handlers gets event", function() {
 		var hits=0;
 		event.on("1",function() {

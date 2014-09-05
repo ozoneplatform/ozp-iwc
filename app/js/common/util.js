@@ -5,14 +5,6 @@ var ozpIwc=ozpIwc || {};
 ozpIwc.util=ozpIwc.util || {};
 
 /**
- * Generates a large hexidecimal string to serve as a unique ID.  Not a guid.
- * @returns {String}
- */
-ozpIwc.util.generateId=function() {
-    return Math.floor(Math.random() * 0xffffffff).toString(16);
-};
-
-/**
  * Used to get the current epoch time.  Tests overrides this
  * to allow a fast-forward on time-based actions.
  * @returns {Number}
@@ -35,14 +27,6 @@ ozpIwc.util.extend=function(baseClass,newConstructor) {
     newConstructor.prototype = Object.create(baseClass.prototype);
     newConstructor.prototype.constructor = newConstructor;
     return newConstructor;
-};
-
-/**
- * Invokes the callback handler on another event loop as soon as possible.
-*/
-ozpIwc.util.setImmediate=function(f) {
-//    window.setTimeout(f,0);
-    window.setImmediate(f);
 };
 
 /**
@@ -93,41 +77,6 @@ ozpIwc.util.clone=function(value) {
 };
 
 
-/**
- * Returns true if every needle is found in the haystack.
- * @param {array} haystack - The array to search.
- * @param {array} needles - All of the values to search.
- * @param {function} [equal] - What constitutes equality.  Defaults to a===b.
- * @returns {boolean}
- */
-ozpIwc.util.arrayContainsAll=function(haystack,needles,equal) {
-    equal=equal || function(a,b) { return a===b;};
-    return needles.every(function(needle) { 
-        return haystack.some(function(hay) { 
-            return equal(hay,needle);
-        });
-    });
-};
-
-
-/**
- * Returns true if the value every attribute in needs is equal to 
- * value of the same attribute in haystack.
- * @param {array} haystack - The object that must contain all attributes and values.
- * @param {array} needles - The reference object for the attributes and values.
- * @param {function} [equal] - What constitutes equality.  Defaults to a===b.
- * @returns {boolean}
- */
-ozpIwc.util.objectContainsAll=function(haystack,needles,equal) {
-    equal=equal || function(a,b) { return a===b;};
-    
-    for(var attribute in needles) {
-        if(!equal(haystack[attribute],needles[attribute])) {
-            return false;
-        }
-    }
-    return true;
-};
 
 ozpIwc.util.parseQueryParams=function(query) {
     query = query || window.location.search;
@@ -138,31 +87,6 @@ ozpIwc.util.parseQueryParams=function(query) {
 		params[match[1]]=decodeURIComponent(match[2]);
 	}
     return params;
-};
-
-ozpIwc.util.ajax = function (config) {
-    return new Promise(function(resolve,reject) {
-        var request = new XMLHttpRequest();
-        request.onreadystatechange = function() {
-            if (request.readyState !== 4) {
-                return;
-            }
-
-            if (request.status === 200) {
-                resolve(JSON.parse(this.responseText));
-            } else {
-                reject(this);
-            }
-        };
-        request.open(config.method, config.href, true);
-
-        if(config.method === "POST") {
-            request.send(config.data);
-        }
-        request.setRequestHeader("Content-Type", "application/json");
-        request.setRequestHeader("Cache-Control", "no-cache");
-        request.send();
-    });
 };
 
 ozpIwc.util.determineOrigin=function(url) {
