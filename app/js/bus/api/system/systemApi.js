@@ -1,5 +1,9 @@
 var ozpIwc=ozpIwc || {};
 
+/**
+ * @class SystemApi
+ * @type {Function|*}
+ */
 ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
     

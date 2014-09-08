@@ -1,7 +1,7 @@
 /**
  * The Common API Base implements the API Common Conventions.  It is intended to be subclassed by
  * the specific API implementations.
- * @class
+ * @class CommonApiBase
  */
 ozpIwc.CommonApiBase = function(config) {
 	config = config || {};

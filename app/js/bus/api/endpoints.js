@@ -1,5 +1,10 @@
 var ozpIwc=ozpIwc || {};
 
+/**
+ * @class Endpoint
+ * @param endpointRegistry
+ * @constructor
+ */
 ozpIwc.Endpoint=function(endpointRegistry) {
     this.endpointRegistry=endpointRegistry;
 };

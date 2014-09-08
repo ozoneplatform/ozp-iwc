@@ -121,11 +121,18 @@ module.exports = function(grunt) {
         clean: {
           dist: ['./dist/', './app/js/ozpIwc-*.js']
         },
-        jsdoc: {
-            dist: {
-                src: ['<%= src.bus %>', '<%= src.client %>'],
+        yuidoc: {
+            compile: {
+                name: '<%= pkg.name %>',
+                description: '<%= pkg.description %>',
+                version: '<%= pkg.version %>',
+                url: '<%= pkg.homepage %>',
                 options: {
-                    destination: 'dist/doc'
+                    paths: [
+                        'app/js/'
+                    ],
+//                    themedir: 'path/to/custom/theme/',
+                    outdir: 'dist/doc'
                 }
             }
         },
@@ -213,7 +220,7 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('build', ['concat_sourcemap', 'uglify', 'copy']);
-    grunt.registerTask('dist', ['jshint','build', 'jsdoc']);
+    grunt.registerTask('dist', ['jshint','build', 'yuidoc']);
     grunt.registerTask('testOnly', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
     grunt.registerTask('test', ['build','connect','watch']);
     grunt.registerTask('default', ['dist']);

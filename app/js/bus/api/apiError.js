@@ -1,3 +1,7 @@
+/**
+ * @class ApiError
+ * @type {Function|*}
+ */
 ozpIwc.ApiError=ozpIwc.util.extend(Error,function(action,message) {
     Error.call(this,message);
     this.name="ApiError";

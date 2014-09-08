@@ -2,7 +2,7 @@
 /**
  * The base class for values in the various APIs.  Designed to be extended with API-specific
  * concerns and validation.
- * @class
+ * @class CommonApiValue
  * @param {object} config
  * @param {string} config.name - the name of this resource
  */

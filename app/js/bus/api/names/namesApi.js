@@ -1,3 +1,7 @@
+/**
+ * @class NamesApi
+ * @type {Function|*}
+ */
 ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
     ozpIwc.CommonApiBase.apply(this, arguments);
 

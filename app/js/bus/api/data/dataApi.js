@@ -1,3 +1,7 @@
+/**
+ * @class DataApi
+ * @type {Function|*}
+ */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
     this.loadFromServer("data");

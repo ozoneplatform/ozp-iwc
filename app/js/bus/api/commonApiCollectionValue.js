@@ -1,4 +1,7 @@
-
+/**
+ * @class CommonApiCollectionValue
+ * @type {Function|*}
+ */
 ozpIwc.CommonApiCollectionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
 	ozpIwc.CommonApiValue.apply(this,arguments);
     this.persist=false;    
