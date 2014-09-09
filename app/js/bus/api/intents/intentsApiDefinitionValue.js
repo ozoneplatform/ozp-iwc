@@ -1,6 +1,11 @@
+
 /**
  * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
  * @class IntentsApiDefinitionValue
+ * @module api
+ * @submodule api.Value
+ * @extends CommonApiValue
+ *
  * @param {object} config
  *@param {object} config.entity
  * @param {string} config.entity.definitions - the list of definitions in this intent capability.

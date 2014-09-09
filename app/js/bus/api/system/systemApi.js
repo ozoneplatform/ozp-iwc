@@ -2,6 +2,10 @@ var ozpIwc=ozpIwc || {};
 
 /** The system api
  * @class SystemApi
+ * @module api
+ * @submodule api.Type
+ * @extends CommonApiBase
+ *
  * @type {Function|*}
  */
 ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {

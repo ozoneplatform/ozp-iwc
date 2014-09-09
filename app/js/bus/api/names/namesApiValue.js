@@ -1,5 +1,9 @@
 /**
  * @class NamesApiValue
+ * @module api
+ * @submodule api.Value
+ * @extends CommonApiValue
+ *
  * @type {Function|*}
  */
 ozpIwc.NamesApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {

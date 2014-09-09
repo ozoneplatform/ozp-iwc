@@ -1,6 +1,10 @@
 /**
  * The Intents API. Subclasses The Common Api Base.
  * @class IntentsApi
+ * @module api
+ * @submodule api.Type
+ * @extends CommonApiBase
+ *
  * @params config {Object}
  * @params config.href {String} - URI of the server side Data storage to load the Intents Api with
  * @params config.loadServerData {Boolean} - Flag to load server side data.

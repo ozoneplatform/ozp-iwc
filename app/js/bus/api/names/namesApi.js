@@ -1,5 +1,9 @@
 /** The Names Api
  * @class NamesApi
+ * @module api
+ * @submodule api.Type
+ * @extends CommonApiBase
+ *
  * @type {Function|*}
  */
 ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
