@@ -1,5 +1,5 @@
 /**
- * @class
+ * @class Counter
  * @extends ozpIwc.MetricType
  * A counter running total that can be adjusted up or down.
  * Where a meter is set to a known value at each update, a

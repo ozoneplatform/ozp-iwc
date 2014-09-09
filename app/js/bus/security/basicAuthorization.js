@@ -16,7 +16,7 @@ var ozpIwc=ozpIwc || {};
  * A simple Attribute-Based Access Control implementation
  * @todo Permissions are local to each peer.  Does this need to be synced?
  * 
- * @class
+ * @class BasicAuthorization
  */
 ozpIwc.BasicAuthorization=function(config) {
     config=config || {};

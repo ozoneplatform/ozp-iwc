@@ -26,7 +26,7 @@ ozpIwc.metricsStats.DEFAULT_DECAY_ALPHA=0.015;
 /**
  * This acts as a ordered binary heap for any serializeable JS object or collection of such objects 
  * <p>Borrowed from https://github.com/mikejihbe/metrics. 
- * @class 
+ * @class ExponentiallyDecayingSample
 	*/
 ozpIwc.metricsStats.ExponentiallyDecayingSample=ozpIwc.util.extend(ozpIwc.metricsStats.Sample,function(size, alpha) {
 	ozpIwc.metricsStats.Sample.apply(this);

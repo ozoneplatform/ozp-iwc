@@ -1,7 +1,7 @@
 var ozpIwc=ozpIwc || {};
 
 /**
- * @class
+ * @class Participant
  * @mixes ozpIwc.security.Actor
  * @property {string} address - The assigned address to this address.
  * @property {ozpIwc.security.Subject} securityAttributes - The security attributes for this participant.

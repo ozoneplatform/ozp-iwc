@@ -2,7 +2,7 @@ var ozpIwc=ozpIwc || {};
 
 /**
  * Baseclass for APIs that need leader election.  Uses the Bully algorithm for leader election.
- * @class
+ * @class LeaderGroupParticipant
  * @param {object} config
  * @param {String} config.name 
  *        The name of this API.

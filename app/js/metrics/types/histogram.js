@@ -1,5 +1,5 @@
 /**
- * @class
+ * @class Histogram
  * @extends ozpIwc.BaseMetric
  */
 ozpIwc.metricTypes.Histogram=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {

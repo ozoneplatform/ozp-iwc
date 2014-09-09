@@ -135,7 +135,7 @@ ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
 
 
 /**
- * @class
+ * @class PostMessageParticipantListener
  * @param {object} config
  * @param {ozpIwc.Router} config.router
  */

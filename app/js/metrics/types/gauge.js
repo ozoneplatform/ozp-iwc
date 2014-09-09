@@ -5,7 +5,7 @@ ozpIwc.metricTypes=ozpIwc.metricTypes || {};
  */
 
 /**
- * @class
+ * @class Gauge
  * @extends ozpIwc.MetricType
  * A gauge is an externally defined set of metrics returned by a callback function
  * @param {ozpIwc.metricTypes.Gauge~gaugeCallback} metricsCallback

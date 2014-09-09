@@ -1,5 +1,5 @@
 /**
- * @class
+ * @class RouterWatchdog
  */
 ozpIwc.RouterWatchdog = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(config) {
     ozpIwc.InternalParticipant.apply(this, arguments);

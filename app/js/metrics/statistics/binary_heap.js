@@ -7,7 +7,7 @@ ozpIwc.metricsStats=ozpIwc.metricsStats || {};
  * This acts as a ordered binary heap for any serializeable JS object or collection of such objects 
  * <p>Borrowed from https://github.com/mikejihbe/metrics. Originally from from http://eloquentjavascript.net/appendix2.html
  * <p>Licenced under CCv3.0
- * @class
+ * @class BinaryHeap
  * @param {type} scoreFunction
  * @returns {BinaryHeap}
  */

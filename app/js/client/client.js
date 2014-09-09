@@ -1,7 +1,7 @@
 var ozpIwc=ozpIwc || {};
 
 /**
- * @class
+ * @class Client
  * This class will be heavily modified in the future.
  *
  * @todo accept a list of peer URLs that are searched in order of preference

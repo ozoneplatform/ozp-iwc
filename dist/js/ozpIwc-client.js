@@ -2,7 +2,7 @@
 var ozpIwc=ozpIwc || {};
 
 /**
-	* @class
+	* @class Event
 	*/
 ozpIwc.Event=function() {
 	this.events={};
@@ -70,7 +70,7 @@ ozpIwc.Event.prototype.mixinOnOff=function(target) {
  * Convenient base for events that can be canceled.  Provides and manages
  * the properties canceled and cancelReason, as well as the member function
  * cancel().
- * @class
+ * @class CancelableEvent
  * @param {object} data - Data that will be copied into the event
  */
 ozpIwc.CancelableEvent=function(data) {
@@ -2104,7 +2104,7 @@ ozpIwc.util.escapeRegex=function(str) {
 var ozpIwc=ozpIwc || {};
 
 /**
- * @class
+ * @class Client
  * This class will be heavily modified in the future.
  *
  * @todo accept a list of peer URLs that are searched in order of preference

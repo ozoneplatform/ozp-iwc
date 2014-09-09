@@ -2,7 +2,7 @@
 var ozpIwc=ozpIwc || {};
 
 /**
-	* @class
+	* @class Event
 	*/
 ozpIwc.Event=function() {
 	this.events={};
@@ -70,7 +70,7 @@ ozpIwc.Event.prototype.mixinOnOff=function(target) {
  * Convenient base for events that can be canceled.  Provides and manages
  * the properties canceled and cancelReason, as well as the member function
  * cancel().
- * @class
+ * @class CancelableEvent
  * @param {object} data - Data that will be copied into the event
  */
 ozpIwc.CancelableEvent=function(data) {
@@ -2148,7 +2148,7 @@ ozpIwc.metricsStats.Sample.prototype.getValues = function(){
 
 /**
  *  Take a uniform sample of size size for all values
- *  @class
+ *  @class UniformSample
  *  @param {Number} [size=ozpIwc.metricsStats.DEFAULT_POOL_SIZE] - The size of the sample pool.
  */
 ozpIwc.metricsStats.UniformSample=ozpIwc.util.extend(ozpIwc.metricsStats.Sample,function(size) {
@@ -2177,7 +2177,7 @@ ozpIwc.metricsStats=ozpIwc.metricsStats || {};
  * This acts as a ordered binary heap for any serializeable JS object or collection of such objects 
  * <p>Borrowed from https://github.com/mikejihbe/metrics. Originally from from http://eloquentjavascript.net/appendix2.html
  * <p>Licenced under CCv3.0
- * @class
+ * @class BinaryHeap
  * @param {type} scoreFunction
  * @returns {BinaryHeap}
  */
@@ -2340,7 +2340,7 @@ ozpIwc.metricsStats.DEFAULT_DECAY_ALPHA=0.015;
 /**
  * This acts as a ordered binary heap for any serializeable JS object or collection of such objects 
  * <p>Borrowed from https://github.com/mikejihbe/metrics. 
- * @class 
+ * @class ExponentiallyDecayingSample
 	*/
 ozpIwc.metricsStats.ExponentiallyDecayingSample=ozpIwc.util.extend(ozpIwc.metricsStats.Sample,function(size, alpha) {
 	ozpIwc.metricsStats.Sample.apply(this);
@@ -2533,7 +2533,7 @@ ozpIwc.metricTypes.BaseMetric.prototype.unit=function(val) {
 
 
 /**
- * @class
+ * @class Counter
  * @extends ozpIwc.MetricType
  * A counter running total that can be adjusted up or down.
  * Where a meter is set to a known value at each update, a
@@ -2567,7 +2567,7 @@ ozpIwc.metricTypes=ozpIwc.metricTypes || {};
  */
 
 /**
- * @class
+ * @class Gauge
  * @extends ozpIwc.MetricType
  * A gauge is an externally defined set of metrics returned by a callback function
  * @param {ozpIwc.metricTypes.Gauge~gaugeCallback} metricsCallback
@@ -2597,7 +2597,7 @@ ozpIwc.metricTypes.Gauge.prototype.get=function() {
 };
 
 /**
- * @class
+ * @class Histogram
  * @extends ozpIwc.BaseMetric
  */
 ozpIwc.metricTypes.Histogram=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
@@ -2676,7 +2676,7 @@ ozpIwc.metricTypes.Histogram.prototype.get=function() {
 
 
 /**
- * @class
+ * @class Meter
  * @extends ozpIwc.BaseMetric
  */
 ozpIwc.metricTypes.Meter=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
@@ -2759,7 +2759,7 @@ ozpIwc.metricTypes.Timer.prototype.get=function() {
 var ozpIwc=ozpIwc || {};
 
 /**
- * @class
+ * @class MetricsRegistry
  * A repository of metrics
  */
 ozpIwc.MetricsRegistry=function() {

@@ -12,7 +12,7 @@ var ozpIwc = ozpIwc || {};
  *
  * @todo Compress the key
  *
- * @class
+ * @class KeyBroadcastLocalStorageLink
  * @param {Object} [config] - Configuration for this link
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] - The peer to connect to.
  * @param {string} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
@@ -218,7 +218,6 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragm
  * <p>If the TransportPacket is too large (KeyBroadcastLocalStorageLink.fragmentSize) ozpIwc.FragmentPacket's will
  *    be sent instead.
  *
- * @class
  * @param {ozpIwc.NetworkPacket} - packet
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
@@ -271,7 +270,6 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
  * <p> Recursively tries sending the packet (KeyBroadcastLocalStorageLink.maxRetries) times
  * The packet is dropped and the send fails after reaching max attempts.
  *
- * @class
  * @param {ozpIwc.NetworkPacket} - packet
  * @param {Number} [attemptCount] - number of times attempted to send packet.
  */
@@ -304,7 +302,6 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
  *
  * @todo move counter.inc() out of the impl and handle in attemptSend?
  *
- * @class
  * @param {ozpIwc.NetworkPacket} - packet
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {

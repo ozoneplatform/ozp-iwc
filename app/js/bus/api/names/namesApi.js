@@ -1,4 +1,4 @@
-/**
+/** The Names Api
  * @class NamesApi
  * @type {Function|*}
  */

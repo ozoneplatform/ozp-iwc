@@ -1,5 +1,6 @@
 /**
  * @class DataApiValue
+ * @extends CommonApiValue
  * @type {Function|*}
  */
 ozpIwc.DataApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {

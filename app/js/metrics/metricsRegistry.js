@@ -1,7 +1,7 @@
 var ozpIwc=ozpIwc || {};
 
 /**
- * @class
+ * @class MetricsRegistry
  * A repository of metrics
  */
 ozpIwc.MetricsRegistry=function() {

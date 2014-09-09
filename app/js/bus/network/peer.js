@@ -40,7 +40,7 @@ var ozpIwc=ozpIwc || {};
  * Links do the actual work of moving the packet to other browser contexts.  The links
  * call @{link ozpIwc.Peer#receive} when they need to deliver a packet to this peer and hook
  * the @{link event:ozpIwc.Peer#send} event in order to send packets.
- * @class
+ * @class Peer
  */
 ozpIwc.Peer=function() {
 

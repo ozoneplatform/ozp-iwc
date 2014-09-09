@@ -1,5 +1,5 @@
 /**
- * @class
+ * @class Meter
  * @extends ozpIwc.BaseMetric
  */
 ozpIwc.metricTypes.Meter=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {

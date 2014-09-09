@@ -36,7 +36,7 @@ var ozpIwc = ozpIwc || {};
  * multiple links interleaving the lockless "list keys" and "delete item" sequence generates
  * a consistent postcondition-- the key will not exist.
  * 
- * @class
+ * @class LocalStorageLink
  * @param {Object} [config] - Configuration for this link
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] - The peer to connect to.
  * @param {Number} [config.myKeysTimeout=5000] - Milliseconds to wait before deleting this link's keys.

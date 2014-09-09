@@ -4,7 +4,7 @@ var ozpIwc=ozpIwc || {};
 
 /**
  * A deferred action, but not in the sense of the Javascript standard.
- * @class
+ * @class AsyncAction
  */
 ozpIwc.AsyncAction=function() {
 	this.callbacks={};

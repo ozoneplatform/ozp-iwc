@@ -13,7 +13,7 @@ var ozpIwc=ozpIwc || {};
 
 
 /** 
- * @class
+ * @class BasicAuthentication
  */
 ozpIwc.BasicAuthentication=function() {
 	this.roles={};

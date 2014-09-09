@@ -4,7 +4,7 @@ var ozpIwc=ozpIwc || {};
 
 
 /**
- * @class
+ * @class MulticastParticipant
  * @extends ozpIwc.Participant
  * @param {string} name
  */

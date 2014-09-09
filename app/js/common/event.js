@@ -2,7 +2,7 @@
 var ozpIwc=ozpIwc || {};
 
 /**
-	* @class
+	* @class Event
 	*/
 ozpIwc.Event=function() {
 	this.events={};
@@ -70,7 +70,7 @@ ozpIwc.Event.prototype.mixinOnOff=function(target) {
  * Convenient base for events that can be canceled.  Provides and manages
  * the properties canceled and cancelReason, as well as the member function
  * cancel().
- * @class
+ * @class CancelableEvent
  * @param {object} data - Data that will be copied into the event
  */
 ozpIwc.CancelableEvent=function(data) {

@@ -45,7 +45,7 @@ ozpIwc.metricsStats.Sample.prototype.getValues = function(){
 
 /**
  *  Take a uniform sample of size size for all values
- *  @class
+ *  @class UniformSample
  *  @param {Number} [size=ozpIwc.metricsStats.DEFAULT_POOL_SIZE] - The size of the sample pool.
  */
 ozpIwc.metricsStats.UniformSample=ozpIwc.util.extend(ozpIwc.metricsStats.Sample,function(size) {
