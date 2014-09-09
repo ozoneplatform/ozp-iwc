@@ -81,7 +81,7 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
                 'label': i.label,
                 '_links': node.entity['_links'],
                 'invokeIntent': {
-                    'action' : 'launch',
+                    'action' : 'invoke',
                     'resource' : node.resource
                 }
             }
@@ -168,6 +168,26 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
 };
 
 /**
+ * Handles System api requests with an action of "invoke"
+ * 
+ * @method handleInvoke
+ */
+ozpIwc.SystemApi.prototype.handleInvoke = function(node,packetContext) {
+    var key=this.createKey("/mailbox/");
+
+	// save the new child
+	var mailboxNode=this.findOrMakeValue({'resource':key});
+    mailboxNode.set({
+        contentType: "application/ozpiwc-intent-invocation+json",
+        permissions: packetContext.permissions,
+        entity: packetContext.packet
+    });
+    
+    this.launchApplication(node,mailboxNode);
+    packetContext.replyTo({'action': "ok"});
+};
+
+/**
  * Launches the specified node's application.
  *
  * @method launchApplication
@@ -182,3 +202,4 @@ ozpIwc.SystemApi.prototype.launchApplication=function(node,mailboxNode) {
     
     window.open(node.entity['_links'].describes.href,launchParams.join("&"));    
 };
+
