@@ -1,14 +1,12 @@
 /**
- * The API classes that can be used on the IWC bus. All of which subclass {{#crossLink "CommonApiBase"}}{{/crossLink}}
- * @module api
- * @submodule api.Type
+ * @submodule bus.api.Type
  */
 
 /**
  * The Common API Base implements the API Common Conventions.  It is intended to be subclassed by
  * the specific API implementations.
- *
  * @class CommonApiBase
+ * @namespace ozpIwc
  * @constructor
  * @param {object} config
  * @params {Participant} config.participant  the participant used for the Api communication

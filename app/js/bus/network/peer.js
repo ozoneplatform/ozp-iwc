@@ -1,39 +1,3 @@
-var ozpIwc=ozpIwc || {};
-
-/**
- * @typedef ozpIwc.NetworkPacket
- * @property {string} src_peer - The id of the peer who broadcast this packet.
- * @property {string} sequence - A monotonically increasing, unique identifier for this packet.
- * @property {object} data - The payload of this packet.
- */
-
-/**
- * @event ozpIwc.Peer#receive
- * The peer has received a packet from other peers.
- * @property {ozpIwc.NetworkPacket} packet
- * @property {string} linkId
- */
-
-
-/**
- * @event ozpIwc.Peer#preSend
- * A cancelable event that allows listeners to override the forwarding of
- * a given packet to other peers.
- * @extends ozpIwc.CancelableEvent
- * @property {ozpIwc.NetworkPacket} packet
- */
-
-/**
- * @event ozpIwc.Peer#send
- * Notifies that a packet is being sent to other peers.  Links should use this
- * event to forward packets to other peers.
- * @property {ozpIwc.NetworkPacket} packet
- */
-
-/**
- * @event ozpIwc.Peer#beforeShutdown
- * Fires when the peer is being explicitly or implicitly shut down.
- */
 
 /**
  * The peer handles low-level broadcast communications between multiple browser contexts.
@@ -41,6 +5,8 @@ var ozpIwc=ozpIwc || {};
  * call @{link ozpIwc.Peer#receive} when they need to deliver a packet to this peer and hook
  * the @{link event:ozpIwc.Peer#send} event in order to send packets.
  * @class Peer
+ * @namespace ozpIwc
+ * @constructor
  */
 ozpIwc.Peer=function() {
 
@@ -69,6 +35,34 @@ ozpIwc.Peer=function() {
     window.addEventListener('beforeunload',this.unloadListener);
 
 };
+
+/**
+ * @event ozpIwc.Peer#receive
+ * The peer has received a packet from other peers.
+ * @property {ozpIwc.NetworkPacket} packet
+ * @property {string} linkId
+ */
+
+
+/**
+ * @event ozpIwc.Peer#preSend
+ * A cancelable event that allows listeners to override the forwarding of
+ * a given packet to other peers.
+ * @extends ozpIwc.CancelableEvent
+ * @property {ozpIwc.NetworkPacket} packet
+ */
+
+/**
+ * @event ozpIwc.Peer#send
+ * Notifies that a packet is being sent to other peers.  Links should use this
+ * event to forward packets to other peers.
+ * @property {ozpIwc.NetworkPacket} packet
+ */
+
+/**
+ * @event ozpIwc.Peer#beforeShutdown
+ * Fires when the peer is being explicitly or implicitly shut down.
+ */
 
 ozpIwc.Peer.maxSeqIdPerSource=500;
 
@@ -151,4 +145,99 @@ ozpIwc.Peer.prototype.shutdown=function() {
     window.removeEventListener('beforeunload',this.unloadListener);
 };
 
-			
+
+/**
+ * Various packet definitions for the network aspects of the IWC.
+ * @module bus.network
+ * @submodule bus.network.packets
+ */
+
+/**
+ * Network Packets
+ * @class NetworkPacket
+ * @namespace ozpIwc
+ */
+
+/**
+ * The id of the peer who broadcast this packet.
+ * @property srcPeer
+ * @type String
+ */
+
+/**
+ * A monotonically increasing, unique identifier for this packet.
+ * @property sequence
+ * @type String
+ */
+
+/**
+ * The payload of this packet.
+ * @property data
+ * @type Object
+ */
+
+
+/**
+ * Packet format for the data property of ozpIwc.NetworkPacket when working with fragmented packets.
+ * @class FragmentPacket
+ * @namespace ozpIwc
+ */
+
+/**
+ * Flag for knowing this is a fragment packet. Should be true.
+ * @property fragment
+ * @type boolean
+ */
+
+/**
+ * The msgId from the TransportPacket broken up into fragments.
+ * @property msgId
+ * @type Number
+ */
+
+/**
+ * The position amongst other fragments of the TransportPacket.
+ * @property id
+ * @type Number
+ */
+
+/**
+ * Total number of fragments of the TransportPacket expected.
+ * @property total
+ * @type Number
+ */
+
+/**
+ * A segment of the TransportPacket in string form.
+ * @property chunk
+ * @type String
+ */
+
+/**
+ * Storage for Fragment Packets
+ * @class ozpIwc.FragmentStore
+ */
+
+/**
+ *  The sequence of the latest fragment received.
+ * @property sequence
+ * @type Number
+ */
+
+/**
+ * The total number of fragments expected.
+ * @property total
+ * @type Number
+ */
+
+/**
+ * The src_peer of the fragments expected.
+ * @property srcPeer
+ * @type String
+ */
+
+/**
+ * String segments of the TransportPacket.
+ * @property chunks
+ * @type Array[String]
+ */

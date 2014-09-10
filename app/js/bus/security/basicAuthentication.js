@@ -1,4 +1,7 @@
 var ozpIwc=ozpIwc || {};
+/**
+ * @submodule bus.security
+ */
 
 /** @typedef {string} ozpIwc.security.Role */
 
@@ -14,6 +17,7 @@ var ozpIwc=ozpIwc || {};
 
 /** 
  * @class BasicAuthentication
+ * @namespace ozpIwc
  */
 ozpIwc.BasicAuthentication=function() {
 	this.roles={};

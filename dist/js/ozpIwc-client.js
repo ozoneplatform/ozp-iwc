@@ -2104,8 +2104,9 @@ ozpIwc.util.escapeRegex=function(str) {
 var ozpIwc=ozpIwc || {};
 
 /**
- * @class Client
  * This class will be heavily modified in the future.
+ * @class Client
+ * @namespace ozpIwc
  *
  * @todo accept a list of peer URLs that are searched in order of preference
  * @param {object} config

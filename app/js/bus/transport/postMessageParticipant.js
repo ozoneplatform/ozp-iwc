@@ -2,7 +2,8 @@
 var ozpIwc=ozpIwc || {};
 
 /**
- * @class ozpIwc.PostMessageParticipant
+ * @class PostMessageParticipant
+ * @namespace ozpIwc
  * @extends ozpIwc.Participant
  * @param {object} config
  * @param {string} config.origin

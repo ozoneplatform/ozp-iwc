@@ -1,5 +1,8 @@
 /** @namespace **/
 var ozpIwc = ozpIwc || {};
+/**
+ * @submodule bus.network
+ */
 
 /**
  * <p>This link connects peers using the HTML5 localstorage API.  It handles cleaning up
@@ -37,6 +40,7 @@ var ozpIwc = ozpIwc || {};
  * a consistent postcondition-- the key will not exist.
  * 
  * @class LocalStorageLink
+ * @namespace ozpIwc
  * @param {Object} [config] - Configuration for this link
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] - The peer to connect to.
  * @param {Number} [config.myKeysTimeout=5000] - Milliseconds to wait before deleting this link's keys.

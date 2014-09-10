@@ -17,6 +17,7 @@ var ozpIwc=ozpIwc || {};
 
 /**
  * @class TransportPacketContext
+ * @namespace ozpIwc
  * @param {object} config
  * @param {ozpIwc.TransportPacket} config.packet
  * @param {ozpIwc.Router} config.router
@@ -90,6 +91,7 @@ ozpIwc.TransportPacketContext.prototype.replyTo=function(response) {
 
 /**
  * @class Router
+ * @namespace ozpIwc
  * @param {object} [config]
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer]
  */

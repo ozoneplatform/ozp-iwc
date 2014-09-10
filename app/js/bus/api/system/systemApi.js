@@ -1,9 +1,18 @@
 var ozpIwc=ozpIwc || {};
 
-/** The system api
+/**
+ * @submodule bus.api.Type
+ */
+
+/**
+ * The System Api. Provides reference data of registered applications, versions, and information about the current user
+ * through the IWC. Subclasses the {{#crossLink "CommonApiBase"}}{{/crossLink}}. Utilizes the following value classes
+ * which subclass the {{#crossLink "CommonApiValue"}}{{/crossLink}}:
+ *  - {{#crossLink "systemApiApplicationValue"}}{{/crossLink}}
+ *  - {{#crossLink "systemApiMailboxValue"}}{{/crossLink}}
+ *
  * @class SystemApi
- * @module api
- * @submodule api.Type
+ * @namespace ozpIwc
  * @extends CommonApiBase
  *
  * @type {Function|*}

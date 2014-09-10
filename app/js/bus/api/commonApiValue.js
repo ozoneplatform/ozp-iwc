@@ -1,14 +1,12 @@
 /**
- * The API Value types that can be used on the IWC bus. All of which subclass
- * {{#crossLink "CommonApiValue"}}{{/crossLink}}
- * @module api
- * @submodule api.Value
+ * @submodule bus.api.Value
  */
 
 /**
  * The base class for values in the various APIs.  Designed to be extended with API-specific
  * concerns and validation.
  * @class CommonApiValue
+ * @namespace ozpIwc
  * @param {object} config
  * @param {string} config.name the name of this resource
  */

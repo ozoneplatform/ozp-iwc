@@ -2759,8 +2759,9 @@ ozpIwc.metricTypes.Timer.prototype.get=function() {
 var ozpIwc=ozpIwc || {};
 
 /**
- * @class MetricsRegistry
  * A repository of metrics
+ * @class MetricsRegistry
+ * @namespace ozpIwc
  */
 ozpIwc.MetricsRegistry=function() {
 	this.metrics={};
@@ -2920,6 +2921,7 @@ var ozpIwc=ozpIwc || {};
 /**
  * A deferred action, but not in the sense of the Javascript standard.
  * @class AsyncAction
+ * @namespace ozpIwc
  */
 ozpIwc.AsyncAction=function() {
 	this.callbacks={};
@@ -3219,16 +3221,38 @@ ozpIwc.util.objectContainsAll=function(haystack,needles,equal) {
             +window.location.pathname.replace(/[^\/]+$/,"");
 })();
 
+/**
+ * Classes related to security aspects of the IWC.
+ * @module bus
+ * @submodule bus.security
+ */
+
+/**
+ * Attribute Based Access Control policies.
+ * @class abacPolicies
+ * @static
+ * @type {{}}
+ */
 ozpIwc.abacPolicies={};
 
-
+/**
+ * @static
+ * @method permitWhenObjectHasNoAttributes
+ * @param request
+ * @returns {string}
+ */
 ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes=function(request) {
     if(request.object && Object.keys(request.object).length===0) {
         return "permit";
     }
     return "undetermined";
 };
-
+/**
+ * @static
+ * @method subjectHasAllObjectAttributes
+ * @param request
+ * @returns {string}
+ */
 ozpIwc.abacPolicies.subjectHasAllObjectAttributes=function(request) {
     // if no object permissions, then it's trivially true
     if(!request.object) {
@@ -3241,12 +3265,20 @@ ozpIwc.abacPolicies.subjectHasAllObjectAttributes=function(request) {
     return "deny";
 };
 
+/**
+ * @static
+ * @method permitAll
+ * @returns {string}
+ */
 ozpIwc.abacPolicies.permitAll=function() {
     return "permit";
 };
 
 
 var ozpIwc=ozpIwc || {};
+/**
+ * @submodule bus.security
+ */
 
 /** @typedef {string} ozpIwc.security.Role */
 
@@ -3262,6 +3294,7 @@ var ozpIwc=ozpIwc || {};
 
 /** 
  * @class BasicAuthentication
+ * @namespace ozpIwc
  */
 ozpIwc.BasicAuthentication=function() {
 	this.roles={};
@@ -3309,6 +3342,9 @@ ozpIwc.BasicAuthentication.prototype.login=function(credentials,preAuthenticated
 
 
 var ozpIwc=ozpIwc || {};
+/**
+ * @submodule bus.security
+ */
 
 /** @typedef {string} ozpIwc.security.Role */
 
@@ -3327,6 +3363,7 @@ var ozpIwc=ozpIwc || {};
  * @todo Permissions are local to each peer.  Does this need to be synced?
  * 
  * @class BasicAuthorization
+ * @namespace ozpIwc
  */
 ozpIwc.BasicAuthorization=function(config) {
     config=config || {};
@@ -3398,6 +3435,13 @@ ozpIwc.authorization=new ozpIwc.BasicAuthorization();
 /** @namespace **/
 var ozpIwc = ozpIwc || {};
 
+
+/**
+ * Classes related to security aspects of the IWC.
+ * @module bus
+ * @submodule bus.network
+ */
+
 /**
  * <p>This link connects peers using the HTML5 localstorage API.  It is a second generation version of
  * the localStorageLink that bypasses most of the garbage collection issues.
@@ -3410,6 +3454,9 @@ var ozpIwc = ozpIwc || {};
  * @todo Compress the key
  *
  * @class KeyBroadcastLocalStorageLink
+ * @namespace ozpIwc
+ * @constructor
+ *
  * @param {Object} [config] - Configuration for this link
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] - The peer to connect to.
  * @param {string} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
@@ -3423,15 +3470,75 @@ var ozpIwc = ozpIwc || {};
 ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     config = config || {};
 
+    /**
+     * @property prefix
+     * @type String
+     * @default "ozpIwc"
+     */
     this.prefix = config.prefix || 'ozpIwc';
+
+    /**
+     * @property peer
+     * @type ozpIwc.Peer
+     * @default ozpIwc.defaultPeer
+     */
     this.peer = config.peer || ozpIwc.defaultPeer;
+
+    /**
+     * @property selfId
+     * @type String
+     * @default ozpIwc.defaultPeer.selfId
+     */
     this.selfId = config.selfId || this.peer.selfId;
+
+    /**
+     * @property myKeysTimeout
+     * @type Number
+     * @default 5000
+     */
     this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
+
+    /**
+     * @property otherKeysTimeout
+     * @type Number
+     * @default 120000
+     */
     this.otherKeysTimeout = config.otherKeysTimeout || 2 * 60000; // 2 minutes
+
+
+    /**
+     * @property maxRetries
+     * @type Number
+     * @default 6
+     */
     this.maxRetries = config.maxRetries || 6;
+
+    /**
+     * @property queueSize
+     * @type Number
+     * @default 1024
+     */
     this.queueSize = config.queueSize || 1024;
+
+    /**
+     * @property sendQueue
+     * @type Array[]
+     * @default []
+     */
     this.sendQueue = this.sendQueue || [];
+
+    /**
+     * @property fragmentSize
+     * @type Number
+     * @default 1310720
+     */
     this.fragmentSize = config.fragmentSize || (5 * 1024 * 1024) / 2 / 2; //50% of 5mb, divide by 2 for utf-16 characters
+
+    /**
+     * @property fragmentTimeout
+     * @type Number
+     * @default 1000
+     */
     this.fragmentTimeout = config.fragmentTimeout || 1000; // 1 second
 
     //Add fragmenting capabilities
@@ -3474,27 +3581,10 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
 };
 
 /**
- * @typedef ozpIwc.FragmentPacket
- * @property {boolean} fragment - Flag for knowing this is a fragment packet. Should be true.
- * @property {Number} msgId - The msgId from the TransportPacket broken up into fragments.
- * @property {Number} id - The position amongst other fragments of the TransportPacket.
- * @property {Number} total - Total number of fragments of the TransportPacket expected.
- * @property {String} chunk - A segment of the TransportPacket in string form.
- *
- */
-
-/**
- * @typedef ozpIwc.FragmentStore
- * @property {Number} sequence - The sequence of the latest fragment received.
- * @property {Number} total - The total number of fragments expected.
- * @property {String} src_peer - The src_peer of the fragments expected.
- * @property {Array(String)} chunks - String segments of the TransportPacket.
- */
-
-/**
  * Handles fragmented packets received from the router. When all fragments of a message have been received,
  * the resulting packet will be passed on to the registered peer of the KeyBroadcastLocalStorageLink.
- * @param {ozpIwc.NetworkPacket} packet - NetworkPacket containing an ozpIwc.FragmentPacket as its data property
+ * @method handleFragment
+ * @param {ozpIwc.NetworkPacket} packet NetworkPacket containing an ozpIwc.FragmentPacket as its data property
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet) {
     // Check to make sure the packet is a fragment and we haven't seen it
@@ -3527,8 +3617,10 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet)
 /**
  *  Stores a received fragment. When the first fragment of a message is received, a timer is set to destroy the storage
  *  of the message fragments should not all messages be received.
- * @param {ozpIwc.NetworkPacket} packet - NetworkPacket containing an ozpIwc.FragmentPacket as its data property
- * @returns {boolean} result - true if successful.
+ * @method storeFragment
+ * @param {ozpIwc.NetworkPacket} packet NetworkPacket containing an ozpIwc.FragmentPacket as its data property
+ *
+ * @returns {boolean} result true if successful.
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) {
     if (!packet.data.fragment) {
@@ -3589,8 +3681,9 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
 
 /**
  * Rebuilds the original packet sent across the keyBroadcastLocalStorageLink from the fragments it was broken up into.
- * @param {ozpIwc.FragmentStore} fragments - the grouping of fragments to reconstruct
- * @returns {ozpIwc.NetworkPacket} result - the reconstructed NetworkPacket with TransportPacket as its data property.
+ * @method defragmentPacket
+ * @param {ozpIwc.FragmentStore} fragments the grouping of fragments to reconstruct
+ * @returns {ozpIwc.NetworkPacket} result the reconstructed NetworkPacket with TransportPacket as its data property.
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragments) {
     if (fragments.total != fragments.chunks.length) {
@@ -3614,8 +3707,8 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragm
  * <p>If the sendQueue is full (KeyBroadcastLocalStorageLink.queueSize) send will not occur.
  * <p>If the TransportPacket is too large (KeyBroadcastLocalStorageLink.fragmentSize) ozpIwc.FragmentPacket's will
  *    be sent instead.
- *
- * @param {ozpIwc.NetworkPacket} - packet
+ * @method send
+ * @param {ozpIwc.NetworkPacket} packet
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
     var str = JSON.stringify(packet.data);
@@ -3651,6 +3744,10 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
     }
 };
 
+/**
+ * @method queueSend
+ * @param packet
+ */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
     if (this.sendQueue.length < this.queueSize) {
         this.sendQueue = this.sendQueue.concat(packet);
@@ -3666,9 +3763,9 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
 /**
  * <p> Recursively tries sending the packet (KeyBroadcastLocalStorageLink.maxRetries) times
  * The packet is dropped and the send fails after reaching max attempts.
- *
- * @param {ozpIwc.NetworkPacket} - packet
- * @param {Number} [attemptCount] - number of times attempted to send packet.
+ * @method attemptSend
+ * @param {ozpIwc.NetworkPacket} packet
+ * @param {Number} [attemptCount] number of times attempted to send packet.
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, retryCount) {
 
@@ -3698,8 +3795,8 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
  * <p>Returns status of localStorage write, null if success.
  *
  * @todo move counter.inc() out of the impl and handle in attemptSend?
- *
- * @param {ozpIwc.NetworkPacket} - packet
+ * @method sendImpl
+ * @param {ozpIwc.NetworkPacket} packet
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     var sendStatus;
@@ -3718,8 +3815,12 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     }
 };
 
+
 /** @namespace **/
 var ozpIwc = ozpIwc || {};
+/**
+ * @submodule bus.network
+ */
 
 /**
  * <p>This link connects peers using the HTML5 localstorage API.  It handles cleaning up
@@ -3757,6 +3858,7 @@ var ozpIwc = ozpIwc || {};
  * a consistent postcondition-- the key will not exist.
  * 
  * @class LocalStorageLink
+ * @namespace ozpIwc
  * @param {Object} [config] - Configuration for this link
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] - The peer to connect to.
  * @param {Number} [config.myKeysTimeout=5000] - Milliseconds to wait before deleting this link's keys.
@@ -3903,42 +4005,6 @@ ozpIwc.LocalStorageLink.prototype.send=function(packet) {
 };
 
 
-var ozpIwc=ozpIwc || {};
-
-/**
- * @typedef ozpIwc.NetworkPacket
- * @property {string} src_peer - The id of the peer who broadcast this packet.
- * @property {string} sequence - A monotonically increasing, unique identifier for this packet.
- * @property {object} data - The payload of this packet.
- */
-
-/**
- * @event ozpIwc.Peer#receive
- * The peer has received a packet from other peers.
- * @property {ozpIwc.NetworkPacket} packet
- * @property {string} linkId
- */
-
-
-/**
- * @event ozpIwc.Peer#preSend
- * A cancelable event that allows listeners to override the forwarding of
- * a given packet to other peers.
- * @extends ozpIwc.CancelableEvent
- * @property {ozpIwc.NetworkPacket} packet
- */
-
-/**
- * @event ozpIwc.Peer#send
- * Notifies that a packet is being sent to other peers.  Links should use this
- * event to forward packets to other peers.
- * @property {ozpIwc.NetworkPacket} packet
- */
-
-/**
- * @event ozpIwc.Peer#beforeShutdown
- * Fires when the peer is being explicitly or implicitly shut down.
- */
 
 /**
  * The peer handles low-level broadcast communications between multiple browser contexts.
@@ -3946,6 +4012,8 @@ var ozpIwc=ozpIwc || {};
  * call @{link ozpIwc.Peer#receive} when they need to deliver a packet to this peer and hook
  * the @{link event:ozpIwc.Peer#send} event in order to send packets.
  * @class Peer
+ * @namespace ozpIwc
+ * @constructor
  */
 ozpIwc.Peer=function() {
 
@@ -3974,6 +4042,34 @@ ozpIwc.Peer=function() {
     window.addEventListener('beforeunload',this.unloadListener);
 
 };
+
+/**
+ * @event ozpIwc.Peer#receive
+ * The peer has received a packet from other peers.
+ * @property {ozpIwc.NetworkPacket} packet
+ * @property {string} linkId
+ */
+
+
+/**
+ * @event ozpIwc.Peer#preSend
+ * A cancelable event that allows listeners to override the forwarding of
+ * a given packet to other peers.
+ * @extends ozpIwc.CancelableEvent
+ * @property {ozpIwc.NetworkPacket} packet
+ */
+
+/**
+ * @event ozpIwc.Peer#send
+ * Notifies that a packet is being sent to other peers.  Links should use this
+ * event to forward packets to other peers.
+ * @property {ozpIwc.NetworkPacket} packet
+ */
+
+/**
+ * @event ozpIwc.Peer#beforeShutdown
+ * Fires when the peer is being explicitly or implicitly shut down.
+ */
 
 ozpIwc.Peer.maxSeqIdPerSource=500;
 
@@ -4056,11 +4152,109 @@ ozpIwc.Peer.prototype.shutdown=function() {
     window.removeEventListener('beforeunload',this.unloadListener);
 };
 
-			
+
+/**
+ * Various packet definitions for the network aspects of the IWC.
+ * @module bus.network
+ * @submodule bus.network.packets
+ */
+
+/**
+ * Network Packets
+ * @class NetworkPacket
+ * @namespace ozpIwc
+ */
+
+/**
+ * The id of the peer who broadcast this packet.
+ * @property srcPeer
+ * @type String
+ */
+
+/**
+ * A monotonically increasing, unique identifier for this packet.
+ * @property sequence
+ * @type String
+ */
+
+/**
+ * The payload of this packet.
+ * @property data
+ * @type Object
+ */
+
+
+/**
+ * Packet format for the data property of ozpIwc.NetworkPacket when working with fragmented packets.
+ * @class FragmentPacket
+ * @namespace ozpIwc
+ */
+
+/**
+ * Flag for knowing this is a fragment packet. Should be true.
+ * @property fragment
+ * @type boolean
+ */
+
+/**
+ * The msgId from the TransportPacket broken up into fragments.
+ * @property msgId
+ * @type Number
+ */
+
+/**
+ * The position amongst other fragments of the TransportPacket.
+ * @property id
+ * @type Number
+ */
+
+/**
+ * Total number of fragments of the TransportPacket expected.
+ * @property total
+ * @type Number
+ */
+
+/**
+ * A segment of the TransportPacket in string form.
+ * @property chunk
+ * @type String
+ */
+
+/**
+ * Storage for Fragment Packets
+ * @class ozpIwc.FragmentStore
+ */
+
+/**
+ *  The sequence of the latest fragment received.
+ * @property sequence
+ * @type Number
+ */
+
+/**
+ * The total number of fragments expected.
+ * @property total
+ * @type Number
+ */
+
+/**
+ * The src_peer of the fragments expected.
+ * @property srcPeer
+ * @type String
+ */
+
+/**
+ * String segments of the TransportPacket.
+ * @property chunks
+ * @type Array[String]
+ */
+
 var ozpIwc=ozpIwc || {};
 
 /**
  * @class Participant
+ * @namespace ozpIwc
+ * @constructor
  * @mixes ozpIwc.security.Actor
  * @property {string} address - The assigned address to this address.
  * @property {ozpIwc.security.Subject} securityAttributes - The security attributes for this participant.
@@ -4084,6 +4278,7 @@ ozpIwc.Participant=function() {
 };
 
 /**
+ * @method receiveFromRouter
  * @param {ozpIwc.PacketContext} packetContext
  * @returns {boolean} true if this packet could have additional recipients
  */
@@ -4107,6 +4302,7 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
 /**
  * Overridden by inherited Participants.
  * @override
+ * @method receiveFromRouterImple
  * @param packetContext
  * @returns {boolean}
  */
@@ -4115,6 +4311,7 @@ ozpIwc.Participant.prototype.receiveFromRouterImpl = function (packetContext) {
     return !packetContext;
 };
 /**
+ * @method connectToRouter
  * @param {ozpIwc.Router} router
  * @param {string} address
  * @returns {boolean} true if this packet could have additional recipients
@@ -4140,6 +4337,7 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
 /**
  * Populates fields relevant to this packet if they aren't already set:
  * src, ver, msgId, and time.
+ * @method fixPacket
  * @param {ozpIwc.TransportPacket} packet
  * @returns {ozpIwc.TransportPacket}
  */
@@ -4159,6 +4357,7 @@ ozpIwc.Participant.prototype.fixPacket=function(packet) {
 /**
  * Sends a packet to this participants router.  Calls fixPacket
  * before doing so.
+ * @method send
  * @param {ozpIwc.TransportPacket} packet
  * @returns {ozpIwc.TransportPacket}
  */
@@ -4169,11 +4368,17 @@ ozpIwc.Participant.prototype.send=function(packet) {
     return packet;
 };
 
-
+/**
+ * @method generateMsgId
+ * @returns {string}
+ */
 ozpIwc.Participant.prototype.generateMsgId=function() {
     return "i:" + this.msgId++;
 };
 
+/**
+ * @method heartbeat
+ */
 ozpIwc.Participant.prototype.heartbeat=function() {
     if(this.router) {
         this.send({
@@ -4185,12 +4390,40 @@ ozpIwc.Participant.prototype.heartbeat=function() {
         },function() {/* eat the response*/});
     }
 };
+/**
+ * Classes related to transport aspects of the IWC.
+ * @module bus
+ * @submodule bus.transport
+ */
 
+/**
+ * @class InternalParticipant
+ * @namespace ozpIwc
+ * @constructor
+ * @extends ozpIwc.Participant
+ * @type {Function|*}
+ */
 ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
     config=config || {};
 	ozpIwc.Participant.apply(this,arguments);
+    /**
+     * @property replyCallbacks
+     * @type {Object}
+     */
 	this.replyCallbacks={};
+
+    /**
+     * @property participantType
+     * @type {String}
+     * @default "internal"
+     */
 	this.participantType="internal";
+
+    /**
+     * @property name
+     * @type {String}
+     * @default ""
+     */
 	this.name=config.name;
 
     var self = this;
@@ -4203,6 +4436,7 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
 
 /**
  * Gets the count of the registered reply callbacks
+ * @method getCallbackCount
  * @returns {number} the number of registered callbacks
  */
 ozpIwc.InternalParticipant.prototype.getCallbackCount=function() {
@@ -4213,6 +4447,7 @@ ozpIwc.InternalParticipant.prototype.getCallbackCount=function() {
 };
 
 /**
+ * @method receiveFromRouterImpl
  * @param {ozpIwc.PacketContext} packetContext
  * @returns {boolean} true if this packet could have additional recipients
  */
@@ -4227,7 +4462,12 @@ ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContex
 	}
 };
 
-
+/**
+ * @method send
+ * @param originalPacket
+ * @param callback
+ * @returns {ozpIwc.TransportPacket|*}
+ */
 ozpIwc.InternalParticipant.prototype.send=function(originalPacket,callback) {
     var packet=this.fixPacket(originalPacket);
 	if(callback) {
@@ -4241,6 +4481,11 @@ ozpIwc.InternalParticipant.prototype.send=function(originalPacket,callback) {
 	return packet;
 };
 
+/**
+ * @method cancelCallback
+ * @param msgId
+ * @returns {boolean}
+ */
 ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
     var success=false;
     if (msgId) {
@@ -4269,6 +4514,7 @@ var ozpIwc=ozpIwc || {};
 
 /**
  * @class TransportPacketContext
+ * @namespace ozpIwc
  * @param {object} config
  * @param {ozpIwc.TransportPacket} config.packet
  * @param {ozpIwc.Router} config.router
@@ -4342,6 +4588,7 @@ ozpIwc.TransportPacketContext.prototype.replyTo=function(response) {
 
 /**
  * @class Router
+ * @namespace ozpIwc
  * @param {object} [config]
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer]
  */
@@ -4575,6 +4822,7 @@ var ozpIwc=ozpIwc || {};
 /**
  * Baseclass for APIs that need leader election.  Uses the Bully algorithm for leader election.
  * @class LeaderGroupParticipant
+ * @namespace ozpIwc
  * @param {object} config
  * @param {String} config.name 
  *        The name of this API.
@@ -4849,6 +5097,7 @@ var ozpIwc=ozpIwc || {};
 
 /**
  * @class MulticastParticipant
+ * @namespace ozpIwc
  * @extends ozpIwc.Participant
  * @param {string} name
  */
@@ -4894,7 +5143,8 @@ ozpIwc.MulticastParticipant.prototype.addMember=function(participant) {
 var ozpIwc=ozpIwc || {};
 
 /**
- * @class ozpIwc.PostMessageParticipant
+ * @class PostMessageParticipant
+ * @namespace ozpIwc
  * @extends ozpIwc.Participant
  * @param {object} config
  * @param {string} config.origin
@@ -5106,6 +5356,7 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 
 /**
  * @class RouterWatchdog
+ * @namespace ozpIwc
  */
 ozpIwc.RouterWatchdog = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(config) {
     ozpIwc.InternalParticipant.apply(this, arguments);
@@ -5163,16 +5414,14 @@ ozpIwc.RouterWatchdog.prototype.shutdown = function() {
 
 
 /**
- * The API Value types that can be used on the IWC bus. All of which subclass
- * {{#crossLink "CommonApiValue"}}{{/crossLink}}
- * @module api
- * @submodule api.Value
+ * @submodule bus.api.Value
  */
 
 /**
  * The base class for values in the various APIs.  Designed to be extended with API-specific
  * concerns and validation.
  * @class CommonApiValue
+ * @namespace ozpIwc
  * @param {object} config
  * @param {string} config.name the name of this resource
  */
@@ -5358,9 +5607,12 @@ ozpIwc.CommonApiValue.prototype.deserialize=function(serverData) {
 };
 
 /**
+ * @submodule bus.api.Value
+ */
+
+/**
  * @class CommonApiCollectionValue
- * @module api
- * @submodule api.Value
+ * @namespace ozpIwc
  * @extends CommonApiValue
  *
  * @type {Function|*}
@@ -5386,7 +5638,40 @@ ozpIwc.CommonApiCollectionValue.prototype.set=function() {
 };
 
 /**
+ * ```
+    .---------------------------.
+   /,--..---..---..---..---..--. `.
+  //___||___||___||___||___||___\_|
+  [j__ ######################## [_|
+     \============================|
+  .==|  |"""||"""||"""||"""| |"""||
+ /======"---""---""---""---"=|  =||
+ |____    []*  IWC     ____  | ==||
+ //  \\        BUS    //  \\ |===||  hjw -(& kjk)
+ "\__/"---------------"\__/"-+---+'
+ * ```
+ * @module bus
+ */
+
+/**
+ * Classes related to api aspects of the IWC.
+ * @module bus
+ * @submodule bus.api
+ */
+/**
+ * The API classes that can be used on the IWC bus. All of which subclass {{#crossLink "ozpIwc.CommonApiBase"}}{{/crossLink}}
+ * @module bus.api
+ * @submodule bus.api.Type
+ */
+/**
+ * The API Value types that can be used in IWC apis. All of which subclass
+ * {{#crossLink "CommonApiValue"}}{{/crossLink}}
+ * @module bus.api
+ * @submodule bus.api.Value
+ */
+/**
  * @class ApiError
+ * @namespace ozpIwc
  * @type {Function|*}
  */
 ozpIwc.ApiError=ozpIwc.util.extend(Error,function(action,message) {
@@ -5396,16 +5681,14 @@ ozpIwc.ApiError=ozpIwc.util.extend(Error,function(action,message) {
     this.message=message;
 });
 /**
- * The API classes that can be used on the IWC bus. All of which subclass {{#crossLink "CommonApiBase"}}{{/crossLink}}
- * @module api
- * @submodule api.Type
+ * @submodule bus.api.Type
  */
 
 /**
  * The Common API Base implements the API Common Conventions.  It is intended to be subclassed by
  * the specific API implementations.
- *
  * @class CommonApiBase
+ * @namespace ozpIwc
  * @constructor
  * @param {object} config
  * @params {Participant} config.participant  the participant used for the Api communication
@@ -6006,6 +6289,7 @@ var ozpIwc=ozpIwc || {};
 
 /**
  * @class Endpoint
+ * @namespace ozpIwc
  * @param endpointRegistry
  * @constructor
  */
@@ -6058,20 +6342,24 @@ ozpIwc.initEndpoints=function(apiRoot) {
         return registry.endpoint(name);
     };
 };
+/**
+ * @submodule bus.api.Type
+ */
 
 /**
- * The Data Api. Provides key value storage through the IWC. Subclasses the Common Api.
+ * The Data Api. Provides key value storage and app state-sharing through the IWC. Subclasses the
+ * {{#crossLink "CommonApiBase"}}{{/crossLink}}. Utilizes the {{#crossLink "DataApiValue"}}{{/crossLink}} which
+ * subclasses the {{#crossLink "CommonApiValue"}}{{/crossLink}}.
  *
  * @class DataApi
- * @module api
- * @submodule api.Type
- * @extends CommonApiBase
+ * @namespace ozpIwc
+ * @extends ozpIwc.CommonApiBase
  *
  * @constructor
  * @uses DataApiValue
  * @type {Function|*}
  * @params {Object} config
- * @params {Participant} config.participant - the participant used for the Api communication
+ * @params {ozpIwc.Participant} config.participant - the participant used for the Api communication
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
@@ -6082,9 +6370,9 @@ ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * Creates a DataApiValue from the given packet.
  *
  * @method makeValue
- * @param {TransportPacket} packet The packet used to create an api value
+ * @param {ozpIwc.TransportPacket} packet The packet used to create an api value
  *
- * @returns {DataApiValue}
+ * @returns {ozpIwc.DataApiValue}
  */
 ozpIwc.DataApi.prototype.makeValue = function(packet){
     return new ozpIwc.DataApiValue(packet);
@@ -6096,11 +6384,11 @@ ozpIwc.DataApi.prototype.makeValue = function(packet){
  *
  * @method createChild
  * @private
- * @param {DataApiValue} node  The node of the Api to create a child of.
+ * @param {ozpIwc.DataApiValue} node  The node of the Api to create a child of.
  * @param {ozpIwc.TransportPacketContext} packetContext The TransportPacketContext
  * containing information to build the child node.
  *
- * @returns {DataApiValue} The childNode created.
+ * @returns {ozpIwc.DataApiValue} The childNode created.
  */
 ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {
 	var key=this.createKey(node.resource+"/");
@@ -6122,8 +6410,8 @@ ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {
  * }
  * ```
  * @method handleList
- * @param {DataApiValue} node The node containing children to list.
- * @param {TransportPacketContext} packetContext Packet context of the list request.
+ * @param {ozpIwc.DataApiValue} node The node containing children to list.
+ * @param {ozpIwc.TransportPacketContext} packetContext Packet context of the list request.
  */
 ozpIwc.DataApi.prototype.handleList=function(node,packetContext) {
 	packetContext.replyTo({
@@ -6148,7 +6436,7 @@ ozpIwc.DataApi.prototype.handleList=function(node,packetContext) {
  * ```
  *
  * @method handleAddchild
- * @param {DataApiValue} node - The parent node to add a child node to.
+ * @param {ozpIwc.DataApiValue} node - The parent node to add a child node to.
  * @param {ozpIwc.TransportPacketContext} packetContext - The packet context of which the child is constructed from.
  */
 ozpIwc.DataApi.prototype.handleAddchild=function(node,packetContext) {
@@ -6174,7 +6462,7 @@ ozpIwc.DataApi.prototype.handleAddchild=function(node,packetContext) {
  * }
  * ```
  * @method handleRemovechild
- * @param {DataApiValue} node - The parent node of which to remove the child node.
+ * @param {ozpIwc.DataApiValue} node - The parent node of which to remove the child node.
  * @param {ozpIwc.TransportPacketContext} packetContext - The packet context containing the child node's resource in
  * its entity.
  */
@@ -6187,12 +6475,12 @@ ozpIwc.DataApi.prototype.handleRemovechild=function(node,packetContext) {
 };
 
 /**
+ * @submodule bus.api.Value
  */
 
 /**
  * @class DataApiValue
- * @module api
- * @submodule api.Value
+ * @namespace ozpIwc
  * @extends CommonApiValue
  *
  * @type {Function|*}
@@ -6273,10 +6561,19 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
 };
 
 /**
- * The Intents API. Subclasses The Common Api Base.
+ * @submodule bus.api.Type
+ */
+
+/**
+ * The Intents Api. Provides Android-like intents through the IWC. Subclasses the
+ * {{#crossLink "CommonApiBase"}}{{/crossLink}} Utilizes the following value classes which subclass the
+ * {{#crossLink "CommonApiValue"}}{{/crossLink}}:
+ *  - {{#crossLink "intentsApiDefinitionValue"}}{{/crossLink}}
+ *  - {{#crossLink "intentsApiHandlerValue"}}{{/crossLink}}
+ *  - {{#crossLink "intentsApiTypeValue"}}{{/crossLink}}
+ *
  * @class IntentsApi
- * @module api
- * @submodule api.Type
+ * @namespace ozpIwc
  * @extends CommonApiBase
  *
  * @params config {Object}
@@ -6423,12 +6720,14 @@ ozpIwc.IntentsApi.prototype.chooseIntentHandler = function (nodeList, packetCont
 };
 
 
+/**
+ * @submodule bus.api.Value
+ */
 
 /**
  * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
  * @class IntentsApiDefinitionValue
- * @module api
- * @submodule api.Value
+ * @namespace ozpIwc
  * @extends CommonApiValue
  *
  * @param {object} config
@@ -6465,10 +6764,12 @@ ozpIwc.IntentsApiDefinitionValue.prototype.getHandlers=function(packetContext) {
     return [this.handlers];
 };
 /**
+ * @submodule bus.api.Value
+ */
+/**
  * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
  * @class IntentsApiHandlerValue
- * @module api
- * @submodule api.Value
+ * @namespace ozpIwc
  * @extends CommonApiValue
  *
  * @param {object} config
@@ -6498,10 +6799,13 @@ ozpIwc.IntentsApiHandlerValue.prototype.set=function(packet) {
     this.entity.invokeIntent.action = this.entity.invokeIntent.action || "invoke";
 };
 /**
+ * @submodule bus.api.Value
+ */
+
+/**
  * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
  * @class IntentsApiTypeValue
- * @module api
- * @submodule api.Value
+ * @namespace ozpIwc
  * @extends CommonApiValue
  *
  * @param {object} config
@@ -6531,10 +6835,17 @@ ozpIwc.IntentsApiTypeValue.prototype.updateContent=function(changedNodes) {
         return changedNode.resource; 
     });
 };
-/** The Names Api
+/**
+ * @submodule bus.api.Type
+ */
+
+/**
+ * The Names Api. Collects information about current IWC state, Manages names, aliases, and permissions through the IWC.
+ * Subclasses the {{#crossLink "CommonApiBase"}}{{/crossLink}}.Utilizes the {{#crossLink "namesApiValue"}}{{/crossLink}}
+ * which subclasses the {{#crossLink "CommonApiValue"}}{{/crossLink}}.
+ *
  * @class NamesApi
- * @module api
- * @submodule api.Type
+ * @namespace ozpIwc
  * @extends CommonApiBase
  *
  * @type {Function|*}
@@ -6629,9 +6940,12 @@ ozpIwc.NamesApi.prototype.makeValue = function(packet) {
 };
 
 /**
+ * @submodule bus.api.Value
+ */
+
+/**
  * @class NamesApiValue
- * @module api
- * @submodule api.Value
+ * @namespace ozpIwc
  * @extends CommonApiValue
  *
  * @type {Function|*}
@@ -6645,10 +6959,19 @@ ozpIwc.NamesApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config)
 
 var ozpIwc=ozpIwc || {};
 
-/** The system api
+/**
+ * @submodule bus.api.Type
+ */
+
+/**
+ * The System Api. Provides reference data of registered applications, versions, and information about the current user
+ * through the IWC. Subclasses the {{#crossLink "CommonApiBase"}}{{/crossLink}}. Utilizes the following value classes
+ * which subclass the {{#crossLink "CommonApiValue"}}{{/crossLink}}:
+ *  - {{#crossLink "systemApiApplicationValue"}}{{/crossLink}}
+ *  - {{#crossLink "systemApiMailboxValue"}}{{/crossLink}}
+ *
  * @class SystemApi
- * @module api
- * @submodule api.Type
+ * @namespace ozpIwc
  * @extends CommonApiBase
  *
  * @type {Function|*}
@@ -6772,9 +7095,12 @@ ozpIwc.SystemApi.prototype.launchApplication=function(node,mailboxNode) {
     window.open(node.entity['_links'].describes.href,launchParams.join("&"));    
 };
 /**
+ * @submodule bus.api.Value
+ */
+
+/**
  * @class SystemApiApplicationValue
- * @module api
- * @submodule api.Value
+ * @namespace ozpIwc
  * @extends CommonApiValue
  *
  * @type {Function|*}
@@ -6796,9 +7122,12 @@ ozpIwc.SystemApiApplicationValue.prototype.getIntentsRegistrations=function() {
     return this.entity.intents;
 };
 /**
+ * @submodule bus.api.Value
+ */
+
+/**
  * @class SystemApiMailboxValue
- * @module api
- * @submodule api.Value
+ * @namespace ozpIwc
  * @extends CommonApiValue
  *
  * @type {Function|*}

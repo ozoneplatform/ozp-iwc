@@ -1,7 +1,10 @@
 /**
+ * @submodule bus.api.Value
+ */
+
+/**
  * @class SystemApiApplicationValue
- * @module api
- * @submodule api.Value
+ * @namespace ozpIwc
  * @extends CommonApiValue
  *
  * @type {Function|*}

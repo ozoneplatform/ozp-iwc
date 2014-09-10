@@ -2759,8 +2759,9 @@ ozpIwc.metricTypes.Timer.prototype.get=function() {
 var ozpIwc=ozpIwc || {};
 
 /**
- * @class MetricsRegistry
  * A repository of metrics
+ * @class MetricsRegistry
+ * @namespace ozpIwc
  */
 ozpIwc.MetricsRegistry=function() {
 	this.metrics={};

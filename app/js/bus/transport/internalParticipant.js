@@ -1,9 +1,37 @@
+/**
+ * Classes related to transport aspects of the IWC.
+ * @module bus
+ * @submodule bus.transport
+ */
 
+/**
+ * @class InternalParticipant
+ * @namespace ozpIwc
+ * @constructor
+ * @extends ozpIwc.Participant
+ * @type {Function|*}
+ */
 ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
     config=config || {};
 	ozpIwc.Participant.apply(this,arguments);
+    /**
+     * @property replyCallbacks
+     * @type {Object}
+     */
 	this.replyCallbacks={};
+
+    /**
+     * @property participantType
+     * @type {String}
+     * @default "internal"
+     */
 	this.participantType="internal";
+
+    /**
+     * @property name
+     * @type {String}
+     * @default ""
+     */
 	this.name=config.name;
 
     var self = this;
@@ -16,6 +44,7 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
 
 /**
  * Gets the count of the registered reply callbacks
+ * @method getCallbackCount
  * @returns {number} the number of registered callbacks
  */
 ozpIwc.InternalParticipant.prototype.getCallbackCount=function() {
@@ -26,6 +55,7 @@ ozpIwc.InternalParticipant.prototype.getCallbackCount=function() {
 };
 
 /**
+ * @method receiveFromRouterImpl
  * @param {ozpIwc.PacketContext} packetContext
  * @returns {boolean} true if this packet could have additional recipients
  */
@@ -40,7 +70,12 @@ ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContex
 	}
 };
 
-
+/**
+ * @method send
+ * @param originalPacket
+ * @param callback
+ * @returns {ozpIwc.TransportPacket|*}
+ */
 ozpIwc.InternalParticipant.prototype.send=function(originalPacket,callback) {
     var packet=this.fixPacket(originalPacket);
 	if(callback) {
@@ -54,6 +89,11 @@ ozpIwc.InternalParticipant.prototype.send=function(originalPacket,callback) {
 	return packet;
 };
 
+/**
+ * @method cancelCallback
+ * @param msgId
+ * @returns {boolean}
+ */
 ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
     var success=false;
     if (msgId) {

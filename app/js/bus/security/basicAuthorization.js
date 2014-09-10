@@ -1,4 +1,7 @@
 var ozpIwc=ozpIwc || {};
+/**
+ * @submodule bus.security
+ */
 
 /** @typedef {string} ozpIwc.security.Role */
 
@@ -17,6 +20,7 @@ var ozpIwc=ozpIwc || {};
  * @todo Permissions are local to each peer.  Does this need to be synced?
  * 
  * @class BasicAuthorization
+ * @namespace ozpIwc
  */
 ozpIwc.BasicAuthorization=function(config) {
     config=config || {};

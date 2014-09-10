@@ -1,7 +1,14 @@
-/** The Names Api
+/**
+ * @submodule bus.api.Type
+ */
+
+/**
+ * The Names Api. Collects information about current IWC state, Manages names, aliases, and permissions through the IWC.
+ * Subclasses the {{#crossLink "CommonApiBase"}}{{/crossLink}}.Utilizes the {{#crossLink "namesApiValue"}}{{/crossLink}}
+ * which subclasses the {{#crossLink "CommonApiValue"}}{{/crossLink}}.
+ *
  * @class NamesApi
- * @module api
- * @submodule api.Type
+ * @namespace ozpIwc
  * @extends CommonApiBase
  *
  * @type {Function|*}

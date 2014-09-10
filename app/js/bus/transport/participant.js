@@ -2,6 +2,8 @@ var ozpIwc=ozpIwc || {};
 
 /**
  * @class Participant
+ * @namespace ozpIwc
+ * @constructor
  * @mixes ozpIwc.security.Actor
  * @property {string} address - The assigned address to this address.
  * @property {ozpIwc.security.Subject} securityAttributes - The security attributes for this participant.
@@ -25,6 +27,7 @@ ozpIwc.Participant=function() {
 };
 
 /**
+ * @method receiveFromRouter
  * @param {ozpIwc.PacketContext} packetContext
  * @returns {boolean} true if this packet could have additional recipients
  */
@@ -48,6 +51,7 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
 /**
  * Overridden by inherited Participants.
  * @override
+ * @method receiveFromRouterImple
  * @param packetContext
  * @returns {boolean}
  */
@@ -56,6 +60,7 @@ ozpIwc.Participant.prototype.receiveFromRouterImpl = function (packetContext) {
     return !packetContext;
 };
 /**
+ * @method connectToRouter
  * @param {ozpIwc.Router} router
  * @param {string} address
  * @returns {boolean} true if this packet could have additional recipients
@@ -81,6 +86,7 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
 /**
  * Populates fields relevant to this packet if they aren't already set:
  * src, ver, msgId, and time.
+ * @method fixPacket
  * @param {ozpIwc.TransportPacket} packet
  * @returns {ozpIwc.TransportPacket}
  */
@@ -100,6 +106,7 @@ ozpIwc.Participant.prototype.fixPacket=function(packet) {
 /**
  * Sends a packet to this participants router.  Calls fixPacket
  * before doing so.
+ * @method send
  * @param {ozpIwc.TransportPacket} packet
  * @returns {ozpIwc.TransportPacket}
  */
@@ -110,11 +117,17 @@ ozpIwc.Participant.prototype.send=function(packet) {
     return packet;
 };
 
-
+/**
+ * @method generateMsgId
+ * @returns {string}
+ */
 ozpIwc.Participant.prototype.generateMsgId=function() {
     return "i:" + this.msgId++;
 };
 
+/**
+ * @method heartbeat
+ */
 ozpIwc.Participant.prototype.heartbeat=function() {
     if(this.router) {
         this.send({

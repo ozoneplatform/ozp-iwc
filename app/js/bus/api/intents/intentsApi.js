@@ -1,8 +1,17 @@
 /**
- * The Intents API. Subclasses The Common Api Base.
+ * @submodule bus.api.Type
+ */
+
+/**
+ * The Intents Api. Provides Android-like intents through the IWC. Subclasses the
+ * {{#crossLink "CommonApiBase"}}{{/crossLink}} Utilizes the following value classes which subclass the
+ * {{#crossLink "CommonApiValue"}}{{/crossLink}}:
+ *  - {{#crossLink "intentsApiDefinitionValue"}}{{/crossLink}}
+ *  - {{#crossLink "intentsApiHandlerValue"}}{{/crossLink}}
+ *  - {{#crossLink "intentsApiTypeValue"}}{{/crossLink}}
+ *
  * @class IntentsApi
- * @module api
- * @submodule api.Type
+ * @namespace ozpIwc
  * @extends CommonApiBase
  *
  * @params config {Object}

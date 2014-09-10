@@ -1,17 +1,21 @@
+/**
+ * @submodule bus.api.Type
+ */
 
 /**
- * The Data Api. Provides key value storage through the IWC. Subclasses the Common Api.
+ * The Data Api. Provides key value storage and app state-sharing through the IWC. Subclasses the
+ * {{#crossLink "CommonApiBase"}}{{/crossLink}}. Utilizes the {{#crossLink "DataApiValue"}}{{/crossLink}} which
+ * subclasses the {{#crossLink "CommonApiValue"}}{{/crossLink}}.
  *
  * @class DataApi
- * @module api
- * @submodule api.Type
- * @extends CommonApiBase
+ * @namespace ozpIwc
+ * @extends ozpIwc.CommonApiBase
  *
  * @constructor
  * @uses DataApiValue
  * @type {Function|*}
  * @params {Object} config
- * @params {Participant} config.participant - the participant used for the Api communication
+ * @params {ozpIwc.Participant} config.participant - the participant used for the Api communication
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
@@ -22,9 +26,9 @@ ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * Creates a DataApiValue from the given packet.
  *
  * @method makeValue
- * @param {TransportPacket} packet The packet used to create an api value
+ * @param {ozpIwc.TransportPacket} packet The packet used to create an api value
  *
- * @returns {DataApiValue}
+ * @returns {ozpIwc.DataApiValue}
  */
 ozpIwc.DataApi.prototype.makeValue = function(packet){
     return new ozpIwc.DataApiValue(packet);
@@ -36,11 +40,11 @@ ozpIwc.DataApi.prototype.makeValue = function(packet){
  *
  * @method createChild
  * @private
- * @param {DataApiValue} node  The node of the Api to create a child of.
+ * @param {ozpIwc.DataApiValue} node  The node of the Api to create a child of.
  * @param {ozpIwc.TransportPacketContext} packetContext The TransportPacketContext
  * containing information to build the child node.
  *
- * @returns {DataApiValue} The childNode created.
+ * @returns {ozpIwc.DataApiValue} The childNode created.
  */
 ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {
 	var key=this.createKey(node.resource+"/");
@@ -62,8 +66,8 @@ ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {
  * }
  * ```
  * @method handleList
- * @param {DataApiValue} node The node containing children to list.
- * @param {TransportPacketContext} packetContext Packet context of the list request.
+ * @param {ozpIwc.DataApiValue} node The node containing children to list.
+ * @param {ozpIwc.TransportPacketContext} packetContext Packet context of the list request.
  */
 ozpIwc.DataApi.prototype.handleList=function(node,packetContext) {
 	packetContext.replyTo({
@@ -88,7 +92,7 @@ ozpIwc.DataApi.prototype.handleList=function(node,packetContext) {
  * ```
  *
  * @method handleAddchild
- * @param {DataApiValue} node - The parent node to add a child node to.
+ * @param {ozpIwc.DataApiValue} node - The parent node to add a child node to.
  * @param {ozpIwc.TransportPacketContext} packetContext - The packet context of which the child is constructed from.
  */
 ozpIwc.DataApi.prototype.handleAddchild=function(node,packetContext) {
@@ -114,7 +118,7 @@ ozpIwc.DataApi.prototype.handleAddchild=function(node,packetContext) {
  * }
  * ```
  * @method handleRemovechild
- * @param {DataApiValue} node - The parent node of which to remove the child node.
+ * @param {ozpIwc.DataApiValue} node - The parent node of which to remove the child node.
  * @param {ozpIwc.TransportPacketContext} packetContext - The packet context containing the child node's resource in
  * its entity.
  */

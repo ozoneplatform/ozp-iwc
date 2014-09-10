@@ -1,6 +1,13 @@
 /** @namespace **/
 var ozpIwc = ozpIwc || {};
 
+
+/**
+ * Classes related to security aspects of the IWC.
+ * @module bus
+ * @submodule bus.network
+ */
+
 /**
  * <p>This link connects peers using the HTML5 localstorage API.  It is a second generation version of
  * the localStorageLink that bypasses most of the garbage collection issues.
@@ -13,6 +20,9 @@ var ozpIwc = ozpIwc || {};
  * @todo Compress the key
  *
  * @class KeyBroadcastLocalStorageLink
+ * @namespace ozpIwc
+ * @constructor
+ *
  * @param {Object} [config] - Configuration for this link
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] - The peer to connect to.
  * @param {string} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
@@ -26,15 +36,75 @@ var ozpIwc = ozpIwc || {};
 ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     config = config || {};
 
+    /**
+     * @property prefix
+     * @type String
+     * @default "ozpIwc"
+     */
     this.prefix = config.prefix || 'ozpIwc';
+
+    /**
+     * @property peer
+     * @type ozpIwc.Peer
+     * @default ozpIwc.defaultPeer
+     */
     this.peer = config.peer || ozpIwc.defaultPeer;
+
+    /**
+     * @property selfId
+     * @type String
+     * @default ozpIwc.defaultPeer.selfId
+     */
     this.selfId = config.selfId || this.peer.selfId;
+
+    /**
+     * @property myKeysTimeout
+     * @type Number
+     * @default 5000
+     */
     this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
+
+    /**
+     * @property otherKeysTimeout
+     * @type Number
+     * @default 120000
+     */
     this.otherKeysTimeout = config.otherKeysTimeout || 2 * 60000; // 2 minutes
+
+
+    /**
+     * @property maxRetries
+     * @type Number
+     * @default 6
+     */
     this.maxRetries = config.maxRetries || 6;
+
+    /**
+     * @property queueSize
+     * @type Number
+     * @default 1024
+     */
     this.queueSize = config.queueSize || 1024;
+
+    /**
+     * @property sendQueue
+     * @type Array[]
+     * @default []
+     */
     this.sendQueue = this.sendQueue || [];
+
+    /**
+     * @property fragmentSize
+     * @type Number
+     * @default 1310720
+     */
     this.fragmentSize = config.fragmentSize || (5 * 1024 * 1024) / 2 / 2; //50% of 5mb, divide by 2 for utf-16 characters
+
+    /**
+     * @property fragmentTimeout
+     * @type Number
+     * @default 1000
+     */
     this.fragmentTimeout = config.fragmentTimeout || 1000; // 1 second
 
     //Add fragmenting capabilities
@@ -77,27 +147,10 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
 };
 
 /**
- * @typedef ozpIwc.FragmentPacket
- * @property {boolean} fragment - Flag for knowing this is a fragment packet. Should be true.
- * @property {Number} msgId - The msgId from the TransportPacket broken up into fragments.
- * @property {Number} id - The position amongst other fragments of the TransportPacket.
- * @property {Number} total - Total number of fragments of the TransportPacket expected.
- * @property {String} chunk - A segment of the TransportPacket in string form.
- *
- */
-
-/**
- * @typedef ozpIwc.FragmentStore
- * @property {Number} sequence - The sequence of the latest fragment received.
- * @property {Number} total - The total number of fragments expected.
- * @property {String} src_peer - The src_peer of the fragments expected.
- * @property {Array(String)} chunks - String segments of the TransportPacket.
- */
-
-/**
  * Handles fragmented packets received from the router. When all fragments of a message have been received,
  * the resulting packet will be passed on to the registered peer of the KeyBroadcastLocalStorageLink.
- * @param {ozpIwc.NetworkPacket} packet - NetworkPacket containing an ozpIwc.FragmentPacket as its data property
+ * @method handleFragment
+ * @param {ozpIwc.NetworkPacket} packet NetworkPacket containing an ozpIwc.FragmentPacket as its data property
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet) {
     // Check to make sure the packet is a fragment and we haven't seen it
@@ -130,8 +183,10 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet)
 /**
  *  Stores a received fragment. When the first fragment of a message is received, a timer is set to destroy the storage
  *  of the message fragments should not all messages be received.
- * @param {ozpIwc.NetworkPacket} packet - NetworkPacket containing an ozpIwc.FragmentPacket as its data property
- * @returns {boolean} result - true if successful.
+ * @method storeFragment
+ * @param {ozpIwc.NetworkPacket} packet NetworkPacket containing an ozpIwc.FragmentPacket as its data property
+ *
+ * @returns {boolean} result true if successful.
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) {
     if (!packet.data.fragment) {
@@ -192,8 +247,9 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
 
 /**
  * Rebuilds the original packet sent across the keyBroadcastLocalStorageLink from the fragments it was broken up into.
- * @param {ozpIwc.FragmentStore} fragments - the grouping of fragments to reconstruct
- * @returns {ozpIwc.NetworkPacket} result - the reconstructed NetworkPacket with TransportPacket as its data property.
+ * @method defragmentPacket
+ * @param {ozpIwc.FragmentStore} fragments the grouping of fragments to reconstruct
+ * @returns {ozpIwc.NetworkPacket} result the reconstructed NetworkPacket with TransportPacket as its data property.
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragments) {
     if (fragments.total != fragments.chunks.length) {
@@ -217,8 +273,8 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragm
  * <p>If the sendQueue is full (KeyBroadcastLocalStorageLink.queueSize) send will not occur.
  * <p>If the TransportPacket is too large (KeyBroadcastLocalStorageLink.fragmentSize) ozpIwc.FragmentPacket's will
  *    be sent instead.
- *
- * @param {ozpIwc.NetworkPacket} - packet
+ * @method send
+ * @param {ozpIwc.NetworkPacket} packet
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
     var str = JSON.stringify(packet.data);
@@ -254,6 +310,10 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
     }
 };
 
+/**
+ * @method queueSend
+ * @param packet
+ */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
     if (this.sendQueue.length < this.queueSize) {
         this.sendQueue = this.sendQueue.concat(packet);
@@ -269,9 +329,9 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
 /**
  * <p> Recursively tries sending the packet (KeyBroadcastLocalStorageLink.maxRetries) times
  * The packet is dropped and the send fails after reaching max attempts.
- *
- * @param {ozpIwc.NetworkPacket} - packet
- * @param {Number} [attemptCount] - number of times attempted to send packet.
+ * @method attemptSend
+ * @param {ozpIwc.NetworkPacket} packet
+ * @param {Number} [attemptCount] number of times attempted to send packet.
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, retryCount) {
 
@@ -301,8 +361,8 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
  * <p>Returns status of localStorage write, null if success.
  *
  * @todo move counter.inc() out of the impl and handle in attemptSend?
- *
- * @param {ozpIwc.NetworkPacket} - packet
+ * @method sendImpl
+ * @param {ozpIwc.NetworkPacket} packet
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     var sendStatus;
@@ -320,3 +380,4 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
         return sendStatus;
     }
 };
+
