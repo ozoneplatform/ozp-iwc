@@ -14,9 +14,12 @@
 ozpIwc.abacPolicies={};
 
 /**
+ * Returns `permit` when the request's object exists and is empty.
+ *
  * @static
  * @method permitWhenObjectHasNoAttributes
  * @param request
+ *
  * @returns {string}
  */
 ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes=function(request) {
@@ -26,9 +29,12 @@ ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes=function(request) {
     return "undetermined";
 };
 /**
+ * Returns `permit` when the request's subject contains all of the request's object.
+ *
  * @static
  * @method subjectHasAllObjectAttributes
  * @param request
+ *
  * @returns {string}
  */
 ozpIwc.abacPolicies.subjectHasAllObjectAttributes=function(request) {
@@ -44,6 +50,8 @@ ozpIwc.abacPolicies.subjectHasAllObjectAttributes=function(request) {
 };
 
 /**
+ * Returns `permit` for any scenario.
+ *
  * @static
  * @method permitAll
  * @returns {string}

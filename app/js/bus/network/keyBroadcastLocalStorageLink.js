@@ -23,20 +23,21 @@ var ozpIwc = ozpIwc || {};
  * @namespace ozpIwc
  * @constructor
  *
- * @param {Object} [config] - Configuration for this link
- * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] - The peer to connect to.
- * @param {string} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
- * @param {string} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
- * @param {Number} [config.maxRetries] - Number of times packet transmission will retry if failed. Defaults to 6.
- * @param {Number} [config.queueSize] - Number of packets allowed to be queued at one time. Defaults to 1024.
- * @param {Number} [config.fragmentSize] - Size in bytes of which any TransportPacket exceeds will be sent in FragmentPackets.
- * @param {Number} [config.fragmentTime] - Time in milliseconds after a fragment is received and additional expected
- *                                         fragments are not received that the message is dropped.
+ * @param {Object} [config] Configuration for this link
+ * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] The peer to connect to.
+ * @param {string} [config.prefix='ozpIwc'] Namespace for communicating, must be the same for all peers on the same network.
+ * @param {string} [config.selfId] Unique name within the peer network.  Defaults to the peer id.
+ * @param {Number} [config.maxRetries] Number of times packet transmission will retry if failed. Defaults to 6.
+ * @param {Number} [config.queueSize] Number of packets allowed to be queued at one time. Defaults to 1024.
+ * @param {Number} [config.fragmentSize] Size in bytes of which any TransportPacket exceeds will be sent in FragmentPackets.
+ * @param {Number} [config.fragmentTime] Time in milliseconds after a fragment is received and additional expected
+ * fragments are not received that the message is dropped.
  */
 ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     config = config || {};
 
     /**
+     * Namespace for communicating, must be the same for all peers on the same network.
      * @property prefix
      * @type String
      * @default "ozpIwc"
@@ -44,6 +45,7 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     this.prefix = config.prefix || 'ozpIwc';
 
     /**
+     * The peer this link will connect to.
      * @property peer
      * @type ozpIwc.Peer
      * @default ozpIwc.defaultPeer
@@ -51,6 +53,7 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     this.peer = config.peer || ozpIwc.defaultPeer;
 
     /**
+     * Unique name within the peer network.  Defaults to the peer id.
      * @property selfId
      * @type String
      * @default ozpIwc.defaultPeer.selfId
@@ -58,6 +61,8 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     this.selfId = config.selfId || this.peer.selfId;
 
     /**
+     * Milliseconds to wait before deleting this link's keys
+     * @todo UNUSUED
      * @property myKeysTimeout
      * @type Number
      * @default 5000
@@ -65,6 +70,8 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
 
     /**
+     * Milliseconds to wait before deleting other link's keys
+     * @todo UNUSUED
      * @property otherKeysTimeout
      * @type Number
      * @default 120000
@@ -73,6 +80,8 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
 
 
     /**
+     * The maximum number of retries the link will take to send a package. A timeout of
+     * max(1, 2^( <retry count> -1) - 1) milliseconds occurs between send attempts.
      * @property maxRetries
      * @type Number
      * @default 6
@@ -80,6 +89,7 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     this.maxRetries = config.maxRetries || 6;
 
     /**
+     * Maximum number of packets that can be in the send queue at any given time.
      * @property queueSize
      * @type Number
      * @default 1024
@@ -87,6 +97,7 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     this.queueSize = config.queueSize || 1024;
 
     /**
+     * A queue for outgoing packets. If this queue is full further packets will not be added.
      * @property sendQueue
      * @type Array[]
      * @default []
@@ -94,6 +105,7 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     this.sendQueue = this.sendQueue || [];
 
     /**
+     * Minimum size in bytes that a packet will broken into fragments.
      * @property fragmentSize
      * @type Number
      * @default 1310720
@@ -101,6 +113,8 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     this.fragmentSize = config.fragmentSize || (5 * 1024 * 1024) / 2 / 2; //50% of 5mb, divide by 2 for utf-16 characters
 
     /**
+     * The amount of time allotted to the Link to wait between expected fragment packets. If an expected fragment
+     * is not received within this timeout the packet is dropped.
      * @property fragmentTimeout
      * @type Number
      * @default 1000
@@ -148,7 +162,9 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
 
 /**
  * Handles fragmented packets received from the router. When all fragments of a message have been received,
- * the resulting packet will be passed on to the registered peer of the KeyBroadcastLocalStorageLink.
+ * the resulting packet will be passed on to the
+ * {{#crossLink "ozpIwc.KeyBroadcastLocalStorageLink/peer:property"}}registered peer{{/crossLink}}.
+ *
  * @method handleFragment
  * @param {ozpIwc.NetworkPacket} packet NetworkPacket containing an ozpIwc.FragmentPacket as its data property
  */
@@ -183,8 +199,9 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet)
 /**
  *  Stores a received fragment. When the first fragment of a message is received, a timer is set to destroy the storage
  *  of the message fragments should not all messages be received.
+ *
  * @method storeFragment
- * @param {ozpIwc.NetworkPacket} packet NetworkPacket containing an ozpIwc.FragmentPacket as its data property
+ * @param {ozpIwc.NetworkPacket} packet NetworkPacket containing an {{#crossLink "ozpIwc.FragmentPacket"}}{{/crossLink}} as its data property
  *
  * @returns {boolean} result true if successful.
  */
@@ -247,8 +264,10 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
 
 /**
  * Rebuilds the original packet sent across the keyBroadcastLocalStorageLink from the fragments it was broken up into.
+ *
  * @method defragmentPacket
  * @param {ozpIwc.FragmentStore} fragments the grouping of fragments to reconstruct
+ *
  * @returns {ozpIwc.NetworkPacket} result the reconstructed NetworkPacket with TransportPacket as its data property.
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragments) {
@@ -269,10 +288,10 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragm
 };
 
 /**
- * <p>Publishes a packet to other peers.
- * <p>If the sendQueue is full (KeyBroadcastLocalStorageLink.queueSize) send will not occur.
- * <p>If the TransportPacket is too large (KeyBroadcastLocalStorageLink.fragmentSize) ozpIwc.FragmentPacket's will
- *    be sent instead.
+ * Publishes a packet to other peers. If the sendQueue is full the send will not occur. If the TransportPacket is larger
+ * than the {{#crossLink "ozpIwc.KeyBroadcastLocalStorageLink/fragmentSize:property"}}{{/crossLink}}, an
+ * {{#crossLink "ozpIwc.FragmentPacket"}}{{/crossLink}} will be sent instead.
+ *
  * @method send
  * @param {ozpIwc.NetworkPacket} packet
  */
@@ -311,6 +330,10 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
 };
 
 /**
+ * Places a packet in the {{#crossLink "ozpIwc.KeyBroadcastLocalStorageLink/sendQueue:property"}}{{/crossLink}}
+ * if it does not already hold {{#crossLink "ozpIwc.KeyBroadcastLocalStorageLink/queueSize:property"}}{{/crossLink}}
+ * amount of packets.
+ *
  * @method queueSend
  * @param packet
  */
@@ -327,8 +350,10 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
 };
 
 /**
- * <p> Recursively tries sending the packet (KeyBroadcastLocalStorageLink.maxRetries) times
+ * Recursively tries sending the packet
+ * {{#crossLink "ozpIwc.KeyBroadcastLocalStorageLink/maxRetries:property"}}{{/crossLink}} times.
  * The packet is dropped and the send fails after reaching max attempts.
+ *
  * @method attemptSend
  * @param {ozpIwc.NetworkPacket} packet
  * @param {Number} [attemptCount] number of times attempted to send packet.
@@ -356,9 +381,8 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
 };
 
 /**
- * <p>Implementation of publishing packets to peers through localStorage.
- * <p>If the localStorage is full or a write collision occurs, the send will not occur.
- * <p>Returns status of localStorage write, null if success.
+ * Implementation of publishing packets to peers through localStorage. If the localStorage is full or a write collision
+ * occurs, the send will not occur. Returns status of localStorage write, null if success.
  *
  * @todo move counter.inc() out of the impl and handle in attemptSend?
  * @method sendImpl

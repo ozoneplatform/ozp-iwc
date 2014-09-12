@@ -1,3 +1,7 @@
+/**
+ * @submodule metrics.types
+ */
+
 ozpIwc.metricTypes.Timer=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
 	ozpIwc.metricTypes.BaseMetric.apply(this,arguments);
 	this.meter=new ozpIwc.metricTypes.Meter();

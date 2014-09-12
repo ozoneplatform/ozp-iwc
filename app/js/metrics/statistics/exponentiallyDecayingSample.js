@@ -20,14 +20,37 @@
 var ozpIwc=ozpIwc || {};
 ozpIwc.metricsStats=ozpIwc.metricsStats || {};
 
+/**
+ * @submodule metrics.statistics
+ */
+
 //  Take an exponentially decaying sample of size size of all values
+/**
+ *
+ * @class metricStats
+ * @namespace ozpIwc
+ */
+
+/**
+ * @property DEFAULT_RESCALE_THRESHOLD
+ * @type {Number}
+ * @default 3600000
+ */
 ozpIwc.metricsStats.DEFAULT_RESCALE_THRESHOLD = 60 * 60 * 1000; // 1 hour in milliseconds
+
+/**
+ * @property DEFAULT_DECAY_ALPHA
+ * @type {Number}
+ * @default 0.015
+ */
 ozpIwc.metricsStats.DEFAULT_DECAY_ALPHA=0.015;
+
 /**
  * This acts as a ordered binary heap for any serializeable JS object or collection of such objects 
  * <p>Borrowed from https://github.com/mikejihbe/metrics. 
  * @class ExponentiallyDecayingSample
-	*/
+ * @namespace ozpIwc.metricStats
+ */
 ozpIwc.metricsStats.ExponentiallyDecayingSample=ozpIwc.util.extend(ozpIwc.metricsStats.Sample,function(size, alpha) {
 	ozpIwc.metricsStats.Sample.apply(this);
   this.limit = size || ozpIwc.metricsStats.DEFAULT_POOL_SIZE;
@@ -36,6 +59,10 @@ ozpIwc.metricsStats.ExponentiallyDecayingSample=ozpIwc.util.extend(ozpIwc.metric
 });
 
 // This is a relatively expensive operation
+/**
+ * @method getValues
+ * @returns {Array}
+ */
 ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.getValues = function() {
   var values = [];
   var heap = this.values.clone();
@@ -46,22 +73,41 @@ ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.getValues = function()
   return values;
 };
 
+/**
+ * @method size
+ * @returns {Number}
+ */
 ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.size = function() {
   return this.values.size();
 };
 
+/**
+ * @method newHeap
+ * @returns {ozpIwc.metricsStats.BinaryHeap}
+ */
 ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.newHeap = function() {
   return new ozpIwc.metricsStats.BinaryHeap(function(obj){return obj.priority;});
 };
 
+/**
+ * @method now
+ * @returns {Number}
+ */
 ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.now = function() {
   return ozpIwc.util.now();
 };
 
+/**
+ * @method tick
+ * @returns {Number}
+ */
 ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.tick = function() {
   return this.now() / 1000;
 };
 
+/**
+ * @method clear
+ */
 ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.clear = function() {
   this.values = this.newHeap();
   this.count = 0;
@@ -69,9 +115,12 @@ ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.clear = function() {
   this.nextScaleTime = this.now() + this.rescaleThreshold;
 };
 
-/*
-* timestamp in milliseconds
-*/
+/**
+ * timestamp in milliseconds
+ * @method update
+ * @param {Number} val
+ * @param {Number} timestamp
+ */
 ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.update = function(val, timestamp) {
   // Convert timestamp to seconds
   if (timestamp == undefined) {
@@ -97,10 +146,18 @@ ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.update = function(val,
   }
 };
 
+/**
+ * @method weight
+ * @param {Number}time
+ * @returns {Number}
+ */
 ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.weight = function(time) {
   return Math.exp(this.alpha * time);
 };
 
+/**
+ * @method rescale
+ */
 ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.rescale = function() {
   this.nextScaleTime = this.now() + this.rescaleThreshold;
   var oldContent = this.values.content

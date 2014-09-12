@@ -1,9 +1,27 @@
 /** @namespace */
 var ozpIwc=ozpIwc || {};
 
-/** @namespace */
+/**
+ * Utility methods used on the IWC bus.
+ * @module bus
+ * @submodule bus.util
+ */
+
+/**
+ * @class util
+ * @namespace ozpIwc
+ * @static
+ */
 ozpIwc.util=ozpIwc.util || {};
 
+/**
+ * Sends an AJAX request. A promise is returned to handle the response.
+ *
+ * @method ajax
+ * @static
+ * @param config
+ * @returns {Promise}
+ */
 ozpIwc.util.ajax = function (config) {
     return new Promise(function(resolve,reject) {
         var request = new XMLHttpRequest();

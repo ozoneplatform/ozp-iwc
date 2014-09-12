@@ -15,11 +15,19 @@ var ozpIwc=ozpIwc || {};
  */
 
 
-/** 
+/**
+ * @TODO (DOC)
  * @class BasicAuthentication
+ * @constructor
  * @namespace ozpIwc
  */
 ozpIwc.BasicAuthentication=function() {
+
+    /**
+     * @property roles
+     * @type Object
+     * @default {}
+     */
 	this.roles={};
     var self = this;
     ozpIwc.metrics.gauge('security.authentication.roles').set(function() {
@@ -28,7 +36,10 @@ ozpIwc.BasicAuthentication=function() {
 };
 
 /**
- * Returns the number of roles currently defined
+ * Returns the number of roles currently defined.
+ *
+ * @method getRoleCount
+ *
  * @returns {number} the number of roles defined
  */
 ozpIwc.BasicAuthentication.prototype.getRoleCount=function() {
@@ -46,10 +57,12 @@ ozpIwc.BasicAuthentication.prototype.getRoleCount=function() {
  * assigned a role equal to their origin, since the browser authoritatively
  * determines that.  The security module can then add additional roles based
  * upon configuration.
- * 
+ *
+ * @method login
  * @param {ozpIwc.security.Credentials} credentials
- * @param {ozpIwc.security.Subject} [preAuthenticatedSubject] - The pre-authenticated
- *   subject that is presenting these credentials.   
+ * @param {ozpIwc.security.Subject} [preAuthenticatedSubject] The pre-authenticated
+ *   subject that is presenting these credentials.
+ *
  * @returns {ozpIwc.AsyncAction} If the credentials are authenticated, the success handler receives
  *     the subject.
  */

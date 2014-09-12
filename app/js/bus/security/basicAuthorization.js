@@ -20,11 +20,23 @@ var ozpIwc=ozpIwc || {};
  * @todo Permissions are local to each peer.  Does this need to be synced?
  * 
  * @class BasicAuthorization
+ * @constructor
+ *
  * @namespace ozpIwc
  */
 ozpIwc.BasicAuthorization=function(config) {
     config=config || {};
+
+    /**
+     * @property roles
+     * @type object
+     */
 	this.roles={};
+
+    /**
+     * @property policies
+     * @type {auth.policies|*|*[]|ozpIwc.BasicAuthorization.policies|BasicAuthorization.policies}
+     */
     this.policies= config.policies || [
 //        ozpIwc.abacPolicies.permitAll
         ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes,
@@ -37,7 +49,10 @@ ozpIwc.BasicAuthorization=function(config) {
     });
 };
 /**
- * Returns the number of roles currently defined
+ * Returns the number of roles currently defined.
+ *
+ * @method getRoleCount
+ *
  * @returns {number} the number of roles defined
  */
 ozpIwc.BasicAuthorization.prototype.getRoleCount=function() {
@@ -47,7 +62,14 @@ ozpIwc.BasicAuthorization.prototype.getRoleCount=function() {
     return Object.keys(this.roles).length;
 };
 
-
+/**
+ *
+ * @method implies
+ * @param subjectVal
+ * @param objectVal
+ *
+ * @returns {*}
+ */
 ozpIwc.BasicAuthorization.prototype.implies=function(subjectVal,objectVal) {
     // no object value is trivially true
     if(objectVal===undefined || objectVal === null) {
@@ -69,7 +91,10 @@ ozpIwc.BasicAuthorization.prototype.implies=function(subjectVal,objectVal) {
 
 /**
  * Confirms that the subject has all of the permissions requested.
+ *
+ * @method isPermitted
  * @param {object} request
+ *
  * @returns {ozpIwc.AsyncAction}
  */
 ozpIwc.BasicAuthorization.prototype.isPermitted=function(request) {

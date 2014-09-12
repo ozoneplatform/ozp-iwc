@@ -2,14 +2,28 @@
 // licensed under CCv3.0: http://creativecommons.org/licenses/by/3.0/
 
 var ozpIwc=ozpIwc || {};
+
+/**
+ * Statistics classes for the ozpIwc Metrics
+ * @module metrics
+ * @submodule metrics.statistics
+ */
+/**
+ * metricStats namespace
+ * @class metricStats
+ * @namespace ozpIwc
+ * @static
+ */
 ozpIwc.metricsStats=ozpIwc.metricsStats || {};
 /**
  * This acts as a ordered binary heap for any serializeable JS object or collection of such objects 
  * <p>Borrowed from https://github.com/mikejihbe/metrics. Originally from from http://eloquentjavascript.net/appendix2.html
  * <p>Licenced under CCv3.0
+ *
  * @class BinaryHeap
- * @param {type} scoreFunction
- * @returns {BinaryHeap}
+ * @namespace ozpIwc.metricStats
+ * @param {Function} scoreFunction
+ * @returns {ozpiwc.metricStats.BinaryHeap}
  */
 ozpIwc.metricsStats.BinaryHeap = function BinaryHeap(scoreFunction){
   this.content = [];

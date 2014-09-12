@@ -1,12 +1,21 @@
 /** @namespace */
 var ozpIwc=ozpIwc || {};
+/**
+ * @submodule common
+ */
 
-/** @namespace */
+/**
+ * @class util
+ * @namespace ozpIwc
+ * @static
+ */
 ozpIwc.util=ozpIwc.util || {};
 
 /**
  * Used to get the current epoch time.  Tests overrides this
  * to allow a fast-forward on time-based actions.
+ *
+ * @method now
  * @returns {Number}
  */
 ozpIwc.util.now=function() {
@@ -15,9 +24,12 @@ ozpIwc.util.now=function() {
 
 /**
  * Create a class with the given parent in it's prototype chain.
- * @param {function} baseClass - the class being derived from
- * @param {function} newConstructor - the new base class
- * @returns {Function} newConstructor with an augmented prototype
+ *
+ * @method extend
+ * @param {Function} baseClass The class being derived from.
+ * @param {Function} newConstructor The new base class.
+ *
+ * @returns {Function} New Constructor with an augmented prototype.
  */
 ozpIwc.util.extend=function(baseClass,newConstructor) {
     if(!baseClass || !baseClass.prototype) {
@@ -31,8 +43,10 @@ ozpIwc.util.extend=function(baseClass,newConstructor) {
 
 /**
  * Detect browser support for structured clones.
- * @returns {boolean} - true if structured clones are supported,
- * false otherwise
+ *
+ * @method structuredCloneSupport
+ *
+ * @returns {Boolean} True if structured clones are supported, false otherwise.
  */
 ozpIwc.util.structuredCloneSupport=function() {
     if (ozpIwc.util.structuredCloneSupport.cache !== undefined) {
@@ -61,8 +75,10 @@ ozpIwc.util.structuredCloneSupport.cache=undefined;
 /**
  * Does a deep clone of a serializable object.  Note that this will not
  * clone unserializable objects like DOM elements, Date, RegExp, etc.
- * @param {type} value - value to be cloned.
- * @returns {object} - a deep copy of the object
+ *
+ * @method clone
+ * @param {Array|Object} value The value to be cloned.
+ * @returns {Array|Object}  a deep copy of the object
  */
 ozpIwc.util.clone=function(value) {
 	if(Array.isArray(value) || typeof(value) === 'object') {
@@ -77,7 +93,14 @@ ozpIwc.util.clone=function(value) {
 };
 
 
-
+/**
+ * A regex method to parse query parameters.
+ *
+ * @method parseQueryParams
+ * @param {String} query
+ *
+ * @returns {Array} An array of parameters.
+ */
 ozpIwc.util.parseQueryParams=function(query) {
     query = query || window.location.search;
     var params={};
@@ -89,6 +112,12 @@ ozpIwc.util.parseQueryParams=function(query) {
     return params;
 };
 
+/**
+ * Determines the origin of a given url
+ * @method determineOrigin
+ * @param url
+ * @returns {string}
+ */
 ozpIwc.util.determineOrigin=function(url) {
     var a=document.createElement("a");
     a.href = url;
@@ -98,6 +127,12 @@ ozpIwc.util.determineOrigin=function(url) {
     return origin;
 };
 
+/**
+ * Escapes regular expression characters in a string.
+ * @method escapeRegex
+ * @param {String} str
+ * @returns {String}
+ */
 ozpIwc.util.escapeRegex=function(str) {
     return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };

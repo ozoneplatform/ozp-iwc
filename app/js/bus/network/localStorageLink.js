@@ -51,10 +51,47 @@ var ozpIwc = ozpIwc || {};
 ozpIwc.LocalStorageLink = function(config) {
 	config=config || {};
 
+
+    /**
+     * Namespace for communicating, must be the same for all peers on the same network.
+     * @property prefix
+     * @type String
+     * @default "ozpIwc"
+     */
 	this.prefix=config.prefix || 'ozpIwc';
+
+    /**
+     * The peer this link will connect to.
+     * @property peer
+     * @type ozpIwc.Peer
+     * @default ozpIwc.defaultPeer
+     */
 	this.peer=config.peer || ozpIwc.defaultPeer;
+
+    /**
+     * Unique name within the peer network.  Defaults to the peer id.
+     * @property selfId
+     * @type String
+     * @default ozpIwc.defaultPeer.selfId
+     */
 	this.selfId=config.selfId || this.peer.selfId;
+
+
+    /**
+     * Milliseconds to wait before deleting this link's keys
+     * @property myKeysTimeout
+     * @type Number
+     * @default 5000
+     */
 	this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
+
+    /**
+     * Milliseconds to wait before deleting other link's keys
+     * @todo UNUSUED
+     * @property otherKeysTimeout
+     * @type Number
+     * @default 120000
+     */
 	this.otherKeysTimeout = config.otherKeysTimeout || 2*60000; // 2 minutes
 
   // Hook into the system
@@ -129,6 +166,9 @@ ozpIwc.LocalStorageLink = function(config) {
 /**
  * Creates a key for the message in localStorage
  * @todo Is timestamp granular enough that no two packets can come in at the same time?
+ *
+ * @method makeKey
+ *
  * @returns {string} a new key
  */
 ozpIwc.LocalStorageLink.prototype.makeKey=function(sequence) { 
@@ -138,7 +178,10 @@ ozpIwc.LocalStorageLink.prototype.makeKey=function(sequence) {
 /**
  * If it's a key for a buffered message, split it into the id of the 
  * link that put it here and the time it was created at.
+ *
+ * @method splitKey
  * @param {type} k The key to split
+ *
  * @returns {object} The id and createdAt for the key if it's valid, otherwise null.
  */
 ozpIwc.LocalStorageLink.prototype.splitKey=function(k) { 
@@ -154,6 +197,9 @@ ozpIwc.LocalStorageLink.prototype.splitKey=function(k) {
  * by this link are removed if they are older than myKeysTimeout.  Other
  * keys are cleaned if they are older than otherKeysTimeout.
  * @todo Coordinate expiration windows.
+ *
+ * @method cleanKeys
+ *
  * @returns {undefined}
  */
 ozpIwc.LocalStorageLink.prototype.cleanKeys=function() {
@@ -177,6 +223,8 @@ ozpIwc.LocalStorageLink.prototype.cleanKeys=function() {
 /**
  * Publishes a packet to other peers.
  * @todo Handle local storage being full.
+ *
+ * @method send
  * @param {ozpIwc.NetworkPacket} packet
  */
 ozpIwc.LocalStorageLink.prototype.send=function(packet) { 

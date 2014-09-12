@@ -1,17 +1,44 @@
 /**
+ * @submodule metrics.types
+ */
+
+/**
  * @class Meter
+ * @namespace ozpIwc.metricTypes
  * @extends ozpIwc.BaseMetric
  */
 ozpIwc.metricTypes.Meter=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
 	ozpIwc.metricTypes.BaseMetric.apply(this,arguments);
+    /**
+     * @property m1Rate
+     * @type {ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage}
+     */
 	this.m1Rate= new ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage(ozpIwc.metricsStats.M1_ALPHA);
+    /**
+     * @property m5Rate
+     * @type {ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage}
+     */
 	this.m5Rate= new ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage(ozpIwc.metricsStats.M5_ALPHA);
+    /**
+     * @property m15Rate
+     * @type {ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage}
+     */
 	this.m15Rate= new ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage(ozpIwc.metricsStats.M15_ALPHA);
+    /**
+     * @property startTime
+     * @type {Number}
+     */
 	this.startTime=ozpIwc.util.now();
+    /**
+     * @property value
+     * @type {Number}
+     * @default 0
+     */
 	this.value=0;
 });
 
 /**
+ * @method mark
  * @param {Number} [delta=1] - Increment by this value
  * @returns {Number} - Value of the counter after increment
  */
@@ -25,7 +52,11 @@ ozpIwc.metricTypes.Meter.prototype.mark=function(delta) {
 	return this.value;
 };
 
-ozpIwc.metricTypes.Meter.prototype.get=function() { 
+/**
+ * @method get
+ * @returns {{rate_1m: (Number), rate_5m: (Number), rate_15m: (Number), rate_mean: number, count: (Number)}}
+ */
+ozpIwc.metricTypes.Meter.prototype.get=function() {
 	return {
 		'rate_1m' : this.m1Rate.rate(),
 		'rate_5m' : this.m5Rate.rate(),
@@ -35,6 +66,9 @@ ozpIwc.metricTypes.Meter.prototype.get=function() {
 	};
 };
 
+/**
+ * @method tick
+ */
 ozpIwc.metricTypes.Meter.prototype.tick=function() { 
 	this.m1Rate.tick();
 	this.m5Rate.tick();

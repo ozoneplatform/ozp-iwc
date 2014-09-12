@@ -1,14 +1,27 @@
 /**
+ * @submodule metrics.types
+ */
+
+/**
  * @class Histogram
+ * @namespace ozpIwc.metricTypes
  * @extends ozpIwc.BaseMetric
  */
 ozpIwc.metricTypes.Histogram=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
 	ozpIwc.metricTypes.BaseMetric.apply(this,arguments);
+
+    /**
+     * @property sample
+     * @type {ozpIwc.metricsStats.ExponentiallyDecayingSample}
+     */
 	this.sample = new ozpIwc.metricsStats.ExponentiallyDecayingSample();
 	this.clear();
 });
 
 
+/**
+ * @method clear
+ */
 ozpIwc.metricTypes.Histogram.prototype.clear=function() {
 	this.sample.clear();
 	this.min=this.max=null;
@@ -19,8 +32,10 @@ ozpIwc.metricTypes.Histogram.prototype.clear=function() {
 };
 
 /**
- * @param {Number} [delta=1] - Increment by this value
- * @returns {Number} - Value of the counter after increment
+ * @method mark
+ * @param {Number} val
+ * @param {Number} timestamp Current time in milliseconds.
+ * @returns {Number} Value of the counter after increment
  */
 ozpIwc.metricTypes.Histogram.prototype.mark=function(val,timestamp) { 
 	timestamp = timestamp || ozpIwc.util.now();
@@ -39,6 +54,11 @@ ozpIwc.metricTypes.Histogram.prototype.mark=function(val,timestamp) {
 	return this.count;
 };
 
+/**
+ * @method get
+ * @returns {{percentile_10, percentile_25, median, percentile_75, percentile_90, percentile_95, percentile_99,
+ * percentile_999, variance: null, mean: null, stdDev: null, count: *, sum: *, max: *, min: *}}
+ */
 ozpIwc.metricTypes.Histogram.prototype.get=function() { 
 	var values=this.sample.getValues().map(function(v){
 		return parseFloat(v);

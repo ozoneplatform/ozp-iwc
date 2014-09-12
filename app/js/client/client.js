@@ -1,6 +1,11 @@
 var ozpIwc=ozpIwc || {};
 
 /**
+ * Client-side functionality of the IWC. This is the API for widget use.
+ * @module client
+ */
+
+/**
  * This class will be heavily modified in the future.
  * @class Client
  * @namespace ozpIwc
@@ -12,7 +17,19 @@ var ozpIwc=ozpIwc || {};
  */
 ozpIwc.Client=function(config) {
     config=config || {};
+
+    /**
+     * The address assigned to this client.
+     * @property address
+     * @type String
+     */
     this.address="$nobody";
+
+    /**
+     * Key value store of callback functions for the client to act upon when receiving a reply via the IWC.
+     * @property replyCallbacks
+     * @type Object
+     */
     this.replyCallbacks={};
     // coerce config.peerUrl to a function
     
@@ -29,32 +46,88 @@ ozpIwc.Client=function(config) {
             resolve(configUrl[0]);
         };
     } else if(typeof(configUrl) === "function") {
+        /**
+         * @property peerUrlCheck
+         * @type String
+         */
         this.peerUrlCheck=configUrl;
     } else {
         throw new Error("PeerUrl must be a string, array of strings, or function");
     }
-    
-    
+
+    /**
+     * @property autoPeer
+     * @type {boolean|*}
+     */
     this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
+
+    /**
+     * @property msgIdSequence
+     * @type Number
+     * @default 0
+     */
     this.msgIdSequence=0;
 
+    /**
+     * An events module for the Client
+     * @property events
+     * @type ozpIwc.Event
+     */
     this.events=new ozpIwc.Event();
     this.events.mixinOnOff(this);
-    
+
+    /**
+     * @property receivedPackets
+     * @type Number
+     * @default 0
+     */
     this.receivedPackets=0;
+
+    /**
+     * @property receivedBytes
+     * @type Number
+     * @default 0
+     */
     this.receivedBytes=0;
+
+    /**
+     * @property sentPackets
+     * @type Number
+     * @default 0
+     */
     this.sentPackets=0;
+
+    /**
+     * @property sentBytes
+     * @type Number
+     * @default 0
+     */
     this.sentBytes=0;
 
+    /**
+     * The epoch time the Client was instantiated.
+     * @property startTime
+     * @type Number
+     */
     this.startTime=ozpIwc.util.now();
-    
+
+    /**
+     * @property launchParams
+     * @type Object
+     * @default {}
+     */
     this.launchParams={};
     
     this.readLaunchParams(window.name);
     this.readLaunchParams(window.location.search);
     this.readLaunchParams(window.location.hash);
     
-    // @todo pull these from the names.api
+    /**
+     * A map of available apis and their actions.
+     * @todo pull these from the names.api
+     * @property apiMap
+     * @type Object
+     */
     this.apiMap={
         "data.api" : { 'address': 'data.api',
             'actions': ["get","set","delete","watch","unwatch","list","addChild","removeChild"]
@@ -69,17 +142,34 @@ ozpIwc.Client=function(config) {
             'actions': ["get","set","delete","watch","unwatch","register","invoke"]
         }
     };
-    this.wrapperMap={};
-    
 
+    /**
+     * @property wrapperMap
+     * @type Object
+     * @default {}
+     */
+    this.wrapperMap={};
+
+
+    /**
+     * @property preconnectionQueue
+     * @type Array
+     * @default []
+     */
     this.preconnectionQueue=[];
 
     if(this.autoPeer) {
         this.connect();
     }
 
+
 };
 
+/**
+ * Parses launch parameters based on the raw string input it receives.
+ * @property readLaunchParams
+ * @param rawString
+ */
 ozpIwc.Client.prototype.readLaunchParams=function(rawString) {
     // of the form ozpIwc.VARIABLE=VALUE, where:
     //   VARIABLE is alphanumeric + "_"
@@ -93,10 +183,13 @@ ozpIwc.Client.prototype.readLaunchParams=function(rawString) {
 /**
  * Receive a packet from the connected peer.  If the packet is a reply, then
  * the callback for that reply is invoked.  Otherwise, it fires a receive event
- * @fires ozpIwc.Client#receive
+ *
+ * Fires:
+ *     - {{#crossLink "ozpIwc.Client/receive:event}}{{/crossLink}}
+ *
+ * @method receive
  * @protected
  * @param {ozpIwc.TransportPacket} packet
- * @returns {undefined}
  */
 ozpIwc.Client.prototype.receive=function(packet) {
     if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
@@ -104,16 +197,21 @@ ozpIwc.Client.prototype.receive=function(packet) {
             this.cancelCallback(packet.replyTo);
         }
     } else {
+        /**
+         * Fired when the client receives a packet.
+         * @event #receive
+         */
         this.events.trigger("receive",packet);
     }
 };
 /**
- * Used to send a packet
- * @param {string} dst - where to send the packet
- * @param {object} entity - payload of the packet
- * @param {function} callback - callback for any replies. The callback will be
- * persisted if it returns a truth-like value, canceled if it returns a
- * false-like value.
+ * Sends a packet through the IWC.
+ *
+ * @method send
+ * @param {String} dst Where to send the packet.
+ * @param {Object} entity  The payload of the packet.
+ * @param {Function} callback The Callback for any replies. The callback will be persisted if it returns a truth-like
+ * value, canceled if it returns a false-like value.
  */
 ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromise) {
     var promise= preexistingPromise; // || new Promise();
@@ -152,12 +250,21 @@ ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromise) {
     return packet;
 };
 
+/**
+ * Returns whether or not the Client is connected to the IWC bus.
+ * @method isConnected
+ * @returns {Boolean}
+ */
 ozpIwc.Client.prototype.isConnected=function(){
     return this.address !== "$nobody";
 };
+
 /**
- * Cancel a callback registration
- * @param (string} msgId - The packet replyTo ID for which the callback was registered
+ * Cancel a callback registration.
+ * @method cancelCallback
+ * @param (String} msgId The packet replyTo ID for which the callback was registered.
+ *
+ * @return {Boolean} True if the cancel was successfull, otherwise false.
  */
 ozpIwc.Client.prototype.cancelCallback=function(msgId) {
     var success=false;
@@ -168,7 +275,13 @@ ozpIwc.Client.prototype.cancelCallback=function(msgId) {
     return success;
 };
 
-
+/**
+ * Registers callbacks
+ * @method on
+ * @param {String} event The event to call the callback on.
+ * @param {Function} callback The function to be called.
+ *
+ */
 ozpIwc.Client.prototype.on=function(event,callback) {
     if(event==="connected" && this.isConnected()) {
         callback(this);
@@ -177,10 +290,21 @@ ozpIwc.Client.prototype.on=function(event,callback) {
     return this.events.on.apply(this.events,arguments);
 };
 
+/**
+ * De-registers callbacks
+ * @method on
+ * @param {String} event The event to call the callback on.
+ * @param {Function} callback The function to be called.
+ *
+ */
 ozpIwc.Client.prototype.off=function(event,callback) {
     return this.events.off.apply(this.events,arguments);
 };
 
+/**
+ * Disconnects the client from the IWC bus.
+ * @method disconnect
+ */
 ozpIwc.Client.prototype.disconnect=function() {
     this.replyCallbacks={};
     window.removeEventListener("message",this.postMessageHandler,false);
@@ -191,6 +315,13 @@ ozpIwc.Client.prototype.disconnect=function() {
 };
 
 
+/**
+ * Connects the client from the IWC bus.
+ * Fires:
+ *     - {{#crossLink "ozpIwc.Client/#connected"}}{{/crossLink}}
+ *
+ * @method connect
+ */
 ozpIwc.Client.prototype.connect=function() {
     if(!this.connectPromise) {
         var self=this;
@@ -225,6 +356,11 @@ ozpIwc.Client.prototype.connect=function() {
             return new Promise(function(resolve,reject) {
                 self.send({dst:"$transport"},function(message) {
                     self.address=message.dst;
+
+                    /**
+                     * Fired when the client receives its address.
+                     * @event #gotAddress
+                     */
                     self.events.trigger("gotAddress",self);
                     resolve(self.address);
                 });
@@ -259,6 +395,10 @@ ozpIwc.Client.prototype.connect=function() {
                 });
             });
         }).then(function() {
+            /**
+             * Fired when the client is connected to the IWC bus.
+             * @event #connected
+             */
             self.events.trigger("connected");
         }).catch(function(error) {
             console.log("Failed to connect to bus ",error);
@@ -267,6 +407,10 @@ ozpIwc.Client.prototype.connect=function() {
     return this.connectPromise; 
 };
 
+/**
+ * Creates an invisible iFrame Peer for IWC bus communication.
+ * @method createIframePeer
+ */
 ozpIwc.Client.prototype.createIframePeer=function() {
     var self=this;
     return new Promise(function(resolve,reject) {
