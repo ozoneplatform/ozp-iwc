@@ -1,6 +1,10 @@
 var ozpIwc=ozpIwc || {};
 
 /**
+ * @submodule bus.transport
+ */
+
+/**
  * Baseclass for APIs that need leader election.  Uses the Bully algorithm for leader election.
  *
  * Implementer is responsible for handling two events:
@@ -10,28 +14,35 @@ var ozpIwc=ozpIwc || {};
  *    <li> <b>"newLeaderEvent"</b> - participant has finished its election process and is to become a member. Handle any logic necessary above
  *    the LeaderGroupParticipant then trigger the participant's event <b>"newLeader"</b>
  *    <i>(ex. participant.events.trigger("newLeader")</i></li>
- * @class
- * @param {object} config
- * @param {String} config.name 
+ *
+ * @class LeaderGroupParticipant
+ * @namespace ozpIwc
+ * @extends ozpIwc.InternalParticipant
+ * @constructor
+ *
+ * @param {Object} config
+ * @param {String} config.name
  *        The name of this API.
- * @param {string} [config.electionAddress=config.name+".election"] 
+ * @param {String} [config.electionAddress=config.name+".election"]
  *        The multicast channel for running elections.  
  *        The leader will register to receive multicast on this channel.
- * @param {number} [config.priority=Math.Random] 
+ * @param {Number} [config.priority=Math.Random]
  *        How strongly this node feels it should be leader.
- * @param {function} [config.priorityLessThan] 
+ * @param {Function} [config.priorityLessThan]
  *        Function that provides a strict total ordering on the priority.  Default is "<".
- * @param {number} [config.electionTimeout=250] 
+ * @param {Number} [config.electionTimeout=250]
+ *        Number of milliseconds to wait before declaring victory on an election. 
+ * @param {number} [config.electionTimeout=250]
  *        Number of milliseconds to wait before declaring victory on an election.
- * @param {object} config.states  State machine states the participant will register and react to given their assigned category.
+ * @param {Object} config.states  State machine states the participant will register and react to given their assigned category.
  *        Default states listed are always applied and need not be passed in configuration.
- * @param {object} [config.states.leader=['leader']]
+ * @param {Object} [config.states.leader=['leader']]
  *        Any state that the participant should deem itself the leader of its group.
- * @param {object} [config.states.member=['member']]
+ * @param {Object} [config.states.member=['member']]
  *        Any state that the participant should deem itself a member (not leader) of its group.
- * @param {object} [config.states.election=['election']]
+ * @param {Object} [config.states.election=['election']]
  *        Any state that the participant should deem itself in an election with its group.
- * @param {object} [config.states.queueing=['connecting','election']]
+ * @param {Object} [config.states.queueing=['connecting','election']]
  *        Any state that the participant should block non-election messages until not in a queueing state
  */
 ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,function(config) {
@@ -45,33 +56,123 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 
 
 	// Networking info
+    /**
+     * The name of the participant.
+     * @property name
+     * @type String
+     * @default ""
+     */
 	this.name=config.name;
+
+    /**
+     * The election address for common LeaderGroupParticipant's on the IWC bus.
+     * @property electionAddress
+     * @type String
+     * @default ".election"
+     */
 	this.electionAddress=config.electionAddress || (this.name + ".election");
 
 
 	// Election times and how to score them
+    /**
+     * A numeric value to determine who the leader of the group should be.
+     * @property priority
+     * @type Number
+     * @default {{#crossLink "ozpIwc.util/now:method"}}-ozpIwc.util.now(){{/crossLink}}
+     */
 	this.priority = config.priority || ozpIwc.defaultLeaderPriority || -ozpIwc.util.now();
+
+    /**
+     * Function to determine the lower value amongst two priorities.
+     * @property priorityLessThan
+     * @type Function
+     * @default function( l, r) { return l < r };
+     */
 	this.priorityLessThan = config.priorityLessThan || function(l,r) { return l < r; };
-	this.electionTimeout=config.electionTimeout || 1000; // quarter second
-    this.electionQueue=[];
 
 
-    // State Machine configuration
-	this.leaderState= null;
+    /**
+     * How long a participant partakes in an election.
+     * @property electionTimeout
+     * @type Number
+     * @default 250
+     */
+	this.electionTimeout=config.electionTimeout || 250; // quarter second
+
+    /**
+     * The current state of the participant.
+     *
+     * The leaderGroupParticipant has the following states:
+     *   - connecting
+     *   - queueing
+     *   - election
+     *   - leader
+     *   - member
+     *
+     * @property leaderState
+     * @type String
+     * @default "connecting"
+     */
+	this.leaderState="connecting";
+
+    /**
+     * Packets received from the router that are not pertinent to the election. They will be processed post election
+     * if this participant becomes the leader.
+     * @property electionQueue
+     * @type ozpIwc.NetworkPacket[]
+     * @default []
+     */
+	this.electionQueue=[];
+
+    /**
+     * A registry of sub-states of the Election State Machine. While leaderGroupParticipant operates on states "leader",
+     * "member", "queueing", and "election", it can fire events for those states should a substate change.
+     * @property states
+     * @type {states|*|Object|{}}
+     */
     this.states = config.states;
 
+    /**
+     * Leader sub-states of the State Machine.
+     * @property states.leader
+     * @type {String[]}
+     * @default ["leader"]
+     */
     this.states.leader = this.states.leader || [];
     this.states.leader = this.states.leader.concat(["leader"]);
 
+    /**
+     * Member sub-states of the State Machine.
+     * @property states.member
+     * @type {String[]}
+     * @default ["member"]
+     */
     this.states.member = this.states.member || [];
     this.states.member = this.states.member.concat(["member"]);
 
+    /**
+     * Election sub-states of the State Machine.
+     * @property states.election
+     * @type {String[]}
+     * @default ["election"]
+     */
     this.states.election = this.states.election || [];
     this.states.election = this.states.election.concat(["election"]);
 
+    /**
+     * Queueing sub-states of the State Machine.
+     * @property states.queueing
+     * @type {String[]}
+     * @default ["connecting", "election"]
+     */
     this.states.queueing = this.states.queueing || [];
     this.states.queueing = this.states.queueing.concat(["connecting", "election"]);
 
+    /**
+     * A snapshot of the current active states of the participant.
+     * @propery activeStates
+     * @type {Object}
+     */
     this.activeStates = config.activeStates || {
         'leader': false,
         'member': false,
@@ -83,20 +184,54 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 
 
 	// tracking the current leader
+    /**
+     * The address of the current leader.
+     * @property leader
+     * @type String
+     * @default null
+     */
 	this.leader=null;
+
+    /**
+     * The priority of the current leader.
+     * @property leaderPriority
+     * @type Number
+     * @default null
+     */
 	this.leaderPriority=null;
 
+    /**
+     * The type of the participant.
+     * @property participantType
+     * @type String
+     * @default "leaderGroup"
+     */
 	this.participantType="leaderGroup";
+
+    /**
+     * The name of the participant.
+     * @property name
+     * @type String
+     * @default ""
+     */
 	this.name=config.name;
 
 
     this.toggleDrop = false;
 
-    // Election Events
+    /**
+     * Fires when the participant enters an election.
+     * @event #startElection
+     */
 	this.on("startElection",function() {
         this.toggleDrop = false;
 	},this);
 
+    /**
+     * Fires when this participant becomes the leader.
+     * @event #becameLeader
+     *
+     */
 	this.on("becameLeader",function() {
         this.leader = this.address;
         this.leaderPriority = this.priority;
@@ -106,6 +241,10 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 		this.electionQueue=[];
 	},this);
 
+    /**
+     * Fires when a leader has been assigned and this participant is not it.
+     * @event #newLeader
+     */
 	this.on("newLeader",function() {
 		this.electionQueue=[];
 	},this);
@@ -139,7 +278,10 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
         return {'queue': queue ? queue.length : 0};
     });
 
-    // Handle connection to router
+    /**
+     * Fires when the participant has connected to its router.
+     * @event #connectedToRouter
+     */
 	this.on("connectedToRouter",function() {
         this.router.registerMulticast(this,[this.electionAddress,this.name]);
         var self = this;
@@ -153,8 +295,10 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 });
 
 /**
- * Retrieve the election queue. Called by closures which need access to the
- * queue as it grows
+ * Retrieve the election queue. Called by closures which need access to the queue as it grows
+ *
+ * @method getElectionQueue
+ *
  * @returns {Array} the election queue
  */
 ozpIwc.LeaderGroupParticipant.prototype.getElectionQueue=function() {
@@ -164,6 +308,9 @@ ozpIwc.LeaderGroupParticipant.prototype.getElectionQueue=function() {
 
 /**
  * Checks to see if the leadership group is in an election
+ *
+ * @method inElection
+ *
  * @returns {Boolean} True if in an election state, otherwise false
  */
 ozpIwc.LeaderGroupParticipant.prototype.inElection=function() {
@@ -173,7 +320,10 @@ ozpIwc.LeaderGroupParticipant.prototype.inElection=function() {
 
 /**
  * Checks to see if this instance is the leader of it's group.
- * @returns {Boolean}
+ *
+ * @method isLeader
+ *
+ * @returns {Boolean} True if leader.
  */
 ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
     return this.leader === this.address;
@@ -181,9 +331,11 @@ ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
 
 
 /**
- * Sends a message to the leadership group.
+ * Sends an election message to the leadership group.
+ *
+ * @method sendElectionMessage
  * @private
- * @param {string} type - the type of message-- "election" or "victory"
+ * @param {String} type The type of message -- "election" or "victory"
  */
 ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, config) {
     config = config || {};
@@ -236,10 +388,14 @@ ozpIwc.LeaderGroupParticipant.prototype.sendVictoryMessage = function(){
 
 /**
  * Attempt to start a new election.
+ *
+ * Fires:
+ *     - {{#crossLink "ozpiwc.LeaderGroupParticipant/#startElection:event"}{{/crossLink}}
+ *     - {{#crossLink "ozpiwc.LeaderGroupParticipant/#becameLeader:event"}{{/crossLink}}
+ *
+ * @method startElection
  * @protected
- * @returns {undefined}
- * @fire ozpIwc.LeaderGroupParticipant#startElection
- * @fire ozpIwc.LeaderGroupParticipant#becameLeader
+ *
  */
 ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
     config = config || {};
@@ -263,9 +419,14 @@ ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
 
 
 /**
- * Cancels an in-progress election that we started.
+ * Cancels participation in an in-progress election.
+ *
+ * Fires:
+ *     - {{#crossLink "ozpiwc.LeaderGroupParticipant/#endElection:event"}{{/crossLink}}
+ *
+ * @method cancelElection
+ *
  * @protected
- * @fire ozpIwc.LeaderGroupParticipant#endElection
  */
 ozpIwc.LeaderGroupParticipant.prototype.cancelElection=function() {
 	if(this.electionTimer) {
@@ -277,10 +438,10 @@ ozpIwc.LeaderGroupParticipant.prototype.cancelElection=function() {
 
 
 /**
- * Receives a packet on the election control group or forwards it to the target implementation
- * that of this leadership group.
- * @param {ozpIwc.TransportPacket} packet
- * @returns {boolean}
+ * Receives a packet on the election control group or forwards it to the target implementation of this leadership group.
+ *
+ * @method routePacket
+ * @param {ozpIwc.TransportPacket} packetContext
  */
 ozpIwc.LeaderGroupParticipant.prototype.routePacket=function(packetContext) {
 	var packet=packetContext.packet;
@@ -303,7 +464,17 @@ ozpIwc.LeaderGroupParticipant.prototype.routePacket=function(packetContext) {
 	}		
 };
 
-
+/**
+ * Forwards received packets to the target implementation of the participant. If currently in an election, messages
+ * are queued.
+ *
+ * Fires:
+ *     - {{#crossLink "ozpiwc.LeaderGroupParticipant/#receiveApiPacket:event"}{{/crossLink}}
+ *
+ * @method forwardToTarget
+ *
+ * @param {ozpIwc.TransportPacket} packetContext
+ */
 ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) {
     if(this.activeStates.queueing) {
 		this.electionQueue.push(packetContext);
@@ -316,9 +487,11 @@ ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) 
 	
 /**
  * Respond to someone else starting an election.
+ *
+ * @method handleElectionMessage
+ *
  * @private
  * @param {ozpIwc.TransportPacket} electionMessage
- * @returns {undefined}
  */
 ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionMessage) {
 
@@ -372,7 +545,10 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
 
 /**
  * Handle someone else declaring victory.
- * @fire ozpIwc.LeaderGroupParticipant#newLeader
+ *
+ * Fires:
+ *     - {{#crossLink "ozpiwc.LeaderGroupParticipant/#newLeader:event"}{{/crossLink}}
+ *
  * @param {ozpIwc.TransportPacket} victoryMessage
  */
 ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMessage) {
@@ -390,10 +566,10 @@ ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMes
 };
 
 /**
- * Gets the current status of the LeaderGroupParticipant.
- * @returns {object} status - the status of the participant.
- * @returns {string} status.leaderState - The current state of the participant.
- * @returns {number} status.leaderPriority - The current priority of the participant group's leader.
+ * Returns the status of the participant.
+ *
+ * @method heartbeatStatus
+ * @returns {Object}
  */
 ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
 	var status= ozpIwc.Participant.prototype.heartbeatStatus.apply(this,arguments);

@@ -1,11 +1,11 @@
 var ozpIwc=ozpIwc || {};
+/**
+ * @submodule bus.security
+ */
 
-/** @typedef {string} ozpIwc.security.Role */
-
-/** @typedef {string} ozpIwc.security.Permission */
-
+/** @typedef {String} ozpIwc.security.Role */
+/** @typedef {String} ozpIwc.security.Permission */
 /** @typedef { ozpIwc.security.Role[] } ozpIwc.security.Subject */
-
 /** 
  * @typedef {object} ozpIwc.security.Actor 
  * @property {ozpIwc.security.Subject} securityAttributes
@@ -16,11 +16,24 @@ var ozpIwc=ozpIwc || {};
  * A simple Attribute-Based Access Control implementation
  * @todo Permissions are local to each peer.  Does this need to be synced?
  * 
- * @class
+ * @class BasicAuthorization
+ * @constructor
+ *
+ * @namespace ozpIwc
  */
 ozpIwc.BasicAuthorization=function(config) {
     config=config || {};
+
+    /**
+     * @property roles
+     * @type Object
+     */
 	this.roles={};
+
+    /**
+     * @property policies
+     * @type {auth.policies|*|*[]|ozpIwc.BasicAuthorization.policies|BasicAuthorization.policies}
+     */
     this.policies= config.policies || [
 //        ozpIwc.abacPolicies.permitAll
         ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes,
@@ -33,8 +46,11 @@ ozpIwc.BasicAuthorization=function(config) {
     });
 };
 /**
- * Returns the number of roles currently defined
- * @returns {number} the number of roles defined
+ * Returns the number of roles currently defined.
+ *
+ * @method getRoleCount
+ *
+ * @returns {Number} the number of roles defined
  */
 ozpIwc.BasicAuthorization.prototype.getRoleCount=function() {
     if (!this.roles || !Object.keys(this.roles)) {
@@ -43,7 +59,14 @@ ozpIwc.BasicAuthorization.prototype.getRoleCount=function() {
     return Object.keys(this.roles).length;
 };
 
-
+/**
+ *
+ * @method implies
+ * @param {Array} subjectVal
+ * @param {Array} objectVal
+ *
+ * @returns {Boolean}
+ */
 ozpIwc.BasicAuthorization.prototype.implies=function(subjectVal,objectVal) {
     // no object value is trivially true
     if(objectVal===undefined || objectVal === null) {
@@ -65,7 +88,10 @@ ozpIwc.BasicAuthorization.prototype.implies=function(subjectVal,objectVal) {
 
 /**
  * Confirms that the subject has all of the permissions requested.
+ *
+ * @method isPermitted
  * @param {object} request
+ *
  * @returns {ozpIwc.AsyncAction}
  */
 ozpIwc.BasicAuthorization.prototype.isPermitted=function(request) {

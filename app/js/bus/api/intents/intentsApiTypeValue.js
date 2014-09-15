@@ -1,9 +1,17 @@
 /**
+ * @submodule bus.api.Value
+ */
+
+/**
  * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
- * @class
- * @param {object} config
- *@param {object} config.entity
- * @param {string} config.entity.definitions - the list of definitions in this intent capability.
+ * @class IntentsApiTypeValue
+ * @namespace ozpIwc
+ * @extends ozpIwc.CommonApiValue
+ * @constructor
+ *
+ * @param {Object} config
+ *@param {Object} config.entity
+ * @param {String} config.entity.definitions the list of definitions in this intent capability.
  */
 ozpIwc.IntentsApiTypeValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function (config) {
     config=config || {};
@@ -18,10 +26,24 @@ ozpIwc.IntentsApiTypeValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function 
     };
 });
 
+/**
+ * Returns if an update is needed.
+ * @todo (DOC).
+ *
+ * @method isUpdateNeeded
+ * @param {?} node
+ * @returns {Boolean}
+ */
 ozpIwc.IntentsApiTypeValue.prototype.isUpdateNeeded=function(node) {
     return this.pattern.test(node.resource);
 };
 
+/**
+ * Updates the Intents Api Type value with a list of changed definitions.
+ *
+ * @method updateContent
+ * @param {String[]} changedNodes
+ */
 ozpIwc.IntentsApiTypeValue.prototype.updateContent=function(changedNodes) {
     this.version++;
     this.entity.actions=changedNodes.map(function(changedNode) { 

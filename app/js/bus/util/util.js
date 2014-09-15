@@ -1,11 +1,22 @@
 /** @namespace */
 var ozpIwc=ozpIwc || {};
+/**
+* @submodule bus.util
+*/
 
-/** @namespace */
+/**
+ * @class util
+ * @namespace ozpIwc
+ * @static
+ */
 ozpIwc.util=ozpIwc.util || {};
 
 /**
  * Generates a large hexidecimal string to serve as a unique ID.  Not a guid.
+ *
+ * @method generateId
+ * @static
+ *
  * @returns {String}
  */
 ozpIwc.util.generateId=function() {
@@ -14,6 +25,9 @@ ozpIwc.util.generateId=function() {
 
 /**
  * Invokes the callback handler on another event loop as soon as possible.
+ *
+ * @method setImmediate
+ * @static
 */
 ozpIwc.util.setImmediate=function(f) {
 //    window.setTimeout(f,0);
@@ -22,10 +36,14 @@ ozpIwc.util.setImmediate=function(f) {
 
 /**
  * Returns true if every needle is found in the haystack.
- * @param {array} haystack - The array to search.
- * @param {array} needles - All of the values to search.
- * @param {function} [equal] - What constitutes equality.  Defaults to a===b.
- * @returns {boolean}
+ *
+ * @method arrayContainsAll
+ * @static
+ * @param {Array} haystack The array to search.
+ * @param {Array} needles All of the values to search.
+ * @param {Function} [equal] What constitutes equality.  Defaults to a===b.
+ *
+ * @returns {Boolean}
  */
 ozpIwc.util.arrayContainsAll=function(haystack,needles,equal) {
     equal=equal || function(a,b) { return a===b;};
@@ -40,10 +58,14 @@ ozpIwc.util.arrayContainsAll=function(haystack,needles,equal) {
 /**
  * Returns true if the value every attribute in needs is equal to 
  * value of the same attribute in haystack.
- * @param {array} haystack - The object that must contain all attributes and values.
- * @param {array} needles - The reference object for the attributes and values.
- * @param {function} [equal] - What constitutes equality.  Defaults to a===b.
- * @returns {boolean}
+ *
+ * @method objectContainsAll
+ * @static
+ * @param {Array} haystack The object that must contain all attributes and values.
+ * @param {Array} needles The reference object for the attributes and values.
+ * @param {Function} [equal] What constitutes equality.  Defaults to a===b.
+ *
+ * @returns {Boolean}
  */
 ozpIwc.util.objectContainsAll=function(haystack,needles,equal) {
     equal=equal || function(a,b) { return a===b;};

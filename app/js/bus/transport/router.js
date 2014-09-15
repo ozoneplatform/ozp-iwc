@@ -1,41 +1,117 @@
 var ozpIwc=ozpIwc || {};
 
 /**
- * @typedef ozpIwc.TransportPacket
- * @property {string} src - The participant address that sent this packet
- * @property {string} dst - The intended recipient of this packet
- * @property {Number} ver - Protocol Version.  Should be 1
- * @property {Number} msgId - A unique id for this packet.
- * @property {object} entity - The payload of this packet.
- * @property {object} [permissions] - Permissions required to see the payload of this packet.
- * @property {Number} [time] - The time in milliseconds since epoch that this packet was created.
- * @property {Number} [replyTo] - Reference to the msgId that this is in reply to.
- * @property {string} [action] - Action to be performed.
- * @property {string} [resource] - Resource to perform the action upon.
- * @property {boolean} [test] - Marker for test packets.
+ * @submodule bus.transport
  */
 
 /**
- * @class
- * @param {object} config
+ * @class ozpIwc.TransportPacket
+ */
+
+/**
+ * The participant address that sent this packet.
+ * @property src
+ * @type String
+ */
+
+/**
+ * The intended recipient of this packet.
+ * @property dst
+ * @type String
+ */
+
+/**
+ * Protocol Version.  Should be 1.
+ * @property ver
+ * @type Number
+ */
+
+/**
+ * A unique id for this packet.
+ * @property msgId
+ * @type Number
+ */
+
+/**
+ * The payload of this packet.
+ * @property entity
+ * @type Object
+ */
+
+/**
+ * Permissions required to see the payload of this packet.
+ * @property [permissions]
+ * @type Object
+ */
+
+/**
+ * The time in milliseconds since epoch that this packet was created.
+ * @property [time]
+ * @type Number
+ */
+
+/**
+ * Reference to the msgId that this is in reply to.
+ * @property [replyTo]
+ * @type Number
+ */
+
+/**
+ * Action to be performed.
+ * @property [action]
+ * @type String
+ */
+
+/**
+ * Resource to perform the action upon.
+ * @property [resource]
+ * @type String
+ */
+
+/**
+ * Marker for test packets.
+ * @property [test]
+ * @type Boolean
+*/
+
+/**
+ * @class TransportPacketContext
+ * @namespace ozpIwc
+ * @param {Object} config
  * @param {ozpIwc.TransportPacket} config.packet
  * @param {ozpIwc.Router} config.router
  * @param {ozpIwc.Participant} [config.srcParticpant]
  * @param {ozpIwc.Participant} [config.dstParticpant]
- * @property {ozpIwc.TransportPacket} packet
- * @property {ozpIwc.Router} router
- * @property {ozpIwc.Participant} [srcParticpant]
- * @property {ozpIwc.Participant} [dstParticpant]
  */
 ozpIwc.TransportPacketContext=function(config) {
+    /**
+     * @property packet
+     * @type ozpIwc.TransportPacket
+     */
+
+    /**
+     * @property router
+     * @type ozpIwc.Router
+     */
+
+    /**
+     * @property [srcParticipant]
+     * @type ozpIwc.Participant
+     */
+
+    /**
+     * @property [dstParticipant]
+     * @type ozpIwc.Participant
+     */
     for(var i in config) {
         this[i]=config[i];
     }
 };
 
 /**
- *
+ * @method replyTo
  * @param {ozpIwc.TransportPacket} response
+ *
  * @returns {ozpIwc.TransportPacket} the packet that was sent
  */
 ozpIwc.TransportPacketContext.prototype.replyTo=function(response) {
@@ -54,62 +130,86 @@ ozpIwc.TransportPacketContext.prototype.replyTo=function(response) {
     return response;
 };
 
+
+/**
+ * @class Router
+ * @namespace ozpIwc
+ * @constructor
+ * @param {Object} [config]
+ * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer]
+ */
 /**
  * @event ozpIwc.Router#preRegisterParticipant
  * @mixes ozpIwc.CancelableEvent
- * @property {ozpIwc.TransportPacket} [packet] - The packet to be delivered
- * @property {object} registration - Information provided by the participant about it's registration
- * @property {ozpIwc.Participant} participant - The participant that will receive the packet
+ * @param {ozpIwc.TransportPacket} [packet] - The packet to be delivered
+ * @param {object} registration - Information provided by the participant about it's registration
+ * @param {ozpIwc.Participant} participant - The participant that will receive the packet
  */
 
 /**
  * @event ozpIwc.Router#preSend
  * @mixes ozpIwc.CancelableEvent
- * @property {ozpIwc.TransportPacket} packet - The packet to be sent
- * @property {ozpIwc.Participant} participant - The participant that sent the packet
+ * @param {ozpIwc.TransportPacket} packet - The packet to be sent
+ * @param {ozpIwc.Participant} participant - The participant that sent the packet
  */
 
 /**
  * @event ozpIwc.Router#preDeliver
  * @mixes ozpIwc.CancelableEvent
- * @property {ozpIwc.TransportPacket} packet - The packet to be delivered
- * @property {ozpIwc.Participant} participant - The participant that will receive the packet
+ * @param {ozpIwc.TransportPacket} packet - The packet to be delivered
+ * @param {ozpIwc.Participant} participant - The participant that will receive the packet
  */
 
 /**
  * @event ozpIwc.Router#send
- * @property {ozpIwc.TransportPacket} packet - The packet to be delivered
+ * @param {ozpIwc.TransportPacket} packet - The packet to be delivered
  */
 
 /**
  * @event ozpIwc.Router#prePeerReceive
  * @mixes ozpIwc.CancelableEvent
- * @property {ozpIwc.TransportPacket} packet
- * @property {ozpIwc.NetworkPacket} rawPacket
+ * @param {ozpIwc.TransportPacket} packet
+ * @param {ozpIwc.NetworkPacket} rawPacket
  */
 
-/**
- * @class
- * @param {object} [config]
- * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer]
- */
 ozpIwc.Router=function(config) {
     config=config || {};
+
+    /**
+     * @property peer
+     * @type ozpIwc.Peer
+     */
     this.peer=config.peer || ozpIwc.defaultPeer;
 
 //	this.nobodyAddress="$nobody";
 //	this.routerControlAddress='$transport';
 	var self=this;
 
+    /**
+     * @property self_id
+     * @type String
+     */
 	this.self_id=ozpIwc.util.generateId();
 	
-	// Stores all local addresses
+    /**
+     * A key value store of all participants local to the router.
+     * @property participants
+     * @type Object
+     * @default {}
+     */
 	this.participants={};
 	
 	ozpIwc.metrics.gauge("transport.participants").set(function() {
 		return Object.keys(self.participants).length;
 	});
 
+
+    /**
+     * Eventing module for the router.
+     * @property events
+     * @type ozpIwc.Event
+     * @default ozpIwc.Event
+     */
 	this.events=new ozpIwc.Event();
 	this.events.mixinOnOff(this);
 	
@@ -134,6 +234,11 @@ ozpIwc.Router=function(config) {
 		}
 	};
 	this.events.on("preSend",checkFormat);
+
+    /**
+     * @property watchdog
+     * @type ozpIwc.RouterWatchdog
+     */
 	this.watchdog=new ozpIwc.RouterWatchdog({router: this});
 	this.registerParticipant(this.watchdog);
 
@@ -143,8 +248,10 @@ ozpIwc.Router=function(config) {
 };
 
 /**
- * gets the count of participants who have registered with the router
- * @returns {number} the number of registered participants
+ * Gets the count of participants who have registered with the router.
+ * @method getParticipantCount
+ *
+ * @returns {Number} the number of registered participants
  */
 ozpIwc.Router.prototype.getParticipantCount=function() {
     if (!this.participants || !Object.keys(this.participants)) {
@@ -154,16 +261,24 @@ ozpIwc.Router.prototype.getParticipantCount=function() {
 
 };
 
+/**
+ * @method shutdown
+ */
 ozpIwc.Router.prototype.shutdown=function() {
     this.watchdog.shutdown();
 };
 
 /**
  * Allows a listener to add a new participant.
- * @fires ozpIwc.Router#registerParticipant
- * @param {object} participant the participant object that contains a send() function.
- * @param {object} packet The handshake requesting registration.
- * @returns {string} returns participant id
+ *
+ * Fires:
+ *     - {{#crossLink "ozpIwc.Router/#registerParticipant:event"}}{{/crossLink}}
+ *
+ * @method registerParticipant
+ * @param {Object} participant the participant object that contains a send() function.
+ * @param {Object} packet The handshake requesting registration.
+ *
+ * @returns {String} returns participant id
  */
 ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
     packet = packet || {};
@@ -199,7 +314,10 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
 };
 
 /**
- * @fires ozpIwc.Router#preSend
+ * Fires:
+ *     - {{#crossLink "ozpIwc.Router/#preDeliver:event"}}{{/crossLink}}
+ *
+ * @method deliverLocal
  * @param {ozpIwc.TransportPacket} packet
  * @param {ozpIwc.Participant} sendingParticipant
  */
@@ -248,6 +366,11 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
 
 /**
  * Registers a participant for a multicast group
+ *
+ * Fires:
+ *     - {{#crossLink "ozpIwc.Router/#registerMulticast:event"}}{{/crossLink}}
+ *
+ * @method registerMulticast
  * @param {ozpIwc.Participant} participant
  * @param {String[]} multicastGroups
  */
@@ -274,12 +397,15 @@ ozpIwc.Router.prototype.registerMulticast=function(participant,multicastGroups) 
 
 /**
  * Used by participant listeners to route a message to other participants.
- * @fires ozpIwc.Router#preSend
- * @fires ozpIwc.Router#send
+ *
+ * Fires:
+ *     -{{#crossLink "ozpIwc.Router/#preSend:event"}}{{/crossLink}}
+ *     -{{#crossLink "ozpIwc.Router/#send:event"}}{{/crossLink}}
+ *
+ * @method send
  * @param {ozpIwc.TransportPacket} packet The packet to route.
  * @param {ozpIwc.Participant} sendingParticipant Information about the participant that is attempting to send
- *   the packet.
- * @returns {undefined}
+ * the packet.
  */
 ozpIwc.Router.prototype.send=function(packet,sendingParticipant) {
 
@@ -300,8 +426,11 @@ ozpIwc.Router.prototype.send=function(packet,sendingParticipant) {
 };
 
 /**
- * Receive a packet from the peer
- * @fires ozpIwc.Router#peerReceive
+ * Receive a packet from the peer.
+ *
+ * Fires:
+ *     -{{#crossLink "ozpIwc.Router/#prePeerReceive:event"}}{{/crossLink}}
+ *
  * @param packet {ozpIwc.TransportPacket} the packet to receive
  */
 ozpIwc.Router.prototype.receiveFromPeer=function(packet) {

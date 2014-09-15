@@ -1,10 +1,25 @@
 /**
+ * @submodule bus.api.Type
+ */
+
+/**
  * The Common API Base implements the API Common Conventions.  It is intended to be subclassed by
  * the specific API implementations.
- * @class
+ * @class CommonApiBase
+ * @namespace ozpIwc
+ * @constructor
+ * @param {Object} config
+ * @params {Participant} config.participant  the participant used for the Api communication
  */
-ozpIwc.CommonApiBase = function(config) {
+ ozpIwc.CommonApiBase = function(config) {
 	config = config || {};
+
+   /**
+    * The participant used for the Api communication on the bus.
+    * @property participant
+    * @type Participant
+    * @default {}
+    */
 	this.participant=config.participant;
     this.participant.on("unloadState",ozpIwc.CommonApiBase.prototype.unloadState,this);
 	this.participant.on("receiveApiPacket",ozpIwc.CommonApiBase.prototype.routePacket,this);
@@ -12,13 +27,41 @@ ozpIwc.CommonApiBase = function(config) {
     this.participant.on("newLeaderEvent", ozpIwc.CommonApiBase.prototype.newLeader,this);
     this.participant.on("startElection", ozpIwc.CommonApiBase.prototype.startElection,this);
 
+   /**
+    * An events module for the API.
+    * @property events
+    * @type Event
+    */
 	this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
-    
+
+   /**
+    * @TODO (DOC)
+    * @property dynamicNodes
+    * @type Array
+    * @default []
+    */
     this.dynamicNodes=[];
-    this.data={};
+
+    /**
+     * Key value storage for the API. each element of the object is a node of the API.
+     * @property data
+     * @type Object
+     * @default {}
+     */
+     this.data={};
 };
 
+/**
+ * Finds or creates the corresponding node to store a server loaded resource.
+ *
+ * @method findNodeForServerResource
+ * @param {ozpIwc.TransportPacket} serverObject The object to be stored.
+ * @param {String} objectPath The full path resource of the object including it's root path.
+ * @param {String} rootPath The root path resource of the object.
+ *
+ * @returns {ozpIwc.CommonApiValue} The node that is now holding the data provided in the serverObject parameter.
+ */
 ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
     var resource=objectPath.replace(rootPath,'');
     return this.findOrMakeValue({
@@ -28,6 +71,12 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,o
     });
 };
 
+/**
+ * Loads api data from the server.
+ *
+ * @method loadFromServer
+ * @param {String} endpointName The name of the endpoint to load from the server.
+ */
 ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
@@ -46,6 +95,14 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
     });
 };
 
+/**
+ * Updates an Api node with server loaded HAL data.
+ *
+ * @method updateResourceFromServer
+ * @param {ozpIwc.TransportPacket} object The object retrieved from the server to store.
+ * @param {String} path The path of the resource retrieved.
+ * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
+ */
 ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint) {
     var node = this.findNodeForServerResource(object,path,endpoint.baseUrl);
 
@@ -56,6 +113,13 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
     this.loadLinkedObjectsFromServer(endpoint,object);
 };
 
+/**
+ * Traverses through HAL data from the server and updates api resources based on the data it finds.
+ *
+ * @method loadLinkedObjectsFromServer
+ * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
+ * @param data the HAL data.
+ */
 ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
@@ -87,10 +151,12 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
  * Creates a new value for the given packet's request.  Subclasses must override this
  * function to return the proper value based upon the packet's resource, content type, or
  * other parameters.
- * 
+ *
+ * @method makeValue
  * @abstract
  * @param {ozpIwc.TransportPacket} packet
- * @returns {ozpIwc.CommonApiValue} an object implementing the commonApiValue interfaces
+ *
+ * @returns {CommonApiValue} an object implementing the commonApiValue interfaces
  */
 ozpIwc.CommonApiBase.prototype.makeValue=function(/*packet*/) {
 	throw new Error("Subclasses of CommonApiBase must implement the makeValue(packet) function.");
@@ -99,11 +165,26 @@ ozpIwc.CommonApiBase.prototype.makeValue=function(/*packet*/) {
 /**
  * Determines whether the action implied by the packet is permitted to occur on
  * node in question.
+ *
  * @todo the refactoring of security to allow action-level permissions
  * @todo make the packetContext have the srcSubject inside of it
- * @param {ozpIwc.CommonApiValue} node
- * @param {ozpIwc.TransportPacketContext} packetContext
- * @returns {ozpIwc.AsyncAction}
+ *
+ * @method isPermitted
+ * @param {ozpIwc.CommonApiValue} node The node of the api that permission is being checked against
+ * @param {ozpIwc.TransportPacketContext} packetContext The packet of which permission is in question.
+ *
+ * @returns {ozpIwc.AsyncAction} An asynchronous response, the response will call either success or failure depending on
+ * the result of the check.
+ *
+ * @example
+ * ```
+ * foo.isPermitted(node,packetContext)
+ *      .success(function(){
+ *          ...
+ *      }).failure(function(){
+ *          ...
+ *      });
+ * ```
  */
 ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
 	var subject=packetContext.srcSubject || {
@@ -120,8 +201,10 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
 
 /** 
  * Turn an event into a list of change packets to be sent to the watchers.
- * @param {object} evt
- * @param {object} evt.node - The node being changed.
+ *
+ * @method notifyWatchers
+ * @param {ozpIwc.CommonApiValue} node The node being changed.
+ * @param {Object} changes The changes to the node.
  */
 ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
     if(!changes) {
@@ -147,8 +230,10 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
 /**
  * For a given packet, return the value if it already exists, otherwise create the value
  * using makeValue()
+ *
+ * @method findOrMakeValue
  * @protected
- * @param {ozpIwc.TransportPacket} packet
+ * @param {ozpIwc.TransportPacket} packet The data that will be used to either find or create the api node.
  */
 ozpIwc.CommonApiBase.prototype.findOrMakeValue=function(packet) {
     if(packet.resource === null || packet.resource === undefined) {
@@ -166,18 +251,21 @@ ozpIwc.CommonApiBase.prototype.findOrMakeValue=function(packet) {
 /**
  * 
  * Determines if the given resource exists.
- * @param {string} resource
- * @returns {boolean}
+ *
+ * @method hasKey
+ * @param {String} resource The path of the resource in question.
+ * @returns {Boolean} Returns true if there is a node with a corresponding resource in the api.
  */
 ozpIwc.CommonApiBase.prototype.hasKey=function(resource) {
 	return resource in this.data;
 };
 
 /**
- * Generates a keyname that does not already exist and starts
- * with a given prefix.
- * @param {String} prefix
- * @returns {String}
+ * Generates a key name that does not already exist and starts with a given prefix.
+ *
+ * @method createKey
+ * @param {String} prefix The prefix resource string.
+ * @returns {String} The prefix resource string with an appended generated Id that is not already in use.
  */
 ozpIwc.CommonApiBase.prototype.createKey=function(prefix) {
 	prefix=prefix || "";
@@ -210,8 +298,10 @@ ozpIwc.CommonApiBase.prototype.createKey=function(prefix) {
  *		<li> Reply to requester </li>
  *		<li> If node version changed, notify all watchers </li>
  * </ul></li>
- * @param {ozpIwc.TransportPacketContext} packetContext
- * @returns {undefined}
+ *
+ * @method routePacket
+ * @param {ozpIwc.TransportPacketContext} packetContext The packet to route.
+ *
  */
 ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 	var packet=packetContext.packet;
@@ -268,6 +358,14 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
     });
 };
 
+/**
+ * Determines which handler in the api is needed to process the given packet.
+ *
+ * @method findHandler
+ * @param {ozpIwc.TransportPacketContext} packetContext The packet context to find a proper handler for.
+ *
+ * @returns {Function} The handler for the given packet context.
+ */
 ozpIwc.CommonApiBase.prototype.findHandler=function(packetContext) {
     var action=packetContext.packet.action;
     var resource=packetContext.packet.resource;
@@ -293,22 +391,54 @@ ozpIwc.CommonApiBase.prototype.findHandler=function(packetContext) {
 };
 
 
-
-
+/**
+ * Checks that the given packet context's resource meets the requirements of the api. Subclasses should override this
+ * method as it performs no check by default.
+ *
+ * @method validateResource
+ * @param {CommonApiValue} node @TODO is a node needed to validate?
+ * @param {ozpIwc.TransportPacketContext} packetContext The packetContext with the resource to be validated.
+ *
+ * @returns {Boolean} always returns true.
+ */
 ozpIwc.CommonApiBase.prototype.validateResource=function(/* node,packetContext */) {
 	return true;
 };
 
+/**
+ * Checks the given packet context's `ifTag` against the desired api node's `version`. Throws ApiError if ifTag exists
+ * and doesn't match.
+ *
+ * @method validatePreconditions
+ * @param node The api node being checked against.
+ * @param packetContext The packet context to validate.
+ *
+ */
 ozpIwc.CommonApiBase.prototype.validatePreconditions=function(node,packetContext) {
 	if(packetContext.packet.ifTag && packetContext.packet.ifTag!==node.version) {
         throw new ozpIwc.ApiError('noMatch',"Latest version is " + node.version);
     }
 };
 
+/**
+ * Checks that the given packet context's contextType meets the requirements of the api. Subclasses should override this
+ * method as it performs no check by default.
+ *
+ * @method validateContextType
+ * @param {CommonApiValue} node @TODO is a node needed to validate?
+ * @param {ozpIwc.TransportPacketContext} packetContext The packetContext with the contextType to be validated.
+ *
+ * @returns {Boolean} - always returns true.
+ */
 ozpIwc.CommonApiBase.prototype.validateContentType=function(node,packetContext) {
     return true;
 };
 
+/**
+ * @TODO (DOC)
+ * @method updateDynamicNode
+ * @param {ozpIwc.CommonApiValue} node @TODO (DOC)
+ */
 ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
     if(!node) {
         return;
@@ -328,12 +458,26 @@ ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
     }
 };
 
+/**
+ * @TODO (DOC)
+ * @method addDynamicNode
+ * @param {ozpIwc.CommonApiValue} node @TODO (DOC)
+ */
 ozpIwc.CommonApiBase.prototype.addDynamicNode=function(node) {
     this.data[node.resource]=node;
     this.dynamicNodes.push(node.resource);
     this.updateDynamicNode(node);
 };
 
+/**
+ * The default handler for the api when receiving packets. This handler is called when no handler was found for the
+ * given packet context's action.
+ *
+ *
+ * @method defaultHandler
+ * @param {ozpIwc.CommonApiValue} node @TODO is a node needed? or is this intended for subclass purposes
+ * @param {ozpIwc.TransportPacketContext} packetContext The packet context being handled.
+ */
 ozpIwc.CommonApiBase.prototype.defaultHandler=function(node,packetContext) {
     packetContext.replyTo({
         'response': 'badAction',
@@ -345,16 +489,22 @@ ozpIwc.CommonApiBase.prototype.defaultHandler=function(node,packetContext) {
 };
 
 /**
- * @param {ozpIwc.CommonApiValue} node
- * @param {ozpIwc.TransportPacketContext} packetContext
+ * Common handler for packet contexts with `get` actions.
+ *
+ * @method handleGet
+ * @param {ozpIwc.CommonApiValue} node The api node to retrieve.
+ * @param {ozpIwc.TransportPacketContext} packetContext The packet context containing the get action.
  */
 ozpIwc.CommonApiBase.prototype.handleGet=function(node,packetContext) {
 	packetContext.replyTo(node.toPacket({'response': 'ok'}));
 };
 
 /**
- * @param {ozpIwc.CommonApiValue} node
- * @param {ozpIwc.TransportPacketContext} packetContext
+ * Common handler for packet contexts with `set` actions.
+ *
+ * @method handleSet
+ * @param {ozpIwc.CommonApiValue} node The api node to store the packet contexts' data in.
+ * @param {ozpIwc.TransportPacketContext} packetContext The packet context containing the set action.
  */
 ozpIwc.CommonApiBase.prototype.handleSet=function(node,packetContext) {
 	node.set(packetContext.packet);
@@ -362,8 +512,12 @@ ozpIwc.CommonApiBase.prototype.handleSet=function(node,packetContext) {
 };
 
 /**
- * @param {ozpIwc.CommonApiValue} node
- * @param {ozpIwc.TransportPacketContext} packetContext
+ * Common handler for packet contexts with `delete` actions.
+ *
+ * @TODO (DOC)
+ * @method handleDelete
+ * @param {ozpIwc.CommonApiValue} node @TODO (DOC)
+ * @param {ozpIwc.TransportPacketContext} packetContext @TODO (DOC)
  */
 ozpIwc.CommonApiBase.prototype.handleDelete=function(node,packetContext) {
 	node.deleteData();
@@ -371,8 +525,11 @@ ozpIwc.CommonApiBase.prototype.handleDelete=function(node,packetContext) {
 };
 
 /**
- * @param {ozpIwc.CommonApiValue} node
- * @param {ozpIwc.TransportPacketContext} packetContext
+ * Common handler for packet contexts with `watch` actions.
+ *
+ * @method handleWatch
+ * @param {ozpIwc.CommonApiValue} node The api node to register a watch on.
+ * @param {ozpIwc.TransportPacketContext} packetContext The packet context containing the watch action.
  */
 ozpIwc.CommonApiBase.prototype.handleWatch=function(node,packetContext) {
 	node.watch(packetContext.packet);
@@ -382,8 +539,11 @@ ozpIwc.CommonApiBase.prototype.handleWatch=function(node,packetContext) {
 };
 
 /**
- * @param {ozpIwc.CommonApiValue} node
- * @param {ozpIwc.TransportPacketContext} packetContext
+ * Common handler for packet contexts with `unwatch` actions.
+ *
+ * @method handleUnwatch
+ * @param {ozpIwc.CommonApiValue} node The api node to remove a watch registration from.
+ * @param {ozpIwc.TransportPacketContext} packetContext The packet context containing the unwatch action.
  */
 ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
 	node.unwatch(packetContext.packet);
@@ -394,6 +554,8 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
 /**
  * Called when the leader participant fires its beforeUnload state. Releases the Api's data property
  * to be consumed by all, then used by the new leader.
+ *
+ * @method unloadState
  */
 ozpIwc.CommonApiBase.prototype.unloadState = function(){
 
@@ -408,7 +570,9 @@ ozpIwc.CommonApiBase.prototype.unloadState = function(){
 
 /**
  * Sets the APIs data property. Removes current values, then constructs each API value anew.
- * @param state
+ *
+ * @method setState
+ * @param {Object} state The object containing key value pairs to set as this api's state.
  */
 ozpIwc.CommonApiBase.prototype.setState = function(state) {
     this.data = {};
@@ -417,8 +581,12 @@ ozpIwc.CommonApiBase.prototype.setState = function(state) {
     }
 };
 
- /** @param {ozpIwc.CommonApiValue} node
- * @param {ozpIwc.TransportPacketContext} packetContext
+/**
+ * Common handler for packet contexts with a `list` action but no resource.
+ *
+ * @method rootHandleList
+ * @param {ozpIwc.CommonApiValue}node @TODO is a node needed? or is this intended for subclass purposes
+ * @param {ozpIwc.TransportPacketContext} packetContext The packet context of the received request.
  */
 ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
     packetContext.replyTo({

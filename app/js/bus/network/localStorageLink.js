@@ -1,5 +1,8 @@
 /** @namespace **/
 var ozpIwc = ozpIwc || {};
+/**
+ * @submodule bus.network
+ */
 
 /**
  * <p>This link connects peers using the HTML5 localstorage API.  It handles cleaning up
@@ -36,21 +39,59 @@ var ozpIwc = ozpIwc || {};
  * multiple links interleaving the lockless "list keys" and "delete item" sequence generates
  * a consistent postcondition-- the key will not exist.
  * 
- * @class
+ * @class LocalStorageLink
+ * @namespace ozpIwc
  * @param {Object} [config] - Configuration for this link
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] - The peer to connect to.
  * @param {Number} [config.myKeysTimeout=5000] - Milliseconds to wait before deleting this link's keys.
  * @param {Number} [config.otherKeysTimeout=120000] - Milliseconds to wait before cleaning up other link's keys
- * @param {string} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
- * @param {string} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
+ * @param {String} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
+ * @param {String} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
  */
 ozpIwc.LocalStorageLink = function(config) {
 	config=config || {};
 
+
+    /**
+     * Namespace for communicating, must be the same for all peers on the same network.
+     * @property prefix
+     * @type String
+     * @default "ozpIwc"
+     */
 	this.prefix=config.prefix || 'ozpIwc';
+
+    /**
+     * The peer this link will connect to.
+     * @property peer
+     * @type ozpIwc.Peer
+     * @default ozpIwc.defaultPeer
+     */
 	this.peer=config.peer || ozpIwc.defaultPeer;
+
+    /**
+     * Unique name within the peer network.  Defaults to the peer id.
+     * @property selfId
+     * @type String
+     * @default ozpIwc.defaultPeer.selfId
+     */
 	this.selfId=config.selfId || this.peer.selfId;
+
+
+    /**
+     * Milliseconds to wait before deleting this link's keys
+     * @property myKeysTimeout
+     * @type Number
+     * @default 5000
+     */
 	this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
+
+    /**
+     * Milliseconds to wait before deleting other link's keys
+     * @todo UNUSUED
+     * @property otherKeysTimeout
+     * @type Number
+     * @default 120000
+     */
 	this.otherKeysTimeout = config.otherKeysTimeout || 2*60000; // 2 minutes
 
   // Hook into the system
@@ -125,6 +166,9 @@ ozpIwc.LocalStorageLink = function(config) {
 /**
  * Creates a key for the message in localStorage
  * @todo Is timestamp granular enough that no two packets can come in at the same time?
+ *
+ * @method makeKey
+ *
  * @returns {string} a new key
  */
 ozpIwc.LocalStorageLink.prototype.makeKey=function(sequence) { 
@@ -134,8 +178,11 @@ ozpIwc.LocalStorageLink.prototype.makeKey=function(sequence) {
 /**
  * If it's a key for a buffered message, split it into the id of the 
  * link that put it here and the time it was created at.
- * @param {type} k The key to split
- * @returns {object} The id and createdAt for the key if it's valid, otherwise null.
+ *
+ * @method splitKey
+ * @param {String} k The key to split
+ *
+ * @returns {Object} The id and createdAt for the key if it's valid, otherwise null.
  */
 ozpIwc.LocalStorageLink.prototype.splitKey=function(k) { 
 	var parts=k.split("|");
@@ -150,7 +197,8 @@ ozpIwc.LocalStorageLink.prototype.splitKey=function(k) {
  * by this link are removed if they are older than myKeysTimeout.  Other
  * keys are cleaned if they are older than otherKeysTimeout.
  * @todo Coordinate expiration windows.
- * @returns {undefined}
+ *
+ * @method cleanKeys
  */
 ozpIwc.LocalStorageLink.prototype.cleanKeys=function() {
 	var now=ozpIwc.util.now();
@@ -173,6 +221,8 @@ ozpIwc.LocalStorageLink.prototype.cleanKeys=function() {
 /**
  * Publishes a packet to other peers.
  * @todo Handle local storage being full.
+ *
+ * @method send
  * @param {ozpIwc.NetworkPacket} packet
  */
 ozpIwc.LocalStorageLink.prototype.send=function(packet) { 

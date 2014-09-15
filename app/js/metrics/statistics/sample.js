@@ -18,26 +18,69 @@
  * Original code owned by Mike Ihbe.  Modifications licensed under same terms.
  */
 var ozpIwc=ozpIwc || {};
+/**
+ * @submodule metrics.statistics
+ */
+
+/**
+ *
+ * @class metricStats
+ * @namespace ozpIwc
+ */
 ozpIwc.metricsStats=ozpIwc.metricsStats || {};
 
+/**
+ * @property DEFAULT_POOL_SIZE
+ * @type {Number}
+ * @default 1028
+ */
 ozpIwc.metricsStats.DEFAULT_POOL_SIZE=1028;
 
+/**
+ * @Class Sample
+ * @namespace ozpIwc.metricsStats
+ * @constructor
+ */
 ozpIwc.metricsStats.Sample = function(){
+    /**
+     * @property values
+     * @type Array
+     */
 	this.clear();
 };
 
+/**
+ * Appends the value.
+ * @method update
+ * @param {Number} val
+ */
 ozpIwc.metricsStats.Sample.prototype.update = function(val){ 
 	this.values.push(val); 
 };
 
+/**
+ * Clears the values.
+ * @method clear
+ */
 ozpIwc.metricsStats.Sample.prototype.clear = function(){ 
 	this.values = []; 
 	this.count = 0; 
 };
+
+/**
+ * Returns the number of the values.
+ * @method size
+ * @returns {Number}
+ */
 ozpIwc.metricsStats.Sample.prototype.size = function(){ 
 	return this.values.length;
 };
 
+/**
+ * Returns the array of values.
+ * @method getValues
+ * @returns {Array}
+ */
 ozpIwc.metricsStats.Sample.prototype.getValues = function(){ 
 	return this.values; 
 };
@@ -45,7 +88,7 @@ ozpIwc.metricsStats.Sample.prototype.getValues = function(){
 
 /**
  *  Take a uniform sample of size size for all values
- *  @class
+ *  @class UniformSample
  *  @param {Number} [size=ozpIwc.metricsStats.DEFAULT_POOL_SIZE] - The size of the sample pool.
  */
 ozpIwc.metricsStats.UniformSample=ozpIwc.util.extend(ozpIwc.metricsStats.Sample,function(size) {

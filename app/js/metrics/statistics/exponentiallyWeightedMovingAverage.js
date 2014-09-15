@@ -19,18 +19,43 @@
  */
 var ozpIwc=ozpIwc || {};
 ozpIwc.metricsStats=ozpIwc.metricsStats || {};
-
-/*
- *  Exponentially weighted moving average.
- *  Args: 
- *  - alpha:
- *  - interval: time in milliseconds
+/**
+ * @submodule metrics.statistics
  */
 
+/**
+ *
+ * @class metricStats
+ * @namespace ozpIwc
+ */
+
+/**
+ * @property M1_ALPHA
+ * @type {Number}
+ * @default 1 - e^(-5/60)
+ */
 ozpIwc.metricsStats.M1_ALPHA = 1 - Math.exp(-5/60);
+
+/**
+ * @property M5_ALPHA
+ * @type {Number}
+ * @default 1 - e^(-5/60/5)
+ */
 ozpIwc.metricsStats.M5_ALPHA = 1 - Math.exp(-5/60/5);
+
+/**
+ * @property M15_ALPHA
+ * @type {Number}
+ * @default 1 - e^(-5/60/15)
+ */
 ozpIwc.metricsStats.M15_ALPHA = 1 - Math.exp(-5/60/15);
 
+/**
+ *  Exponentially weighted moving average.
+ *  @method ExponentiallyWeightedMovingAverage
+ *  @param {Number} alpha
+ *  @param {Number} interval Time in milliseconds
+ */
 ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage=function(alpha, interval) {
   this.alpha = alpha;
   this.interval = interval || 5000;
@@ -39,13 +64,19 @@ ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage=function(alpha, interval)
 	this.lastTick=ozpIwc.util.now();
 };
 
+/**
+ * @method update
+ * @param n
+ */
 ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage.prototype.update = function(n) {
   this.uncounted += (n || 1);
 	this.tick();
 };
 
-/*
- * Update our rate measurements every interval
+/**
+ * Update the rate measurements every interval
+ *
+ * @method tick
  */
 ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage.prototype.tick = function() {
  	var now=ozpIwc.util.now();
@@ -65,8 +96,10 @@ ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage.prototype.tick = function
 	}
 };
 
-/*
+/**
  * Return the rate per second
+ *
+ * @returns {Number}
  */
 ozpIwc.metricsStats.ExponentiallyWeightedMovingAverage.prototype.rate = function() {
   return this.currentRate * 1000;

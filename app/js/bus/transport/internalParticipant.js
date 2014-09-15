@@ -1,9 +1,40 @@
+/**
+ * Classes related to transport aspects of the IWC.
+ * @module bus
+ * @submodule bus.transport
+ */
 
+/**
+ * @class InternalParticipant
+ * @namespace ozpIwc
+ * @constructor
+ * @extends ozpIwc.Participant
+ * @param {Object} config
+ * @param {String} config.name The name of the participant.
+ */
 ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
     config=config || {};
 	ozpIwc.Participant.apply(this,arguments);
+    /**
+     * @property replyCallbacks
+     * @type {Object}
+     */
 	this.replyCallbacks={};
+
+    /**
+     * The type of the participant.
+     * @property participantType
+     * @type {String}
+     * @default "internal"
+     */
 	this.participantType="internal";
+
+    /**
+     * The name of the participant.
+     * @property name
+     * @type {String}
+     * @default ""
+     */
 	this.name=config.name;
 
     var self = this;
@@ -15,8 +46,10 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
 });
 
 /**
- * Gets the count of the registered reply callbacks
- * @returns {number} the number of registered callbacks
+ * Gets the count of the registered reply callbacks.
+ *
+ * @method getCallbackCount
+ * @returns {Number} The number of registered callbacks.
  */
 ozpIwc.InternalParticipant.prototype.getCallbackCount=function() {
     if (!this.replyCallbacks | !Object.keys(this.replyCallbacks)) {
@@ -26,7 +59,14 @@ ozpIwc.InternalParticipant.prototype.getCallbackCount=function() {
 };
 
 /**
- * @param {ozpIwc.PacketContext} packetContext
+ * Handles packets received from the {{#crossLink "ozpIwc.Router"}}{{/crossLink}} the participant is registered to.
+ *
+ * Fires:
+ *   - {{#crossLink "ozpIwc.Participant/#receive:event"}}{{/crossLink}}
+ *
+ * @method receiveFromRouterImpl
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ *
  * @returns {boolean} true if this packet could have additional recipients
  */
 ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
@@ -40,7 +80,15 @@ ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContex
 	}
 };
 
-
+/**
+ * Sends a packet to this participants router. Uses setImmediate to force messages out in queue order.
+ *
+ * @method send
+ * @param originalPacket
+ * @param callback
+ *
+ * @returns {ozpIwc.TransportPacket|*}
+ */
 ozpIwc.InternalParticipant.prototype.send=function(originalPacket,callback) {
     var packet=this.fixPacket(originalPacket);
 	if(callback) {
@@ -54,6 +102,14 @@ ozpIwc.InternalParticipant.prototype.send=function(originalPacket,callback) {
 	return packet;
 };
 
+/**
+ * Cancels the callback corresponding to the given msgId.
+ *
+ * @method cancelCallback
+ * @param {Number} msgId
+ *
+ * @returns {Boolean} returns true if successful.
+ */
 ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
     var success=false;
     if (msgId) {

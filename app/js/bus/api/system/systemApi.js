@@ -1,5 +1,24 @@
 var ozpIwc=ozpIwc || {};
 
+/**
+ * @submodule bus.api.Type
+ */
+
+/**
+ * The System Api. Provides reference data of registered applications, versions, and information about the current user
+ * through the IWC. Subclasses the {{#crossLink "ozpIwc.CommonApiBase"}}{{/crossLink}}. Utilizes the following value
+ * classes which subclass the {{#crossLink "ozpIwc.CommonApiValue"}}{{/crossLink}}:
+ *  - {{#crossLink "ozpIwc.SystemApiApplicationValue"}}{{/crossLink}}
+ *  - {{#crossLink "ozpIwc.SystemApiMailboxValue"}}{{/crossLink}}
+ *
+ * @class SystemApi
+ * @namespace ozpIwc
+ * @extends ozpIwc.CommonApiBase
+ * @constructor
+ *
+ * @type {Function}
+ * @param {Object} config
+ */
 ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
     
@@ -33,7 +52,13 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     });    
 });
 
-
+/**
+ * Update all intents registered to the given System Api node.
+ *
+ * @method updateIntents
+ * @param {ozpIwc.SystemApiApplicationValue} node
+ * @param {?} changes @TODO unused.
+ */
 ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
     if(!node.getIntentsRegistrations) {
         return;
@@ -65,6 +90,17 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
     
 };
 
+/**
+ * Finds or creates the corresponding node to store a server loaded resource.
+ *
+ * @method findNodeForServerResource
+ * @param {ozpIwc.TransportPacket} serverObject The object to be stored.
+ * @param {String} objectPath The full path resource of the object including it's root path.
+ * @param {String} rootPath The root path resource of the object.
+ *
+ * @returns {ozpIwc.SystemApiMailboxValue|ozpIwc.SystemApiApplicationValue} The node that is now holding the data
+ * provided in the serverObject parameter.
+ */
 ozpIwc.SystemApi.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
     var resource="/application" + objectPath.replace(rootPath,'');
     return this.findOrMakeValue({
@@ -74,6 +110,13 @@ ozpIwc.SystemApi.prototype.findNodeForServerResource=function(serverObject,objec
     });
 };
 
+/**
+ * Creates a System Api Application or Mailbox value from the given packet.
+ *
+ * @method makeValue
+ * @param {ozpIwc.TransportPacket} packet
+ * @returns {ozpIwc.SystemApiMailboxValue|ozpIwc.SystemApiApplicationValue}
+ */
 ozpIwc.SystemApi.prototype.makeValue = function(packet){
     if(packet.resource.indexOf("/mailbox") === 0) {
         return new ozpIwc.SystemApiMailboxValue({
@@ -91,14 +134,28 @@ ozpIwc.SystemApi.prototype.makeValue = function(packet){
     });
 };
 
+/**
+ * Handles System api requests with an action of "set"
+ * @method handleSet
+ */
 ozpIwc.SystemApi.prototype.handleSet = function() {
     throw new ozpIwc.ApiError("badAction", "Cannot modify the system API");
 };
 
+/**
+ * Handles System api requests with an action of "delete"
+ *
+ * @method handleDelete
+ */
 ozpIwc.SystemApi.prototype.handleDelete = function() {
     throw new ozpIwc.ApiError("badAction", "Cannot modify the system API");
 };
 
+/**
+ * Handles System api requests with an action of "launch"
+ *
+ * @method handleLaunch
+ */
 ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
     var key=this.createKey("/mailbox/");
 
@@ -110,6 +167,13 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
     packetContext.replyTo({'action': "ok"});
 };
 
+/**
+ * Launches the specified node's application.
+ *
+ * @method launchApplication
+ * @param {ozpIwc.SystemApiApplicationValue} node
+ * @param {ozpIwc.SystemApiMailboxValue} mailboxNode
+ */
 ozpIwc.SystemApi.prototype.launchApplication=function(node,mailboxNode) {
     var launchParams=[
         "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),

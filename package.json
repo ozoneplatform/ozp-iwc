@@ -5,14 +5,15 @@
   "repository": "https://github.com/ozone-development/ozp-iwc",
   "devDependencies": {
     "grunt": "0.4.x",
-    "grunt-contrib-uglify": "*",
     "grunt-concat-sourcemap": "*",
-    "grunt-jsdoc": "*",
-    "grunt-contrib-watch": "*",
-    "grunt-contrib-connect": "git+https://github.com/gruntjs/grunt-contrib-connect",
-    "grunt-contrib-jshint": "*",
-    "grunt-contrib-copy": "*",
     "grunt-contrib-clean": "*",
+    "grunt-contrib-connect": "git+https://github.com/gruntjs/grunt-contrib-connect",
+    "grunt-contrib-copy": "*",
+    "grunt-contrib-jshint": "*",
+    "grunt-contrib-uglify": "*",
+    "grunt-contrib-watch": "*",
+    "grunt-contrib-yuidoc": "^0.5.2",
+    "grunt-jsdoc": "*",
     "jshint-stylish": "*",
     "load-grunt-tasks": "~0.6.0"
   }

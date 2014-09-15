@@ -2,31 +2,80 @@
 var ozpIwc=ozpIwc || {};
 
 /**
- * @class ozpIwc.PostMessageParticipant
+ * @submodule bus.transport
+ */
+
+/**
+ * @class PostMessageParticipant
+ * @namespace ozpIwc
  * @extends ozpIwc.Participant
- * @param {object} config
- * @param {string} config.origin
- * @param {object} config.sourceWindow
- * @param {object} config.credentials
+ *
+ * @param {Object} config
+ * @param {String} config.origin
+ * @param {Object} config.sourceWindow
+ * @param {Object} config.credentials
  */
 ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
 	ozpIwc.Participant.apply(this,arguments);
+
+    /**
+     * The origin of the Participant.
+     * @property origin
+     */
+    /**
+     * The name of the Participant.
+     * @property name
+     */
 	this.origin=this.name=config.origin;
+
+    /**
+     * The window of the Participant.
+     * @property sourceWindow
+     * @type Window
+     */
 	this.sourceWindow=config.sourceWindow;
+
+    /**
+     * @property credentials
+     * @type
+     */
     this.credentials=config.credentials;
+
+    /**
+     * The type of the participant.
+     * @property participantType
+     * @type  String
+     * @default "postMessageProxy"
+     */
 	this.participantType="postMessageProxy";
+
+    /**
+     * @property securityAttributes.origin
+     * @type String
+     */
     this.securityAttributes.origin=this.origin;
+
+
+    /**
+     * Fires when the participant has connected to its router.
+     * @event #connectedToRouter
+     */
     this.on("connectedToRouter",function() {
         this.securityAttributes.sendAs=this.address;
         this.securityAttributes.receiveAs=this.address;
     },this);
-    
+
+    /**
+     * @property heartBeatStatus.origin
+     * @type String
+     */
     this.heartBeatStatus.origin=this.origin;
 });
 
 /**
- * @override
  * Receives a packet on behalf of this participant and forwards it via PostMessage.
+ *
+ * @method receiveFromRouterImpl
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
@@ -48,9 +97,10 @@ ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetCon
 /**
  * Sends a message to the other end of our connection.  Wraps any string mangling
  * necessary by the postMessage implementation of the browser.
+ *
+ * @method sendToParticipant
  * @param {ozpIwc.TransportPacket} packet
  * @todo Only IE requires the packet to be stringified before sending, should use feature detection?
- * @returns {undefined}
  */
 ozpIwc.PostMessageParticipant.prototype.sendToRecipient=function(packet) {
     var data=packet;
@@ -63,8 +113,9 @@ ozpIwc.PostMessageParticipant.prototype.sendToRecipient=function(packet) {
 /**
  * The participant hijacks anything addressed to "$transport" and serves it
  * directly.  This isolates basic connection checking from the router, itself.
- * @param {object} packet
- * @returns {undefined}
+ *
+ * @method handleTransportpacket
+ * @param {Object} packet
  */
 ozpIwc.PostMessageParticipant.prototype.handleTransportPacket=function(packet) {
 	var reply={
@@ -82,11 +133,12 @@ ozpIwc.PostMessageParticipant.prototype.handleTransportPacket=function(packet) {
 
 
 /**
+ * Sends a packet received via PostMessage to the Participant's router.
  *
+ * @method forwardFromPostMessage
  * @todo track the last used timestamp and make sure we don't send a duplicate messageId
  * @param {ozpIwc.TransportPacket} packet
  * @param {type} event
- * @returns {undefined}
  */
 ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,event) {
 	if(typeof(packet) !== "object") {
@@ -110,9 +162,9 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 };
 
 /**
- * Sends a packet to this participants router.  Calls fixPacket
- * before doing so.
- * @override
+ * Sends a packet to this participants router.  Calls fixPacket before doing so.
+ *
+ * @method send
  * @param {ozpIwc.TransportPacket} packet
  * @returns {ozpIwc.TransportPacket}
 */
@@ -135,13 +187,26 @@ ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
 
 
 /**
- * @class
- * @param {object} config
+ * @TODO (DOC)
+ * Listens for PostMessage messages and forwards them to the respected Participant.
+ *
+ * @class PostMessageParticipantListener
+ * @param {Object} config
  * @param {ozpIwc.Router} config.router
  */
 ozpIwc.PostMessageParticipantListener=function(config) {
 	config = config || {};
+
+    /**
+     * @property Participants
+     * @type ozpiwc.PostMessageParticipant[]
+     */
 	this.participants=[];
+
+    /**
+     * @property router
+     * @type ozpIwc.Router
+     */
 	this.router=config.router || ozpIwc.defaultRouter;
 
 	var self=this;
@@ -156,8 +221,11 @@ ozpIwc.PostMessageParticipantListener=function(config) {
 };
 
 /**
- * gets the count of known participants
- * @returns {number} the number of known participants
+ * Gets the count of known participants
+ *
+ * @method getParticipantCount
+ *
+ * @returns {Number} the number of known participants
  */
 ozpIwc.PostMessageParticipantListener.prototype.getParticipantCount=function() {
     if (!this.participants) {
@@ -170,7 +238,9 @@ ozpIwc.PostMessageParticipantListener.prototype.getParticipantCount=function() {
  * Finds the participant associated with the given window.  Unfortunately, this is an
  * o(n) algorithm, since there doesn't seem to be any way to hash, order, or any other way to
  * compare windows other than equality.
- * @param {object} sourceWindow - the participant window handle from message's event.source
+ *
+ * @method findParticipant
+ * @param {Object} sourceWindow - the participant window handle from message's event.source
  */
 ozpIwc.PostMessageParticipantListener.prototype.findParticipant=function(sourceWindow) {
 	for(var i=0; i< this.participants.length; ++i) {
@@ -182,9 +252,11 @@ ozpIwc.PostMessageParticipantListener.prototype.findParticipant=function(sourceW
 
 /**
  * Process a post message that is received from a peer
- * @param {object} event - The event received from the "message" event handler
- * @param {string} event.origin
- * @param {object} event.source
+ *
+ * @method receiveFromPostMessage
+ * @param {Object} event - The event received from the "message" event handler
+ * @param {String} event.origin
+ * @param {Object} event.source
  * @param {ozpIwc.TransportPacket} event.data
  */
 ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(event) {
