@@ -46,8 +46,8 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
         this.participant.send({
             'dst' : "intents.api",
             'src' : "system.api",
-            'action': "register",
-            'resource': "/"+i.type+"/"+i.action,
+            'action': "set",
+            'resource': "/"+i.type+"/"+i.action+"/system.api"+node.resource.replace(/\//g,'.'),
             'contentType': "application/ozpIwc-intents-handler-v1+json",
             'entity': {
                 'type': i.type,
@@ -91,7 +91,6 @@ ozpIwc.SystemApi.prototype.makeValue = function(packet){
     });
 };
 
-
 ozpIwc.SystemApi.prototype.handleSet = function() {
     throw new ozpIwc.ApiError("badAction", "Cannot modify the system API");
 };
@@ -113,7 +112,7 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
 
 ozpIwc.SystemApi.prototype.launchApplication=function(node,mailboxNode) {
     var launchParams=[
-//        "ozpIwc.peer="+encodeURIComponent(window.location.protocol + "//" + window.location.host+window.location.pathname),
+        "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),
         "ozpIwc.mailbox="+encodeURIComponent(mailboxNode.resource)
     ];
     
