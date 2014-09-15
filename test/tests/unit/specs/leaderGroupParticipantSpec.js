@@ -24,11 +24,11 @@ describe("Leader Group Participant",function() {
 			round++;
 			jasmine.clock().tick(step);
 			fakeRouter.pump();
-			
-			elected=fakeRouter.participants.some(function(l) { return l.isLeader();});
+
+			elected=fakeRouter.participants.some(function(l) {return l.isLeader();});
 		}
 	};
-	
+
     var log=function(){}; // console.log
     
 	var makeLeader=function(priority) {
@@ -37,8 +37,8 @@ describe("Leader Group Participant",function() {
 			name: "foo"+fakeRouter.participants.length,
 			'priority': priority
 		});
-		fakeRouter.registerParticipant(l);
 		l.on("startElection", function() {
+            l.changeState("election");
 			log("startElection[" + l.address + "]");
 		});
 		l.on("endElection",function() {
@@ -50,12 +50,26 @@ describe("Leader Group Participant",function() {
 		l.on("becameLeader",function() {
 			log("becameLeader[" + l.address + "]");
 		});
+        l.on("becameLeaderEvent",function(){
+            l.sendVictoryMessage();
+            l.changeState("leader");
+            l.events.trigger("becameLeader");
+        });
+        l.on("newLeaderEvent",function(){
+            l.changeState("member");
+            l.events.trigger("newLeader");
+        });
 		
 		l.TEST_nonElectionPackets=[];
 		l.on("receive",function(packet) {
 			l.TEST_nonElectionPackets.push(packet);
 			return [];
 		});
+
+        fakeRouter.registerParticipant(l);
+
+        // Move the clock for the setImmediate's
+        tick(1);
 
 		return l;
 	};
@@ -78,7 +92,7 @@ describe("Leader Group Participant",function() {
 	it("is leader after one member election",function() {
 		var leader=makeLeader(1);
 		leader.startElection();
-		tick(1000);
+        tick(1000);
 		expect(leader.isLeader()).toEqual(true);
 	});
 
@@ -87,33 +101,31 @@ describe("Leader Group Participant",function() {
 		var calls=0;
 		leader.on("startElection",function() { calls=true;});
 		leader.startElection();
-		tick(1000);
+        tick(1000);
 		expect(leader.isLeader()).toEqual(true);
 	});
 
 	it("two members elect one leader",function() {
-		var member=makeLeader(1);
+        var member=makeLeader(1);
 		var leader=makeLeader(2);
-		
-		leader.startElection();
 
 		tick(1000);
-		
+
 		expect(leader.isLeader()).toEqual(true);
 		expect(member.isLeader()).toEqual(false);
 	});	
 	
 	it("higher priority will take over",function() {
 		var member=makeLeader(1);
-		member.startElection();
-		tick(1000);
+
+        tick(1000);
 		
 		expect(member.isLeader()).toEqual(true);
 
 
 		var leader=makeLeader(2);
-		leader.startElection();
-		tick(1000);
+
+        tick(1000);
 		
 		expect(leader.isLeader()).toEqual(true);
 		expect(member.isLeader()).toEqual(false);
@@ -121,14 +133,13 @@ describe("Leader Group Participant",function() {
 	it("twelve members will elect the correct leader with the lowest one starting the election",function() {
 		depth=100;
 		var lowbie=makeLeader(1);
-		for(var i=10; i< 20; ++i) {
+		for(var i=10; i< 50; ++i) {
 			makeLeader(i);
 		}
 		var leader=makeLeader(100);
 		
-		lowbie.startElection();
-		
-		tick(1000);
+
+        tick(1000);
 		
 		for(var i=0; i< fakeRouter.participants.length-1; ++i) {
 			expect(fakeRouter.participants[i].isLeader()).toEqual(false);
@@ -150,7 +161,6 @@ describe("Leader Group Participant",function() {
 			}
 			var leader=makeLeader(100);
 
-			lowbie.startElection();
 
 			// step forward time by 50ms at a shot until the chatter stops
 			moveTime(10);

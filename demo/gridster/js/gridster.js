@@ -23,6 +23,7 @@ var Widget=function(config) {
 		self.gridster.remove_widget(self.el);
 	});
 	popout.click(function() {
+        $(self.el[0].children[1]).attr("src",null);
 		window.open(config.url,"_blank","width="+self.el.width() + ",height="+ self.el.height());
 		self.gridster.remove_widget(self.el);
 	});

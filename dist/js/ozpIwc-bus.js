@@ -2101,690 +2101,6 @@ ozpIwc.util.determineOrigin=function(url) {
 ozpIwc.util.escapeRegex=function(str) {
     return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
-(function() {
-var define, requireModule, require, requirejs;
-
-(function() {
-  var registry = {}, seen = {};
-
-  define = function(name, deps, callback) {
-    registry[name] = { deps: deps, callback: callback };
-  };
-
-  requirejs = require = requireModule = function(name) {
-  requirejs._eak_seen = registry;
-
-    if (seen[name]) { return seen[name]; }
-    seen[name] = {};
-
-    if (!registry[name]) {
-      throw new Error("Could not find module " + name);
-    }
-
-    var mod = registry[name],
-        deps = mod.deps,
-        callback = mod.callback,
-        reified = [],
-        exports;
-
-    for (var i=0, l=deps.length; i<l; i++) {
-      if (deps[i] === 'exports') {
-        reified.push(exports = {});
-      } else {
-        reified.push(requireModule(resolve(deps[i])));
-      }
-    }
-
-    var value = callback.apply(this, reified);
-    return seen[name] = exports || value;
-
-    function resolve(child) {
-      if (child.charAt(0) !== '.') { return child; }
-      var parts = child.split("/");
-      var parentBase = name.split("/").slice(0, -1);
-
-      for (var i=0, l=parts.length; i<l; i++) {
-        var part = parts[i];
-
-        if (part === '..') { parentBase.pop(); }
-        else if (part === '.') { continue; }
-        else { parentBase.push(part); }
-      }
-
-      return parentBase.join("/");
-    }
-  };
-})();
-
-define("promise/all", 
-  ["./utils","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    /* global toString */
-
-    var isArray = __dependency1__.isArray;
-    var isFunction = __dependency1__.isFunction;
-
-    /**
-      Returns a promise that is fulfilled when all the given promises have been
-      fulfilled, or rejected if any of them become rejected. The return promise
-      is fulfilled with an array that gives all the values in the order they were
-      passed in the `promises` array argument.
-
-      Example:
-
-      ```javascript
-      var promise1 = RSVP.resolve(1);
-      var promise2 = RSVP.resolve(2);
-      var promise3 = RSVP.resolve(3);
-      var promises = [ promise1, promise2, promise3 ];
-
-      RSVP.all(promises).then(function(array){
-        // The array here would be [ 1, 2, 3 ];
-      });
-      ```
-
-      If any of the `promises` given to `RSVP.all` are rejected, the first promise
-      that is rejected will be given as an argument to the returned promises's
-      rejection handler. For example:
-
-      Example:
-
-      ```javascript
-      var promise1 = RSVP.resolve(1);
-      var promise2 = RSVP.reject(new Error("2"));
-      var promise3 = RSVP.reject(new Error("3"));
-      var promises = [ promise1, promise2, promise3 ];
-
-      RSVP.all(promises).then(function(array){
-        // Code here never runs because there are rejected promises!
-      }, function(error) {
-        // error.message === "2"
-      });
-      ```
-
-      @method all
-      @for RSVP
-      @param {Array} promises
-      @param {String} label
-      @return {Promise} promise that is fulfilled when all `promises` have been
-      fulfilled, or rejected if any of them become rejected.
-    */
-    function all(promises) {
-      /*jshint validthis:true */
-      var Promise = this;
-
-      if (!isArray(promises)) {
-        throw new TypeError('You must pass an array to all.');
-      }
-
-      return new Promise(function(resolve, reject) {
-        var results = [], remaining = promises.length,
-        promise;
-
-        if (remaining === 0) {
-          resolve([]);
-        }
-
-        function resolver(index) {
-          return function(value) {
-            resolveAll(index, value);
-          };
-        }
-
-        function resolveAll(index, value) {
-          results[index] = value;
-          if (--remaining === 0) {
-            resolve(results);
-          }
-        }
-
-        for (var i = 0; i < promises.length; i++) {
-          promise = promises[i];
-
-          if (promise && isFunction(promise.then)) {
-            promise.then(resolver(i), reject);
-          } else {
-            resolveAll(i, promise);
-          }
-        }
-      });
-    }
-
-    __exports__.all = all;
-  });
-define("promise/asap", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    var browserGlobal = (typeof window !== 'undefined') ? window : {};
-    var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
-    var local = (typeof global !== 'undefined') ? global : (this === undefined? window:this);
-
-    // node
-    function useNextTick() {
-      return function() {
-        process.nextTick(flush);
-      };
-    }
-
-    function useMutationObserver() {
-      var iterations = 0;
-      var observer = new BrowserMutationObserver(flush);
-      var node = document.createTextNode('');
-      observer.observe(node, { characterData: true });
-
-      return function() {
-        node.data = (iterations = ++iterations % 2);
-      };
-    }
-
-    function useSetTimeout() {
-      return function() {
-        local.setTimeout(flush, 1);
-      };
-    }
-
-    var queue = [];
-    function flush() {
-      for (var i = 0; i < queue.length; i++) {
-        var tuple = queue[i];
-        var callback = tuple[0], arg = tuple[1];
-        callback(arg);
-      }
-      queue = [];
-    }
-
-    var scheduleFlush;
-
-    // Decide what async method to use to triggering processing of queued callbacks:
-    if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
-      scheduleFlush = useNextTick();
-    } else if (BrowserMutationObserver) {
-      scheduleFlush = useMutationObserver();
-    } else {
-      scheduleFlush = useSetTimeout();
-    }
-
-    function asap(callback, arg) {
-      var length = queue.push([callback, arg]);
-      if (length === 1) {
-        // If length is 1, that means that we need to schedule an async flush.
-        // If additional callbacks are queued before the queue is flushed, they
-        // will be processed by this flush that we are scheduling.
-        scheduleFlush();
-      }
-    }
-
-    __exports__.asap = asap;
-  });
-define("promise/config", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    var config = {
-      instrument: false
-    };
-
-    function configure(name, value) {
-      if (arguments.length === 2) {
-        config[name] = value;
-      } else {
-        return config[name];
-      }
-    }
-
-    __exports__.config = config;
-    __exports__.configure = configure;
-  });
-define("promise/polyfill", 
-  ["./promise","./utils","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
-    "use strict";
-    /*global self*/
-    var RSVPPromise = __dependency1__.Promise;
-    var isFunction = __dependency2__.isFunction;
-
-    function polyfill() {
-      var local;
-
-      if (typeof global !== 'undefined') {
-        local = global;
-      } else if (typeof window !== 'undefined' && window.document) {
-        local = window;
-      } else {
-        local = self;
-      }
-
-      var es6PromiseSupport = 
-        "Promise" in local &&
-        // Some of these methods are missing from
-        // Firefox/Chrome experimental implementations
-        "resolve" in local.Promise &&
-        "reject" in local.Promise &&
-        "all" in local.Promise &&
-        "race" in local.Promise &&
-        // Older version of the spec had a resolver object
-        // as the arg rather than a function
-        (function() {
-          var resolve;
-          new local.Promise(function(r) { resolve = r; });
-          return isFunction(resolve);
-        }());
-
-      if (!es6PromiseSupport) {
-        local.Promise = RSVPPromise;
-      }
-    }
-
-    __exports__.polyfill = polyfill;
-  });
-define("promise/promise", 
-  ["./config","./utils","./all","./race","./resolve","./reject","./asap","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
-    "use strict";
-    var config = __dependency1__.config;
-    var configure = __dependency1__.configure;
-    var objectOrFunction = __dependency2__.objectOrFunction;
-    var isFunction = __dependency2__.isFunction;
-    var now = __dependency2__.now;
-    var all = __dependency3__.all;
-    var race = __dependency4__.race;
-    var staticResolve = __dependency5__.resolve;
-    var staticReject = __dependency6__.reject;
-    var asap = __dependency7__.asap;
-
-    var counter = 0;
-
-    config.async = asap; // default async is asap;
-
-    function Promise(resolver) {
-      if (!isFunction(resolver)) {
-        throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
-      }
-
-      if (!(this instanceof Promise)) {
-        throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
-      }
-
-      this._subscribers = [];
-
-      invokeResolver(resolver, this);
-    }
-
-    function invokeResolver(resolver, promise) {
-      function resolvePromise(value) {
-        resolve(promise, value);
-      }
-
-      function rejectPromise(reason) {
-        reject(promise, reason);
-      }
-
-      try {
-        resolver(resolvePromise, rejectPromise);
-      } catch(e) {
-        rejectPromise(e);
-      }
-    }
-
-    function invokeCallback(settled, promise, callback, detail) {
-      var hasCallback = isFunction(callback),
-          value, error, succeeded, failed;
-
-      if (hasCallback) {
-        try {
-          value = callback(detail);
-          succeeded = true;
-        } catch(e) {
-          failed = true;
-          error = e;
-        }
-      } else {
-        value = detail;
-        succeeded = true;
-      }
-
-      if (handleThenable(promise, value)) {
-        return;
-      } else if (hasCallback && succeeded) {
-        resolve(promise, value);
-      } else if (failed) {
-        reject(promise, error);
-      } else if (settled === FULFILLED) {
-        resolve(promise, value);
-      } else if (settled === REJECTED) {
-        reject(promise, value);
-      }
-    }
-
-    var PENDING   = void 0;
-    var SEALED    = 0;
-    var FULFILLED = 1;
-    var REJECTED  = 2;
-
-    function subscribe(parent, child, onFulfillment, onRejection) {
-      var subscribers = parent._subscribers;
-      var length = subscribers.length;
-
-      subscribers[length] = child;
-      subscribers[length + FULFILLED] = onFulfillment;
-      subscribers[length + REJECTED]  = onRejection;
-    }
-
-    function publish(promise, settled) {
-      var child, callback, subscribers = promise._subscribers, detail = promise._detail;
-
-      for (var i = 0; i < subscribers.length; i += 3) {
-        child = subscribers[i];
-        callback = subscribers[i + settled];
-
-        invokeCallback(settled, child, callback, detail);
-      }
-
-      promise._subscribers = null;
-    }
-
-    Promise.prototype = {
-      constructor: Promise,
-
-      _state: undefined,
-      _detail: undefined,
-      _subscribers: undefined,
-
-      then: function(onFulfillment, onRejection) {
-        var promise = this;
-
-        var thenPromise = new this.constructor(function() {});
-
-        if (this._state) {
-          var callbacks = arguments;
-          config.async(function invokePromiseCallback() {
-            invokeCallback(promise._state, thenPromise, callbacks[promise._state - 1], promise._detail);
-          });
-        } else {
-          subscribe(this, thenPromise, onFulfillment, onRejection);
-        }
-
-        return thenPromise;
-      },
-
-      'catch': function(onRejection) {
-        return this.then(null, onRejection);
-      }
-    };
-
-    Promise.all = all;
-    Promise.race = race;
-    Promise.resolve = staticResolve;
-    Promise.reject = staticReject;
-
-    function handleThenable(promise, value) {
-      var then = null,
-      resolved;
-
-      try {
-        if (promise === value) {
-          throw new TypeError("A promises callback cannot return that same promise.");
-        }
-
-        if (objectOrFunction(value)) {
-          then = value.then;
-
-          if (isFunction(then)) {
-            then.call(value, function(val) {
-              if (resolved) { return true; }
-              resolved = true;
-
-              if (value !== val) {
-                resolve(promise, val);
-              } else {
-                fulfill(promise, val);
-              }
-            }, function(val) {
-              if (resolved) { return true; }
-              resolved = true;
-
-              reject(promise, val);
-            });
-
-            return true;
-          }
-        }
-      } catch (error) {
-        if (resolved) { return true; }
-        reject(promise, error);
-        return true;
-      }
-
-      return false;
-    }
-
-    function resolve(promise, value) {
-      if (promise === value) {
-        fulfill(promise, value);
-      } else if (!handleThenable(promise, value)) {
-        fulfill(promise, value);
-      }
-    }
-
-    function fulfill(promise, value) {
-      if (promise._state !== PENDING) { return; }
-      promise._state = SEALED;
-      promise._detail = value;
-
-      config.async(publishFulfillment, promise);
-    }
-
-    function reject(promise, reason) {
-      if (promise._state !== PENDING) { return; }
-      promise._state = SEALED;
-      promise._detail = reason;
-
-      config.async(publishRejection, promise);
-    }
-
-    function publishFulfillment(promise) {
-      publish(promise, promise._state = FULFILLED);
-    }
-
-    function publishRejection(promise) {
-      publish(promise, promise._state = REJECTED);
-    }
-
-    __exports__.Promise = Promise;
-  });
-define("promise/race", 
-  ["./utils","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    /* global toString */
-    var isArray = __dependency1__.isArray;
-
-    /**
-      `RSVP.race` allows you to watch a series of promises and act as soon as the
-      first promise given to the `promises` argument fulfills or rejects.
-
-      Example:
-
-      ```javascript
-      var promise1 = new RSVP.Promise(function(resolve, reject){
-        setTimeout(function(){
-          resolve("promise 1");
-        }, 200);
-      });
-
-      var promise2 = new RSVP.Promise(function(resolve, reject){
-        setTimeout(function(){
-          resolve("promise 2");
-        }, 100);
-      });
-
-      RSVP.race([promise1, promise2]).then(function(result){
-        // result === "promise 2" because it was resolved before promise1
-        // was resolved.
-      });
-      ```
-
-      `RSVP.race` is deterministic in that only the state of the first completed
-      promise matters. For example, even if other promises given to the `promises`
-      array argument are resolved, but the first completed promise has become
-      rejected before the other promises became fulfilled, the returned promise
-      will become rejected:
-
-      ```javascript
-      var promise1 = new RSVP.Promise(function(resolve, reject){
-        setTimeout(function(){
-          resolve("promise 1");
-        }, 200);
-      });
-
-      var promise2 = new RSVP.Promise(function(resolve, reject){
-        setTimeout(function(){
-          reject(new Error("promise 2"));
-        }, 100);
-      });
-
-      RSVP.race([promise1, promise2]).then(function(result){
-        // Code here never runs because there are rejected promises!
-      }, function(reason){
-        // reason.message === "promise2" because promise 2 became rejected before
-        // promise 1 became fulfilled
-      });
-      ```
-
-      @method race
-      @for RSVP
-      @param {Array} promises array of promises to observe
-      @param {String} label optional string for describing the promise returned.
-      Useful for tooling.
-      @return {Promise} a promise that becomes fulfilled with the value the first
-      completed promises is resolved with if the first completed promise was
-      fulfilled, or rejected with the reason that the first completed promise
-      was rejected with.
-    */
-    function race(promises) {
-      /*jshint validthis:true */
-      var Promise = this;
-
-      if (!isArray(promises)) {
-        throw new TypeError('You must pass an array to race.');
-      }
-      return new Promise(function(resolve, reject) {
-        var results = [], promise;
-
-        for (var i = 0; i < promises.length; i++) {
-          promise = promises[i];
-
-          if (promise && typeof promise.then === 'function') {
-            promise.then(resolve, reject);
-          } else {
-            resolve(promise);
-          }
-        }
-      });
-    }
-
-    __exports__.race = race;
-  });
-define("promise/reject", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    /**
-      `RSVP.reject` returns a promise that will become rejected with the passed
-      `reason`. `RSVP.reject` is essentially shorthand for the following:
-
-      ```javascript
-      var promise = new RSVP.Promise(function(resolve, reject){
-        reject(new Error('WHOOPS'));
-      });
-
-      promise.then(function(value){
-        // Code here doesn't run because the promise is rejected!
-      }, function(reason){
-        // reason.message === 'WHOOPS'
-      });
-      ```
-
-      Instead of writing the above, your code now simply becomes the following:
-
-      ```javascript
-      var promise = RSVP.reject(new Error('WHOOPS'));
-
-      promise.then(function(value){
-        // Code here doesn't run because the promise is rejected!
-      }, function(reason){
-        // reason.message === 'WHOOPS'
-      });
-      ```
-
-      @method reject
-      @for RSVP
-      @param {Any} reason value that the returned promise will be rejected with.
-      @param {String} label optional string for identifying the returned promise.
-      Useful for tooling.
-      @return {Promise} a promise that will become rejected with the given
-      `reason`.
-    */
-    function reject(reason) {
-      /*jshint validthis:true */
-      var Promise = this;
-
-      return new Promise(function (resolve, reject) {
-        reject(reason);
-      });
-    }
-
-    __exports__.reject = reject;
-  });
-define("promise/resolve", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    function resolve(value) {
-      /*jshint validthis:true */
-      if (value && typeof value === 'object' && value.constructor === this) {
-        return value;
-      }
-
-      var Promise = this;
-
-      return new Promise(function(resolve) {
-        resolve(value);
-      });
-    }
-
-    __exports__.resolve = resolve;
-  });
-define("promise/utils", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    function objectOrFunction(x) {
-      return isFunction(x) || (typeof x === "object" && x !== null);
-    }
-
-    function isFunction(x) {
-      return typeof x === "function";
-    }
-
-    function isArray(x) {
-      return Object.prototype.toString.call(x) === "[object Array]";
-    }
-
-    // Date.now is not available in browsers < IE9
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now#Compatibility
-    var now = Date.now || function() { return new Date().getTime(); };
-
-
-    __exports__.objectOrFunction = objectOrFunction;
-    __exports__.isFunction = isFunction;
-    __exports__.isArray = isArray;
-    __exports__.now = now;
-  });
-requireModule('promise/polyfill').polyfill();
-}());
 /*
  * The MIT License (MIT) Copyright (c) 2012 Mike Ihbe
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -5261,6 +4577,14 @@ var ozpIwc=ozpIwc || {};
 
 /**
  * Baseclass for APIs that need leader election.  Uses the Bully algorithm for leader election.
+ *
+ * Implementer is responsible for handling two events:
+ *    <li> <b>"becameLeaderEvent"</b> - participant has finished its election process and is to become the leader. Handle
+ *    any logic necessary above the LeaderGroupParticipant and then trigger the participant's event <b>"becameLeader"</b>
+ *    <i>(ex. participant.events.trigger("becameLeader")</i></li>
+ *    <li> <b>"newLeaderEvent"</b> - participant has finished its election process and is to become a member. Handle any logic necessary above
+ *    the LeaderGroupParticipant then trigger the participant's event <b>"newLeader"</b>
+ *    <i>(ex. participant.events.trigger("newLeader")</i></li>
  * @class
  * @param {object} config
  * @param {String} config.name 
@@ -5273,40 +4597,84 @@ var ozpIwc=ozpIwc || {};
  * @param {function} [config.priorityLessThan] 
  *        Function that provides a strict total ordering on the priority.  Default is "<".
  * @param {number} [config.electionTimeout=250] 
- *        Number of milliseconds to wait before declaring victory on an election. 
- 
+ *        Number of milliseconds to wait before declaring victory on an election.
+ * @param {object} config.states  State machine states the participant will register and react to given their assigned category.
+ *        Default states listed are always applied and need not be passed in configuration.
+ * @param {object} [config.states.leader=['leader']]
+ *        Any state that the participant should deem itself the leader of its group.
+ * @param {object} [config.states.member=['member']]
+ *        Any state that the participant should deem itself a member (not leader) of its group.
+ * @param {object} [config.states.election=['election']]
+ *        Any state that the participant should deem itself in an election with its group.
+ * @param {object} [config.states.queueing=['connecting','election']]
+ *        Any state that the participant should block non-election messages until not in a queueing state
  */
 ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,function(config) {
 	ozpIwc.InternalParticipant.apply(this,arguments);
+    config.states = config.states || {};
+
 
 	if(!config.name) {
 		throw "Config must contain a name value";
 	}
-	
+
+
 	// Networking info
 	this.name=config.name;
-	
 	this.electionAddress=config.electionAddress || (this.name + ".election");
+
 
 	// Election times and how to score them
 	this.priority = config.priority || ozpIwc.defaultLeaderPriority || -ozpIwc.util.now();
 	this.priorityLessThan = config.priorityLessThan || function(l,r) { return l < r; };
-	this.electionTimeout=config.electionTimeout || 250; // quarter second
-	this.leaderState="connecting";
-	this.electionQueue=[];
-	
+	this.electionTimeout=config.electionTimeout || 1000; // quarter second
+    this.electionQueue=[];
+
+
+    // State Machine configuration
+	this.leaderState= null;
+    this.states = config.states;
+
+    this.states.leader = this.states.leader || [];
+    this.states.leader = this.states.leader.concat(["leader"]);
+
+    this.states.member = this.states.member || [];
+    this.states.member = this.states.member.concat(["member"]);
+
+    this.states.election = this.states.election || [];
+    this.states.election = this.states.election.concat(["election"]);
+
+    this.states.queueing = this.states.queueing || [];
+    this.states.queueing = this.states.queueing.concat(["connecting", "election"]);
+
+    this.activeStates = config.activeStates || {
+        'leader': false,
+        'member': false,
+        'election': false,
+        'queueing': true
+    };
+
+    this.changeState("connecting");
+
+
 	// tracking the current leader
 	this.leader=null;
 	this.leaderPriority=null;
 
 	this.participantType="leaderGroup";
 	this.name=config.name;
-	
+
+
+    this.toggleDrop = false;
+
+    // Election Events
 	this.on("startElection",function() {
-			this.electionQueue=[];
+        this.toggleDrop = false;
 	},this);
-	
+
 	this.on("becameLeader",function() {
+        this.leader = this.address;
+        this.leaderPriority = this.priority;
 		this.electionQueue.forEach(function(p) {
 			this.forwardToTarget(p);
 		},this);
@@ -5316,26 +4684,46 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 	this.on("newLeader",function() {
 		this.electionQueue=[];
 	},this);
-	var self=this;
-	
-	// handoff when we shut down
+
+
+
+    // Handle passing of state on unload
+    var self=this;
 	window.addEventListener("beforeunload",function() {
         //Priority has to be the minimum possible
         self.priority=-Number.MAX_VALUE;
-        self.leaderPriority=-Number.MAX_VALUE;
-        if(self.leaderState === "leader") {
-            self.events.trigger("unloadState");
-        }
+
+        // Unload events can't use setTimeout's. Therefore make all sending happen with normal execution
+        self.send = function(originalPacket,callback) {
+            var packet=this.fixPacket(originalPacket);
+            if(callback) {
+                this.replyCallbacks[packet.msgId]=callback;
+            }
+            ozpIwc.Participant.prototype.send.call(this,packet);
+
+            return packet;
+        };
+
+        self.events.trigger("unloadState");
 	});
 
+
+    // Connect Metrics
     ozpIwc.metrics.gauge('transport.leaderGroup.election').set(function() {
         var queue = self.getElectionQueue();
         return {'queue': queue ? queue.length : 0};
     });
+
+    // Handle connection to router
 	this.on("connectedToRouter",function() {
         this.router.registerMulticast(this,[this.electionAddress,this.name]);
-        this.startElection();
+        var self = this;
+        ozpIwc.util.setImmediate(function(){
+            self.startElection();
+        });
+
     },this);
+
     this.on("receive",this.routePacket,this);
 });
 
@@ -5354,16 +4742,18 @@ ozpIwc.LeaderGroupParticipant.prototype.getElectionQueue=function() {
  * @returns {Boolean} True if in an election state, otherwise false
  */
 ozpIwc.LeaderGroupParticipant.prototype.inElection=function() {
-	return !!this.electionTimer;
+    return !!this.electionTimer || this.activeStates.election;
 };
+
 
 /**
  * Checks to see if this instance is the leader of it's group.
  * @returns {Boolean}
  */
 ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
-	return this.leader === this.address;
+    return this.leader === this.address;
 };
+
 
 /**
  * Sends a message to the leadership group.
@@ -5373,16 +4763,51 @@ ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
 ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, config) {
     config = config || {};
     var state = config.state || {};
-	this.send({
+    var previousLeader = config.previousLeader || this.leader;
+
+    // TODO: no state should have circular references, this will eventually go away.
+    try {
+        JSON.stringify(state);
+    } catch (ex) {
+        console.error(this.name,this.address,"failed to send state.", ex);
+        state = {};
+    }
+
+    this.send({
 		'src': this.address,
 		'dst': this.electionAddress,
 		'action': type,
 		'entity': {
 			'priority': this.priority,
-            'state': state
+            'state': state,
+            'previousLeader': previousLeader
 		}
 	});
 };
+
+
+/**
+ * Sends a message to the leadership group stating victory in the current election. LeaderGroupParticipant.priority
+ * included to allow rebuttal. Will only send if participant's current state is in one of the following state categories:
+ *      <li>leader</li>
+ *      <li>election</li>
+ * @returns {ozpIwc.TransportPacket} Packet returned if valid request, else false.
+ */
+ozpIwc.LeaderGroupParticipant.prototype.sendVictoryMessage = function(){
+    if(this.activeStates.leader || this.activeStates.election) {
+        return this.send({
+            'src': this.address,
+            'dst': this.electionAddress,
+            'action': 'victory',
+            'entity': {
+                'priority': this.priority
+            }
+        });
+    } else {
+        return false;
+    }
+};
+
 
 /**
  * Attempt to start a new election.
@@ -5399,35 +4824,18 @@ ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
 	if(this.inElection()) {
 		return;
 	}
-	this.leaderState="election";
-	this.events.trigger("startElection");
+    this.events.trigger("startElection");
 
-    this.victoryDebounce = null;
-	
 	var self=this;
 	// if no one overrules us, declare victory
 	this.electionTimer=window.setTimeout(function() {
 		self.cancelElection();
-        self.leaderState = "leader";
-        self.leader=self.address;
-        self.leaderPriority=self.priority;
-        self.events.trigger("becameLeader");
-
-        self.sendElectionMessage("victory");
-
-        // Debouncing before setting state.
-        self.victoryDebounce = window.setTimeout(function(){
-            if (self.leaderState === "leader") {
-                if (self.stateStore && Object.keys(self.stateStore).length > 0) {
-                    self.events.trigger("acquireState", self.stateStore);
-                    self.stateStore = {};
-                }
-            }
-        },100);
+        self.events.trigger("becameLeaderEvent");
 	},this.electionTimeout);
 
-	this.sendElectionMessage("election", {state: state});
+	this.sendElectionMessage("election", {state: state, previousLeader: this.leader});
 };
+
 
 /**
  * Cancels an in-progress election that we started.
@@ -5438,11 +4846,10 @@ ozpIwc.LeaderGroupParticipant.prototype.cancelElection=function() {
 	if(this.electionTimer) {
         window.clearTimeout(this.electionTimer);
         this.electionTimer=null;
-        window.clearTimeout(this.victoryDebounce);
-        this.victoryDebounce=null;
         this.events.trigger("endElection");
 	}
 };
+
 
 /**
  * Receives a packet on the election control group or forwards it to the target implementation
@@ -5465,14 +4872,15 @@ ozpIwc.LeaderGroupParticipant.prototype.routePacket=function(packetContext) {
 			this.handleElectionMessage(packet);
 		} else if(packet.action === "victory") {
 			this.handleVictoryMessage(packet);
-		}
+        }
     } else {
-		this.forwardToTarget(packetContext);
+        this.forwardToTarget(packetContext);
 	}		
 };
 
+
 ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) {
-	if(this.leaderState === "election" || this.leaderState === "connecting") {
+    if(this.activeStates.queueing) {
 		this.electionQueue.push(packetContext);
 		return;
 	}
@@ -5488,19 +4896,54 @@ ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) 
  * @returns {undefined}
  */
 ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionMessage) {
+
     //If a state was received, store it case participant becomes the leader
     if(Object.keys(electionMessage.entity.state).length > 0){
         this.stateStore = electionMessage.entity.state;
+        this.events.trigger("receivedState");
     }
+
+    // If knowledge of a previousLeader was received, store it case participant becomes the leader and requests state
+    // from said participant.
+    if(electionMessage.entity.previousLeader){
+        if (electionMessage.entity.previousLeader !== this.address) {
+            this.previousLeader = electionMessage.entity.previousLeader;
+        }
+    }
+
+
 	// is the new election lower priority than us?
 	if(this.priorityLessThan(electionMessage.entity.priority,this.priority)) {
-		// Quell the rebellion!
-		this.startElection();
-	} else {
-		// Abandon dreams of leadership
-		this.cancelElection();
+        if(electionMessage.entity.priority === -Number.MAX_VALUE){
+            this.cancelElection();
+            this.activeStates.election = false;
+        } else {
+            if(!this.inElection())
+            this.electionQueue=[];
+        }
+        // Quell the rebellion!
+        this.startElection();
+
+    } else if(this.activeStates.leader) {
+        // If this participant is currently the leader but will loose the election, it sends out notification that their
+        // is currently a leader (for state retrieval purposes)
+        this.sendElectionMessage("election", {previousLeader: true});
+
+    } else {
+
+        // Abandon dreams of leadership
+        this.cancelElection();
+
+        // If set, after canceling, the participant will force itself to a membership state. Used to debounce invalid
+        // leadership attempts due to high network traffic.
+        if(this.toggleDrop){
+            this.toggleDrop = false;
+            this.events.trigger("newLeaderEvent");
+        }
 	}
+
 };
+
 
 /**
  * Handle someone else declaring victory.
@@ -5510,24 +4953,85 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
 ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMessage) {
 	if(this.priorityLessThan(victoryMessage.entity.priority,this.priority)) {
 		// someone usurped our leadership! start an election!
-		this.startElection();
+            this.startElection();
 	} else {
 		// submit to the bully
 		this.leader=victoryMessage.src;
 		this.leaderPriority=victoryMessage.entity.priority;
 		this.cancelElection();
-		this.leaderState="member";
-		this.events.trigger("newLeader");
+		this.events.trigger("newLeaderEvent");
         this.stateStore = {};
 	}
 };
 
-
+/**
+ * Gets the current status of the LeaderGroupParticipant.
+ * @returns {object} status - the status of the participant.
+ * @returns {string} status.leaderState - The current state of the participant.
+ * @returns {number} status.leaderPriority - The current priority of the participant group's leader.
+ */
 ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
 	var status= ozpIwc.Participant.prototype.heartbeatStatus.apply(this,arguments);
 	status.leaderState=this.leaderState;
 	status.leaderPriority=this.priority;
 	return status;
+};
+
+
+/**
+ * Changes the current state of the participant.
+ * @param state {string} The state to change to.
+ * @param config {object} properties to change in the participant should the state transition be valid
+ * @returns {boolean}
+ *      Will return true if a state transition occurred.
+ *      Will not change state and return false if:
+ *      <li>the new state was the current state</li>
+ *      <li>the new state is not a registered state @see ozpIwc.LeaderGroupParticipant</li>
+ */
+ozpIwc.LeaderGroupParticipant.prototype.changeState=function(state,config) {
+    if(state !== this.leaderState){
+//        console.log(this.address, this.leaderState, state);
+        if(this._validateState(state)){
+            for(var key in config){
+                this[key] = config[key];
+            }
+            return true;
+        }
+    }
+    return false;
+};
+
+
+/**
+ *  Validates if the desired state transition is possible.
+ *
+ * @param state {string} The desired state to transition to.
+ * @returns {boolean}
+ *      Will return true if a state transition occured. </br>
+ *      Will not change state and return false if:
+ *      <li>the new state was the current state</li>
+ *      <li>the new state is not a registered state</li>
+ * @private
+ */
+ozpIwc.LeaderGroupParticipant.prototype._validateState = function(state){
+    var newState = {};
+    var validState = false;
+    for(var x in this.states) {
+        if(ozpIwc.util.arrayContainsAll(this.states[x], [state])){
+            newState[x] = true;
+            validState = true;
+        } else {
+            newState[x] = false;
+        }
+    }
+    if(validState){
+        this.activeStates = newState;
+        this.leaderState = state;
+        return true;
+    } else {
+        console.error(this.address, this.name, "does not have state:", state);
+        return false;
+    }
 };
 var ozpIwc=ozpIwc || {};
 
@@ -6060,8 +5564,10 @@ ozpIwc.CommonApiBase = function(config) {
 	config = config || {};
 	this.participant=config.participant;
     this.participant.on("unloadState",ozpIwc.CommonApiBase.prototype.unloadState,this);
-    this.participant.on("acquireState",ozpIwc.CommonApiBase.prototype.setState,this);
 	this.participant.on("receiveApiPacket",ozpIwc.CommonApiBase.prototype.routePacket,this);
+    this.participant.on("becameLeaderEvent", ozpIwc.CommonApiBase.prototype.becameLeader,this);
+    this.participant.on("newLeaderEvent", ozpIwc.CommonApiBase.prototype.newLeader,this);
+    this.participant.on("startElection", ozpIwc.CommonApiBase.prototype.startElection,this);
 
 	this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
@@ -6093,7 +5599,7 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
                 self.updateDynamicNode(self.data[resource]);
             });        
     }).catch(function(e) {
-        //console.error("Could not load from api (" + endpointName + "): " + e.message,e);
+        console.error("Could not load from api (" + endpointName + "): " + e.message,e);
     });
 };
 
@@ -6282,7 +5788,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
             return;
         }
     };
-	if(packetContext.leaderState !== 'leader')	{
+    if(packetContext.leaderState !== 'leader' && packetContext.leaderState !== 'actingLeader'  )	{
 		// if not leader, just drop it.
 		return;
 	}
@@ -6447,21 +5953,15 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
  * to be consumed by all, then used by the new leader.
  */
 ozpIwc.CommonApiBase.prototype.unloadState = function(){
-    this.participant.startElection({state:this.data});
-    this.data = {};
+
+    if(this.participant.activeStates.leader) {
+        this.participant.sendElectionMessage("election",{state: this.data, previousLeader: this.participant.address});
+        this.data = {};
+    } else {
+        this.participant.sendElectionMessage("election");
+    }
 };
 
-/**
- * Called when the leader participant looses its leadership. This occurs when a new participant joins with a higher
- * priority
- */
-ozpIwc.CommonApiBase.prototype.transferState = function(){
-    this.participant.sendElectionMessage("prevLeader", {
-        state:this.data,
-        prevLeader: this.participant.address
-    });
-    this.data = {};
-};
 
 /**
  * Sets the APIs data property. Removes current values, then constructs each API value anew.
@@ -6484,6 +5984,127 @@ ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
     });
 };
 
+/**
+ * Puts the API's participant into it's election state.
+ */
+ozpIwc.CommonApiBase.prototype.startElection = function(){
+    if (this.participant.activeStates.leader) {
+        this.participant.changeState("actingLeader");
+    } else if(this.participant.leaderState === "leaderSync") {
+      // do nothing.
+    } else {
+        this.participant.changeState("election");
+    }
+};
+
+
+/**
+ *  Handles taking over control of the API's participant group as the leader.
+ *      <li>If this API instance's participant was the leader prior to election and won, normal functionality resumes.</li>
+ *      <li>If this API instance's participant received state from a leaving leader participant, it will consume said participants state</li>
+ */
+ozpIwc.CommonApiBase.prototype.becameLeader= function(){
+//    console.log(this.participant.address, "becameLeader");
+    this.participant.sendElectionMessage("victory");
+
+    // Was I the leader at the start of the election?
+    if (this.participant.leaderState === "actingLeader" || this.participant.leaderState === "leader") {
+        // Continue leading
+        this.setToLeader();
+
+    } else if (this.participant.leaderState === "election") {
+        this.leaderSync();
+    }
+};
+
+
+/**
+ * Handles a new leader being assigned to this API's participant group.
+ *      <li>@TODO: If this API instance was leader prior to the election, its state will be sent off to the new leader.</li>
+ *      <li>If this API instance wasn't the leader prior to the election it will resume normal functionality.</li>
+ * @fires ozpIwc.leaderGroupParticipant#newLeader
+ */
+ozpIwc.CommonApiBase.prototype.newLeader = function() {
+//    console.log(this.participant.address, "newLeader");
+
+    // If this API was the leader, send its state to the new leader
+    if (this.participant.leaderState === "actingLeader") {
+        this.participant.sendElectionMessage("election", {previousLeader: this.participant.address, state: this.data});
+    }
+    this.participant.changeState("member");
+    this.participant.events.trigger("newLeader");
+};
+
+
+
+/**
+ * Handles setting the API's participant to the leader state.
+ * @fires ozpIwc.leaderGroupParticipant#becameLeader
+ */
+ozpIwc.CommonApiBase.prototype.setToLeader = function(){
+//    console.log(this.participant.address, "setToLeader");
+    var self = this;
+    window.setTimeout(function() {
+        self.participant.changeState("leader");
+        self.participant.events.trigger("becameLeader");
+    },0);
+};
+
+
+/**
+ * Handles the syncronizing of API data from previous leaders.
+ * <li> If this API's participant has a state stored from the election it is set </li>
+ * <li> If no state present but expected, a listener is set to retrieve the state if acquired within 250ms </li>
+ */
+ozpIwc.CommonApiBase.prototype.leaderSync = function () {
+//    console.log(this.participant.address, "leaderSync");
+    this.participant.changeState("leaderSync",{toggleDrop: true});
+
+    var self = this;
+    window.setTimeout(function() {
+
+        // If the election synchronizing pushed this API out of leadership, don't try to become leader.
+        if(self.participant.leaderState !== "leaderSync") {
+            return;
+        }
+
+        // Previous leader sent out their state, it was stored in the participant
+        if (self.participant.stateStore && Object.keys(self.participant.stateStore).length > 0) {
+            self.setState(self.participant.stateStore);
+            self.participant.stateStore = {};
+            self.setToLeader();
+
+        } else if (self.participant.previousLeader) {
+            // There was a previous leader but we haven't seen their state. Wait for it.
+            self.receiveStateTimer = null;
+
+            var recvFunc = function () {
+                self.setState(self.participant.stateStore);
+                self.participant.off("receivedState", recvFunc);
+                self.setToLeader();
+                window.clearInterval(self.receiveStateTimer);
+                self.receiveStateTimer = null;
+            };
+
+            self.participant.on("receivedState", recvFunc);
+
+            self.receiveStateTimer = window.setTimeout(function () {
+                if (self.participant.stateStore && Object.keys(self.participant.stateStore).length > 0) {
+                    recvFunc();
+                } else {
+                    console.error(self.participant.name, self.participant.address, "Failed to retrieve state from", self.participant.previousLeader);
+                }
+
+                self.participant.off("receivedState", recvFunc);
+                self.setToLeader();
+            }, 250);
+
+        } else {
+            // This is the first of the bus, winner doesn't obtain any previous state
+            self.setToLeader();
+        }
+    },0);
+};
 
 var ozpIwc=ozpIwc || {};
 
