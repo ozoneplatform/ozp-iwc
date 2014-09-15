@@ -60,7 +60,7 @@ var Ball=function(ballRef,svgElement) {
             },500);
         }
     };
-   setInterval(this.removeWatchdog,2500);
+   setInterval(this.removeWatchdog,10000);
 
     $(this.el).click(function() {
         if(self.label.getAttribute("class").match("svgHidden")) {
@@ -99,7 +99,7 @@ Ball.prototype.remove=function() {
     client.send({
         dst: "data.api",
         action: "unwatch",
-        rsource: this.ballResource,
+        resource: this.ballResource,
         replyTo: this.watchId
     });
     this.el.remove();
