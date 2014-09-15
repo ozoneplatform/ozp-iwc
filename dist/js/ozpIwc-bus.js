@@ -3460,7 +3460,7 @@ ozpIwc.log=ozpIwc.log || {
 	},
     /**
      * A wrapper for error messages. Forwards to console.error if available.
-     * @property log
+     * @property error
      * @type Function
      */
 	error: function() {
