@@ -9,10 +9,11 @@ var ozpIwc=ozpIwc || {};
  * @class PostMessageParticipant
  * @namespace ozpIwc
  * @extends ozpIwc.Participant
- * @param {object} config
- * @param {string} config.origin
- * @param {object} config.sourceWindow
- * @param {object} config.credentials
+ *
+ * @param {Object} config
+ * @param {String} config.origin
+ * @param {Object} config.sourceWindow
+ * @param {Object} config.credentials
  */
 ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) {
 	ozpIwc.Participant.apply(this,arguments);
@@ -114,7 +115,7 @@ ozpIwc.PostMessageParticipant.prototype.sendToRecipient=function(packet) {
  * directly.  This isolates basic connection checking from the router, itself.
  *
  * @method handleTransportpacket
- * @param {object} packet
+ * @param {Object} packet
  */
 ozpIwc.PostMessageParticipant.prototype.handleTransportPacket=function(packet) {
 	var reply={
@@ -190,7 +191,7 @@ ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
  * Listens for PostMessage messages and forwards them to the respected Participant.
  *
  * @class PostMessageParticipantListener
- * @param {object} config
+ * @param {Object} config
  * @param {ozpIwc.Router} config.router
  */
 ozpIwc.PostMessageParticipantListener=function(config) {
@@ -224,7 +225,7 @@ ozpIwc.PostMessageParticipantListener=function(config) {
  *
  * @method getParticipantCount
  *
- * @returns {number} the number of known participants
+ * @returns {Number} the number of known participants
  */
 ozpIwc.PostMessageParticipantListener.prototype.getParticipantCount=function() {
     if (!this.participants) {
@@ -239,7 +240,7 @@ ozpIwc.PostMessageParticipantListener.prototype.getParticipantCount=function() {
  * compare windows other than equality.
  *
  * @method findParticipant
- * @param {object} sourceWindow - the participant window handle from message's event.source
+ * @param {Object} sourceWindow - the participant window handle from message's event.source
  */
 ozpIwc.PostMessageParticipantListener.prototype.findParticipant=function(sourceWindow) {
 	for(var i=0; i< this.participants.length; ++i) {
@@ -253,9 +254,9 @@ ozpIwc.PostMessageParticipantListener.prototype.findParticipant=function(sourceW
  * Process a post message that is received from a peer
  *
  * @method receiveFromPostMessage
- * @param {object} event - The event received from the "message" event handler
- * @param {string} event.origin
- * @param {object} event.source
+ * @param {Object} event - The event received from the "message" event handler
+ * @param {String} event.origin
+ * @param {Object} event.source
  * @param {ozpIwc.TransportPacket} event.data
  */
 ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(event) {

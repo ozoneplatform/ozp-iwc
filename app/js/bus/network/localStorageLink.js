@@ -45,8 +45,8 @@ var ozpIwc = ozpIwc || {};
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] - The peer to connect to.
  * @param {Number} [config.myKeysTimeout=5000] - Milliseconds to wait before deleting this link's keys.
  * @param {Number} [config.otherKeysTimeout=120000] - Milliseconds to wait before cleaning up other link's keys
- * @param {string} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
- * @param {string} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
+ * @param {String} [config.prefix='ozpIwc'] - Namespace for communicating, must be the same for all peers on the same network.
+ * @param {String} [config.selfId] - Unique name within the peer network.  Defaults to the peer id.
  */
 ozpIwc.LocalStorageLink = function(config) {
 	config=config || {};
@@ -180,9 +180,9 @@ ozpIwc.LocalStorageLink.prototype.makeKey=function(sequence) {
  * link that put it here and the time it was created at.
  *
  * @method splitKey
- * @param {type} k The key to split
+ * @param {String} k The key to split
  *
- * @returns {object} The id and createdAt for the key if it's valid, otherwise null.
+ * @returns {Object} The id and createdAt for the key if it's valid, otherwise null.
  */
 ozpIwc.LocalStorageLink.prototype.splitKey=function(k) { 
 	var parts=k.split("|");
@@ -199,8 +199,6 @@ ozpIwc.LocalStorageLink.prototype.splitKey=function(k) {
  * @todo Coordinate expiration windows.
  *
  * @method cleanKeys
- *
- * @returns {undefined}
  */
 ozpIwc.LocalStorageLink.prototype.cleanKeys=function() {
 	var now=ozpIwc.util.now();

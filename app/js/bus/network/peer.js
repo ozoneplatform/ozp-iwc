@@ -68,7 +68,7 @@ ozpIwc.Peer=function() {
  * @event #receive
  *
  * @param {ozpIwc.NetworkPacket} packet
- * @param {string} linkId
+ * @param {String} linkId
  */
 
 
@@ -109,7 +109,7 @@ ozpIwc.Peer.maxSeqIdPerSource=500;
  * @method haveSeen
  * @param {ozpIwc.NetworkPacket} packet
  *
- * @returns {boolean}
+ * @returns {Boolean}
  */
 ozpIwc.Peer.prototype.haveSeen=function(packet) {
     // don't forward our own packets
@@ -170,7 +170,7 @@ ozpIwc.Peer.prototype.send= function(packet) {
  *   - {{#crossLink "ozpIwc.Peer/#receive:event"}}{{/crossLink}}
  *
  * @method receive
- * @param {string} linkId
+ * @param {String} linkId
  * @param {ozpIwc.NetworkPacket} packet
  */
 ozpIwc.Peer.prototype.receive=function(linkId,packet) {

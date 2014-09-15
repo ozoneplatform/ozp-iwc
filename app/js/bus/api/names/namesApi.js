@@ -4,14 +4,16 @@
 
 /**
  * The Names Api. Collects information about current IWC state, Manages names, aliases, and permissions through the IWC.
- * Subclasses the {{#crossLink "CommonApiBase"}}{{/crossLink}}.Utilizes the {{#crossLink "namesApiValue"}}{{/crossLink}}
- * which subclasses the {{#crossLink "CommonApiValue"}}{{/crossLink}}.
+ * Subclasses the {{#crossLink "ozpIwc.CommonApiBase"}}{{/crossLink}}. Utilizes the
+ * {{#crossLink "ozpIwc.NamesApiValue"}}{{/crossLink}} which subclasses the
+ * {{#crossLink "ozpIwc.CommonApiValue"}}{{/crossLink}}.
  *
  * @class NamesApi
  * @namespace ozpIwc
- * @extends CommonApiBase
+ * @extends ozpIwc.CommonApiBase
+ * @constructor
  *
- * @type {Function|*}
+ * @type {Function}
  */
 ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
     ozpIwc.CommonApiBase.apply(this, arguments);
@@ -75,12 +77,27 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
     node.set(packet);
 });
 
+/**
+ * Checks that the given packet context's resource meets the requirements of the api. Throws exception if fails
+ * validation
+ *
+ * @method validateResource
+ * @param {CommonApiValue} node @TODO is a node needed to validate?
+ * @param {ozpIwc.TransportPacketContext} packetContext The packetContext with the resource to be validated.
+ */
 ozpIwc.NamesApi.prototype.validateResource=function(node,packetContext) {
     if(packetContext.packet.resource && !packetContext.packet.resource.match(/^\/(api|address|multicast|router|me)/)){
         throw new ozpIwc.ApiError('badResource',"Invalide resource for name.api: " + packetContext.packet.resource);
     }
 };
 
+/**
+ * Makes a {{#crossLink "ozpIwc.NamesApiValue"}}{{/crossLink}} from the given packet.
+ *
+ * @method makeValue
+ * @param {ozpIwc.TransportPacket} packet
+ * @returns {ozpIwc.NamesApiValue}
+ */
 ozpIwc.NamesApi.prototype.makeValue = function(packet) {
     
     var path=packet.resource.split("/");

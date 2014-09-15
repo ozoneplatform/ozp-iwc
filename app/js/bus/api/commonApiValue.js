@@ -5,6 +5,7 @@
 /**
  * The base class for values in the various APIs.  Designed to be extended with API-specific
  * concerns and validation.
+ *
  * @class CommonApiValue
  * @namespace ozpIwc
  * @param {object} config
@@ -27,6 +28,7 @@ ozpIwc.CommonApiValue = function(config) {
 /**
  * Sets a data based upon the content of the packet.  Automatically updates the content type,
  * permissions, entity, and updates the version.
+ *
  * @method set
  * @param {ozpIwc.TransportPacket} packet
  * @returns {undefined}
@@ -41,6 +43,7 @@ ozpIwc.CommonApiValue.prototype.set=function(packet) {
 };
 /**
  * Adds a new watcher based upon the contents of the packet.
+ *
  * @method watch
  * @param {ozpIwc.TransportPacket} packet
  * @returns {undefined}
@@ -188,5 +191,12 @@ ozpIwc.CommonApiValue.prototype.updateContent=function(changedNodes) {
     return null;
 };
 
+/**
+ * Handles deserializing an {{#crossLink "ozpIwc.TransportPacket"}}{{/crossLink}} and setting this value with
+ * the contents.
+ *
+ * @method deserialize
+ * @param {ozpIwc.TransportPacket} serverData
+ */
 ozpIwc.CommonApiValue.prototype.deserialize=function(serverData) {
 };

@@ -9,9 +9,10 @@
  * A counter running total that can be adjusted up or down.
  * Where a meter is set to a known value at each update, a
  * counter is incremented up or down by a known change.
+ *
  * @class Counter
  * @namespace ozpIwc.metricTypes
- * @extends ozpIwc.MetricType
+ * @extends ozpIwc.metricTypes.BaseMetric
  */
 ozpIwc.metricTypes.Counter=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
 	ozpIwc.metricTypes.BaseMetric.apply(this,arguments);

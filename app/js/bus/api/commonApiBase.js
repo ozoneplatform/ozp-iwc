@@ -8,7 +8,7 @@
  * @class CommonApiBase
  * @namespace ozpIwc
  * @constructor
- * @param {object} config
+ * @param {Object} config
  * @params {Participant} config.participant  the participant used for the Api communication
  */
  ozpIwc.CommonApiBase = function(config) {
@@ -58,7 +58,7 @@
  * @param {String} objectPath The full path resource of the object including it's root path.
  * @param {String} rootPath The root path resource of the object.
  *
- * @returns {#makeValue} The node that is now holding the data provided in the serverObject parameter.
+ * @returns {ozpIwc.CommonApiValue} The node that is now holding the data provided in the serverObject parameter.
  */
 ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
     var resource=objectPath.replace(rootPath,'');
@@ -201,8 +201,8 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
  * Turn an event into a list of change packets to be sent to the watchers.
  *
  * @method notifyWatchers
- * @param {CommonApiValue} node The node being changed.
- * @param {object} changes The changes to the node.
+ * @param {ozpIwc.CommonApiValue} node The node being changed.
+ * @param {Object} changes The changes to the node.
  */
 ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
     if(!changes) {
@@ -251,16 +251,15 @@ ozpIwc.CommonApiBase.prototype.findOrMakeValue=function(packet) {
  * Determines if the given resource exists.
  *
  * @method hasKey
- * @param {string} resource The path of the resource in question.
- * @returns {boolean} Returns true if there is a node with a corresponding resource in the api.
+ * @param {String} resource The path of the resource in question.
+ * @returns {Boolean} Returns true if there is a node with a corresponding resource in the api.
  */
 ozpIwc.CommonApiBase.prototype.hasKey=function(resource) {
 	return resource in this.data;
 };
 
 /**
- * Generates a keyname that does not already exist and starts
- * with a given prefix.
+ * Generates a key name that does not already exist and starts with a given prefix.
  *
  * @method createKey
  * @param {String} prefix The prefix resource string.
@@ -398,7 +397,7 @@ ozpIwc.CommonApiBase.prototype.findHandler=function(packetContext) {
  * @param {CommonApiValue} node @TODO is a node needed to validate?
  * @param {ozpIwc.TransportPacketContext} packetContext The packetContext with the resource to be validated.
  *
- * @returns {boolean} always returns true.
+ * @returns {Boolean} always returns true.
  */
 ozpIwc.CommonApiBase.prototype.validateResource=function(/* node,packetContext */) {
 	return true;
@@ -427,7 +426,7 @@ ozpIwc.CommonApiBase.prototype.validatePreconditions=function(node,packetContext
  * @param {CommonApiValue} node @TODO is a node needed to validate?
  * @param {ozpIwc.TransportPacketContext} packetContext The packetContext with the contextType to be validated.
  *
- * @returns {boolean} - always returns true.
+ * @returns {Boolean} - always returns true.
  */
 ozpIwc.CommonApiBase.prototype.validateContentType=function(node,packetContext) {
     return true;
@@ -436,7 +435,7 @@ ozpIwc.CommonApiBase.prototype.validateContentType=function(node,packetContext) 
 /**
  * @TODO (DOC)
  * @method updateDynamicNode
- * @param node @TODO (DOC)
+ * @param {ozpIwc.CommonApiValue} node @TODO (DOC)
  */
 ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
     if(!node) {
@@ -460,7 +459,7 @@ ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
 /**
  * @TODO (DOC)
  * @method addDynamicNode
- * @param node @TODO (DOC)
+ * @param {ozpIwc.CommonApiValue} node @TODO (DOC)
  */
 ozpIwc.CommonApiBase.prototype.addDynamicNode=function(node) {
     this.data[node.resource]=node;
@@ -474,7 +473,7 @@ ozpIwc.CommonApiBase.prototype.addDynamicNode=function(node) {
  *
  *
  * @method defaultHandler
- * @param {CommonApiValue}node @TODO is a node needed? or is this intended for subclass purposes
+ * @param {ozpIwc.CommonApiValue} node @TODO is a node needed? or is this intended for subclass purposes
  * @param {ozpIwc.TransportPacketContext} packetContext The packet context being handled.
  */
 ozpIwc.CommonApiBase.prototype.defaultHandler=function(node,packetContext) {
@@ -592,7 +591,7 @@ ozpIwc.CommonApiBase.prototype.setState = function(state) {
  * Common handler for packet contexts with a `list` action but no resource.
  *
  * @method rootHandleList
- * @param {CommonApiValue}node @TODO is a node needed? or is this intended for subclass purposes
+ * @param {ozpIwc.CommonApiValue}node @TODO is a node needed? or is this intended for subclass purposes
  * @param {ozpIwc.TransportPacketContext} packetContext The packet context of the received request.
  */
 ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {

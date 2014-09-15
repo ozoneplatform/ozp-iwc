@@ -20,7 +20,7 @@ ozpIwc.abacPolicies={};
  * @method permitWhenObjectHasNoAttributes
  * @param request
  *
- * @returns {string}
+ * @returns {String}
  */
 ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes=function(request) {
     if(request.object && Object.keys(request.object).length===0) {
@@ -35,7 +35,7 @@ ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes=function(request) {
  * @method subjectHasAllObjectAttributes
  * @param request
  *
- * @returns {string}
+ * @returns {String}
  */
 ozpIwc.abacPolicies.subjectHasAllObjectAttributes=function(request) {
     // if no object permissions, then it's trivially true
@@ -54,7 +54,7 @@ ozpIwc.abacPolicies.subjectHasAllObjectAttributes=function(request) {
  *
  * @static
  * @method permitAll
- * @returns {string}
+ * @returns {String}
  */
 ozpIwc.abacPolicies.permitAll=function() {
     return "permit";

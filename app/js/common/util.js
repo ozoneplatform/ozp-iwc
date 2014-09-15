@@ -99,7 +99,6 @@ ozpIwc.util.clone=function(value) {
  * @method parseQueryParams
  * @param {String} query
  *
- * @returns {Array} An array of parameters.
  */
 ozpIwc.util.parseQueryParams=function(query) {
     query = query || window.location.search;
@@ -116,7 +115,7 @@ ozpIwc.util.parseQueryParams=function(query) {
  * Determines the origin of a given url
  * @method determineOrigin
  * @param url
- * @returns {string}
+ * @returns {String}
  */
 ozpIwc.util.determineOrigin=function(url) {
     var a=document.createElement("a");

@@ -47,8 +47,9 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
 
 /**
  * Gets the count of the registered reply callbacks.
+ *
  * @method getCallbackCount
- * @returns {number} The number of registered callbacks.
+ * @returns {Number} The number of registered callbacks.
  */
 ozpIwc.InternalParticipant.prototype.getCallbackCount=function() {
     if (!this.replyCallbacks | !Object.keys(this.replyCallbacks)) {
@@ -64,7 +65,7 @@ ozpIwc.InternalParticipant.prototype.getCallbackCount=function() {
  *   - {{#crossLink "ozpIwc.Participant/#receive:event"}}{{/crossLink}}
  *
  * @method receiveFromRouterImpl
- * @param {ozpIwc.PacketContext} packetContext
+ * @param {ozpIwc.TransportPacketContext} packetContext
  *
  * @returns {boolean} true if this packet could have additional recipients
  */
@@ -107,7 +108,7 @@ ozpIwc.InternalParticipant.prototype.send=function(originalPacket,callback) {
  * @method cancelCallback
  * @param {Number} msgId
  *
- * @returns {boolean} returns true if successful.
+ * @returns {Boolean} returns true if successful.
  */
 ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
     var success=false;

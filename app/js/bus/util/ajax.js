@@ -19,7 +19,10 @@ ozpIwc.util=ozpIwc.util || {};
  *
  * @method ajax
  * @static
- * @param config
+ * @param {Object} config
+ * @param {String} config.method
+ * @param {String} config.href
+ * 
  * @returns {Promise}
  */
 ozpIwc.util.ajax = function (config) {

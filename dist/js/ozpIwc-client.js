@@ -2128,7 +2128,6 @@ ozpIwc.util.clone=function(value) {
  * @method parseQueryParams
  * @param {String} query
  *
- * @returns {Array} An array of parameters.
  */
 ozpIwc.util.parseQueryParams=function(query) {
     query = query || window.location.search;
@@ -2145,7 +2144,7 @@ ozpIwc.util.parseQueryParams=function(query) {
  * Determines the origin of a given url
  * @method determineOrigin
  * @param url
- * @returns {string}
+ * @returns {String}
  */
 ozpIwc.util.determineOrigin=function(url) {
     var a=document.createElement("a");
@@ -2178,9 +2177,9 @@ var ozpIwc=ozpIwc || {};
  * @namespace ozpIwc
  *
  * @todo accept a list of peer URLs that are searched in order of preference
- * @param {object} config
- * @param {string} config.peerUrl - Base URL of the peer server
- * @param {boolean} [config.autoPeer=true] - Whether to automatically find and connect to a peer
+ * @param {Object} config
+ * @param {String} config.peerUrl - Base URL of the peer server
+ * @param {Boolean} [config.autoPeer=true] - Whether to automatically find and connect to a peer
  */
 ozpIwc.Client=function(config) {
     config=config || {};
@@ -2224,7 +2223,7 @@ ozpIwc.Client=function(config) {
 
     /**
      * @property autoPeer
-     * @type {boolean|*}
+     * @type {Boolean}
      */
     this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
 
@@ -2335,7 +2334,7 @@ ozpIwc.Client=function(config) {
 /**
  * Parses launch parameters based on the raw string input it receives.
  * @property readLaunchParams
- * @param rawString
+ * @param {String} rawString
  */
 ozpIwc.Client.prototype.readLaunchParams=function(rawString) {
     // of the form ozpIwc.VARIABLE=VALUE, where:
@@ -2431,7 +2430,7 @@ ozpIwc.Client.prototype.isConnected=function(){
  * @method cancelCallback
  * @param (String} msgId The packet replyTo ID for which the callback was registered.
  *
- * @return {Boolean} True if the cancel was successfull, otherwise false.
+ * @return {Boolean} True if the cancel was successful, otherwise false.
  */
 ozpIwc.Client.prototype.cancelCallback=function(msgId) {
     var success=false;

@@ -2128,7 +2128,6 @@ ozpIwc.util.clone=function(value) {
  * @method parseQueryParams
  * @param {String} query
  *
- * @returns {Array} An array of parameters.
  */
 ozpIwc.util.parseQueryParams=function(query) {
     query = query || window.location.search;
@@ -2145,7 +2144,7 @@ ozpIwc.util.parseQueryParams=function(query) {
  * Determines the origin of a given url
  * @method determineOrigin
  * @param url
- * @returns {string}
+ * @returns {String}
  */
 ozpIwc.util.determineOrigin=function(url) {
     var a=document.createElement("a");
@@ -2788,9 +2787,10 @@ ozpIwc.metricTypes.BaseMetric.prototype.unit=function(val) {
  * A counter running total that can be adjusted up or down.
  * Where a meter is set to a known value at each update, a
  * counter is incremented up or down by a known change.
+ *
  * @class Counter
  * @namespace ozpIwc.metricTypes
- * @extends ozpIwc.MetricType
+ * @extends ozpIwc.metricTypes.BaseMetric
  */
 ozpIwc.metricTypes.Counter=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
 	ozpIwc.metricTypes.BaseMetric.apply(this,arguments);
@@ -2826,10 +2826,11 @@ ozpIwc.metricTypes=ozpIwc.metricTypes || {};
  */
 
 /**
+ * A gauge is an externally defined set of metrics returned by a callback function
+ *
  * @class Gauge
  * @namespace ozpIwc.metricTypes
- * @extends ozpIwc.MetricType
- * A gauge is an externally defined set of metrics returned by a callback function
+ * @extends ozpIwc.metricTypes.BaseMetric
  * @param {ozpIwc.metricTypes.Gauge~gaugeCallback} metricsCallback
  */
 ozpIwc.metricTypes.Gauge=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function(metricsCallback) {
@@ -2869,7 +2870,7 @@ ozpIwc.metricTypes.Gauge.prototype.get=function() {
 /**
  * @class Histogram
  * @namespace ozpIwc.metricTypes
- * @extends ozpIwc.BaseMetric
+ * @extends ozpIwc.metricTypes.BaseMetric
  */
 ozpIwc.metricTypes.Histogram=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
 	ozpIwc.metricTypes.BaseMetric.apply(this,arguments);
@@ -2968,7 +2969,7 @@ ozpIwc.metricTypes.Histogram.prototype.get=function() {
 /**
  * @class Meter
  * @namespace ozpIwc.metricTypes
- * @extends ozpIwc.BaseMetric
+ * @extends ozpIwc.metricTypes.BaseMetric
  */
 ozpIwc.metricTypes.Meter=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
 	ozpIwc.metricTypes.BaseMetric.apply(this,arguments);
@@ -3042,17 +3043,43 @@ ozpIwc.metricTypes.Meter.prototype.tick=function() {
  * @submodule metrics.types
  */
 
+/**
+ * @class Timer
+ * @namespace ozpIwc
+ * @extends ozpIwc.metricTypes.BaseMetric
+ * @type {Function}
+ */
 ozpIwc.metricTypes.Timer=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
 	ozpIwc.metricTypes.BaseMetric.apply(this,arguments);
+    /**
+     * @property meter
+     * @type {ozpIwc.metricTypes.Meter}
+     */
 	this.meter=new ozpIwc.metricTypes.Meter();
+
+    /**
+     * @property histogram
+     * @type {ozpIwc.metricTypes.Histogram}
+     */
 	this.histogram=new ozpIwc.metricTypes.Histogram();
 });
 
+/**
+ * @method mark
+ * @param {Number} val
+ * @param {Number} timestamp Current time in milliseconds.
+ */
 ozpIwc.metricTypes.Timer.prototype.mark=function(val,time) {
 	this.meter.mark();
 	this.histogram.mark(val,time);
 };
 
+/**
+ * Starts the timer
+ *
+ * @method start
+ * @returns {Function}
+ */
 ozpIwc.metricTypes.Timer.prototype.start=function() {
 	var self=this;
 	var startTime=ozpIwc.util.now();
@@ -3062,6 +3089,12 @@ ozpIwc.metricTypes.Timer.prototype.start=function() {
 	};
 };
 
+/**
+ * Times the length of a function call.
+ *
+ * @method time
+ * @param {Function}callback
+ */
 ozpIwc.metricTypes.Timer.prototype.time=function(callback) {
 	var startTime=ozpIwc.util.now();
 	try {
@@ -3072,6 +3105,12 @@ ozpIwc.metricTypes.Timer.prototype.time=function(callback) {
 	}
 };
 
+/**
+ * Returns a histogram of the timer metrics.
+ *
+ * @method get
+ * @returns {Object}
+ */
 ozpIwc.metricTypes.Timer.prototype.get=function() {
 	var val=this.histogram.get();
 	var meterMetrics=this.meter.get();
@@ -3145,7 +3184,7 @@ ozpIwc.MetricsRegistry.prototype.makeName=function(args) {
  * Returns the counter instance(s) for the given name(s). If it does not exist it will be created.
  *
  * @method counter
- * @param {...String} name Components of the name.
+ * @param {String} name Components of the name.
  *
  * @returns {ozpIwc.metricTypes.Counter}
  */
@@ -3157,7 +3196,7 @@ ozpIwc.MetricsRegistry.prototype.counter=function(name) {
  * Returns the meter instance(s) for the given name(s). If it does not exist it will be created.
  *
  * @method meter
- * @param {...String} name Components of the name.
+ * @param {String} name Components of the name.
  *
  * @returns {ozpIwc.metricTypes.Meter}
  */
@@ -3169,7 +3208,7 @@ ozpIwc.MetricsRegistry.prototype.meter=function(name) {
  * Returns the gauge instance(s) for the given name(s). If it does not exist it will be created.
  *
  * @method gauge
- * @param {...String} name Components of the name.
+ * @param {String} name Components of the name.
  * @returns {ozpIwc.metricTypes.Gauge}
  */
 ozpIwc.MetricsRegistry.prototype.gauge=function(name) {
@@ -3180,7 +3219,7 @@ ozpIwc.MetricsRegistry.prototype.gauge=function(name) {
  * Returns the histogram instance(s) for the given name(s). If it does not exist it will be created.
  *
  * @method histogram
- * @param {...String} name Components of the name.
+ * @param {String} name Components of the name.
  *
  * @returns {ozpIwc.metricTypes.Histogram}
  */
@@ -3192,7 +3231,7 @@ ozpIwc.MetricsRegistry.prototype.histogram=function(name) {
  * Returns the timer instance(s) for the given name(s). If it does not exist it will be created.
  *
  * @method timer
- * @param {...String} name Components of the name.
+ * @param {String} name Components of the name.
  *
  * @returns {ozpIwc.metricTypes.Timer}
  */

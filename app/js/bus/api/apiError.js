@@ -30,10 +30,17 @@
  * @module bus.api
  * @submodule bus.api.Value
  */
+
 /**
+ * @TODO (Describe ApiError)
+ *
  * @class ApiError
  * @namespace ozpIwc
- * @type {Function|*}
+ * @constructor
+ *
+ * @type {Function}
+ * @param {String} action The action of the error.
+ * @param {String} message The message corresponding to the error.
  */
 ozpIwc.ApiError=ozpIwc.util.extend(Error,function(action,message) {
     Error.call(this,message);

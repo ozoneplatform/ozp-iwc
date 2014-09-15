@@ -9,8 +9,8 @@ var ozpIwc=ozpIwc || {};
  * @namespace ozpIwc
  * @constructor
  * @mixes ozpIwc.security.Actor
- * @property {string} address - The assigned address to this address.
- * @property {ozpIwc.security.Subject} securityAttributes - The security attributes for this participant.
+ * @property {String} address The assigned address to this address.
+ * @property {ozpIwc.security.Subject} securityAttributes The security attributes for this participant.
  */
 ozpIwc.Participant=function() {
 
@@ -34,7 +34,7 @@ ozpIwc.Participant=function() {
     /**
      * The message id assigned to the next packet if a packet msgId is not specified.
      * @property msgId
-     * @type {number}
+     * @type {Number}
      */
     this.msgId=0;
     var fakeMeter=new ozpIwc.metricTypes.Meter();
@@ -92,7 +92,7 @@ ozpIwc.Participant=function() {
  *
  * @method receiveFromRouter
  * @param {ozpIwc.PacketContext} packetContext
- * @returns {boolean} true if this packet could have additional recipients
+ * @returns {Boolean} true if this packet could have additional recipients
  */
 ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     var self = this;
@@ -117,7 +117,7 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
  * @override
  * @method receiveFromRouterImple
  * @param packetContext
- * @returns {boolean}
+ * @returns {Boolean}
  */
 ozpIwc.Participant.prototype.receiveFromRouterImpl = function (packetContext) {
     // doesn't really do anything other than return a bool and prevent "unused param" warnings
@@ -132,7 +132,7 @@ ozpIwc.Participant.prototype.receiveFromRouterImpl = function (packetContext) {
  *
  * @method connectToRouter
  * @param {ozpIwc.Router} router The router to connect to
- * @param {string} address The address to assign to the participant.
+ * @param {String} address The address to assign to the participant.
  */
 ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.address=address;

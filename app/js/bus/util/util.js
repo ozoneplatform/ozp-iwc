@@ -39,11 +39,11 @@ ozpIwc.util.setImmediate=function(f) {
  *
  * @method arrayContainsAll
  * @static
- * @param {array} haystack - The array to search.
- * @param {array} needles - All of the values to search.
- * @param {function} [equal] - What constitutes equality.  Defaults to a===b.
+ * @param {Array} haystack The array to search.
+ * @param {Array} needles All of the values to search.
+ * @param {Function} [equal] What constitutes equality.  Defaults to a===b.
  *
- * @returns {boolean}
+ * @returns {Boolean}
  */
 ozpIwc.util.arrayContainsAll=function(haystack,needles,equal) {
     equal=equal || function(a,b) { return a===b;};
@@ -61,11 +61,11 @@ ozpIwc.util.arrayContainsAll=function(haystack,needles,equal) {
  *
  * @method objectContainsAll
  * @static
- * @param {array} haystack - The object that must contain all attributes and values.
- * @param {array} needles - The reference object for the attributes and values.
- * @param {function} [equal] - What constitutes equality.  Defaults to a===b.
+ * @param {Array} haystack The object that must contain all attributes and values.
+ * @param {Array} needles The reference object for the attributes and values.
+ * @param {Function} [equal] What constitutes equality.  Defaults to a===b.
  *
- * @returns {boolean}
+ * @returns {Boolean}
  */
 ozpIwc.util.objectContainsAll=function(haystack,needles,equal) {
     equal=equal || function(a,b) { return a===b;};

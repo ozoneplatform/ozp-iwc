@@ -13,7 +13,7 @@
  *
  * @constructor
  * @uses DataApiValue
- * @type {Function|*}
+ * @type {Function}
  * @params {Object} config
  * @params {ozpIwc.Participant} config.participant - the participant used for the Api communication
  */

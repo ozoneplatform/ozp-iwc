@@ -9,17 +9,20 @@ var ozpIwc=ozpIwc || {};
  *
  * @class LeaderGroupParticipant
  * @namespace ozpIwc
- * @param {object} config
+ * @extends ozpIwc.InternalParticipant
+ * @constructor
+ *
+ * @param {Object} config
  * @param {String} config.name 
  *        The name of this API.
- * @param {string} [config.electionAddress=config.name+".election"] 
+ * @param {String} [config.electionAddress=config.name+".election"]
  *        The multicast channel for running elections.  
  *        The leader will register to receive multicast on this channel.
- * @param {number} [config.priority=Math.Random] 
+ * @param {Number} [config.priority=Math.Random]
  *        How strongly this node feels it should be leader.
- * @param {function} [config.priorityLessThan] 
+ * @param {Function} [config.priorityLessThan]
  *        Function that provides a strict total ordering on the priority.  Default is "<".
- * @param {number} [config.electionTimeout=250] 
+ * @param {Number} [config.electionTimeout=250]
  *        Number of milliseconds to wait before declaring victory on an election. 
  
  */
@@ -363,7 +366,6 @@ ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) 
  *
  * @private
  * @param {ozpIwc.TransportPacket} electionMessage
- * @returns {undefined}
  */
 ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionMessage) {
     //If a state was received, store it case participant becomes the leader
@@ -407,7 +409,7 @@ ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMes
  * Returns the status of the participant.
  *
  * @method heartbeatStatus
- * @returns {*}
+ * @returns {Object}
  */
 ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
 	var status= ozpIwc.Participant.prototype.heartbeatStatus.apply(this,arguments);

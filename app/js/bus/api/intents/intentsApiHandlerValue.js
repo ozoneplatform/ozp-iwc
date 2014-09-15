@@ -5,11 +5,12 @@
  * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
  * @class IntentsApiHandlerValue
  * @namespace ozpIwc
- * @extends CommonApiValue
+ * @extends ozpIwc.CommonApiValue
+ * @constructor
  *
- * @param {object} config
- *@param {object} config.entity
- * @param {string} config.entity.definitions - the list of definitions in this intent capability.
+ * @param {Object} config
+ *@param {Object} config.entity
+ * @param {String} config.entity.definitions the list of definitions in this intent capability.
  */
 ozpIwc.IntentsApiHandlerValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function (config) {
     config=config || {};
@@ -22,10 +23,24 @@ ozpIwc.IntentsApiHandlerValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, functi
     };
 });
 
+/**
+ * Returns this handler wrapped in an Array.
+ *
+ * @method getHandlers
+ * @param {ozpIwc.TransportPacket} packetContext
+ * @todo packetContext not needed, left for signature matching of base class?
+ * @returns {ozpIwc.intentsApiHandlerValue[]}
+ */
 ozpIwc.IntentsApiHandlerValue.prototype.getHandlers=function(packetContext) {
     return [this];
 };
 
+/**
+ * Sets the entity value of this handler.
+ *
+ * @method set
+ * @param {ozpIwc.TransportPacket} packet
+ */
 ozpIwc.IntentsApiHandlerValue.prototype.set=function(packet) {
     ozpIwc.CommonApiValue.prototype.set.apply(this,arguments);
     this.entity.invokeIntent = this.entity.invokeIntent  || {};

@@ -63,7 +63,7 @@ ozpIwc.MetricsRegistry.prototype.makeName=function(args) {
  * Returns the counter instance(s) for the given name(s). If it does not exist it will be created.
  *
  * @method counter
- * @param {...String} name Components of the name.
+ * @param {String} name Components of the name.
  *
  * @returns {ozpIwc.metricTypes.Counter}
  */
@@ -75,7 +75,7 @@ ozpIwc.MetricsRegistry.prototype.counter=function(name) {
  * Returns the meter instance(s) for the given name(s). If it does not exist it will be created.
  *
  * @method meter
- * @param {...String} name Components of the name.
+ * @param {String} name Components of the name.
  *
  * @returns {ozpIwc.metricTypes.Meter}
  */
@@ -87,7 +87,7 @@ ozpIwc.MetricsRegistry.prototype.meter=function(name) {
  * Returns the gauge instance(s) for the given name(s). If it does not exist it will be created.
  *
  * @method gauge
- * @param {...String} name Components of the name.
+ * @param {String} name Components of the name.
  * @returns {ozpIwc.metricTypes.Gauge}
  */
 ozpIwc.MetricsRegistry.prototype.gauge=function(name) {
@@ -98,7 +98,7 @@ ozpIwc.MetricsRegistry.prototype.gauge=function(name) {
  * Returns the histogram instance(s) for the given name(s). If it does not exist it will be created.
  *
  * @method histogram
- * @param {...String} name Components of the name.
+ * @param {String} name Components of the name.
  *
  * @returns {ozpIwc.metricTypes.Histogram}
  */
@@ -110,7 +110,7 @@ ozpIwc.MetricsRegistry.prototype.histogram=function(name) {
  * Returns the timer instance(s) for the given name(s). If it does not exist it will be created.
  *
  * @method timer
- * @param {...String} name Components of the name.
+ * @param {String} name Components of the name.
  *
  * @returns {ozpIwc.metricTypes.Timer}
  */

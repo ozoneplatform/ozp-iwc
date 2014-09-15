@@ -10,6 +10,8 @@ var ozpIwc=ozpIwc || {};
  * @class MulticastParticipant
  * @namespace ozpIwc
  * @extends ozpIwc.Participant
+ * @constructor
+ *
  * @param {String} name The name of the participant.
  */
 ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name) {

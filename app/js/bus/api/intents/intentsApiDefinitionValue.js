@@ -6,11 +6,12 @@
  * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
  * @class IntentsApiDefinitionValue
  * @namespace ozpIwc
- * @extends CommonApiValue
+ * @extends ozpIwc.CommonApiValue
+ * @constructor
  *
- * @param {object} config
- *@param {object} config.entity
- * @param {string} config.entity.definitions - the list of definitions in this intent capability.
+ * @param {Object} config
+ *@param {Object} config.entity
+ * @param {String} config.entity.definitions the list of definitions in this intent capability.
  */
 ozpIwc.IntentsApiDefinitionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function (config) {
     config=config || {};
@@ -26,10 +27,24 @@ ozpIwc.IntentsApiDefinitionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, fun
     };
 });
 
+/**
+ * Returns if an update is needed.
+ * @todo (DOC).
+ *
+ * @method isUpdateNeeded
+ * @param {?} node
+ * @returns {Boolean}
+ */
 ozpIwc.IntentsApiDefinitionValue.prototype.isUpdateNeeded=function(node) {
     return this.pattern.test(node.resource);
 };
 
+/**
+ * Updates the Intents Api Definition value with a list of changed handlers.
+ *
+ * @method updateContent
+ * @param {String[]} changedNodes
+ */
 ozpIwc.IntentsApiDefinitionValue.prototype.updateContent=function(changedNodes) {
     this.version++;
     this.handlers=changedNodes;
@@ -38,6 +53,13 @@ ozpIwc.IntentsApiDefinitionValue.prototype.updateContent=function(changedNodes) 
     });
 };
 
+/**
+ * Returns the list of handlers registered to the definition value.
+ *
+ * @method getHandlers
+ * @param packetContext
+ * @returns {*[]}
+ */
 ozpIwc.IntentsApiDefinitionValue.prototype.getHandlers=function(packetContext) {
     return [this.handlers];
 };

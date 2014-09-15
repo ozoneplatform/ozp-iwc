@@ -203,7 +203,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet)
  * @method storeFragment
  * @param {ozpIwc.NetworkPacket} packet NetworkPacket containing an {{#crossLink "ozpIwc.FragmentPacket"}}{{/crossLink}} as its data property
  *
- * @returns {boolean} result true if successful.
+ * @returns {Boolean} result true if successful.
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) {
     if (!packet.data.fragment) {

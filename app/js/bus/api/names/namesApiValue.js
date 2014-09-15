@@ -5,9 +5,12 @@
 /**
  * @class NamesApiValue
  * @namespace ozpIwc
- * @extends CommonApiValue
+ * @extends ozpIwc.CommonApiValue
+ * @constructor
  *
- * @type {Function|*}
+ * @type {Function}
+ * @param {Object} config
+ * @param {String[]} config.allowedContentTypes a list of content types this Names Api value will accept.
  */
 ozpIwc.NamesApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
     if(!config || !config.allowedContentTypes) {

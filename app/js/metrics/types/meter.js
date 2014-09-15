@@ -5,7 +5,7 @@
 /**
  * @class Meter
  * @namespace ozpIwc.metricTypes
- * @extends ozpIwc.BaseMetric
+ * @extends ozpIwc.metricTypes.BaseMetric
  */
 ozpIwc.metricTypes.Meter=ozpIwc.util.extend(ozpIwc.metricTypes.BaseMetric,function() {
 	ozpIwc.metricTypes.BaseMetric.apply(this,arguments);

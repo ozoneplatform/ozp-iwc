@@ -77,7 +77,7 @@ var ozpIwc=ozpIwc || {};
 /**
  * @class TransportPacketContext
  * @namespace ozpIwc
- * @param {object} config
+ * @param {Object} config
  * @param {ozpIwc.TransportPacket} config.packet
  * @param {ozpIwc.Router} config.router
  * @param {ozpIwc.Participant} [config.srcParticpant]
@@ -135,7 +135,7 @@ ozpIwc.TransportPacketContext.prototype.replyTo=function(response) {
  * @class Router
  * @namespace ozpIwc
  * @constructor
- * @param {object} [config]
+ * @param {Object} [config]
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer]
  */
 /**
@@ -275,10 +275,10 @@ ozpIwc.Router.prototype.shutdown=function() {
  *     - {{#crossLink "ozpIwc.Router/#registerParticipant:event"}}{{/crossLink}}
  *
  * @method registerParticipant
- * @param {object} participant the participant object that contains a send() function.
- * @param {object} packet The handshake requesting registration.
+ * @param {Object} participant the participant object that contains a send() function.
+ * @param {Object} packet The handshake requesting registration.
  *
- * @returns {string} returns participant id
+ * @returns {String} returns participant id
  */
 ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
     packet = packet || {};

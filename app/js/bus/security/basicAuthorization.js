@@ -3,12 +3,9 @@ var ozpIwc=ozpIwc || {};
  * @submodule bus.security
  */
 
-/** @typedef {string} ozpIwc.security.Role */
-
-/** @typedef {string} ozpIwc.security.Permission */
-
+/** @typedef {String} ozpIwc.security.Role */
+/** @typedef {String} ozpIwc.security.Permission */
 /** @typedef { ozpIwc.security.Role[] } ozpIwc.security.Subject */
-
 /** 
  * @typedef {object} ozpIwc.security.Actor 
  * @property {ozpIwc.security.Subject} securityAttributes
@@ -29,7 +26,7 @@ ozpIwc.BasicAuthorization=function(config) {
 
     /**
      * @property roles
-     * @type object
+     * @type Object
      */
 	this.roles={};
 
@@ -53,7 +50,7 @@ ozpIwc.BasicAuthorization=function(config) {
  *
  * @method getRoleCount
  *
- * @returns {number} the number of roles defined
+ * @returns {Number} the number of roles defined
  */
 ozpIwc.BasicAuthorization.prototype.getRoleCount=function() {
     if (!this.roles || !Object.keys(this.roles)) {
@@ -65,10 +62,10 @@ ozpIwc.BasicAuthorization.prototype.getRoleCount=function() {
 /**
  *
  * @method implies
- * @param subjectVal
- * @param objectVal
+ * @param {Array} subjectVal
+ * @param {Array} objectVal
  *
- * @returns {*}
+ * @returns {Boolean}
  */
 ozpIwc.BasicAuthorization.prototype.implies=function(subjectVal,objectVal) {
     // no object value is trivially true
