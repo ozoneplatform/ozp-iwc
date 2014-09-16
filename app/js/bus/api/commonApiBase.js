@@ -21,11 +21,11 @@
     * @default {}
     */
 	this.participant=config.participant;
-    this.participant.on("unloadState",ozpIwc.CommonApiBase.prototype.unloadState,this);
-	this.participant.on("receiveApiPacket",ozpIwc.CommonApiBase.prototype.routePacket,this);
-    this.participant.on("becameLeaderEvent", ozpIwc.CommonApiBase.prototype.becameLeader,this);
-    this.participant.on("newLeaderEvent", ozpIwc.CommonApiBase.prototype.newLeader,this);
-    this.participant.on("startElection", ozpIwc.CommonApiBase.prototype.startElection,this);
+    this.participant.on("unloadState",this.unloadState,this);
+	this.participant.on("receiveApiPacket",this.routePacket,this);
+    this.participant.on("becameLeaderEvent", this.becameLeader,this);
+    this.participant.on("newLeaderEvent", this.newLeader,this);
+    this.participant.on("startElection", this.startElection,this);
 
    /**
     * An events module for the API.
@@ -72,12 +72,22 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,o
 };
 
 /**
- * Loads api data from the server.
+ * Loads api data from the server.  Intended to be overrided by subclasses to load data
+ * when this instance becomes a leader without receiving data from the previous leader.
  *
  * @method loadFromServer
+ */
+ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
+    // Do nothing by default
+};
+
+/**
+ * Loads api data from a specific endpoint.
+ *
+ * @method loadFromEndpoint
  * @param {String} endpointName The name of the endpoint to load from the server.
  */
-ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
+ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
     var endpoint=ozpIwc.endpoint(endpointName);
@@ -703,7 +713,8 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
                 if (self.participant.stateStore && Object.keys(self.participant.stateStore).length > 0) {
                     recvFunc();
                 } else {
-                    console.error(self.participant.name, self.participant.address, "Failed to retrieve state from", self.participant.previousLeader);
+                    self.loadFromServer();
+                    console.log(self.participant.name, "New leader(",self.participant.address, ") failed to retrieve state from previous leader(", self.participant.previousLeader, "), so is loading data from server.");
                 }
 
                 self.participant.off("receivedState", recvFunc);
@@ -712,6 +723,8 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
 
         } else {
             // This is the first of the bus, winner doesn't obtain any previous state
+            console.log(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
+            self.loadFromServer();
             self.setToLeader();
         }
     },0);

@@ -19,8 +19,17 @@
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-    this.loadFromServer("data");
+    
 });
+
+/**
+ * Loads data from the server.
+ *
+ * @method loadFromServer
+ */
+ozpIwc.DataApi.prototype.loadFromServer=function() {
+    this.loadFromEndpoint("data");
+};
 
 /**
  * Creates a DataApiValue from the given packet.

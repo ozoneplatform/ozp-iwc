@@ -29,8 +29,7 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     }));
     
     this.on("changedNode",this.updateIntents,this);
-       
-    this.loadFromServer("applications");
+
     
     
     // @todo populate user and system endpoints
@@ -51,6 +50,15 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
         }
     });    
 });
+
+/**
+ * Loads data from the server.
+ *
+ * @method loadFromServer
+ */
+ozpIwc.SystemApi.prototype.loadFromServer=function() {
+    this.loadFromEndpoint("applications");
+};
 
 /**
  * Update all intents registered to the given System Api node.
