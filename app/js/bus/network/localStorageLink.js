@@ -110,7 +110,7 @@ ozpIwc.LocalStorageLink = function(config) {
 				ozpIwc.metrics.counter('links.localStorage.packets.receive').inc();
 				self.peer.receive(self.linkId,packet);
 			} 
-		};
+		}
 	};
 	window.addEventListener('storage',receiveStorageEvent , false); 
 	
@@ -209,12 +209,12 @@ ozpIwc.LocalStorageLink.prototype.cleanKeys=function() {
 		var keyName=localStorage.key(i);
 		var k=this.splitKey(keyName);
 		if(k) {
-			if((k.id===this.selfId && k.createdAt <= myKeyExpiration) 
-					|| (k.createdAt <= otherKeyExpiration)) {
+			if((k.id===this.selfId && k.createdAt <= myKeyExpiration) ||
+					(k.createdAt <= otherKeyExpiration)) {
 				localStorage.removeItem(keyName);
 			}				
 		}
-	};
+	}
 
 
 };
@@ -228,7 +228,5 @@ ozpIwc.LocalStorageLink.prototype.cleanKeys=function() {
 ozpIwc.LocalStorageLink.prototype.send=function(packet) { 
 	localStorage.setItem(this.makeKey(packet.sequence),JSON.stringify(packet));
 	ozpIwc.metrics.counter('links.localStorage.packets.sent').inc();
-	var self=this;
-
 };
 

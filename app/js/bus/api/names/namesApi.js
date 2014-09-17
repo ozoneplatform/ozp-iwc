@@ -51,28 +51,28 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
         resource: '/api/data.api',
         entity: {'actions': ['get', 'set', 'delete', 'watch', 'unwatch', 'addChild', 'removeChild']},
         contentType: 'application/ozpIwc-api-descriptor-v1+json'
-    }
+    };
     var node=this.findOrMakeValue(packet);
     node.set(packet);
     packet = {
         resource: '/api/intents.api',
         entity: {'actions': ['get','set','delete','watch','unwatch','register','unregister','invoke']},
         contentType: 'application/ozpIwc-api-descriptor-v1+json'
-    }
+    };
     node=this.findOrMakeValue(packet);
     node.set(packet);
     packet = {
         resource: '/api/names.api',
         entity: {'actions': ['get','set','delete','watch','unwatch']},
         contentType: 'application/ozpIwc-api-descriptor-v1+json'
-    }
+    };
     node=this.findOrMakeValue(packet);
     node.set(packet);
     packet = {
         resource: '/api/system.api',
         entity: { 'actions': ['get','set','delete','watch','unwatch']},
         contentType: 'application/ozpIwc-api-descriptor-v1+json'
-    }
+    };
     node=this.findOrMakeValue(packet);
     node.set(packet);
 });

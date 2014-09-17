@@ -1,0 +1,7 @@
+app/js/bus/util/setImmediate.js
+app/js/common/promise-1.0.0.min.js
+app/js/common/es5-sham.js
+app/js/common/es5-shim.js
+app/js/bus/setImmediate.js
+test/lib/jasmine-2.0.0/**/*
+test/**/*.html

@@ -32,14 +32,14 @@ ozpIwc.MetricsRegistry=function() {
  * @returns {ozpIwc.MetricType} Null if the metric already exists of a different type. Otherwise a reference to
  * the metric.
  */
-ozpIwc.MetricsRegistry.prototype.findOrCreateMetric=function(name,type) {
+ozpIwc.MetricsRegistry.prototype.findOrCreateMetric=function(name,Type) {
 	var m= this.metrics[name];
     if(!m) {
-        m = this.metrics[name] = new type();
+        m = this.metrics[name] = new Type();
         m.name=name;
         return m;
     }
-	if(m instanceof type){
+	if(m instanceof Type){
 			return m;
 	} else {
 			return null;

@@ -1,4 +1,5 @@
 module.exports = function(grunt) {
+    /* jshint camelcase: false */
     var sampleDataBase={
                             "path":"data-schemas/mock",
                             options: {

@@ -215,7 +215,7 @@ ozpIwc.Client.prototype.receive=function(packet) {
  */
 ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromise) {
     var promise= preexistingPromise; // || new Promise();
-    if(!(this.isConnected() || fields.dst=="$transport")) {
+    if(!(this.isConnected() || fields.dst==="$transport")) {
         // when send is switched to promises, create the promise first and return it here, as well
         this.preconnectionQueue.push({
             'fields': fields,
@@ -478,8 +478,6 @@ ozpIwc.Client.prototype.createIframePeer=function() {
                     return !!otherCallback;
                 });
             });
-
-                };
-        return obj;
+        };
     };
 })();

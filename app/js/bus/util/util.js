@@ -79,7 +79,7 @@ ozpIwc.util.objectContainsAll=function(haystack,needles,equal) {
 };
 
 (function() {
-    ozpIwc.BUS_ROOT=window.location.protocol + "//" 
-            + window.location.host
-            +window.location.pathname.replace(/[^\/]+$/,"");
+    ozpIwc.BUS_ROOT=window.location.protocol + "//" +
+            window.location.host +
+            window.location.pathname.replace(/[^\/]+$/,"");
 })();

@@ -35,7 +35,7 @@ ozpIwc.util.extend=function(baseClass,newConstructor) {
     if(!baseClass || !baseClass.prototype) {
         console.error("Cannot create a new class for ",newConstructor," due to invalid baseclass:",baseClass);
         throw new Error("Cannot create a new class due to invalid baseClass.  Dependency not loaded first?");
-    };
+    }
     newConstructor.prototype = Object.create(baseClass.prototype);
     newConstructor.prototype.constructor = newConstructor;
     return newConstructor;
@@ -105,7 +105,7 @@ ozpIwc.util.parseQueryParams=function(query) {
     var params={};
 	var regex=/\??([^&=]+)=?([^&]*)/g;
 	var match;
-	while(match=regex.exec(query)) {
+	while((match=regex.exec(query)) !== null) {
 		params[match[1]]=decodeURIComponent(match[2]);
 	}
     return params;
@@ -121,8 +121,9 @@ ozpIwc.util.determineOrigin=function(url) {
     var a=document.createElement("a");
     a.href = url;
     var origin=a.protocol + "//" + a.hostname;
-    if(a.port)
+    if(a.port) {
         origin+= ":" + a.port;
+    }
     return origin;
 };
 

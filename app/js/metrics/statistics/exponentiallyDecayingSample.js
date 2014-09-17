@@ -67,7 +67,7 @@ ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.getValues = function()
   var values = [];
   var heap = this.values.clone();
 	var elt;
-  while(elt = heap.pop()) {
+  while((elt = heap.pop()) !== undefined) {
     values.push(elt.val);
   }
   return values;
@@ -123,13 +123,13 @@ ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.clear = function() {
  */
 ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.update = function(val, timestamp) {
   // Convert timestamp to seconds
-  if (timestamp == undefined) {
+  if (timestamp === undefined) {
     timestamp = this.tick();
   } else {
     timestamp = timestamp / 1000;
   }
-  var priority = this.weight(timestamp - this.startTime) / Math.random()
-    , value = {val: val, priority: priority};
+  var priority = this.weight(timestamp - this.startTime) / Math.random();
+  var value = {val: val, priority: priority};
   if (this.count < this.limit) {
     this.count += 1;
     this.values.push(value);
@@ -160,10 +160,9 @@ ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.weight = function(time
  */
 ozpIwc.metricsStats.ExponentiallyDecayingSample.prototype.rescale = function() {
   this.nextScaleTime = this.now() + this.rescaleThreshold;
-  var oldContent = this.values.content
-    , newContent = []
-    , elt
-    , oldStartTime = this.startTime;
+  var oldContent = this.values.content;
+  var newContent = [];
+  var oldStartTime = this.startTime;
   this.startTime = this.tick();
   // Downscale every priority by the same factor. Order is unaffected, which is why we're avoiding the cost of popping.
   for(var i = 0; i < oldContent.length; i++) {

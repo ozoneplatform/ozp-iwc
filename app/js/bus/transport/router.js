@@ -186,10 +186,10 @@ ozpIwc.Router=function(config) {
 	var self=this;
 
     /**
-     * @property self_id
+     * @property selfId
      * @type String
      */
-	this.self_id=ozpIwc.util.generateId();
+	this.selfId=ozpIwc.util.generateId();
 	
     /**
      * A key value store of all participants local to the router.
@@ -284,7 +284,7 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
     packet = packet || {};
     var address;
     do {
-        address=ozpIwc.util.generateId()+"."+this.self_id;
+        address=ozpIwc.util.generateId()+"."+this.selfId;
     } while(this.participants.hasOwnProperty(address));
 
     var registerEvent=new ozpIwc.CancelableEvent({

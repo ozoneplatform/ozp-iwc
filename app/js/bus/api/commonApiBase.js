@@ -128,14 +128,14 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
     }
     
     var self=this;
-    if(data._embedded && data._embedded['item']) {
-        for (var i in data._embedded['item']) {
-            var object = data._embedded['item'][i];
+    if(data._embedded && data._embedded.item) {
+        for (var i in data._embedded.item) {
+            var object = data._embedded.item[i];
             this.updateResourceFromServer(object,object._links.self.href,endpoint);
         }
     }
-    if(data._links && data._links['item']) {
-        data._links['item'].forEach(function(object) {
+    if(data._links && data._links.item) {
+        data._links.item.forEach(function(object) {
             var href=object.href;
             endpoint.get(href).then(function(objectResource){
                 self.updateResourceFromServer(objectResource,href,endpoint);
