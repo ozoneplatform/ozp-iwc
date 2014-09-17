@@ -27,8 +27,11 @@ describe("Event",function() {
 		// how many registrations we want, gets
 		// counted down be each listener
 		var hits=0;
+        var hitsFn = function() {
+            hits++;
+        };
 		for(var i=0; i< 10; ++i) {
-			event.on("1",function() {	hits++;});		
+			event.on("1", hitsFn);
 		}
 		event.trigger("1");		
 		
@@ -37,20 +40,25 @@ describe("Event",function() {
 	
 	it("unregisters handlers", function() {
 		var hits=0;
-		var handler=function() { hits++;};
-		event.on("1",handler);		
+        var hitsFn = function() {
+            hits++;
+        };
+		event.on("1",hitsFn);
 		event.trigger("1");		
 		expect(hits).toEqual(1);		
 
-		event.off("1",handler);
+		event.off("1",hitsFn);
 		event.trigger("1");		
 		expect(hits).toEqual(1);		
 	});
 	
 	it("unregisters one of many handlers", function() {
 		var hits=0;
+        var hitsFn = function() {
+            hits++;
+        };
 		for(var i=0; i< 10; ++i) {
-			event.on("1",function() {	hits++;});		
+			event.on("1", hitsFn);
 		}
 		var handler=function() { hits++;};
 		// 11 handlers at this point

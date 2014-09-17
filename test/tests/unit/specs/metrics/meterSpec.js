@@ -14,7 +14,7 @@ describe("Metrics: Meter",function() {
 		meter.mark(5);
 		meter.mark(1);
 		var v=meter.get();
-		expect(v['count']).toBe(6);
+		expect(v.count).toBe(6);
 	});
 	
 	it("calculates a reasonable one minute rate",function() {
@@ -27,9 +27,9 @@ describe("Metrics: Meter",function() {
 		// use fairly loose tolerances because this test is 
 		
 		var v=meter.get();
-		expect(v['rate_1m']).toBeApproximately(1000,0.1);
-		expect(v['rate_5m']).toBeApproximately(1000,0.1);
-		expect(v['rate_15m']).toBeApproximately(1000,0.1);
-		expect(v['rate_mean']).toBeApproximately(1000,0.1);
+		expect(v.rate1m).toBeApproximately(1000,0.1);
+		expect(v.rate5m).toBeApproximately(1000,0.1);
+		expect(v.rate15m).toBeApproximately(1000,0.1);
+		expect(v.rateMean).toBeApproximately(1000,0.1);
 	});
 });

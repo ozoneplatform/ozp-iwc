@@ -2,6 +2,7 @@ describe("KeyBroadcastLocalStorageLink", function () {
     var peer;
     var link;
     var event;
+    var clockOffset;
 
     var dataGenerator = function (size) {
         var result = "";
@@ -22,7 +23,7 @@ describe("KeyBroadcastLocalStorageLink", function () {
     var networkPacketGenerator = function (transportPacket) {
         return {
             sequence: link.peer.sequenceCounter++,
-            src_peer: ozpIwc.util.generateId(),
+            srcPeer: ozpIwc.util.generateId(),
             data: transportPacket
         };
     };
@@ -83,7 +84,7 @@ describe("KeyBroadcastLocalStorageLink", function () {
                 fragments[fragmentPacket.msgId][fragmentPacket.id] = fragmentPacket.chunk;
 
                 // Once all packets received then test the defragmenting
-                if (fragments[fragmentPacket.msgId].length == expectedFragments && !called) {
+                if (fragments[fragmentPacket.msgId].length === expectedFragments && !called) {
                     called = true;
                     for (var i = 0; i < fragmentPacket.total; i++) {
                         expect(fragmentPacket.chunk.length).not.toBeGreaterThan(this.fragmentSize);
@@ -114,10 +115,10 @@ describe("KeyBroadcastLocalStorageLink", function () {
                 fragments[fragmentPacket.msgId] = fragments[fragmentPacket.msgId] || [];
                 fragments[fragmentPacket.msgId][fragmentPacket.id] = fragmentPacket.chunk;
 
-                if (fragments[fragmentPacket.msgId].length == expectedFragments && !called) {
+                if (fragments[fragmentPacket.msgId].length === expectedFragments && !called) {
                     called = true;
                     for (var i = 0; i < fragmentPacket.total; i++) {
-                        deFragmented += fragments[fragmentPacket.msgId][i]
+                        deFragmented += fragments[fragmentPacket.msgId][i];
                     }
                     expect(JSON.parse(fragments[fragmentPacket.msgId].join(''))).toEqual(referencePacket.data);
                     done();
@@ -180,7 +181,7 @@ describe("KeyBroadcastLocalStorageLink", function () {
 
         it("converts fragments back into a TransportPacket", function() {
             var msgId = ozpIwc.util.generateId();
-            var src_peer = ozpIwc.util.generateId();
+            var srcPeer = ozpIwc.util.generateId();
             var fragmentPacket1 = {
                 fragment: true,
                 total: 2,
@@ -196,18 +197,18 @@ describe("KeyBroadcastLocalStorageLink", function () {
                 chunk: "true}"
             };
             var networkPacket1 = networkPacketGenerator(fragmentPacket1);
-            networkPacket1.src_peer = src_peer;
+            networkPacket1.srcPeer = srcPeer;
             var networkPacket2 = networkPacketGenerator(fragmentPacket2);
-            networkPacket2.src_peer = src_peer;
+            networkPacket2.srcPeer = srcPeer;
 
             // override link.peer.receive to check output
             link.peer.receive = function (linkId, networkPacket) {
                 expect(networkPacket.sequence).toEqual(fragmentPacket2.sequence);
-                expect(networkPacket.src_peer).toEqual(fragmentPacket2.src_peer);
+                expect(networkPacket.srcPeer).toEqual(fragmentPacket2.srcPeer);
                 expect(networkPacket.data).toEqual({foo: true});
             };
             link.handleFragment(networkPacket1);
             link.handleFragment(networkPacket2);
-        })
+        });
     });
 });

@@ -54,14 +54,14 @@ ozpIwc.metricTypes.Meter.prototype.mark=function(delta) {
 
 /**
  * @method get
- * @returns {{rate_1m: (Number), rate_5m: (Number), rate_15m: (Number), rate_mean: number, count: (Number)}}
+ * @returns {{rate1m: (Number), rate5m: (Number), rate15m: (Number), rateMean: number, count: (Number)}}
  */
 ozpIwc.metricTypes.Meter.prototype.get=function() {
 	return {
-		'rate_1m' : this.m1Rate.rate(),
-		'rate_5m' : this.m5Rate.rate(),
-		'rate_15m' : this.m15Rate.rate(),
-		'rate_mean' : this.value / (ozpIwc.util.now() - this.startTime) * 1000,
+		'rate1m' : this.m1Rate.rate(),
+		'rate5m' : this.m5Rate.rate(),
+		'rate15m' : this.m15Rate.rate(),
+		'rateMean' : this.value / (ozpIwc.util.now() - this.startTime) * 1000,
 		'count' : this.value
 	};
 };

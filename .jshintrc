@@ -14,12 +14,36 @@
   "quotmark": false,
   "regexp": true,
   "undef": true,
-  "unused": true,
+  "unused": "vars",
   "strict": false,
   "trailing": true,
   "smarttabs": true,
   "globals": {
     "angular": false,
-    "ozpIwc": false
+    "ozpIwc": false,
+
+    // jasmine globals
+      "describe": false,
+      "xdescribe": false,
+      "beforeEach": false,
+      "afterEach": false,
+      "inject": false,
+      "it": false,
+      "xit": false,
+      "expect": false,
+      "jasmine": false,
+      "done": false,
+      "alert": false,
+      "spyOn": false,
+
+      //Test globals
+      "tick": true,
+      "doneSemaphore": true,
+      "TestParticipant": true,
+      "TestPacketContext": true,
+      "FakeRouter": true,
+      "commonApiValueContractTests": true,
+      "customMatchers": true,
+      "ozpIwc": true
   }
 }

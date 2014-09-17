@@ -79,7 +79,7 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
                 'action': i.action,
                 'icon': i.icon,
                 'label': i.label,
-                '_links': node.entity['_links'],
+                '_links': node.entity._links,
                 'invokeIntent': {
                     'action' : 'invoke',
                     'resource' : node.resource
@@ -200,6 +200,6 @@ ozpIwc.SystemApi.prototype.launchApplication=function(node,mailboxNode) {
         "ozpIwc.mailbox="+encodeURIComponent(mailboxNode.resource)
     ];
     
-    window.open(node.entity['_links'].describes.href,launchParams.join("&"));    
+    window.open(node.entity._links.describes.href,launchParams.join("&"));
 };
 

@@ -10,10 +10,12 @@ describe("Metrics: Timer",function() {
 	});
 
 	it("records data with time()",function() {
-		for(var i=1; i <= 10; ++i) {
-			timer.time(function() {
+        var i;
+        var tickFn = function() {
 				tick(i);
-			});
+        };
+		for(i=1; i <= 10; ++i) {
+			timer.time(tickFn);
 		}
 		var v=timer.get();
 		expect(v.count).toBe(10);

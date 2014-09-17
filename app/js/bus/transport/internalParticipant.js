@@ -52,7 +52,7 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
  * @returns {Number} The number of registered callbacks.
  */
 ozpIwc.InternalParticipant.prototype.getCallbackCount=function() {
-    if (!this.replyCallbacks | !Object.keys(this.replyCallbacks)) {
+    if (!this.replyCallbacks || !Object.keys(this.replyCallbacks)) {
         return 0;
     }
     return Object.keys(this.replyCallbacks).length;

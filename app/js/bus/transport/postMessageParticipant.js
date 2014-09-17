@@ -247,7 +247,7 @@ ozpIwc.PostMessageParticipantListener.prototype.findParticipant=function(sourceW
 		if(this.participants[i].sourceWindow === sourceWindow) {
 			return this.participants[i];
 		}
-	};
+	}
 };
 
 /**

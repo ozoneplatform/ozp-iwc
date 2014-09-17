@@ -19,12 +19,12 @@ describe("Endpoint Registry",function() {
     });
 
     it("loads the API from the default root",function() {
-        var e=new ozpIwc.EndpointRegistry();
+        new ozpIwc.EndpointRegistry();
         expect(ozpIwc.util.ajax).toHaveBeenCalledWith(jasmine.objectContaining({'href':"api"}));
     });
     
     it("loads the API from a specified root",function() {
-        var e=new ozpIwc.EndpointRegistry({'apiRoot':"foo/bar"});
+        new ozpIwc.EndpointRegistry({'apiRoot':"foo/bar"});
         expect(ozpIwc.util.ajax).toHaveBeenCalledWith(jasmine.objectContaining({'href':"foo/bar"}));
     });
     

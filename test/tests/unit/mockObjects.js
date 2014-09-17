@@ -1,3 +1,6 @@
+/* jshint unused:false */
+// TestParticipant, FakePeer, and FakeRouter are used elsewhere.
+
 //========================================================
 // Fake peer that just stores the packets that it receives
 //========================================================
@@ -27,7 +30,6 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
     this.receivedPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "receivedPackets");
     this.forbiddenPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "forbiddenPackets");
 
-    var self = this;
 
     this.router = {
         'send': function() {
@@ -117,15 +119,18 @@ var FakeRouter = function() {
     };
     this.pump = function() {
         var processed = 0;
-        while (this.packetQueue.length) {
-            processed++;
-            var packet = this.packetQueue.shift();
-//				console.log("PACKET(" + packet.src + "): ",packet);
-            this.participants.forEach(function(l) {
+        var recvFn = function(participants,packet) {
+            participants.forEach(function(l){
                 if (l.address !== packet.src) {
                     l.receiveFromRouter(new TestPacketContext({'packet': packet}));
                 }
             });
+        };
+        while (this.packetQueue.length) {
+            processed++;
+            var packet = this.packetQueue.shift();
+//				console.log("PACKET(" + packet.src + "): ",packet);
+            recvFn(this.participants,packet);
         }
         return processed;
     };

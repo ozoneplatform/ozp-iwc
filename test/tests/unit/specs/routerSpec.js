@@ -4,8 +4,6 @@ describe("Router", function() {
     var fakePeer;
 
     beforeEach(function() {
-        sendCount = receiveCount = 0;
-
         fakePeer = new ozpIwc.Event();
         fakePeer.packets = [];
         fakePeer.send = function(packet) {
@@ -36,7 +34,7 @@ describe("Router", function() {
         it("assigns a participant id derived from the router id", function() {
             var participantId = router.registerParticipant(participant, {});
 
-            expect(participantId).toMatch(new RegExp("(.*)\." + router.self_id));
+            expect(participantId).toMatch(new RegExp("(.*)\\." + router.selfId));
         });
 
         it("calls registration handlers", function() {
@@ -150,7 +148,7 @@ describe("Router", function() {
                 expect(packetContext.packet.entity).toEqual({foo: "bar"});
                 done();
             });
-            var packet = participant.send({
+            participant.send({
                 dst: participant2.address,
                 permissions: {'color': "red"},
                 entity: {'foo': "bar"}

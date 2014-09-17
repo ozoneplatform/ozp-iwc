@@ -4,11 +4,7 @@ describe("Sample Interface",function() {
 		["Uniform Sample",ozpIwc.metricsStats.UniformSample],
 		["Exponentially Decaying Sample",ozpIwc.metricsStats.ExponentiallyDecayingSample]
 	];
-
-	for(var sampleClassI=0;sampleClassI < sampleClasses.length;sampleClassI++) {
-		var Sample=sampleClasses[sampleClassI][1];
-		var sampleClassName=sampleClasses[sampleClassI][0];
-		describe(sampleClassName,function() {
+    var sampleClassTests = function() {
 			var sample;
 	
 			beforeEach(function() {
@@ -45,7 +41,11 @@ describe("Sample Interface",function() {
 			});			
 			
 			
-		});
+    };
+	for(var sampleClassI=0;sampleClassI < sampleClasses.length;sampleClassI++) {
+		var Sample=sampleClasses[sampleClassI][1];
+		var sampleClassName=sampleClasses[sampleClassI][0];
+		describe(sampleClassName, sampleClassTests);
 	}// loop over all sample classes
 
 });
@@ -65,7 +65,8 @@ describe("Uniform Sample Specific Functions",function() {
 	});
 
 	it("randomly replaces values once the buffer is full (extremely small chance that this test will occasionally fail)",function() {
-		for(var i=0; i<10000;++i) {
+        var i;
+		for(i=0; i<10000;++i) {
 			sample.update(i);
 		}
 
@@ -74,7 +75,7 @@ describe("Uniform Sample Specific Functions",function() {
 		// Should be at least one value larger than 10 in here.
 		// not going for statistical soundness, just that it does
 		// put some values in
-		for(var i=0;i<v.length;++i) {
+		for(i=0;i<v.length;++i) {
 			if(v[i]>10) {
 				success=true;
 			}
@@ -99,7 +100,8 @@ describe("Exponentially Decaying Sample functionality",function() {
 	});
 
 	it("randomly replaces values once the buffer is full (extremely small chance that this test will occasionally fail)",function() {
-		for(var i=0; i<10000;++i) {
+        var i;
+		for(i=0; i<10000;++i) {
 			sample.update(i);
 		}
 
@@ -108,7 +110,7 @@ describe("Exponentially Decaying Sample functionality",function() {
 		// Should be at least one value larger than 10 in here.
 		// not going for statistical soundness, just that it does
 		// put some values in
-		for(var i=0;i<v.length;++i) {
+		for(i=0;i<v.length;++i) {
 			if(v[i]>10) {
 				success=true;
 			}

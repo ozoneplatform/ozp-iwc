@@ -81,7 +81,7 @@ ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
         case 4:
             return createHandler(packet.resource);
         default:
-            throw new ozpIwc.ApiError("badResource","Invalid resource: " + packet.resource)
+            throw new ozpIwc.ApiError("badResource","Invalid resource: " + packet.resource);
     }
 };
 

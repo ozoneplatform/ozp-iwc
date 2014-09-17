@@ -16,14 +16,13 @@ ozpIwc.RouterWatchdog = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(
      * @type String
      */
     this.participantType = "routerWatchdog";
-    var self = this;
 
     /**
      * Fired when connected.
      * @event #connected
      */
     this.on("connected", function() {
-        this.name = this.router.self_id;
+        this.name = this.router.selfId;
     }, this);
 
     /**
@@ -47,16 +46,16 @@ ozpIwc.RouterWatchdog = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(
  * @method setupWatches
  */
 ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
-    this.name = this.router.self_id;
+    this.name = this.router.selfId;
     var self=this;
     var heartbeat=function() {
         self.send({
             dst: "names.api",
             action: "set",
-            resource: "/router/" + self.router.self_id,
+            resource: "/router/" + self.router.selfId,
             contentType: "application/ozpIwc-router-v1+json",
             entity: {
-                'address': self.router.self_id,
+                'address': self.router.selfId,
                 'participants': self.router.getParticipantCount()
             }
         });

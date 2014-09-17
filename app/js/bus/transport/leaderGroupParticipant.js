@@ -516,8 +516,9 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
             this.cancelElection();
             this.activeStates.election = false;
         } else {
-            if(!this.inElection())
-            this.electionQueue=[];
+            if(!this.inElection()) {
+                this.electionQueue = [];
+            }
         }
         // Quell the rebellion!
         this.startElection();

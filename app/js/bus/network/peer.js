@@ -113,13 +113,13 @@ ozpIwc.Peer.maxSeqIdPerSource=500;
  */
 ozpIwc.Peer.prototype.haveSeen=function(packet) {
     // don't forward our own packets
-    if (packet.src_peer === this.selfId) {
+    if (packet.srcPeer === this.selfId) {
         ozpIwc.metrics.counter('network.packets.droppedOwnPacket').inc();
         return true;
     }
-    var seen = this.packetsSeen[packet.src_peer];
+    var seen = this.packetsSeen[packet.srcPeer];
     if (!seen) {
-        seen = this.packetsSeen[packet.src_peer] = [];
+        seen = this.packetsSeen[packet.srcPeer] = [];
     }
 
     // abort if we've seen the packet before
@@ -147,7 +147,7 @@ ozpIwc.Peer.prototype.haveSeen=function(packet) {
  */
 ozpIwc.Peer.prototype.send= function(packet) {
     var networkPacket={
-        src_peer: this.selfId,
+        srcPeer: this.selfId,
         sequence: this.sequenceCounter++,
         data: packet
     };
@@ -283,7 +283,7 @@ ozpIwc.Peer.prototype.shutdown=function() {
  */
 
 /**
- * The src_peer of the fragments expected.
+ * The srcPeer of the fragments expected.
  * @property srcPeer
  * @type String
  */

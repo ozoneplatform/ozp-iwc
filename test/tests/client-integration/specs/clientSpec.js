@@ -14,10 +14,6 @@ describe("IWC Client", function() {
         sendTick();
     };
 
-    var latency = function(packet) {
-        return ozpIwc.util.now() - packet.time;
-    };
-
     afterEach(function() {
         if (client) {
             client.disconnect();
@@ -34,7 +30,7 @@ describe("IWC Client", function() {
             'peerUrl': "http://localhost:14002"
         });
         
-        var gate = done_semaphore(2, done);
+        var gate = doneSemaphore(2, done);
         client.send({
             'dst': "data.api",
             'action': "get",
@@ -59,7 +55,7 @@ describe("IWC Client", function() {
                 'client': client
             });
 
-            var gate = done_semaphore(2, done);
+            var gate = doneSemaphore(2, done);
 
             participant.on("connected", gate);
             client.on("connected", gate);

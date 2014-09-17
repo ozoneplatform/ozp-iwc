@@ -5,9 +5,9 @@ describe("Client",function() {
         var receiveData=function(event) {
             var data=event.message.data;
             if (isStructuredClonesSupported) {
-                expect(typeof(data)=="object");
+                expect(typeof(data)==="object");
             } else {
-                expect(typeof(data)=="string");
+                expect(typeof(data)==="string");
             }
         };
 
@@ -23,7 +23,7 @@ describe("Client",function() {
         });
 
         it("sends an object via postMessage and does not stringify unless necessary ",function() {
-            client.send(new Object());
+            client.send({});
         });
     });
     

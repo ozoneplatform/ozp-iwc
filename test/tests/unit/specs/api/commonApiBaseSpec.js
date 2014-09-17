@@ -4,8 +4,7 @@ describe("Common API Base class",function() {
     var simpleNode;
     
 	beforeEach(function() {	
-		packets=[];
-		
+
 		apiBase=new ozpIwc.CommonApiBase({
 			'participant': new TestParticipant()
 		});

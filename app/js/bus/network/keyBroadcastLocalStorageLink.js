@@ -186,8 +186,8 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet)
         window.clearTimeout(this.fragments[key].fragmentTimer);
 
         // Remove the last sequence from the known packets to reuse it for the defragmented packet
-        var packetIndex = this.peer.packetsSeen[defragmentedPacket.src_peer].indexOf(defragmentedPacket.sequence);
-        delete this.peer.packetsSeen[defragmentedPacket.src_peer][packetIndex];
+        var packetIndex = this.peer.packetsSeen[defragmentedPacket.srcPeer].indexOf(defragmentedPacket.sequence);
+        delete this.peer.packetsSeen[defragmentedPacket.srcPeer][packetIndex];
 
         this.peer.receive(this.linkId, defragmentedPacket);
         ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
@@ -213,7 +213,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
     this.fragments = this.fragments || [];
     // NetworkPacket properties
     var sequence = packet.sequence;
-    var src_peer = packet.src_peer;
+    var srcPeer = packet.srcPeer;
     // FragmentPacket Properties
     var key = packet.data.msgId;
     var id = packet.data.id;
@@ -245,16 +245,16 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
     window.clearTimeout(this.fragments[key].fragmentTimer);
     this.fragments[key].fragmentTimer = window.setTimeout(this.fragments[key].timeoutFunc, this.fragmentTimeout);
 
-    // keep a copy of properties needed for defragmenting, the last sequence & src_peer received will be
+    // keep a copy of properties needed for defragmenting, the last sequence & srcPeer received will be
     // reused in the defragmented packet
     this.fragments[key].total = total || this.fragments[key].total ;
     this.fragments[key].sequence = (sequence !== undefined) ? sequence : this.fragments[key].sequence;
-    this.fragments[key].src_peer = src_peer || this.fragments[key].src_peer;
+    this.fragments[key].srcPeer = srcPeer || this.fragments[key].srcPeer;
     this.fragments[key].chunks[id] = chunk;
 
     // If the necessary properties for defragmenting aren't set the storage fails
     if (this.fragments[key].total === undefined || this.fragments[key].sequence === undefined ||
-        this.fragments[key].src_peer === undefined) {
+        this.fragments[key].srcPeer === undefined) {
         return null;
     } else {
         ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.fragments.received').inc();
@@ -271,7 +271,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
  * @returns {ozpIwc.NetworkPacket} result the reconstructed NetworkPacket with TransportPacket as its data property.
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragments) {
-    if (fragments.total != fragments.chunks.length) {
+    if (fragments.total !== fragments.chunks.length) {
         return null;
     }
     try {
@@ -279,7 +279,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragm
         return {
             defragmented: true,
             sequence: fragments.sequence,
-            src_peer: fragments.src_peer,
+            srcPeer: fragments.srcPeer,
             data: result
         };
     } catch (e) {

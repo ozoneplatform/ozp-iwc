@@ -1,3 +1,7 @@
+
+/* jshint unused:false */
+// doneSemaphore & tick aren't used locally.
+
 var customMatchers={
 	toBeInstanceOf: function(util, customEqualityTesters) { return {
 		compare: function(actual,expected) {
@@ -49,7 +53,7 @@ beforeEach(function() {
 });
 
 
-function done_semaphore(count,done) {
+function doneSemaphore(count,done) {
     return function() { 
         if(--count <= 0) {
             done();

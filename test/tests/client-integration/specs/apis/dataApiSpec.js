@@ -11,7 +11,7 @@ describe("Data API", function () {
             'client': client
         });
 
-        var gate=done_semaphore(2,done);
+        var gate=doneSemaphore(2,done);
 
         participant.on("connected",gate);
         client.on("connected",gate);
