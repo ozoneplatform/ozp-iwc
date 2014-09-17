@@ -12,7 +12,6 @@ describe("LocalStorageLink",function() {
 	};
 	
 	beforeEach(function() {
-		clockOffset=0;
 		localStorage.clear();
 		
 		event=new ozpIwc.Event();
@@ -25,7 +24,6 @@ describe("LocalStorageLink",function() {
 	afterEach(function() {
 		jasmine.clock().uninstall();
 		event=link=null;
-		clockOffset=0;
 	});
 	
 	it("writes to localStorage",function() {

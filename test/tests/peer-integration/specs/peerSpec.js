@@ -37,17 +37,19 @@ describe('Participant Integration', function () {
         var clientCount = 0;
         var numClients = 2;
         var called = false;
+        var generateCB = function (client) {
+            clients.push(client);
+            clientCount++;
+            // Wait until
+            if (clientCount === numClients && !called) {
+                called = true;
+                done();
+            }
+        };
 
         for (var i = 0; i < numClients; i++) {
-            generateClient(clientGen, function (client) {
-                clients.push(client);
-                clientCount++;
-                // Wait until
-                if (clientCount == numClients && !called) {
-                    called = true;
-                    done();
-                }
-            });
+//            TODO: generateClient has been removed, peerSpec tests in re-write.
+            generateClient(clientGen,generateCB);
         }
     });
 
@@ -117,12 +119,12 @@ describe('Participant Integration', function () {
                     if (!called && receiveCount++ >= 100) {
                         expect(event.routerParticipants).not.toBeLessThan(1);
                         expect(event.postMessageParticipants).not.toBeLessThan(1);
-                        expect(event.leaderGroupElectionQueue).toBeDefined;
-                        expect(event.internalParticipantCallbacks).toBeDefined;
-                        expect(event.authorizedRoles).toBeDefined;
-                        expect(event.authenticatedRoles).toBeDefined;
-                        expect(event.metricsTypes).toBeDefined;
-                        expect(event.linksStorage).toBeDefined;
+                        expect(event.leaderGroupElectionQueue).toBeDefined();
+                        expect(event.internalParticipantCallbacks).toBeDefined();
+                        expect(event.authorizedRoles).toBeDefined();
+                        expect(event.authenticatedRoles).toBeDefined();
+                        expect(event.metricsTypes).toBeDefined();
+                        expect(event.linksStorage).toBeDefined();
                         called = true;
                         done();
                     }
@@ -179,7 +181,7 @@ describe('Participant Integration', function () {
             });
             expect(found).toBeTruthy();
 
-            if (foundAddresses.length == 0) {
+            if (foundAddresses.length === 0) {
                 if (!called) {
                     called = true;
                     done();
@@ -194,13 +196,13 @@ describe('Participant Integration', function () {
                 clients[0].send(getAddressPacket,addressCallback);
             }
             return false;
-        }
+        };
 
         var addressListCallback=function(packet) {
             packet.entity.forEach(function(id) {
                 if (id !== 'undefined') {
                     foundAddresses.push(id);
-                    console.log("retrieved address: " + id)
+                    console.log("retrieved address: " + id);
                 }
             });
 
@@ -238,7 +240,7 @@ describe('Participant Integration', function () {
             });
             expect(found).toBeTruthy();
 
-            if (foundAddresses.length == 0) {
+            if (foundAddresses.length === 0) {
                 if (!called) {
                     called = true;
                     done();
@@ -253,13 +255,13 @@ describe('Participant Integration', function () {
                 clients[0].send(getMulticastPacket,multicastCallback);
             }
             return false;
-        }
+        };
 
         var multicastListCallback=function(packet) {
             packet.entity.forEach(function(id) {
                 if (id !== 'undefined') {
                     foundAddresses.push(id);
-                    console.log("retrieved multicast address: " + id)
+                    console.log("retrieved multicast address: " + id);
                 }
             });
 

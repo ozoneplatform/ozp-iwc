@@ -16,7 +16,7 @@ describe("Intents API", function () {
 //            'client': client
 //        });
 
-        var gate=done_semaphore(1,done);
+        var gate=doneSemaphore(1,done);
 
 //        participant.on("connected",gate);
         client.on("connected",gate);
@@ -37,16 +37,8 @@ describe("Intents API", function () {
         invokeIntent: "system.api/application/123-412"
     };
 
-    var setEntity={
-        label: 'changed label',
-        invokeIntent: 'changed invokeIntent',
-        icon: 'www.changed.icon/icon.png',
-        action: 'changed action',
-        type: 'changed type'
-    };
 
     it('registers handlers', function (done) {
-        var called = false;
 
         client.api('intents.api').register('/text/plain/view', {
             contentType: "application/ozpIwc-intents-handler-v1+json",
@@ -63,7 +55,6 @@ describe("Intents API", function () {
     });
     
     it('uses sane defaults to register handlers', function (done) {
-        var called = false;
 
         client.api('intents.api').register('/text/plain/view', {
             contentType: "application/ozpIwc-intents-handler-v1+json",

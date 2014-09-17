@@ -2926,8 +2926,8 @@ ozpIwc.metricTypes.Histogram.prototype.mark=function(val,timestamp) {
 
 /**
  * @method get
- * @returns {{percentile_10, percentile_25, median, percentile_75, percentile_90, percentile_95, percentile_99,
- * percentile_999, variance: null, mean: null, stdDev: null, count: *, sum: *, max: *, min: *}}
+ * @returns {{percentile10, percentile25, median, percentile75, percentile90, percentile95, percentile99,
+ * percentile999, variance: null, mean: null, stdDev: null, count: *, sum: *, max: *, min: *}}
  */
 ozpIwc.metricTypes.Histogram.prototype.get=function() { 
 	var values=this.sample.getValues().map(function(v){
@@ -2948,14 +2948,14 @@ ozpIwc.metricTypes.Histogram.prototype.get=function() {
 	};
 
 	return {
-		'percentile_10': percentile(0.10),
-		'percentile_25': percentile(0.25),				
+		'percentile10': percentile(0.10),
+		'percentile25': percentile(0.25),
 		'median': percentile(0.50),				
-		'percentile_75': percentile(0.75),				
-		'percentile_90': percentile(0.90),				
-		'percentile_95': percentile(0.95),				
-		'percentile_99': percentile(0.99),				
-		'percentile_999': percentile(0.999),				
+		'percentile75': percentile(0.75),
+		'percentile90': percentile(0.90),
+		'percentile95': percentile(0.95),
+		'percentile99': percentile(0.99),
+		'percentile999': percentile(0.999),
 		'variance' : this.count < 1 ? null : this.varianceM2 / (this.count -1),
 		'mean' : this.count === 0 ? null : this.varianceMean,
 		'stdDev' : this.count < 1 ? null : Math.sqrt(this.varianceM2 / (this.count -1)),
@@ -3023,14 +3023,14 @@ ozpIwc.metricTypes.Meter.prototype.mark=function(delta) {
 
 /**
  * @method get
- * @returns {{rate_1m: (Number), rate_5m: (Number), rate_15m: (Number), rate_mean: number, count: (Number)}}
+ * @returns {{rate1m: (Number), rate5m: (Number), rate15m: (Number), rateMean: number, count: (Number)}}
  */
 ozpIwc.metricTypes.Meter.prototype.get=function() {
 	return {
-		'rate_1m' : this.m1Rate.rate(),
-		'rate_5m' : this.m5Rate.rate(),
-		'rate_15m' : this.m15Rate.rate(),
-		'rate_mean' : this.value / (ozpIwc.util.now() - this.startTime) * 1000,
+		'rate1m' : this.m1Rate.rate(),
+		'rate5m' : this.m5Rate.rate(),
+		'rate15m' : this.m15Rate.rate(),
+		'rateMean' : this.value / (ozpIwc.util.now() - this.startTime) * 1000,
 		'count' : this.value
 	};
 };

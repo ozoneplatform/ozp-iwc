@@ -19,13 +19,16 @@ describe("Leader Group Participant",function() {
 	var moveTime=function(step) {
 		var elected=false;
 		var round=0;
+        var leaderStatus = function(l) {
+            return l.isLeader();
+        };
 		while(!elected) {
 //			console.log("============= Round " + round + " ===================");
 			round++;
 			jasmine.clock().tick(step);
 			fakeRouter.pump();
 
-			elected=fakeRouter.participants.some(function(l) {return l.isLeader();});
+			elected=fakeRouter.participants.some(leaderStatus);
 		}
 	};
 
@@ -37,6 +40,7 @@ describe("Leader Group Participant",function() {
 			name: "foo"+fakeRouter.participants.length,
 			'priority': priority
 		});
+		fakeRouter.registerParticipant(l);
 		l.on("startElection", function() {
             l.changeState("election");
 			log("startElection[" + l.address + "]");
@@ -60,19 +64,41 @@ describe("Leader Group Participant",function() {
             l.events.trigger("newLeader");
         });
 		
-		l.TEST_nonElectionPackets=[];
+		l.nonElectionTestPackets=[];
 		l.on("receive",function(packet) {
-			l.TEST_nonElectionPackets.push(packet);
+			l.nonElectionTestPackets.push(packet);
 			return [];
 		});
 
-        fakeRouter.registerParticipant(l);
-
-        // Move the clock for the setImmediate's
-        tick(1);
-
 		return l;
 	};
+
+    var jitter = function() {
+        fakeRouter.jitter=0.5;
+
+        var lowbie=makeLeader(1);
+        var i;
+        for(i=10; i< 20; ++i) {
+            makeLeader(i);
+        }
+        var leader=makeLeader(100);
+
+        lowbie.startElection();
+
+        // step forward time by 50ms at a shot until the chatter stops
+        moveTime(10);
+
+        for(i=0; i< fakeRouter.participants.length-1; ++i) {
+            if(fakeRouter.participants[i].isLeader()) {
+//					console.log("Leader " + i + " thinks he is the bully");
+            }
+            expect(fakeRouter.participants[i].isLeader()).toEqual(false);
+        }
+
+        expect(leader.isLeader()).toEqual(true);
+
+	};
+
     beforeEach(function() {
         fakeRouter=new FakeRouter();
         ozpIwc.util.setImmediate=function(f) {
@@ -109,6 +135,8 @@ describe("Leader Group Participant",function() {
         var member=makeLeader(1);
 		var leader=makeLeader(2);
 
+		leader.startElection();
+
 		tick(1000);
 
 		expect(leader.isLeader()).toEqual(true);
@@ -117,31 +145,32 @@ describe("Leader Group Participant",function() {
 	
 	it("higher priority will take over",function() {
 		var member=makeLeader(1);
-
+		member.startElection();
         tick(1000);
 		
 		expect(member.isLeader()).toEqual(true);
 
 
 		var leader=makeLeader(2);
-
+		leader.startElection();
         tick(1000);
 		
 		expect(leader.isLeader()).toEqual(true);
 		expect(member.isLeader()).toEqual(false);
 	});
 	it("twelve members will elect the correct leader with the lowest one starting the election",function() {
-		depth=100;
 		var lowbie=makeLeader(1);
-		for(var i=10; i< 50; ++i) {
+        var i;
+		for(i=10; i< 20; ++i) {
 			makeLeader(i);
 		}
 		var leader=makeLeader(100);
 		
+		lowbie.startElection();
 
         tick(1000);
 		
-		for(var i=0; i< fakeRouter.participants.length-1; ++i) {
+		for(i=0; i< fakeRouter.participants.length-1; ++i) {
 			expect(fakeRouter.participants[i].isLeader()).toEqual(false);
 		}
 		
@@ -152,29 +181,7 @@ describe("Leader Group Participant",function() {
 
 	// since the jitter is random, run several rounds of it
 	for(var j=0;j<1;++j) {
-		it("member election works with jitter, round " + j,function() {
-			fakeRouter.jitter=.5;
-
-			var lowbie=makeLeader(1);
-			for(var i=10; i< 20; ++i) {
-				makeLeader(i);
-			}
-			var leader=makeLeader(100);
-
-
-			// step forward time by 50ms at a shot until the chatter stops
-			moveTime(10);
-
-			for(var i=0; i< fakeRouter.participants.length-1; ++i) {
-				if(fakeRouter.participants[i].isLeader()) {
-//					console.log("Leader " + i + " thinks he is the bully");
-				}
-				expect(fakeRouter.participants[i].isLeader()).toEqual(false);
-			}
-
-			expect(leader.isLeader()).toEqual(true);
-
-		});
+		it("member election works with jitter, round " + j, jitter);
 	}
 	describe("dispatch to the target",function() {
 		it("sends event on non-election packet", function() {
@@ -187,7 +194,7 @@ describe("Leader Group Participant",function() {
 					ver: 1,
 					entity: { foo: "bar" }
 				}});
-				expect(leader.TEST_nonElectionPackets.length).toBe(1);
+				expect(leader.nonElectionTestPackets.length).toBe(1);
 		});
 	});
 	

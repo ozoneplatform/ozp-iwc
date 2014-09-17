@@ -1,6 +1,6 @@
-function dataApiValueContractTests(classUnderTest,baseConfig) {
+function dataApiValueContractTests(ClassUnderTest,baseConfig) {
     describe("Conforms to the CommonApiValue contract", function() {
-        commonApiValueContractTests(classUnderTest);
+        commonApiValueContractTests(ClassUnderTest);
     });
     
     var value;
@@ -14,7 +14,7 @@ function dataApiValueContractTests(classUnderTest,baseConfig) {
             'permissions': ['perms'],
             'version': 1
         };
-        value = new classUnderTest(config);
+        value = new ClassUnderTest(config);
     });
     
     it("adds a child",function() {
@@ -137,7 +137,7 @@ function dataApiValueContractTests(classUnderTest,baseConfig) {
         expect(diff.addedChildren).toEqual(["child5"]);
         expect(diff.removedChildren).toEqual(["child2"]);        
     });
-};
+}
 
 describe("Data API Value", function() {
     dataApiValueContractTests(ozpIwc.DataApiValue);

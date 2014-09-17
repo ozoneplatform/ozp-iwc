@@ -1,11 +1,4 @@
 describe("Supplied ABAC policies",function() {
-	beforeEach(function() {
-		auth=new ozpIwc.BasicAuthorization();
-	});
-	
-	afterEach(function() {
-		auth=null;
-	});
 	describe("permit when object has no attributes",function() {
         it("permits with trivial request",function() {
             var request={

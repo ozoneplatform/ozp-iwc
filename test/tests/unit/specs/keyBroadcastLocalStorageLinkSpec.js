@@ -2,6 +2,7 @@ describe("KeyBroadcastLocalStorageLink", function () {
     var peer;
     var link;
     var event;
+    var clockOffset;
 
     var dataGenerator = function (size) {
         var result = "";
@@ -83,7 +84,7 @@ describe("KeyBroadcastLocalStorageLink", function () {
                 fragments[fragmentPacket.msgId][fragmentPacket.id] = fragmentPacket.chunk;
 
                 // Once all packets received then test the defragmenting
-                if (fragments[fragmentPacket.msgId].length == expectedFragments && !called) {
+                if (fragments[fragmentPacket.msgId].length === expectedFragments && !called) {
                     called = true;
                     for (var i = 0; i < fragmentPacket.total; i++) {
                         expect(fragmentPacket.chunk.length).not.toBeGreaterThan(this.fragmentSize);
@@ -114,10 +115,10 @@ describe("KeyBroadcastLocalStorageLink", function () {
                 fragments[fragmentPacket.msgId] = fragments[fragmentPacket.msgId] || [];
                 fragments[fragmentPacket.msgId][fragmentPacket.id] = fragmentPacket.chunk;
 
-                if (fragments[fragmentPacket.msgId].length == expectedFragments && !called) {
+                if (fragments[fragmentPacket.msgId].length === expectedFragments && !called) {
                     called = true;
                     for (var i = 0; i < fragmentPacket.total; i++) {
-                        deFragmented += fragments[fragmentPacket.msgId][i]
+                        deFragmented += fragments[fragmentPacket.msgId][i];
                     }
                     expect(JSON.parse(fragments[fragmentPacket.msgId].join(''))).toEqual(referencePacket.data);
                     done();
@@ -208,6 +209,6 @@ describe("KeyBroadcastLocalStorageLink", function () {
             };
             link.handleFragment(networkPacket1);
             link.handleFragment(networkPacket2);
-        })
+        });
     });
 });

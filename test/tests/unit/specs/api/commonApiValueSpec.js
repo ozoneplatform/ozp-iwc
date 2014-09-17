@@ -1,4 +1,4 @@
-function commonApiValueContractTests(classUnderTest,baseConfig) {
+function commonApiValueContractTests(ClassUnderTest,baseConfig) {
     baseConfig=baseConfig || {};
     var value;
     var config;
@@ -11,11 +11,11 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
         config.permissions= {'perms':"yes"};
         config.version= 1;
         
-        value = new classUnderTest(config);
+        value = new ClassUnderTest(config);
     });
 
     it("defaults to an empty value", function() {
-        value = new classUnderTest(baseConfig);
+        value = new ClassUnderTest(baseConfig);
         expect(value.resource).toBeUndefined();
         expect(value.entity).toBeUndefined();
         expect(value.contentType).toBeUndefined();
@@ -177,7 +177,7 @@ function commonApiValueContractTests(classUnderTest,baseConfig) {
             expect(rv.length).toEqual(4);
         });
     });
-};
+}
 describe("Common API Value", function() {
     commonApiValueContractTests(ozpIwc.CommonApiValue);
 });

@@ -1,26 +1,7 @@
 describe("Post Message Participant",function() {
     var fakeRouter;
 
-    var tick = function (t) {
-        fakeRouter.pump();
-        jasmine.clock().tick(t);
-        fakeRouter.pump();
-    };
 
-    var moveTime = function (step) {
-        var elected = false;
-        var round = 0;
-        while (!elected) {
-//			console.log("============= Round " + round + " ===================");
-            round++;
-            jasmine.clock().tick(step);
-            fakeRouter.pump();
-
-            elected = leaders.some(function (l) {
-                return l.isLeader();
-            });
-        }
-    };
     var makeParticipant = function() {
         var l = new ozpIwc.PostMessageParticipant({
             origin : "http://localhost:14000",
