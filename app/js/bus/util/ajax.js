@@ -41,7 +41,7 @@ ozpIwc.util.ajax = function (config) {
         };
         request.open(config.method, config.href, true);
 
-        if(config.method === "POST") {
+        if((config.method === "POST") || (config.method === "PUT")) {
             request.send(config.data);
         }
         request.setRequestHeader("Content-Type", "application/json");

@@ -14,6 +14,7 @@ ozpIwc.DataApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) 
 	ozpIwc.CommonApiValue.apply(this,arguments);
     config = config || {};
 	this.children=config.children || [];
+	this.persist=config.persist || true;
 });
 
 /**
@@ -96,3 +97,13 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
 	this.permissions=serverData.permissions || this.permissions;
 	this.version=serverData.version || this.version;
 };
+
+ozpIwc.DataApiValue.prototype.serialize=function() {
+	var serverData = {};
+	serverData.entity=this.entity;
+	serverData.contentType=this.contentType;
+	serverData.permissions=this.permissions;
+	serverData.version=this.version;
+	return serverData;
+};
+

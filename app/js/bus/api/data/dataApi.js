@@ -129,3 +129,23 @@ ozpIwc.DataApi.prototype.handleRemovechild=function(node,packetContext) {
         'response':'ok'
     });
 };
+
+/**
+ * 	Collect list of nodes to persist, send to server, reset persist flag.
+ * 	Currently sends every dirty node with a separate ajax call.
+ */
+ozpIwc.DataApi.prototype.persistNodes=function() {
+	// collect list of nodes to persist, send to server, reset persist flag
+	var nodes=[];
+	for (node in this.data) {
+		if (node.persist === true)
+			nodes[nodes.length]=node;
+		node.persist = false;
+	}
+	
+	// send list of objects to endpoint ajax call
+	if (nodes) {
+		ozpIwc.Endpoint.saveNodes(nodes);
+	}
+};
+

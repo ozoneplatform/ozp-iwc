@@ -29,6 +29,21 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
     });
 };
 
+ozpIwc.Endpoint.prototype.put=function(resource, data) {
+    var self=this;
+
+    return this.endpointRegistry.loadPromise.then(function() {
+        if(resource.indexOf(self.baseUrl)!==0) {
+            resource=self.baseUrl + resource;
+        }
+        return ozpIwc.util.ajax({
+            href:  resource,
+            method: 'PUT',
+			data: data
+        });
+    });
+};
+
 /**
  * @class EndpointRegistry
  * @namespace ozpIwc
@@ -85,3 +100,15 @@ ozpIwc.initEndpoints=function(apiRoot) {
         return registry.endpoint(name);
     };
 };
+
+ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
+	// PUT each node individually
+	// Currently, send to a fixed api point
+	// Soon, switch to using the node.self endpoint and remove fixed resource
+	var resource = "/data";
+	for (node in nodes) {
+		var tosend = JSON.stringify(node);
+		put((node.self || resource), tosend);
+	}
+};
+
