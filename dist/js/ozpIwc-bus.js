@@ -7913,7 +7913,7 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
  */
 ozpIwc.EndpointRegistry=function(config) {
     config=config || {};
-    var apiRoot=config.apiRoot || 'api';
+    var apiRoot=config.apiRoot || '/api';
     this.endPoints={};
     var self=this;
     this.loadPromise=ozpIwc.util.ajax({

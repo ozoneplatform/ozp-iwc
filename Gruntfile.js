@@ -187,7 +187,7 @@ module.exports = function(grunt) {
                 options: {port: 14001, base: ["dist","test/mockParticipant"]}
             },
             testBus: {
-                options:{ port: 14002, base: ['dist'] }
+                options:{ port: 14002, base: ['dist',sampleDataBase] }
             },
             demo1: {
                 options: { port: 15000, base: ["dist","demo/bouncingBalls"] }
