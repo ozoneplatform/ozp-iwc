@@ -50,6 +50,16 @@
      * @default {}
      */
      this.data={};
+
+     /**
+      * A flag to notify the participant the API has loaded its endpoint data if necessary. If this flag is set to false
+      * when the participant is ready to unblock its message queue, a
+      * {{#crossLink "ozpIwc.CommonApiBase/#apiDataLoaded:event"}}{{/crossLink}} event must be fired to unlock the queue.
+      * @property apiDataReady
+      * @type Boolean
+      * @default true
+      */
+     this.apiDataReady = true;
 };
 
 /**
@@ -78,6 +88,9 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,o
  * @param {String} endpointName The name of the endpoint to load from the server.
  */
 ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
+    this.apiDataReady = false;
+
+    // Force all packets to be queued until server load is completed.
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
     var endpoint=ozpIwc.endpoint(endpointName);
@@ -89,7 +102,9 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
             // update all the collection values
             self.dynamicNodes.forEach(function(resource) {
                 self.updateDynamicNode(self.data[resource]);
-            });        
+            });
+            self.apiDataReady = true;
+            self.events.trigger("apiDataLoaded");
     }).catch(function(e) {
         console.error("Could not load from api (" + endpointName + "): " + e.message,e);
     });
@@ -624,7 +639,19 @@ ozpIwc.CommonApiBase.prototype.becameLeader= function(){
         this.setToLeader();
 
     } else if (this.participant.leaderState === "election") {
-        this.leaderSync();
+        //If this is the initial state we need to wait till the endpoint data is ready
+        if(this.apiDataReady) {
+            console.log(this.participant.name, "was already ready.");
+            this.leaderSync();
+        } else {
+            var queueMore = function(){
+                console.log("called");
+                this.off("apiDataLoaded",queueMore);
+                this.leaderSync();
+            };
+            this.on("apiDataLoaded",queueMore,this);
+        }
+
     }
 };
 
