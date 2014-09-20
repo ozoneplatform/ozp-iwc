@@ -3,11 +3,13 @@ var ozpIwc=ozpIwc || {};
 /**
  * @class Endpoint
  * @namespace ozpIwc
- * @param endpointRegistry
+ * @param endpointRegistry Endpoint name
  * @constructor
  */
 ozpIwc.Endpoint=function(endpointRegistry) {
-    this.endpointRegistry=endpointRegistry;
+	var config={};
+	config.apiRoot=endpointRegistry;
+    this.endpointRegistry=new ozpIwc.EndpointRegistry(config);
 };
 
 /**
@@ -107,8 +109,8 @@ ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
 	// Soon, switch to using the node.self endpoint and remove fixed resource
 	var resource = "/data";
 	for (node in nodes) {
-		var tosend = JSON.stringify(node);
-		put((node.self || resource), tosend);
+		var tosend = JSON.stringify(nodes[node]);
+		put((nodes[node].self || resource), tosend);
 	}
 };
 

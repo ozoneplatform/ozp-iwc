@@ -19,7 +19,7 @@
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-    this.loadFromServer("data");
+    this.endpoint=this.loadFromServer("data") || {};
 });
 
 /**
@@ -138,14 +138,13 @@ ozpIwc.DataApi.prototype.persistNodes=function() {
 	// collect list of nodes to persist, send to server, reset persist flag
 	var nodes=[];
 	for (node in this.data) {
-		if (node.persist === true)
-			nodes[nodes.length]=node;
-		node.persist = false;
+		if (this.data[node].persist === true) {
+			nodes[nodes.length]=this.data[node];
+			this.data[node].persist = false;
+		}
 	}
-	
 	// send list of objects to endpoint ajax call
 	if (nodes) {
-		ozpIwc.Endpoint.saveNodes(nodes);
+		this.endpoint.saveNodes(nodes);
 	}
 };
-

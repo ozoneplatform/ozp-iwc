@@ -76,6 +76,7 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,o
  *
  * @method loadFromServer
  * @param {String} endpointName The name of the endpoint to load from the server.
+ * @return {ozpIwc.Endpoint} Returns endpoint for reuse in concrete apis.  Currently only data.
  */
 ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
@@ -93,6 +94,7 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
     }).catch(function(e) {
         console.error("Could not load from api (" + endpointName + "): " + e.message,e);
     });
+	return endpoint;
 };
 
 /**

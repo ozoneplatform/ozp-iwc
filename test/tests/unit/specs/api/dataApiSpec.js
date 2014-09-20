@@ -113,39 +113,12 @@ describe("Data API Class",function() {
         expect(changePacket.response).toEqual("changed");
         expect(changePacket.entity.removedChildren[0]).toEqual("child1");
     });
-    it("persists dirty nodes to server",function() {
-/////////////////////////////////////////////
-//		var dataApi;
-//		var node;
-//
-//		dataApi=new ozpIwc.DataApi({
-//			'participant': new TestParticipant()
-//		});
-//        
-//        node=new ozpIwc.DataApiValue({
-//            'resource': "/node",
-//            'entity' : { 'foo':1 },
-//            'contentType' : "application/json",
-//            'version' : 1
-//        });
-///////////////////////////////////////////////		
-
-		
-		
+    it("writes persist nodes to server",function() {
         dataApi.data['/node']=node;
 
-		spyOn(ozpIwc.Endpoint,"saveNodes").and.callFake(function(nodes) {
-            return new Promise(function(resolve,reject) {
-               resolve(nodes); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise : Returns a Promise object that is resolved with the given value. If the value is a thenable (i.e. has a then method), the returned promise will "follow" that thenable, adopting its eventual state; otherwise the returned promise will be fulfilled with the value.
-            });
-        });
-
+		spyOn(dataApi.endpoint,'saveNodes');
 		dataApi.persistNodes();
-
-        expect(dataApi.participant.sentPackets.length).toEqual(1);
-//        var changePacket=dataApi.participant.sentPackets[0];
-//        expect(changePacket.response).toEqual("changed");
-//        expect(changePacket.entity.removedChildren[0]).toEqual("child1");
+		expect(dataApi.endpoint.saveNodes).toHaveBeenCalled();  // update to verify data
     });
 
         
