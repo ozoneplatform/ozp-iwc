@@ -24,11 +24,19 @@
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
     var self = this;
-    this.loadFromServer("intents").then(function(data){
+    this.loadFromServer().then(function(data){
         console.log(self.participant.name,data);
     });
 });
 
+/**
+ * Loads data from the server.
+ *
+ * @method loadFromServer
+ */
+ozpIwc.IntentsApi.prototype.loadFromServer=function() {
+    return this.loadFromEndpoint("intents");
+};
 /**
  * Takes the resource of the given packet and creates an empty value in the IntentsApi. Chaining of creation is
  * accounted for (A handler requires a definition, which requires a capability).

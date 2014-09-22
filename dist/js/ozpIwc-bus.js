@@ -7163,11 +7163,11 @@ ozpIwc.ApiError=ozpIwc.util.extend(Error,function(action,message) {
     * @default {}
     */
 	this.participant=config.participant;
-    this.participant.on("unloadState",ozpIwc.CommonApiBase.prototype.unloadState,this);
-	this.participant.on("receiveApiPacket",ozpIwc.CommonApiBase.prototype.routePacket,this);
-    this.participant.on("becameLeaderEvent", ozpIwc.CommonApiBase.prototype.becameLeader,this);
-    this.participant.on("newLeaderEvent", ozpIwc.CommonApiBase.prototype.newLeader,this);
-    this.participant.on("startElection", ozpIwc.CommonApiBase.prototype.startElection,this);
+    this.participant.on("unloadState",this.unloadState,this);
+	this.participant.on("receiveApiPacket",this.routePacket,this);
+    this.participant.on("becameLeaderEvent", this.becameLeader,this);
+    this.participant.on("newLeaderEvent", this.newLeader,this);
+    this.participant.on("startElection", this.startElection,this);
 
    /**
     * An events module for the API.
@@ -7227,16 +7227,23 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,o
 };
 
 /**
- * Loads api data from the server.
+ * Loads api data from the server.  Intended to be overrided by subclasses to load data
+ * when this instance becomes a leader without receiving data from the previous leader.
  *
  * @method loadFromServer
+ */
+ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
+    // Do nothing by default
+};
+
+/**
+ * Loads api data from a specific endpoint.
+ *
+ * @method loadFromEndpoint
  * @param {String} endpointName The name of the endpoint to load from the server.
  */
-ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
-    this.apiDataReady = false;
-
-    // Force all packets to be queued until server load is completed.
-    // fetch the base endpoint. it should be a HAL Json object that all of the 
+ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
+    // fetch the base endpoint. it should be a HAL Json object that all of the
     // resources and keys in it
     var endpoint=ozpIwc.endpoint(endpointName);
     var resolveLoad, rejectLoad;
@@ -7907,7 +7914,8 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
                 if (self.participant.stateStore && Object.keys(self.participant.stateStore).length > 0) {
                     recvFunc();
                 } else {
-                    console.error(self.participant.name, self.participant.address, "Failed to retrieve state from", self.participant.previousLeader);
+                    self.loadFromServer();
+                    console.log(self.participant.name, "New leader(",self.participant.address, ") failed to retrieve state from previous leader(", self.participant.previousLeader, "), so is loading data from server.");
                 }
 
                 self.participant.off("receivedState", recvFunc);
@@ -7916,6 +7924,8 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
 
         } else {
             // This is the first of the bus, winner doesn't obtain any previous state
+            console.log(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
+            self.loadFromServer();
             self.setToLeader();
         }
     },0);
@@ -7972,9 +7982,6 @@ ozpIwc.EndpointRegistry=function(config) {
         for (var ep in data._links) {
             if (ep !== 'self') {
                 var link=data._links[ep].href;
-                if(link.charAt(link.length-1) !== "/") {
-                    link += "/";
-                }
                 self.endpoint(ep).baseUrl=link;
             }
         }
@@ -8030,10 +8037,20 @@ ozpIwc.initEndpoints=function(apiRoot) {
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
     var self = this;
-    this.loadFromServer("data").then(function(data){
+    this.loadFromServer().then(function(data){
         console.log(self.participant.name,data);
     });
+
 });
+
+/**
+ * Loads data from the server.
+ *
+ * @method loadFromServer
+ */
+ozpIwc.DataApi.prototype.loadFromServer=function() {
+    return this.loadFromEndpoint("data");
+};
 
 /**
  * Creates a DataApiValue from the given packet.
@@ -8268,11 +8285,19 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
     var self = this;
-    this.loadFromServer("intents").then(function(data){
+    this.loadFromServer().then(function(data){
         console.log(self.participant.name,data);
     });
 });
 
+/**
+ * Loads data from the server.
+ *
+ * @method loadFromServer
+ */
+ozpIwc.IntentsApi.prototype.loadFromServer=function() {
+    return this.loadFromEndpoint("intents");
+};
 /**
  * Takes the resource of the given packet and creates an empty value in the IntentsApi. Chaining of creation is
  * accounted for (A handler requires a definition, which requires a capability).
@@ -8766,8 +8791,7 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     this.loadFromServer("applications").then(function(data){
         console.log(self.participant.name,data);
     });
-    
-    
+
     // @todo populate user and system endpoints
     this.data["/user"]=new ozpIwc.CommonApiValue({
         resource: "/user",
@@ -8786,6 +8810,15 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
         }
     });    
 });
+
+/**
+ * Loads data from the server.
+ *
+ * @method loadFromServer
+ */
+ozpIwc.SystemApi.prototype.loadFromServer=function() {
+    this.loadFromEndpoint("applications");
+};
 
 /**
  * Update all intents registered to the given System Api node.

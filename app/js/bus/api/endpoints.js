@@ -49,9 +49,6 @@ ozpIwc.EndpointRegistry=function(config) {
         for (var ep in data._links) {
             if (ep !== 'self') {
                 var link=data._links[ep].href;
-                if(link.charAt(link.length-1) !== "/") {
-                    link += "/";
-                }
                 self.endpoint(ep).baseUrl=link;
             }
         }
