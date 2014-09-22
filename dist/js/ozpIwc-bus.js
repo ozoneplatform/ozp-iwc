@@ -7310,37 +7310,50 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
 
     if(data._embedded && data._embedded.item) {
         noEmbedded = false;
+//        console.log(this.participant.name, "embedded found:", data._embedded.item.length, data._embedded.item);
         branchesFound += data._embedded.item.length;
     }
 
-    if(data._links && data._links.item) {{
+    if(data._links && data._links.item) {
         noLinks = false;
+//        console.log(this.participant.name, "links found:", data._links.item.length, data._links.item);
         branchesFound += data._links.item.length;
     }
 
-    this.expectedBranches += branchesFound - 1;
 
-    if(data._embedded && data._embedded.item) {
-        for (var i in data._embedded.item) {
-            var object = data._embedded.item[i];
-            this.updateResourceFromServer(object,object._links.self.href,endpoint,res);
-        }
-    }
-    if(data._links && data._links.item)
 
-        data._links.item.forEach(function(object) {
-            var href=object.href;
-            endpoint.get(href).then(function(objectResource){
-                self.updateResourceFromServer(objectResource,href,endpoint, res);
-            }).catch(function(error) {
-                console.error("unable to load " + object.href + " because: ",error);
-            });
-        });
-    }
-    if(noEmbedded && noLinks){
+
+
+    if(noEmbedded && noLinks) {
         this.retrievedBranches++;
+//        console.log(this.participant.name,this.retrievedBranches,this.expectedBranches);
+//        console.log(this.participant.name, this.retrievedBranches, "Branch Resolved:", data);
         if(this.retrievedBranches === this.expectedBranches){
             res("RESOLVING");
+        }
+    } else {
+
+        this.expectedBranches += branchesFound - 1;
+
+//        console.log(this.participant.name, "End of branch NOT found", data, noEmbedded , noLinks);
+
+        if(data._embedded && data._embedded.item) {
+            for (var i in data._embedded.item) {
+                var object = data._embedded.item[i];
+                this.updateResourceFromServer(object,object._links.self.href,endpoint,res);
+            }
+        }
+
+        if(data._links && data._links.item) {
+
+            data._links.item.forEach(function(object) {
+                var href=object.href;
+                endpoint.get(href).then(function(objectResource){
+                    self.updateResourceFromServer(objectResource,href,endpoint, res);
+                }).catch(function(error) {
+                    console.error("unable to load " + object.href + " because: ",error);
+                });
+            });
         }
     }
 };
@@ -8036,10 +8049,6 @@ ozpIwc.initEndpoints=function(apiRoot) {
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-    var self = this;
-    this.loadFromServer().then(function(data){
-        console.log(self.participant.name,data);
-    });
 
 });
 
@@ -8049,7 +8058,10 @@ ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.DataApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint("data");
+    var self = this;
+    return this.loadFromEndpoint("data").then(function(data){
+        console.log(self.participant.name,data);
+    });
 };
 
 /**
@@ -8284,10 +8296,6 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
  */
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
-    var self = this;
-    this.loadFromServer().then(function(data){
-        console.log(self.participant.name,data);
-    });
 });
 
 /**
@@ -8296,7 +8304,10 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
  * @method loadFromServer
  */
 ozpIwc.IntentsApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint("intents");
+    var self = this;
+    return this.loadFromEndpoint("intents").then(function(data){
+        console.log(self.participant.name,data);
+    });
 };
 /**
  * Takes the resource of the given packet and creates an empty value in the IntentsApi. Chaining of creation is
@@ -8787,11 +8798,6 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     
     this.on("changedNode",this.updateIntents,this);
 
-    var self = this;
-    this.loadFromServer("applications").then(function(data){
-        console.log(self.participant.name,data);
-    });
-
     // @todo populate user and system endpoints
     this.data["/user"]=new ozpIwc.CommonApiValue({
         resource: "/user",
@@ -8817,7 +8823,10 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.SystemApi.prototype.loadFromServer=function() {
-    this.loadFromEndpoint("applications");
+    var self = this;
+    return this.loadFromEndpoint("applications").then(function(data){
+        console.log(self.participant.name,data);
+    });
 };
 
 /**

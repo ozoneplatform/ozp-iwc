@@ -168,37 +168,50 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
 
     if(data._embedded && data._embedded.item) {
         noEmbedded = false;
+//        console.log(this.participant.name, "embedded found:", data._embedded.item.length, data._embedded.item);
         branchesFound += data._embedded.item.length;
     }
 
-    if(data._links && data._links.item) {{
+    if(data._links && data._links.item) {
         noLinks = false;
+//        console.log(this.participant.name, "links found:", data._links.item.length, data._links.item);
         branchesFound += data._links.item.length;
     }
 
-    this.expectedBranches += branchesFound - 1;
 
-    if(data._embedded && data._embedded.item) {
-        for (var i in data._embedded.item) {
-            var object = data._embedded.item[i];
-            this.updateResourceFromServer(object,object._links.self.href,endpoint,res);
-        }
-    }
-    if(data._links && data._links.item)
 
-        data._links.item.forEach(function(object) {
-            var href=object.href;
-            endpoint.get(href).then(function(objectResource){
-                self.updateResourceFromServer(objectResource,href,endpoint, res);
-            }).catch(function(error) {
-                console.error("unable to load " + object.href + " because: ",error);
-            });
-        });
-    }
-    if(noEmbedded && noLinks){
+
+
+    if(noEmbedded && noLinks) {
         this.retrievedBranches++;
+//        console.log(this.participant.name,this.retrievedBranches,this.expectedBranches);
+//        console.log(this.participant.name, this.retrievedBranches, "Branch Resolved:", data);
         if(this.retrievedBranches === this.expectedBranches){
             res("RESOLVING");
+        }
+    } else {
+
+        this.expectedBranches += branchesFound - 1;
+
+//        console.log(this.participant.name, "End of branch NOT found", data, noEmbedded , noLinks);
+
+        if(data._embedded && data._embedded.item) {
+            for (var i in data._embedded.item) {
+                var object = data._embedded.item[i];
+                this.updateResourceFromServer(object,object._links.self.href,endpoint,res);
+            }
+        }
+
+        if(data._links && data._links.item) {
+
+            data._links.item.forEach(function(object) {
+                var href=object.href;
+                endpoint.get(href).then(function(objectResource){
+                    self.updateResourceFromServer(objectResource,href,endpoint, res);
+                }).catch(function(error) {
+                    console.error("unable to load " + object.href + " because: ",error);
+                });
+            });
         }
     }
 };

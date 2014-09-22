@@ -19,10 +19,6 @@
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-    var self = this;
-    this.loadFromServer().then(function(data){
-        console.log(self.participant.name,data);
-    });
 
 });
 
@@ -32,7 +28,10 @@ ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.DataApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint("data");
+    var self = this;
+    return this.loadFromEndpoint("data").then(function(data){
+        console.log(self.participant.name,data);
+    });
 };
 
 /**

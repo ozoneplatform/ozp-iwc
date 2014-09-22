@@ -23,10 +23,6 @@
  */
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
-    var self = this;
-    this.loadFromServer().then(function(data){
-        console.log(self.participant.name,data);
-    });
 });
 
 /**
@@ -35,7 +31,10 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
  * @method loadFromServer
  */
 ozpIwc.IntentsApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint("intents");
+    var self = this;
+    return this.loadFromEndpoint("intents").then(function(data){
+        console.log(self.participant.name,data);
+    });
 };
 /**
  * Takes the resource of the given packet and creates an empty value in the IntentsApi. Chaining of creation is
