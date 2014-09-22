@@ -23,7 +23,10 @@
  */
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
-    this.loadFromServer("intents");
+    var self = this;
+    this.loadFromServer("intents").then(function(data){
+        console.log(self.participant.name,data);
+    });
 });
 
 /**

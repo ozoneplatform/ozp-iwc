@@ -7202,6 +7202,9 @@ ozpIwc.ApiError=ozpIwc.util.extend(Error,function(action,message) {
       * @default true
       */
      this.apiDataReady = true;
+
+     this.expectedBranches = 1;
+     this.retrievedBranches = 0;
 };
 
 /**
@@ -7236,10 +7239,17 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
     var endpoint=ozpIwc.endpoint(endpointName);
+    var resolveLoad, rejectLoad;
+
+    var p = new Promise(function(resolve,reject){
+        resolveLoad = resolve;
+        rejectLoad = reject;
+    });
+
     var self=this;
     endpoint.get("/")
         .then(function(data) {
-            self.loadLinkedObjectsFromServer(endpoint,data);
+            self.loadLinkedObjectsFromServer(endpoint,data,resolveLoad);
 
             // update all the collection values
             self.dynamicNodes.forEach(function(resource) {
@@ -7249,7 +7259,9 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
             self.events.trigger("apiDataLoaded");
     }).catch(function(e) {
         console.error("Could not load from api (" + endpointName + "): " + e.message,e);
+//        rejectLoad("Could not load from api (" + endpointName + "): " + e.message + e);
     });
+    return p;
 };
 
 /**
@@ -7260,14 +7272,14 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function(endpointName) {
  * @param {String} path The path of the resource retrieved.
  * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
  */
-ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint) {
+ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint,res) {
     var node = this.findNodeForServerResource(object,path,endpoint.baseUrl);
 
     var snapshot=node.snapshot();
     node.deserialize(node,object);
 
     this.notifyWatchers(node,node.changesSince(snapshot));
-    this.loadLinkedObjectsFromServer(endpoint,object);
+    this.loadLinkedObjectsFromServer(endpoint,object,res);
 };
 
 /**
@@ -7277,7 +7289,7 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
  * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
  * @param data the HAL data.
  */
-ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data) {
+ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data,res) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
     if(!data) {
@@ -7285,21 +7297,44 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
     }
     
     var self=this;
+    var noEmbedded = true;
+    var noLinks = true;
+    var branchesFound = 0;
+
+    if(data._embedded && data._embedded.item) {
+        noEmbedded = false;
+        branchesFound += data._embedded.item.length;
+    }
+
+    if(data._links && data._links.item) {{
+        noLinks = false;
+        branchesFound += data._links.item.length;
+    }
+
+    this.expectedBranches += branchesFound - 1;
+
     if(data._embedded && data._embedded.item) {
         for (var i in data._embedded.item) {
             var object = data._embedded.item[i];
-            this.updateResourceFromServer(object,object._links.self.href,endpoint);
+            this.updateResourceFromServer(object,object._links.self.href,endpoint,res);
         }
     }
-    if(data._links && data._links.item) {
+    if(data._links && data._links.item)
+
         data._links.item.forEach(function(object) {
             var href=object.href;
             endpoint.get(href).then(function(objectResource){
-                self.updateResourceFromServer(objectResource,href,endpoint);
+                self.updateResourceFromServer(objectResource,href,endpoint, res);
             }).catch(function(error) {
                 console.error("unable to load " + object.href + " because: ",error);
             });
         });
+    }
+    if(noEmbedded && noLinks){
+        this.retrievedBranches++;
+        if(this.retrievedBranches === this.expectedBranches){
+            res("RESOLVING");
+        }
     }
 };
 
@@ -7994,7 +8029,10 @@ ozpIwc.initEndpoints=function(apiRoot) {
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-    this.loadFromServer("data");
+    var self = this;
+    this.loadFromServer("data").then(function(data){
+        console.log(self.participant.name,data);
+    });
 });
 
 /**
@@ -8229,7 +8267,10 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
  */
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
-    this.loadFromServer("intents");
+    var self = this;
+    this.loadFromServer("intents").then(function(data){
+        console.log(self.participant.name,data);
+    });
 });
 
 /**
@@ -8720,8 +8761,11 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     }));
     
     this.on("changedNode",this.updateIntents,this);
-       
-    this.loadFromServer("applications");
+
+    var self = this;
+    this.loadFromServer("applications").then(function(data){
+        console.log(self.participant.name,data);
+    });
     
     
     // @todo populate user and system endpoints

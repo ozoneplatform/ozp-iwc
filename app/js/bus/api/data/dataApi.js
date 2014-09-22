@@ -19,7 +19,10 @@
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-    this.loadFromServer("data");
+    var self = this;
+    this.loadFromServer("data").then(function(data){
+        console.log(self.participant.name,data);
+    });
 });
 
 /**

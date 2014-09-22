@@ -29,8 +29,11 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     }));
     
     this.on("changedNode",this.updateIntents,this);
-       
-    this.loadFromServer("applications");
+
+    var self = this;
+    this.loadFromServer("applications").then(function(data){
+        console.log(self.participant.name,data);
+    });
     
     
     // @todo populate user and system endpoints
