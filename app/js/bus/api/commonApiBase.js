@@ -52,16 +52,23 @@
      this.data={};
 
      /**
-      * A flag to notify the participant the API has loaded its endpoint data if necessary. If this flag is set to false
-      * when the participant is ready to unblock its message queue, a
-      * {{#crossLink "ozpIwc.CommonApiBase/#apiDataLoaded:event"}}{{/crossLink}} event must be fired to unlock the queue.
-      * @property apiDataReady
-      * @type Boolean
-      * @default true
+      * A count for the recursive gathering of server data. Keeps track of the number of expected branches to traverse
+      * through the HAL data. Set to 1 at the start of
+      * {{#crossLink "ozpIwc.CommonApiBase/loadFromEndpoint:method"}}{{/crossLink}}
+      * @private
+      * @type Number
+      * @default 1
       */
-     this.apiDataReady = true;
-
      this.expectedBranches = 1;
+
+     /**
+      * A count for the recursive gathering of server data. Keeps track of the number of branches that have been fully
+      * retrieved in the HAL data. Set to 0 at the start of
+      * {{#crossLink "ozpIwc.CommonApiBase/loadFromEndpoint:method"}}{{/crossLink}}
+      * @private
+      * @type Number
+      * @default 0
+      */
      this.retrievedBranches = 0;
 };
 
@@ -91,7 +98,10 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,o
  * @method loadFromServer
  */
 ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
-    // Do nothing by default
+    // Do nothing by default, resolve to prevent clashing with overridden promise implementations.
+    return new Promise(function(resolve,reject){
+        resolve();
+    });
 };
 
 /**
@@ -101,6 +111,9 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
  * @param {String} endpointName The name of the endpoint to load from the server.
  */
 ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
+    this.expectedBranches = 1;
+    this.retrievedBranches = 0;
+
     // fetch the base endpoint. it should be a HAL Json object that all of the
     // resources and keys in it
     var endpoint=ozpIwc.endpoint(endpointName);
@@ -120,11 +133,9 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
             self.dynamicNodes.forEach(function(resource) {
                 self.updateDynamicNode(self.data[resource]);
             });
-            self.apiDataReady = true;
-            self.events.trigger("apiDataLoaded");
     }).catch(function(e) {
         console.error("Could not load from api (" + endpointName + "): " + e.message,e);
-//        rejectLoad("Could not load from api (" + endpointName + "): " + e.message + e);
+        rejectLoad("Could not load from api (" + endpointName + "): " + e.message + e);
     });
     return p;
 };
@@ -695,18 +706,7 @@ ozpIwc.CommonApiBase.prototype.becameLeader= function(){
 
     } else if (this.participant.leaderState === "election") {
         //If this is the initial state we need to wait till the endpoint data is ready
-        if(this.apiDataReady) {
-            console.log(this.participant.name, "was already ready.");
             this.leaderSync();
-        } else {
-            var queueMore = function(){
-                console.log("called");
-                this.off("apiDataLoaded",queueMore);
-                this.leaderSync();
-            };
-            this.on("apiDataLoaded",queueMore,this);
-        }
-
     }
 };
 
@@ -796,8 +796,12 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
         } else {
             // This is the first of the bus, winner doesn't obtain any previous state
             console.log(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
-            self.loadFromServer();
-            self.setToLeader();
+                self.loadFromServer().then(function (data) {
+                    self.setToLeader();
+                },function(err){
+                    console.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
+                    self.setToLeader();
+                });
         }
     },0);
 };

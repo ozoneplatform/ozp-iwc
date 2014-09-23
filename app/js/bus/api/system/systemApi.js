@@ -55,10 +55,7 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.SystemApi.prototype.loadFromServer=function() {
-    var self = this;
-    return this.loadFromEndpoint("applications").then(function(data){
-        console.log(self.participant.name,data);
-    });
+    return this.loadFromEndpoint("applications");
 };
 
 /**
