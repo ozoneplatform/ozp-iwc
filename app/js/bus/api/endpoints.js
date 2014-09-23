@@ -19,8 +19,8 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
     var self=this;
 
     return this.endpointRegistry.loadPromise.then(function() {
-        if(resource.indexOf(self.baseUrl)!==0) {
-            resource=self.baseUrl + resource;
+        if (resource === '/') {
+            resource = self.baseUrl;
         }
         return ozpIwc.util.ajax({
             href:  resource,
