@@ -1,7 +1,7 @@
 var ozpIwc=ozpIwc || {};
 
-ozpIwc.apiRootUrl = "http://ec2-54-68-201-132.us-west-2.compute.amazonaws.com:8080/marketplace/api";
 
+ozpIwc.apiRootUrl = "https://www.owfgoss.org/ng/dev/mp/api";
 ozpIwc.initEndpoints(ozpIwc.apiRootUrl || "/api");
 
 ozpIwc.defaultPeer=new ozpIwc.Peer();
