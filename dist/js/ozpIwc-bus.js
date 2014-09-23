@@ -7321,13 +7321,11 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
 
     if(data._embedded && data._embedded.item) {
         noEmbedded = false;
-//        console.log(this.participant.name, "embedded found:", data._embedded.item.length, data._embedded.item);
         branchesFound += data._embedded.item.length;
     }
 
     if(data._links && data._links.item) {
         noLinks = false;
-//        console.log(this.participant.name, "links found:", data._links.item.length, data._links.item);
         branchesFound += data._links.item.length;
     }
 
@@ -7337,8 +7335,6 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
 
     if(noEmbedded && noLinks) {
         this.retrievedBranches++;
-//        console.log(this.participant.name,this.retrievedBranches,this.expectedBranches);
-//        console.log(this.participant.name, this.retrievedBranches, "Branch Resolved:", data);
         if(this.retrievedBranches === this.expectedBranches){
             res("RESOLVING");
         }
@@ -7346,7 +7342,6 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
 
         this.expectedBranches += branchesFound - 1;
 
-//        console.log(this.participant.name, "End of branch NOT found", data, noEmbedded , noLinks);
 
         if(data._embedded && data._embedded.item) {
             for (var i in data._embedded.item) {
@@ -7781,7 +7776,6 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
  * @method unloadState
  */
 ozpIwc.CommonApiBase.prototype.unloadState = function(){
-
     if(this.participant.activeStates.leader) {
         this.participant.sendElectionMessage("election",{state: this.data, previousLeader: this.participant.address});
         this.data = {};
@@ -7838,7 +7832,6 @@ ozpIwc.CommonApiBase.prototype.startElection = function(){
  *      <li>If this API instance's participant received state from a leaving leader participant, it will consume said participants state</li>
  */
 ozpIwc.CommonApiBase.prototype.becameLeader= function(){
-//    console.log(this.participant.address, "becameLeader");
     this.participant.sendElectionMessage("victory");
 
     // Was I the leader at the start of the election?
@@ -7860,8 +7853,6 @@ ozpIwc.CommonApiBase.prototype.becameLeader= function(){
  * @fires ozpIwc.leaderGroupParticipant#newLeader
  */
 ozpIwc.CommonApiBase.prototype.newLeader = function() {
-//    console.log(this.participant.address, "newLeader");
-
     // If this API was the leader, send its state to the new leader
     if (this.participant.leaderState === "actingLeader") {
         this.participant.sendElectionMessage("election", {previousLeader: this.participant.address, state: this.data});
@@ -7877,7 +7868,6 @@ ozpIwc.CommonApiBase.prototype.newLeader = function() {
  * @fires ozpIwc.leaderGroupParticipant#becameLeader
  */
 ozpIwc.CommonApiBase.prototype.setToLeader = function(){
-//    console.log(this.participant.address, "setToLeader");
     var self = this;
     window.setTimeout(function() {
         self.participant.changeState("leader");
@@ -7892,7 +7882,6 @@ ozpIwc.CommonApiBase.prototype.setToLeader = function(){
  * <li> If no state present but expected, a listener is set to retrieve the state if acquired within 250ms </li>
  */
 ozpIwc.CommonApiBase.prototype.leaderSync = function () {
-//    console.log(this.participant.address, "leaderSync");
     this.participant.changeState("leaderSync",{toggleDrop: true});
 
     var self = this;
