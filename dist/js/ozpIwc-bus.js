@@ -3324,25 +3324,28 @@ ozpIwc.util=ozpIwc.util || {};
 ozpIwc.util.ajax = function (config) {
     return new Promise(function(resolve,reject) {
         var request = new XMLHttpRequest();
-        request.onreadystatechange = function() {
-            if (request.readyState !== 4) {
-                return;
-            }
+        request.open(config.method, config.href, true);
+        request.setRequestHeader("Content-Type", "application/json");
 
-            if (request.status === 200) {
+        request.onload = function () {
+            try {
                 resolve(JSON.parse(this.responseText));
-            } else {
+            }
+            catch (e) {
                 reject(this);
             }
         };
-        request.open(config.method, config.href, true);
+
+        request.onerror = function (e) {
+            reject(this);
+        };
 
         if(config.method === "POST") {
             request.send(config.data);
         }
-        request.setRequestHeader("Content-Type", "application/json");
-        request.setRequestHeader("Cache-Control", "no-cache");
-        request.send();
+        else {
+            request.send();
+        }
     });
 };
 
@@ -7894,7 +7897,7 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
 
     return this.endpointRegistry.loadPromise.then(function() {
         if(resource.indexOf(self.baseUrl)!==0) {
-            resource=self.baseUrl + resource;
+            resource=self.baseUrl + (resource === '/' ? '' : resource);
         }
         return ozpIwc.util.ajax({
             href:  resource,
@@ -7913,7 +7916,7 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
  */
 ozpIwc.EndpointRegistry=function(config) {
     config=config || {};
-    var apiRoot=config.apiRoot || 'api';
+    var apiRoot=config.apiRoot || '/api';
     this.endPoints={};
     var self=this;
     this.loadPromise=ozpIwc.util.ajax({
@@ -8723,22 +8726,22 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     
     
     // @todo populate user and system endpoints
-    this.data["/user"]=new ozpIwc.CommonApiValue({
-        resource: "/user",
-        contentType: "application/ozpIwc-user-v1+json",
-        entity: {
-            "name": "DataFaked BySystemApi",
-            "userName": "fixmefixmefixme"
-        }
-    });
-    this.data["/system"]=new ozpIwc.CommonApiValue({
-        resource: "/system",
-        contentType: "application/ozpIwc-system-info-v1+json",
-        entity: {
-            "version": "1.0",
-            "name": "Fake Data from SystemAPI FIXME"
-        }
-    });    
+//    this.data["/user"]=new ozpIwc.CommonApiValue({
+//        resource: "/user",
+//        contentType: "application/ozpIwc-user-v1+json",
+//        entity: {
+//            "name": "DataFaked BySystemApi",
+//            "userName": "fixmefixmefixme"
+//        }
+//    });
+//    this.data["/system"]=new ozpIwc.CommonApiValue({
+//        resource: "/system",
+//        contentType: "application/ozpIwc-system-info-v1+json",
+//        entity: {
+//            "version": "1.0",
+//            "name": "Fake Data from SystemAPI FIXME"
+//        }
+//    });
 });
 
 /**

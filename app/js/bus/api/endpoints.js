@@ -19,8 +19,8 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
     var self=this;
 
     return this.endpointRegistry.loadPromise.then(function() {
-        if(resource.indexOf(self.baseUrl)!==0) {
-            resource=self.baseUrl + resource;
+        if (resource === '/') {
+            resource = self.baseUrl;
         }
         return ozpIwc.util.ajax({
             href:  resource,
@@ -39,7 +39,7 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
  */
 ozpIwc.EndpointRegistry=function(config) {
     config=config || {};
-    var apiRoot=config.apiRoot || 'api';
+    var apiRoot=config.apiRoot || '/api';
     this.endPoints={};
     var self=this;
     this.loadPromise=ozpIwc.util.ajax({
