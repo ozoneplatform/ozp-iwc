@@ -33,22 +33,22 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     
     
     // @todo populate user and system endpoints
-    this.data["/user"]=new ozpIwc.CommonApiValue({
-        resource: "/user",
-        contentType: "application/ozpIwc-user-v1+json",
-        entity: {
-            "name": "DataFaked BySystemApi",
-            "userName": "fixmefixmefixme"
-        }
-    });
-    this.data["/system"]=new ozpIwc.CommonApiValue({
-        resource: "/system",
-        contentType: "application/ozpIwc-system-info-v1+json",
-        entity: {
-            "version": "1.0",
-            "name": "Fake Data from SystemAPI FIXME"
-        }
-    });    
+//    this.data["/user"]=new ozpIwc.CommonApiValue({
+//        resource: "/user",
+//        contentType: "application/ozpIwc-user-v1+json",
+//        entity: {
+//            "name": "DataFaked BySystemApi",
+//            "userName": "fixmefixmefixme"
+//        }
+//    });
+//    this.data["/system"]=new ozpIwc.CommonApiValue({
+//        resource: "/system",
+//        contentType: "application/ozpIwc-system-info-v1+json",
+//        entity: {
+//            "version": "1.0",
+//            "name": "Fake Data from SystemAPI FIXME"
+//        }
+//    });
 });
 
 /**
