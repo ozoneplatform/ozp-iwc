@@ -3318,31 +3318,34 @@ ozpIwc.util=ozpIwc.util || {};
  * @param {Object} config
  * @param {String} config.method
  * @param {String} config.href
- * 
+ *
  * @returns {Promise}
  */
 ozpIwc.util.ajax = function (config) {
     return new Promise(function(resolve,reject) {
         var request = new XMLHttpRequest();
-        request.onreadystatechange = function() {
-            if (request.readyState !== 4) {
-                return;
-            }
+        request.open(config.method, config.href, true);
+        request.setRequestHeader("Content-Type", "application/json");
 
-            if (request.status === 200) {
+        request.onload = function () {
+            try {
                 resolve(JSON.parse(this.responseText));
-            } else {
+            }
+            catch (e) {
                 reject(this);
             }
         };
-        request.open(config.method, config.href, true);
+
+        request.onerror = function (e) {
+            reject(this);
+        };
 
         if(config.method === "POST") {
             request.send(config.data);
         }
-        request.setRequestHeader("Content-Type", "application/json");
-        request.setRequestHeader("Cache-Control", "no-cache");
-        request.send();
+        else {
+            request.send();
+        }
     });
 };
 
@@ -7290,7 +7293,25 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
  * @param {String} path The path of the resource retrieved.
  * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
  */
-ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint,res) {
+ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint) {
+    //Workaround for objects not wrapped in an outer object inside an entity property
+    //BEGIN TEMP CODE
+    if (!object.entity) {
+        object = {
+            entity: object
+        };
+    }
+    if (!object.contentType) {
+        object.contentType = 'application/json';
+    };
+    //also fix resource string for intents
+    if (path.indexOf('intent') >= 0) {
+        path = '/' + object.entity.type + '/' + object.entity.action;
+        if (object.entity.handler) {
+            path+= '/' + + object.entity.handler;
+        }
+    }
+    //END TEMP CODE
     var node = this.findNodeForServerResource(object,path,endpoint.baseUrl);
 
     var snapshot=node.snapshot();
@@ -7958,8 +7979,8 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
     var self=this;
 
     return this.endpointRegistry.loadPromise.then(function() {
-        if(resource.indexOf(self.baseUrl)!==0) {
-            resource=self.baseUrl + resource;
+        if (resource === '/') {
+            resource = self.baseUrl;
         }
         return ozpIwc.util.ajax({
             href:  resource,
@@ -7978,7 +7999,7 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
  */
 ozpIwc.EndpointRegistry=function(config) {
     config=config || {};
-    var apiRoot=config.apiRoot || 'api';
+    var apiRoot=config.apiRoot || '/api';
     this.endPoints={};
     var self=this;
     this.loadPromise=ozpIwc.util.ajax({
@@ -8051,7 +8072,7 @@ ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.DataApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint("data");
+    return this.loadFromEndpoint("https://www.owfgoss.org/ng/dev/mp/api/data");
 };
 
 /**
@@ -8131,7 +8152,7 @@ ozpIwc.DataApi.prototype.handleAddchild=function(node,packetContext) {
 	var childNode=this.createChild(node,packetContext);
 
 	node.addChild(childNode.resource);
-	
+
 	packetContext.replyTo({
         'response':'ok',
         'entity' : {
@@ -8786,22 +8807,22 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     this.on("changedNode",this.updateIntents,this);
 
     // @todo populate user and system endpoints
-    this.data["/user"]=new ozpIwc.CommonApiValue({
-        resource: "/user",
-        contentType: "application/ozpIwc-user-v1+json",
-        entity: {
-            "name": "DataFaked BySystemApi",
-            "userName": "fixmefixmefixme"
-        }
-    });
-    this.data["/system"]=new ozpIwc.CommonApiValue({
-        resource: "/system",
-        contentType: "application/ozpIwc-system-info-v1+json",
-        entity: {
-            "version": "1.0",
-            "name": "Fake Data from SystemAPI FIXME"
-        }
-    });    
+//    this.data["/user"]=new ozpIwc.CommonApiValue({
+//        resource: "/user",
+//        contentType: "application/ozpIwc-user-v1+json",
+//        entity: {
+//            "name": "DataFaked BySystemApi",
+//            "userName": "fixmefixmefixme"
+//        }
+//    });
+//    this.data["/system"]=new ozpIwc.CommonApiValue({
+//        resource: "/system",
+//        contentType: "application/ozpIwc-system-info-v1+json",
+//        entity: {
+//            "version": "1.0",
+//            "name": "Fake Data from SystemAPI FIXME"
+//        }
+//    });
 });
 
 /**

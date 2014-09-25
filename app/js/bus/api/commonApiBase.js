@@ -148,7 +148,25 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
  * @param {String} path The path of the resource retrieved.
  * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
  */
-ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint,res) {
+ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint) {
+    //Workaround for objects not wrapped in an outer object inside an entity property
+    //BEGIN TEMP CODE
+    if (!object.entity) {
+        object = {
+            entity: object
+        };
+    }
+    if (!object.contentType) {
+        object.contentType = 'application/json';
+    };
+    //also fix resource string for intents
+    if (path.indexOf('intent') >= 0) {
+        path = '/' + object.entity.type + '/' + object.entity.action;
+        if (object.entity.handler) {
+            path+= '/' + + object.entity.handler;
+        }
+    }
+    //END TEMP CODE
     var node = this.findNodeForServerResource(object,path,endpoint.baseUrl);
 
     var snapshot=node.snapshot();
