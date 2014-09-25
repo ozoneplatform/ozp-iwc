@@ -114,14 +114,14 @@ describe("Data API Class",function() {
         expect(changePacket.entity.removedChildren[0]).toEqual("child1");
     });
     it("writes dirty nodes to server",function() {
-        var nodeVerifier=[[(new ozpIwc.DataApiValue({
+        var nodeVerifier=[(new ozpIwc.DataApiValue({
             'resource': "/node",
             'entity' : { 'foo':1 },
             'contentType' : "application/json",
             'version' : 1,
 			'self' : {},
 			'permissions' : {}
-        })).serialize()]];
+        })).serialize()];
 
 
 		dataApi.data['/node']=node;
