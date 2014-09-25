@@ -138,9 +138,10 @@ ozpIwc.DataApi.prototype.persistNodes=function() {
 	// collect list of nodes to persist, send to server, reset persist flag
 	var nodes=[];
 	for (node in this.data) {
-		if (this.data[node].persist === true) {
-			nodes[nodes.length]=this.data[node];
-			this.data[node].persist = false;
+		if ((this.data[node].dirty === true) &&
+			(this.data[node].persist === true)) {
+			nodes[nodes.length]=this.data[node].serialize();
+			this.data[node].dirty = false;
 		}
 	}
 	// send list of objects to endpoint ajax call

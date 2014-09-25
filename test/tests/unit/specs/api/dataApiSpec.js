@@ -113,12 +113,22 @@ describe("Data API Class",function() {
         expect(changePacket.response).toEqual("changed");
         expect(changePacket.entity.removedChildren[0]).toEqual("child1");
     });
-    it("writes persist nodes to server",function() {
-        dataApi.data['/node']=node;
+    it("writes dirty nodes to server",function() {
+        var nodeVerifier=[[(new ozpIwc.DataApiValue({
+            'resource': "/node",
+            'entity' : { 'foo':1 },
+            'contentType' : "application/json",
+            'version' : 1,
+			'self' : {},
+			'permissions' : {}
+        })).serialize()]];
+
+
+		dataApi.data['/node']=node;
 
 		spyOn(dataApi.endpoint,'saveNodes');
 		dataApi.persistNodes();
-		expect(dataApi.endpoint.saveNodes).toHaveBeenCalled();  // update to verify data
+		expect(dataApi.endpoint.saveNodes).toHaveBeenCalledWith(nodeVerifier);  // update to verify data
     });
 
         
