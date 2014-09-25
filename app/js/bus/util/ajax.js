@@ -22,30 +22,33 @@ ozpIwc.util=ozpIwc.util || {};
  * @param {Object} config
  * @param {String} config.method
  * @param {String} config.href
- * 
+ *
  * @returns {Promise}
  */
 ozpIwc.util.ajax = function (config) {
     return new Promise(function(resolve,reject) {
         var request = new XMLHttpRequest();
-        request.onreadystatechange = function() {
-            if (request.readyState !== 4) {
-                return;
-            }
+        request.open(config.method, config.href, true);
+        request.setRequestHeader("Content-Type", "application/json");
 
-            if (request.status === 200) {
+        request.onload = function () {
+            try {
                 resolve(JSON.parse(this.responseText));
-            } else {
+            }
+            catch (e) {
                 reject(this);
             }
         };
-        request.open(config.method, config.href, true);
+
+        request.onerror = function (e) {
+            reject(this);
+        };
 
         if((config.method === "POST") || (config.method === "PUT")) {
             request.send(config.data);
         }
-        request.setRequestHeader("Content-Type", "application/json");
-        request.setRequestHeader("Cache-Control", "no-cache");
-        request.send();
+        else {
+            request.send();
+        }
     });
 };

@@ -30,7 +30,7 @@ describe("Data API", function () {
             'entity' : { 'foo' : 1 }
         };
         participant.send(packet,function() {
-            
+
             client.api('data.api')
                 .get(packet.resource)
                 .then(function(reply) {
@@ -57,9 +57,9 @@ describe("Data API", function () {
             }
             return true;
         }).then(function(reply) {
-                participant.send(packet);
+            participant.send(packet);
         }).catch(function(error) {
-                expect(error).toEqual('');
+            expect(error).toEqual('');
         });
 
     });
@@ -121,6 +121,24 @@ describe("Data API", function () {
     xit('permissions on the entity restrict access to the origin',function(done){
 
     });
+
+    describe('Data load test', function() {
+
+        it ('Gets the contents of the data api', function(done) {
+            var called = false;
+            client.api('data.api').get('dashboards/12345')
+                .then(function (packet) {
+                    expect(packet.response).toEqual('ok');
+                    if (!called) {
+                        called = true;
+                        done();
+                    }
+                }).catch(function (error) {
+                    expect(error).toEqual('');
+                });
+        });
+    });
+
     describe('Legacy API Tests', function () {
 
         afterEach(function (done) {

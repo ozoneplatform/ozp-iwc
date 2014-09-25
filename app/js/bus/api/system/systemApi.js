@@ -29,28 +29,34 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     }));
     
     this.on("changedNode",this.updateIntents,this);
-       
-    this.loadFromServer("applications");
-    
-    
+
     // @todo populate user and system endpoints
-    this.data["/user"]=new ozpIwc.CommonApiValue({
-        resource: "/user",
-        contentType: "application/ozpIwc-user-v1+json",
-        entity: {
-            "name": "DataFaked BySystemApi",
-            "userName": "fixmefixmefixme"
-        }
-    });
-    this.data["/system"]=new ozpIwc.CommonApiValue({
-        resource: "/system",
-        contentType: "application/ozpIwc-system-info-v1+json",
-        entity: {
-            "version": "1.0",
-            "name": "Fake Data from SystemAPI FIXME"
-        }
-    });    
+//    this.data["/user"]=new ozpIwc.CommonApiValue({
+//        resource: "/user",
+//        contentType: "application/ozpIwc-user-v1+json",
+//        entity: {
+//            "name": "DataFaked BySystemApi",
+//            "userName": "fixmefixmefixme"
+//        }
+//    });
+//    this.data["/system"]=new ozpIwc.CommonApiValue({
+//        resource: "/system",
+//        contentType: "application/ozpIwc-system-info-v1+json",
+//        entity: {
+//            "version": "1.0",
+//            "name": "Fake Data from SystemAPI FIXME"
+//        }
+//    });
 });
+
+/**
+ * Loads data from the server.
+ *
+ * @method loadFromServer
+ */
+ozpIwc.SystemApi.prototype.loadFromServer=function() {
+    return this.loadFromEndpoint("applications");
+};
 
 /**
  * Update all intents registered to the given System Api node.

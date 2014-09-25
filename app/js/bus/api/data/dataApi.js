@@ -19,8 +19,17 @@
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-    this.endpoint=this.loadFromServer("data") || {};
+	this.loadFromServer("data") || {};
 });
+
+/**
+ * Loads data from the server.
+ *
+ * @method loadFromServer
+ */
+ozpIwc.DataApi.prototype.loadFromServer=function() {
+    return this.loadFromEndpoint("https://www.owfgoss.org/ng/dev/mp/api/data");
+};
 
 /**
  * Creates a DataApiValue from the given packet.
@@ -99,7 +108,7 @@ ozpIwc.DataApi.prototype.handleAddchild=function(node,packetContext) {
 	var childNode=this.createChild(node,packetContext);
 
 	node.addChild(childNode.resource);
-	
+
 	packetContext.replyTo({
         'response':'ok',
         'entity' : {
