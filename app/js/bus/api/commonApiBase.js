@@ -148,7 +148,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
  * @param {String} path The path of the resource retrieved.
  * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
  */
-ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint) {
+ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint,res) {
     //Workaround for objects not wrapped in an outer object inside an entity property
     //BEGIN TEMP CODE
     if (!object.entity) {
