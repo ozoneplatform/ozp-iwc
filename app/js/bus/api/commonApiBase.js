@@ -50,6 +50,26 @@
      * @default {}
      */
      this.data={};
+
+     /**
+      * A count for the recursive gathering of server data. Keeps track of the number of expected branches to traverse
+      * through the HAL data. Set to 1 at the start of
+      * {{#crossLink "ozpIwc.CommonApiBase/loadFromEndpoint:method"}}{{/crossLink}}
+      * @private
+      * @type Number
+      * @default 1
+      */
+     this.expectedBranches = 1;
+
+     /**
+      * A count for the recursive gathering of server data. Keeps track of the number of branches that have been fully
+      * retrieved in the HAL data. Set to 0 at the start of
+      * {{#crossLink "ozpIwc.CommonApiBase/loadFromEndpoint:method"}}{{/crossLink}}
+      * @private
+      * @type Number
+      * @default 0
+      */
+     this.retrievedBranches = 0;
 };
 
 /**
@@ -78,7 +98,10 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,o
  * @method loadFromServer
  */
 ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
-    // Do nothing by default
+    // Do nothing by default, resolve to prevent clashing with overridden promise implementations.
+    return new Promise(function(resolve,reject){
+        resolve();
+    });
 };
 
 /**
@@ -88,21 +111,33 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
  * @param {String} endpointName The name of the endpoint to load from the server.
  */
 ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
-    // fetch the base endpoint. it should be a HAL Json object that all of the 
+    this.expectedBranches = 1;
+    this.retrievedBranches = 0;
+
+    // fetch the base endpoint. it should be a HAL Json object that all of the
     // resources and keys in it
     var endpoint=ozpIwc.endpoint(endpointName);
+    var resolveLoad, rejectLoad;
+
+    var p = new Promise(function(resolve,reject){
+        resolveLoad = resolve;
+        rejectLoad = reject;
+    });
+
     var self=this;
     endpoint.get("/")
         .then(function(data) {
-            self.loadLinkedObjectsFromServer(endpoint,data);
+            self.loadLinkedObjectsFromServer(endpoint,data,resolveLoad);
 
             // update all the collection values
             self.dynamicNodes.forEach(function(resource) {
                 self.updateDynamicNode(self.data[resource]);
-            });        
+            });
     }).catch(function(e) {
         console.error("Could not load from api (" + endpointName + "): " + e.message,e);
+        rejectLoad("Could not load from api (" + endpointName + "): " + e.message + e);
     });
+    return p;
 };
 
 /**
@@ -138,7 +173,7 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
     node.deserialize(node,object);
 
     this.notifyWatchers(node,node.changesSince(snapshot));
-    this.loadLinkedObjectsFromServer(endpoint,object);
+    this.loadLinkedObjectsFromServer(endpoint,object,res);
 };
 
 /**
@@ -148,7 +183,7 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
  * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
  * @param data the HAL data.
  */
-ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data) {
+ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data,res) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
     if(!data) {
@@ -156,21 +191,52 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
     }
     
     var self=this;
+    var noEmbedded = true;
+    var noLinks = true;
+    var branchesFound = 0;
+
     if(data._embedded && data._embedded.item) {
-        for (var i in data._embedded.item) {
-            var object = data._embedded.item[i];
-            this.updateResourceFromServer(object,object._links.self.href,endpoint);
-        }
+        noEmbedded = false;
+        branchesFound += data._embedded.item.length;
     }
+
     if(data._links && data._links.item) {
-        data._links.item.forEach(function(object) {
-            var href=object.href;
-            endpoint.get(href).then(function(objectResource){
-                self.updateResourceFromServer(objectResource,href,endpoint);
-            }).catch(function(error) {
-                console.error("unable to load " + object.href + " because: ",error);
+        noLinks = false;
+        branchesFound += data._links.item.length;
+    }
+
+
+
+
+
+    if(noEmbedded && noLinks) {
+        this.retrievedBranches++;
+        if(this.retrievedBranches === this.expectedBranches){
+            res("RESOLVING");
+        }
+    } else {
+
+        this.expectedBranches += branchesFound - 1;
+
+
+        if(data._embedded && data._embedded.item) {
+            for (var i in data._embedded.item) {
+                var object = data._embedded.item[i];
+                this.updateResourceFromServer(object,object._links.self.href,endpoint,res);
+            }
+        }
+
+        if(data._links && data._links.item) {
+
+            data._links.item.forEach(function(object) {
+                var href=object.href;
+                endpoint.get(href).then(function(objectResource){
+                    self.updateResourceFromServer(objectResource,href,endpoint, res);
+                }).catch(function(error) {
+                    console.error("unable to load " + object.href + " because: ",error);
+                });
             });
-        });
+        }
     }
 };
 
@@ -586,7 +652,6 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
  * @method unloadState
  */
 ozpIwc.CommonApiBase.prototype.unloadState = function(){
-
     if(this.participant.activeStates.leader) {
         this.participant.sendElectionMessage("election",{state: this.data, previousLeader: this.participant.address});
         this.data = {};
@@ -643,7 +708,6 @@ ozpIwc.CommonApiBase.prototype.startElection = function(){
  *      <li>If this API instance's participant received state from a leaving leader participant, it will consume said participants state</li>
  */
 ozpIwc.CommonApiBase.prototype.becameLeader= function(){
-//    console.log(this.participant.address, "becameLeader");
     this.participant.sendElectionMessage("victory");
 
     // Was I the leader at the start of the election?
@@ -652,7 +716,8 @@ ozpIwc.CommonApiBase.prototype.becameLeader= function(){
         this.setToLeader();
 
     } else if (this.participant.leaderState === "election") {
-        this.leaderSync();
+        //If this is the initial state we need to wait till the endpoint data is ready
+            this.leaderSync();
     }
 };
 
@@ -664,8 +729,6 @@ ozpIwc.CommonApiBase.prototype.becameLeader= function(){
  * @fires ozpIwc.leaderGroupParticipant#newLeader
  */
 ozpIwc.CommonApiBase.prototype.newLeader = function() {
-//    console.log(this.participant.address, "newLeader");
-
     // If this API was the leader, send its state to the new leader
     if (this.participant.leaderState === "actingLeader") {
         this.participant.sendElectionMessage("election", {previousLeader: this.participant.address, state: this.data});
@@ -681,7 +744,6 @@ ozpIwc.CommonApiBase.prototype.newLeader = function() {
  * @fires ozpIwc.leaderGroupParticipant#becameLeader
  */
 ozpIwc.CommonApiBase.prototype.setToLeader = function(){
-//    console.log(this.participant.address, "setToLeader");
     var self = this;
     window.setTimeout(function() {
         self.participant.changeState("leader");
@@ -696,7 +758,6 @@ ozpIwc.CommonApiBase.prototype.setToLeader = function(){
  * <li> If no state present but expected, a listener is set to retrieve the state if acquired within 250ms </li>
  */
 ozpIwc.CommonApiBase.prototype.leaderSync = function () {
-//    console.log(this.participant.address, "leaderSync");
     this.participant.changeState("leaderSync",{toggleDrop: true});
 
     var self = this;
@@ -742,8 +803,12 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
         } else {
             // This is the first of the bus, winner doesn't obtain any previous state
             console.log(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
-            self.loadFromServer();
-            self.setToLeader();
+                self.loadFromServer().then(function (data) {
+                    self.setToLeader();
+                },function(err){
+                    console.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
+                    self.setToLeader();
+                });
         }
     },0);
 };

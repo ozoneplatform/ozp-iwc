@@ -28,7 +28,7 @@ ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.DataApi.prototype.loadFromServer=function() {
-    this.loadFromEndpoint("https://www.owfgoss.org/ng/dev/mp/api/data");
+    return this.loadFromEndpoint("https://www.owfgoss.org/ng/dev/mp/api/data");
 };
 
 /**

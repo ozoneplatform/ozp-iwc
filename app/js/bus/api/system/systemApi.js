@@ -30,8 +30,6 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     
     this.on("changedNode",this.updateIntents,this);
 
-    
-    
     // @todo populate user and system endpoints
 //    this.data["/user"]=new ozpIwc.CommonApiValue({
 //        resource: "/user",
@@ -57,7 +55,7 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.SystemApi.prototype.loadFromServer=function() {
-    this.loadFromEndpoint("applications");
+    return this.loadFromEndpoint("applications");
 };
 
 /**
