@@ -26,7 +26,7 @@
     this.participant.on("becameLeaderEvent", this.becameLeader,this);
     this.participant.on("newLeaderEvent", this.newLeader,this);
     this.participant.on("startElection", this.startElection,this);
-
+    this.participant.on("receiveEventChannelPacket",this.routeEventChannel,this);
    /**
     * An events module for the API.
     * @property events
@@ -452,6 +452,15 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
     });
 };
 
+/**
+ * Routes event channel messages. Intented to be overridden by subclasses. *
+ *
+ * @method routeEventChannel
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
+    console.log(this.participant.name,packetContext);
+};
 /**
  * Determines which handler in the api is needed to process the given packet.
  *

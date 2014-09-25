@@ -75,7 +75,9 @@ ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContex
 		if (!this.replyCallbacks[packet.replyTo](packet)) {
             this.cancelCallback(packet.replyTo);
         }
-	} else {
+	} else if (packet.dst === "$bus.multicast"){
+        this.events.trigger("receiveEventChannelPacket",packetContext);
+    } else {
 		this.events.trigger("receive",packetContext);
 	}
 };
@@ -117,4 +119,49 @@ ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
         success=true;
     }
     return success;
+};
+
+/**
+ * @method joinEventChannel
+ * @returns {boolean}
+ */
+ozpIwc.Participant.prototype.joinEventChannel = function() {
+    if(this.router) {
+        this.router.registerMulticast(this, ["$bus.multicast"]);
+        this.send({
+            dst: "$bus.multicast",
+            action: "connect",
+            entity: {
+                address: this.address,
+                participantType: this.participantType
+            }
+        });
+        return true;
+    } else {
+        return false;
+    }
+};
+
+/**
+ *
+ * @method leaveEventChannel
+ */
+ozpIwc.Participant.prototype.leaveEventChannel = function() {
+    if(this.router) {
+        this.send({
+            dst: "$bus.multicast",
+            action: "disconnect",
+            entity: {
+                address: this.address,
+                participantType: this.participantType
+            }
+        });
+
+        //TODO not implemented
+//        this.router.unregisterMulticast(this, ["$bus.multicast"]);
+        return true;
+    } else {
+        return false;
+    }
+
 };

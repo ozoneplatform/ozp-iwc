@@ -5226,7 +5226,9 @@ ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContex
 		if (!this.replyCallbacks[packet.replyTo](packet)) {
             this.cancelCallback(packet.replyTo);
         }
-	} else {
+	} else if (packet.dst === "$bus.multicast"){
+        this.events.trigger("receiveEventChannelPacket",packetContext);
+    } else {
 		this.events.trigger("receive",packetContext);
 	}
 };
@@ -5270,6 +5272,50 @@ ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
     return success;
 };
 
+/**
+ * @method joinEventChannel
+ * @returns {boolean}
+ */
+ozpIwc.Participant.prototype.joinEventChannel = function() {
+    if(this.router) {
+        this.router.registerMulticast(this, ["$bus.multicast"]);
+        this.send({
+            dst: "$bus.multicast",
+            action: "connect",
+            entity: {
+                address: this.address,
+                participantType: this.participantType
+            }
+        });
+        return true;
+    } else {
+        return false;
+    }
+};
+
+/**
+ *
+ * @method leaveEventChannel
+ */
+ozpIwc.Participant.prototype.leaveEventChannel = function() {
+    if(this.router) {
+        this.send({
+            dst: "$bus.multicast",
+            action: "disconnect",
+            entity: {
+                address: this.address,
+                participantType: this.participantType
+            }
+        });
+
+        //TODO not implemented
+//        this.router.unregisterMulticast(this, ["$bus.multicast"]);
+        return true;
+    } else {
+        return false;
+    }
+
+};
 var ozpIwc=ozpIwc || {};
 
 /**
@@ -5989,6 +6035,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
             return packet;
         };
 
+        self.leaveEventChannel();
         self.events.trigger("unloadState");
 	});
 
@@ -6005,6 +6052,8 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
      */
 	this.on("connectedToRouter",function() {
         this.router.registerMulticast(this,[this.electionAddress,this.name]);
+        this.joinEventChannel();
+
         var self = this;
         ozpIwc.util.setImmediate(function(){
             self.startElection();
@@ -7171,7 +7220,7 @@ ozpIwc.ApiError=ozpIwc.util.extend(Error,function(action,message) {
     this.participant.on("becameLeaderEvent", this.becameLeader,this);
     this.participant.on("newLeaderEvent", this.newLeader,this);
     this.participant.on("startElection", this.startElection,this);
-
+    this.participant.on("receiveEventChannelPacket",this.routeEventChannel,this);
    /**
     * An events module for the API.
     * @property events
@@ -7597,6 +7646,15 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
     });
 };
 
+/**
+ * Routes event channel messages. Intented to be overridden by subclasses. *
+ *
+ * @method routeEventChannel
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
+    console.log(this.participant.name,packetContext);
+};
 /**
  * Determines which handler in the api is needed to process the given packet.
  *
