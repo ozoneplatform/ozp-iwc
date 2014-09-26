@@ -479,22 +479,27 @@ ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnect = function(packetContext) {
-    for(var i in this.data){
-        for(var j in this.data[i].watchers) {
-            if (this.data[i].watchers[j].src === packetContext.packet.src) {
-                delete this.data[i].watchers[j];
 
-                console.log(this.participant.name, "Removed watcher on resource", this.data[i].resource, "for participant", packetContext.packet.src);
+    for(var node in this.data){
+        for(var j in this.data[node].watchers) {
+            if (this.data[node].watchers[j].src === packetContext.packet.src) {
+                this.data[node].watchers.splice(j,1);
+                console.log(this.participant.name, "Removed watcher on resource", this.data[node].resource,
+                    "for participant", packetContext.packet.src);
             }
         }
     }
+
+    this.handleEventChannelDisconnectImpl(packetContext);
 };
+
 /**
 *
 * @method handleEventChannelConnect
 * @param {ozpIwc.TransportPacketContext} packetContext
 */
 ozpIwc.CommonApiBase.prototype.handleEventChannelConnect = function(packetContext) {
+    this.handleEventChannelConnectImpl(packetContext);
 };
 
 /**
@@ -505,7 +510,19 @@ ozpIwc.CommonApiBase.prototype.handleEventChannelConnect = function(packetContex
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnectImpl = function(packetContext) {
-
+    console.log(this.participant.name,"(", self.participant.address, ") sees disconnection of (",
+        packetContext.packet.src,")", this.data);
+};
+/**
+ * Intended to be overridden by subclass.
+ *
+ * @abstract
+ * @method handleEventChannelDisconnectImpl
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.handleEventChannelConnectImpl = function(packetContext) {
+    console.log(this.participant.name,"(", self.participant.address, ") sees connection of (",
+        packetContext.packet.src,")", this.data);
 };
 /**
  * Determines which handler in the api is needed to process the given packet.
