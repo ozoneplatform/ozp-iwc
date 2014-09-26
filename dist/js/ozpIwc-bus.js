@@ -5017,6 +5017,13 @@ ozpIwc.Participant=function() {
         name: this.name,
         type: this.participantType || this.constructor.name
     };
+
+
+    // Handle leaving Event Channel
+    var self=this;
+    window.addEventListener("beforeunload",function() {
+        self.leaveEventChannel();
+    });
 };
 
 /**
@@ -5081,7 +5088,7 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.heartBeatStatus.address=this.address;
     this.heartBeatStatus.name=this.name;
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
-
+    this.joinEventChannel();
     this.events.trigger("connectedToRouter");
 };
 
@@ -5148,6 +5155,51 @@ ozpIwc.Participant.prototype.heartbeat=function() {
             'contentType' : this.heartBeatContentType
         },function() {/* eat the response*/});
     }
+};
+
+/**
+ * @method joinEventChannel
+ * @returns {boolean}
+ */
+ozpIwc.Participant.prototype.joinEventChannel = function() {
+    if(this.router) {
+        this.router.registerMulticast(this, ["$bus.multicast"]);
+        this.send({
+            dst: "$bus.multicast",
+            action: "connect",
+            entity: {
+                address: this.address,
+                participantType: this.participantType
+            }
+        });
+        return true;
+    } else {
+        return false;
+    }
+};
+
+/**
+ *
+ * @method leaveEventChannel
+ */
+ozpIwc.Participant.prototype.leaveEventChannel = function() {
+    if(this.router) {
+        this.send({
+            dst: "$bus.multicast",
+            action: "disconnect",
+            entity: {
+                address: this.address,
+                participantType: this.participantType
+            }
+        });
+
+        //TODO not implemented
+//        this.router.unregisterMulticast(this, ["$bus.multicast"]);
+        return true;
+    } else {
+        return false;
+    }
+
 };
 /**
  * Classes related to transport aspects of the IWC.
@@ -5272,50 +5324,6 @@ ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
     return success;
 };
 
-/**
- * @method joinEventChannel
- * @returns {boolean}
- */
-ozpIwc.Participant.prototype.joinEventChannel = function() {
-    if(this.router) {
-        this.router.registerMulticast(this, ["$bus.multicast"]);
-        this.send({
-            dst: "$bus.multicast",
-            action: "connect",
-            entity: {
-                address: this.address,
-                participantType: this.participantType
-            }
-        });
-        return true;
-    } else {
-        return false;
-    }
-};
-
-/**
- *
- * @method leaveEventChannel
- */
-ozpIwc.Participant.prototype.leaveEventChannel = function() {
-    if(this.router) {
-        this.send({
-            dst: "$bus.multicast",
-            action: "disconnect",
-            entity: {
-                address: this.address,
-                participantType: this.participantType
-            }
-        });
-
-        //TODO not implemented
-//        this.router.unregisterMulticast(this, ["$bus.multicast"]);
-        return true;
-    } else {
-        return false;
-    }
-
-};
 var ozpIwc=ozpIwc || {};
 
 /**
@@ -6035,7 +6043,6 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
             return packet;
         };
 
-        self.leaveEventChannel();
         self.events.trigger("unloadState");
 	});
 
@@ -6052,8 +6059,6 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
      */
 	this.on("connectedToRouter",function() {
         this.router.registerMulticast(this,[this.electionAddress,this.name]);
-        this.joinEventChannel();
-
         var self = this;
         ozpIwc.util.setImmediate(function(){
             self.startElection();
@@ -7654,6 +7659,48 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
  */
 ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
     console.log(this.participant.name,packetContext);
+    var packet = packetContext.packet;
+    switch (packet.action) {
+        case "connect":
+            this.handleEventChannelConnect(packetContext);
+            break;
+        case "disconnect":
+            this.handleEventChannelDisconnect(packetContext);
+            break;
+        default:
+            console.error(this.participant.name, "No handler found for corresponding event channel action: ", packet.action);
+            break;
+    }
+};
+
+/**
+ *
+ * @method handleEventChannelDisconnect
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnect = function(packetContext) {
+//    for(var i in this.data){
+//        if(this.data[i].watchers /*Find the disconnected participants address*/);
+//    }
+    console.log(this,packetContext);
+};
+/**
+*
+* @method handleEventChannelConnect
+* @param {ozpIwc.TransportPacketContext} packetContext
+*/
+ozpIwc.CommonApiBase.prototype.handleEventChannelConnect = function(packetContext) {
+};
+
+/**
+ * Intended to be overridden by subclass.
+ *
+ * @abstract
+ * @method handleEventChannelDisconnectImpl
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnectImpl = function(packetContext) {
+
 };
 /**
  * Determines which handler in the api is needed to process the given packet.

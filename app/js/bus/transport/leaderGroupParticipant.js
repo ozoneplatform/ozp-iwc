@@ -268,7 +268,6 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
             return packet;
         };
 
-        self.leaveEventChannel();
         self.events.trigger("unloadState");
 	});
 
@@ -285,8 +284,6 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
      */
 	this.on("connectedToRouter",function() {
         this.router.registerMulticast(this,[this.electionAddress,this.name]);
-        this.joinEventChannel();
-
         var self = this;
         ozpIwc.util.setImmediate(function(){
             self.startElection();

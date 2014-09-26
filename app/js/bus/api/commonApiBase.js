@@ -460,6 +460,48 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
  */
 ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
     console.log(this.participant.name,packetContext);
+    var packet = packetContext.packet;
+    switch (packet.action) {
+        case "connect":
+            this.handleEventChannelConnect(packetContext);
+            break;
+        case "disconnect":
+            this.handleEventChannelDisconnect(packetContext);
+            break;
+        default:
+            console.error(this.participant.name, "No handler found for corresponding event channel action: ", packet.action);
+            break;
+    }
+};
+
+/**
+ *
+ * @method handleEventChannelDisconnect
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnect = function(packetContext) {
+//    for(var i in this.data){
+//        if(this.data[i].watchers /*Find the disconnected participants address*/);
+//    }
+    console.log(this,packetContext);
+};
+/**
+*
+* @method handleEventChannelConnect
+* @param {ozpIwc.TransportPacketContext} packetContext
+*/
+ozpIwc.CommonApiBase.prototype.handleEventChannelConnect = function(packetContext) {
+};
+
+/**
+ * Intended to be overridden by subclass.
+ *
+ * @abstract
+ * @method handleEventChannelDisconnectImpl
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnectImpl = function(packetContext) {
+
 };
 /**
  * Determines which handler in the api is needed to process the given packet.

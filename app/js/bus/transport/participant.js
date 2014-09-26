@@ -84,6 +84,13 @@ ozpIwc.Participant=function() {
         name: this.name,
         type: this.participantType || this.constructor.name
     };
+
+
+    // Handle leaving Event Channel
+    var self=this;
+    window.addEventListener("beforeunload",function() {
+        self.leaveEventChannel();
+    });
 };
 
 /**
@@ -148,7 +155,7 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.heartBeatStatus.address=this.address;
     this.heartBeatStatus.name=this.name;
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
-
+    this.joinEventChannel();
     this.events.trigger("connectedToRouter");
 };
 
@@ -215,4 +222,49 @@ ozpIwc.Participant.prototype.heartbeat=function() {
             'contentType' : this.heartBeatContentType
         },function() {/* eat the response*/});
     }
+};
+
+/**
+ * @method joinEventChannel
+ * @returns {boolean}
+ */
+ozpIwc.Participant.prototype.joinEventChannel = function() {
+    if(this.router) {
+        this.router.registerMulticast(this, ["$bus.multicast"]);
+        this.send({
+            dst: "$bus.multicast",
+            action: "connect",
+            entity: {
+                address: this.address,
+                participantType: this.participantType
+            }
+        });
+        return true;
+    } else {
+        return false;
+    }
+};
+
+/**
+ *
+ * @method leaveEventChannel
+ */
+ozpIwc.Participant.prototype.leaveEventChannel = function() {
+    if(this.router) {
+        this.send({
+            dst: "$bus.multicast",
+            action: "disconnect",
+            entity: {
+                address: this.address,
+                participantType: this.participantType
+            }
+        });
+
+        //TODO not implemented
+//        this.router.unregisterMulticast(this, ["$bus.multicast"]);
+        return true;
+    } else {
+        return false;
+    }
+
 };
