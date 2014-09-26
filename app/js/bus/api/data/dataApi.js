@@ -19,7 +19,6 @@
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-	this.loadFromServer("data") || {};
 });
 
 /**
@@ -155,6 +154,7 @@ ozpIwc.DataApi.prototype.persistNodes=function() {
 	}
 	// send list of objects to endpoint ajax call
 	if (nodes) {
-		this.endpoint.saveNodes(nodes);
+		var endpointref= ozpIwc.EndpointRegistry.endpoint(endpoint);
+		endpointref.saveNodes(nodes);
 	}
 };

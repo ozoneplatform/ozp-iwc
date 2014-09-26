@@ -109,7 +109,6 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
  *
  * @method loadFromEndpoint
  * @param {String} endpointName The name of the endpoint to load from the server.
- * @return {ozpIwc.Endpoint} Returns endpoint for reuse in concrete apis.  Currently only data.
  */
 ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
     this.expectedBranches = 1;
@@ -117,7 +116,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
 
     // fetch the base endpoint. it should be a HAL Json object that all of the
     // resources and keys in it
-    this.endpoint=new ozpIwc.Endpoint(endpointName);
+    var endpoint=new ozpIwc.Endpoint(endpointName);
     var resolveLoad, rejectLoad;
 
     var p = new Promise(function(resolve,reject){
