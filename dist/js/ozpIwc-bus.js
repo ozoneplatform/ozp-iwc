@@ -7658,7 +7658,6 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
-    console.log(this.participant.name,packetContext);
     var packet = packetContext.packet;
     switch (packet.action) {
         case "connect":
@@ -7679,10 +7678,15 @@ ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnect = function(packetContext) {
-//    for(var i in this.data){
-//        if(this.data[i].watchers /*Find the disconnected participants address*/);
-//    }
-    console.log(this,packetContext);
+    for(var i in this.data){
+        for(var j in this.data[i].watchers) {
+            if (this.data[i].watchers[j].src === packetContext.packet.src) {
+                delete this.data[i].watchers[j];
+
+                console.log(this.participant.name, "Removed watcher on resource", this.data[i].resource, "for participant", packetContext.packet.src);
+            }
+        }
+    }
 };
 /**
 *
@@ -8054,6 +8058,7 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
             // This is the first of the bus, winner doesn't obtain any previous state
             console.log(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
                 self.loadFromServer().then(function (data) {
+                    console.log(self.participant.name,self.data);
                     self.setToLeader();
                 },function(err){
                     console.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
