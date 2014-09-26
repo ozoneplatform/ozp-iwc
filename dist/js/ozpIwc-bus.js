@@ -7227,8 +7227,11 @@ ozpIwc.ApiError=ozpIwc.util.extend(Error,function(action,message) {
  *
  * @returns {ozpIwc.CommonApiValue} The node that is now holding the data provided in the serverObject parameter.
  */
-ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
-    var resource=objectPath.replace(rootPath,'');
+ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,objectPath,endpoint) {
+    //Use the endpointRegistry to access te value of apiRoot rather than ozpIwc.apiRootUrl, to support the angular IWC wrapper
+    //The global namespace is not visible in angular factories
+    var resourcePath=objectPath.replace(endpoint.endpointRegistry.apiRoot,'');
+    var resource='/'+endpoint.name+(resourcePath && resourcePath !== '/' ? resourcePath : '');
     return this.findOrMakeValue({
         'resource': resource,
         'entity': serverObject.entity,
@@ -7273,7 +7276,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
     endpoint.get("/")
         .then(function(data) {
             self.loadLinkedObjectsFromServer(endpoint,data,resolveLoad);
-
+            self.updateResourceFromServer(data,data._links.self.href,endpoint,resolveLoad);
             // update all the collection values
             self.dynamicNodes.forEach(function(resource) {
                 self.updateDynamicNode(self.data[resource]);
@@ -7312,7 +7315,7 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
         }
     }
     //END TEMP CODE
-    var node = this.findNodeForServerResource(object,path,endpoint.baseUrl);
+    var node = this.findNodeForServerResource(object,path,endpoint);
 
     var snapshot=node.snapshot();
     node.deserialize(node,object);
@@ -8000,6 +8003,7 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
 ozpIwc.EndpointRegistry=function(config) {
     config=config || {};
     var apiRoot=config.apiRoot || '/api';
+    this.apiRoot = apiRoot;
     this.endPoints={};
     var self=this;
     this.loadPromise=ozpIwc.util.ajax({
@@ -8026,6 +8030,7 @@ ozpIwc.EndpointRegistry.prototype.endpoint=function(name) {
     var endpoint=this.endPoints[name];
     if(!endpoint) {
         endpoint=this.endPoints[name]=new ozpIwc.Endpoint(this);
+        endpoint['name']=name;
     }
     return endpoint;
 };
@@ -8831,7 +8836,15 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.SystemApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint("applications");
+
+    var self=this;
+    return this.loadFromEndpoint("applications")
+        .then(function() {
+            self.loadFromEndpoint("user")
+        })
+        .then(function() {
+            self.loadFromEndpoint("system");
+        });
 };
 
 /**
@@ -8870,26 +8883,6 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
         });
     },this);
     
-};
-
-/**
- * Finds or creates the corresponding node to store a server loaded resource.
- *
- * @method findNodeForServerResource
- * @param {ozpIwc.TransportPacket} serverObject The object to be stored.
- * @param {String} objectPath The full path resource of the object including it's root path.
- * @param {String} rootPath The root path resource of the object.
- *
- * @returns {ozpIwc.SystemApiMailboxValue|ozpIwc.SystemApiApplicationValue} The node that is now holding the data
- * provided in the serverObject parameter.
- */
-ozpIwc.SystemApi.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
-    var resource="/application" + objectPath.replace(rootPath,'');
-    return this.findOrMakeValue({
-        'resource': resource,
-        'entity': serverObject,
-        'contentType': "ozpIwc-application-definition-v1+json"
-    });
 };
 
 /**
