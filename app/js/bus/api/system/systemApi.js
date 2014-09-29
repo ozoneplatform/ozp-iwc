@@ -55,7 +55,15 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.SystemApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint("applications");
+
+    var self=this;
+    return this.loadFromEndpoint("applications")
+        .then(function() {
+            self.loadFromEndpoint("user")
+        })
+        .then(function() {
+            self.loadFromEndpoint("system");
+        });
 };
 
 /**
@@ -94,26 +102,6 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
         });
     },this);
     
-};
-
-/**
- * Finds or creates the corresponding node to store a server loaded resource.
- *
- * @method findNodeForServerResource
- * @param {ozpIwc.TransportPacket} serverObject The object to be stored.
- * @param {String} objectPath The full path resource of the object including it's root path.
- * @param {String} rootPath The root path resource of the object.
- *
- * @returns {ozpIwc.SystemApiMailboxValue|ozpIwc.SystemApiApplicationValue} The node that is now holding the data
- * provided in the serverObject parameter.
- */
-ozpIwc.SystemApi.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
-    var resource="/application" + objectPath.replace(rootPath,'');
-    return this.findOrMakeValue({
-        'resource': resource,
-        'entity': serverObject,
-        'contentType': "ozpIwc-application-definition-v1+json"
-    });
 };
 
 /**

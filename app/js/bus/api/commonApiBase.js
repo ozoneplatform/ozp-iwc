@@ -82,8 +82,11 @@
  *
  * @returns {ozpIwc.CommonApiValue} The node that is now holding the data provided in the serverObject parameter.
  */
-ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
-    var resource=objectPath.replace(rootPath,'');
+ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(serverObject,objectPath,endpoint) {
+    //Use the endpointRegistry to access te value of apiRoot rather than ozpIwc.apiRootUrl, to support the angular IWC wrapper
+    //The global namespace is not visible in angular factories
+    var resourcePath=objectPath.replace(endpoint.endpointRegistry.apiRoot,'');
+    var resource='/'+endpoint.name+(resourcePath && resourcePath !== '/' ? resourcePath : '');
     return this.findOrMakeValue({
         'resource': resource,
         'entity': serverObject.entity,
@@ -128,7 +131,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
     endpoint.get("/")
         .then(function(data) {
             self.loadLinkedObjectsFromServer(endpoint,data,resolveLoad);
-
+            self.updateResourceFromServer(data,data._links.self.href,endpoint,resolveLoad);
             // update all the collection values
             self.dynamicNodes.forEach(function(resource) {
                 self.updateDynamicNode(self.data[resource]);
@@ -167,7 +170,7 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
         }
     }
     //END TEMP CODE
-    var node = this.findNodeForServerResource(object,path,endpoint.baseUrl);
+    var node = this.findNodeForServerResource(object,path,endpoint);
 
     var snapshot=node.snapshot();
     node.deserialize(node,object);

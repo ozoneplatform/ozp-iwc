@@ -55,6 +55,7 @@ ozpIwc.Endpoint.prototype.put=function(resource, data) {
 ozpIwc.EndpointRegistry=function(config) {
     config=config || {};
     var apiRoot=config.apiRoot || '/api';
+    this.apiRoot = apiRoot;
     this.endPoints={};
     var self=this;
     this.loadPromise=ozpIwc.util.ajax({
@@ -81,6 +82,7 @@ ozpIwc.EndpointRegistry.prototype.endpoint=function(name) {
     var endpoint=this.endPoints[name];
     if(!endpoint) {
         endpoint=this.endPoints[name]=new ozpIwc.Endpoint(this);
+        endpoint['name']=name;
     }
     return endpoint;
 };
