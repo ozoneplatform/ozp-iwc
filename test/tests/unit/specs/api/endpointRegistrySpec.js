@@ -20,7 +20,7 @@ describe("Endpoint Registry",function() {
 
     it("loads the API from the default root",function() {
         new ozpIwc.EndpointRegistry();
-        expect(ozpIwc.util.ajax).toHaveBeenCalledWith(jasmine.objectContaining({'href':"api"}));
+        expect(ozpIwc.util.ajax).toHaveBeenCalledWith(jasmine.objectContaining({'href':"/api",'method':"GET"}));
     });
     
     it("loads the API from a specified root",function() {

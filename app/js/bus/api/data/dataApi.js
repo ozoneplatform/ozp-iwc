@@ -19,6 +19,7 @@
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
+	this.endpointUrl="https://www.owfgoss.org/ng/dev/mp/api/data";
 });
 
 /**
@@ -27,7 +28,7 @@ ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.DataApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint("https://www.owfgoss.org/ng/dev/mp/api/data");
+    return this.loadFromEndpoint(this.endpointUrl);
 };
 
 /**
@@ -154,7 +155,7 @@ ozpIwc.DataApi.prototype.persistNodes=function() {
 	}
 	// send list of objects to endpoint ajax call
 	if (nodes) {
-		var endpointref= ozpIwc.EndpointRegistry.endpoint(endpoint);
+		var endpointref= ozpIwc.EndpointRegistry.endpoint(this.endpointUrl);
 		endpointref.saveNodes(nodes);
 	}
 };

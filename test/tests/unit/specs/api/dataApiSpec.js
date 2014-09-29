@@ -2,6 +2,7 @@ describe("Data API Class",function() {
 
 	var dataApi;
 	var node;
+	
 	beforeEach(function() {	
 		dataApi=new ozpIwc.DataApi({
 			'participant': new TestParticipant()
@@ -124,11 +125,21 @@ describe("Data API Class",function() {
         })).serialize()];
 
 
+		// create mock ozpIwc.EndpointRegistry.endpoint
+		var mockEndpoint= {saveNodes: function(nodes){}};
+		var endpointBackup=ozpIwc.EndpointRegistry.endpoint;
+		ozpIwc.EndpointRegistry.endpoint=function(endpoint) {
+			return mockEndpoint;
+		};
+
+
 		dataApi.data['/node']=node;
 
-		spyOn(dataApi.endpoint,'saveNodes');
+		spyOn(mockEndpoint,'saveNodes');
 		dataApi.persistNodes();
-		expect(dataApi.endpoint.saveNodes).toHaveBeenCalledWith(nodeVerifier);  // update to verify data
+		expect(mockEndpoint.saveNodes).toHaveBeenCalledWith(nodeVerifier);  // update to verify data
+
+		ozpIwc.EndpointRegistry.endpoint= endpointBackup;
     });
 
         
