@@ -459,6 +459,9 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
+    if (!this.participant.activeStates.leader) {
+        return;
+    }
     var packet = packetContext.packet;
     switch (packet.action) {
         case "connect":

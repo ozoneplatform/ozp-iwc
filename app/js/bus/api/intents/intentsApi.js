@@ -180,3 +180,25 @@ ozpIwc.IntentsApi.prototype.chooseIntentHandler = function (nodeList, packetCont
     throw new ozpIwc.ApiError("noImplementation","Selecting an intent is not yet implemented");
 };
 
+/**
+ * Handles removing participant registrations from intent handlers when said participant disconnects.
+ * @method handleEventChannelDisconnectImpl
+ * @param packetContext
+ */
+ozpIwc.IntentsApi.prototype.handleEventChannelDisconnectImpl = function (packetContext) {
+    for(var node in this.data){
+        if(this.data[node] instanceof ozpIwc.IntentsApiHandlerValue) {
+            if(this.data[node].entity.invokeIntent.dst === packetContext.packet.src) {
+                console.log(this.participant.name, "Removed intent handler on resource", this.data[node].resource,
+                    "for participant", packetContext.packet.src,this.data[node]);
+                delete this.data[node];
+            }
+        }
+    }
+
+    for(var node in this.dynamicNodes) {
+        var resource = this.dynamicNodes[node];
+        this.updateDynamicNode(this.data[resource]);
+    }
+    console.log(this.participant.name, this.data);
+};
