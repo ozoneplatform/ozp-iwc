@@ -86,22 +86,34 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectP
     var resource = '/';
     switch (endpoint.name) {
         case 'intents' :
-            resource+= object.type + '/' + object.action;
-            if (object.handler) {
-                resource+= '/' + + object.handler;
+            if (object.type && object.action) {
+                resource += object.type + '/' + object.action;
+                if (object.handler) {
+                    resource += '/' + +object.handler;
+                }
             }
             break;
         case 'applications':
-            resource+= '/' + object.name;
+            if (object.name) {
+                resource += object.name;
+            }
             break;
         case 'system':
-            resource+= object.name + '/' + object.version;
+            if (object.name || object.version) {
+                resource += 'system' + (object.name ? '/' +object.name : '') +(object.version ? '/' +object.version : '');
+            }
             break;
         case 'user':
-            resource+= object.name;
+            if (object.username) {
+                resource += 'user/' + object.username;
+            }
             break;
         default:
             resource+= 'FIXME_UNKNOWN_ENDPOINT_' + endpoint.name;
+    }
+
+    if (resource === '/') {
+        return null;
     }
 
     return this.findOrMakeValue({
@@ -175,11 +187,13 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
     };
     var node = this.findNodeForServerResource(object,path,endpoint);
 
-    var snapshot=node.snapshot();
-    node.deserialize(node,object);
+    if (node) {
+        var snapshot = node.snapshot();
+        node.deserialize(node, object);
 
-    this.notifyWatchers(node,node.changesSince(snapshot));
-    this.loadLinkedObjectsFromServer(endpoint,object,res);
+        this.notifyWatchers(node, node.changesSince(snapshot));
+        this.loadLinkedObjectsFromServer(endpoint, object, res);
+    }
 };
 
 /**

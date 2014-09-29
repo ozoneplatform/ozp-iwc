@@ -21,13 +21,13 @@ var ozpIwc=ozpIwc || {};
  */
 ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
-    
+
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/application",
         pattern: /^\/application\/.*$/,
         contentType: "application/ozpIwc-application-list-v1+json"
     }));
-    
+
     this.on("changedNode",this.updateIntents,this);
 
     // @todo populate user and system endpoints
@@ -57,13 +57,21 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 ozpIwc.SystemApi.prototype.loadFromServer=function() {
 
     var self=this;
-    return this.loadFromEndpoint("applications")
-        .then(function() {
-            self.loadFromEndpoint("user")
-        })
-        .then(function() {
-            self.loadFromEndpoint("system");
-        });
+    return new Promise(function(resolve, reject) {
+        self.loadFromEndpoint("applications")
+            .then(function() {
+                self.loadFromEndpoint("user")
+                    .then(function() {
+                        self.loadFromEndpoint("system")
+                            .then(function() {
+                                resolve("system.api load complete");
+                            });
+                    })
+            })
+            .catch(function(error) {
+                reject(error);
+            });
+    });
 };
 
 /**
@@ -101,7 +109,7 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
             }
         });
     },this);
-    
+
 };
 
 /**
@@ -114,16 +122,16 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
 ozpIwc.SystemApi.prototype.makeValue = function(packet){
     if(packet.resource.indexOf("/mailbox") === 0) {
         return new ozpIwc.SystemApiMailboxValue({
-            resource: packet.resource, 
-            entity: packet.entity, 
+            resource: packet.resource,
+            entity: packet.entity,
             contentType: packet.contentType
         });
     }
-        
+
     return new ozpIwc.SystemApiApplicationValue({
-        resource: packet.resource, 
-        entity: packet.entity, 
-        contentType: packet.contentType, 
+        resource: packet.resource,
+        entity: packet.entity,
+        contentType: packet.contentType,
         systemApi: this
     });
 };
@@ -153,30 +161,30 @@ ozpIwc.SystemApi.prototype.handleDelete = function() {
 ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
     var key=this.createKey("/mailbox/");
 
-	// save the new child
-	var mailboxNode=this.findOrMakeValue({'resource':key});
-	mailboxNode.set(packetContext.packet);
-    
+    // save the new child
+    var mailboxNode=this.findOrMakeValue({'resource':key});
+    mailboxNode.set(packetContext.packet);
+
     this.launchApplication(node,mailboxNode);
     packetContext.replyTo({'action': "ok"});
 };
 
 /**
  * Handles System api requests with an action of "invoke"
- * 
+ *
  * @method handleInvoke
  */
 ozpIwc.SystemApi.prototype.handleInvoke = function(node,packetContext) {
     var key=this.createKey("/mailbox/");
 
-	// save the new child
-	var mailboxNode=this.findOrMakeValue({'resource':key});
+    // save the new child
+    var mailboxNode=this.findOrMakeValue({'resource':key});
     mailboxNode.set({
         contentType: "application/ozpiwc-intent-invocation+json",
         permissions: packetContext.permissions,
         entity: packetContext.packet
     });
-    
+
     this.launchApplication(node,mailboxNode);
     packetContext.replyTo({'action': "ok"});
 };
@@ -190,10 +198,10 @@ ozpIwc.SystemApi.prototype.handleInvoke = function(node,packetContext) {
  */
 ozpIwc.SystemApi.prototype.launchApplication=function(node,mailboxNode) {
     var launchParams=[
-        "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),
-        "ozpIwc.mailbox="+encodeURIComponent(mailboxNode.resource)
+            "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),
+            "ozpIwc.mailbox="+encodeURIComponent(mailboxNode.resource)
     ];
-    
+
     window.open(node.entity._links.describes.href,launchParams.join("&"));
 };
 
