@@ -148,7 +148,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
 
     // fetch the base endpoint. it should be a HAL Json object that all of the
     // resources and keys in it
-    var endpoint=ozpIwc.endpoint(endpointName);
+    var endpoint=new ozpIwc.Endpoint(endpointName);
     var resolveLoad, rejectLoad;
 
     var p = new Promise(function(resolve,reject){
@@ -828,4 +828,9 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
             });
         }
     },0);
+};
+
+ozpIwc.CommonApiBase.prototype.persistNodes=function() {
+	// throw not implemented error
+	throw new ozpIwc.ApiError("noImplementation","Base class persistence call not implemented.  Use DataApi to persist nodes.");
 };

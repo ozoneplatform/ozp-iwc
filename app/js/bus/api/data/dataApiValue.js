@@ -14,6 +14,8 @@ ozpIwc.DataApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) 
 	ozpIwc.CommonApiValue.apply(this,arguments);
     config = config || {};
 	this.children=config.children || [];
+	this.persist=config.persist || true;
+	this.dirty=config.dirty || true;
 });
 
 /**
@@ -26,6 +28,7 @@ ozpIwc.DataApiValue.prototype.addChild=function(child) {
         this.children.push(child);
     	this.version++;
     }
+	this.dirty= true;
 };
 
 /**
@@ -35,7 +38,8 @@ ozpIwc.DataApiValue.prototype.addChild=function(child) {
  * @param {String} child - name of the child record of this
  */
 ozpIwc.DataApiValue.prototype.removeChild=function(child) {
-    var originalLen=this.children.length;
+	this.dirty= true;
+	var originalLen=this.children.length;
     this.children=this.children.filter(function(c) {
         return c !== child;
     });
@@ -95,4 +99,16 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
     this.contentType=serverData.contentType || this.contentType;
 	this.permissions=serverData.permissions || this.permissions;
 	this.version=serverData.version || this.version;
+	this.self=serverData.version || this.self;
 };
+
+ozpIwc.DataApiValue.prototype.serialize=function() {
+	var serverData = {};
+	serverData.entity=this.entity;
+	serverData.contentType=this.contentType;
+	serverData.permissions=this.permissions;
+	serverData.version=this.version;
+	serverData.self=this.self;
+	return serverData;
+};
+

@@ -19,7 +19,7 @@
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-
+	this.endpointUrl="https://www.owfgoss.org/ng/dev/mp/api/data";
 });
 
 /**
@@ -28,7 +28,7 @@ ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.DataApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint("https://www.owfgoss.org/ng/dev/mp/api/data");
+    return this.loadFromEndpoint(this.endpointUrl);
 };
 
 /**
@@ -137,4 +137,25 @@ ozpIwc.DataApi.prototype.handleRemovechild=function(node,packetContext) {
 	packetContext.replyTo({
         'response':'ok'
     });
+};
+
+/**
+ * 	Collect list of nodes to persist, send to server, reset persist flag.
+ * 	Currently sends every dirty node with a separate ajax call.
+ */
+ozpIwc.DataApi.prototype.persistNodes=function() {
+	// collect list of nodes to persist, send to server, reset persist flag
+	var nodes=[];
+	for (node in this.data) {
+		if ((this.data[node].dirty === true) &&
+			(this.data[node].persist === true)) {
+			nodes[nodes.length]=this.data[node].serialize();
+			this.data[node].dirty = false;
+		}
+	}
+	// send list of objects to endpoint ajax call
+	if (nodes) {
+		var endpointref= ozpIwc.EndpointRegistry.endpoint(this.endpointUrl);
+		endpointref.saveNodes(nodes);
+	}
 };

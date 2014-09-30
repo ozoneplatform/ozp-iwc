@@ -1,7 +1,8 @@
-describe("Data API",function() {
+describe("Data API Class",function() {
 
 	var dataApi;
 	var node;
+	
 	beforeEach(function() {	
 		dataApi=new ozpIwc.DataApi({
 			'participant': new TestParticipant()
@@ -112,6 +113,33 @@ describe("Data API",function() {
         var changePacket=dataApi.participant.sentPackets[0];
         expect(changePacket.response).toEqual("changed");
         expect(changePacket.entity.removedChildren[0]).toEqual("child1");
+    });
+    it("writes dirty nodes to server",function() {
+        var nodeVerifier=[(new ozpIwc.DataApiValue({
+            'resource': "/node",
+            'entity' : { 'foo':1 },
+            'contentType' : "application/json",
+            'version' : 1,
+			'self' : {},
+			'permissions' : {}
+        })).serialize()];
+
+
+		// create mock ozpIwc.EndpointRegistry.endpoint
+		var mockEndpoint= {saveNodes: function(nodes){}};
+		var endpointBackup=ozpIwc.EndpointRegistry.endpoint;
+		ozpIwc.EndpointRegistry.endpoint=function(endpoint) {
+			return mockEndpoint;
+		};
+
+
+		dataApi.data['/node']=node;
+
+		spyOn(mockEndpoint,'saveNodes');
+		dataApi.persistNodes();
+		expect(mockEndpoint.saveNodes).toHaveBeenCalledWith(nodeVerifier);
+
+		ozpIwc.EndpointRegistry.endpoint= endpointBackup;
     });
 
         
