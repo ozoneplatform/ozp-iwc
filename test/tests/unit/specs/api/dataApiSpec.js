@@ -137,7 +137,7 @@ describe("Data API Class",function() {
 
 		spyOn(mockEndpoint,'saveNodes');
 		dataApi.persistNodes();
-		expect(mockEndpoint.saveNodes).toHaveBeenCalledWith(nodeVerifier);  // update to verify data
+		expect(mockEndpoint.saveNodes).toHaveBeenCalledWith(nodeVerifier);
 
 		ozpIwc.EndpointRegistry.endpoint= endpointBackup;
     });
