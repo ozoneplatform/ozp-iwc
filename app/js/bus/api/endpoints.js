@@ -68,6 +68,10 @@ ozpIwc.EndpointRegistry=function(config) {
                 self.endpoint(ep).baseUrl=link;
             }
         }
+        for (var ep in data._embedded) {
+            var link=data._embedded[ep]._links.self.href;
+            self.endpoint(ep).baseUrl=link;
+        }
     });
 };
 
