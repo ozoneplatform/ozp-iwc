@@ -89,6 +89,16 @@ ozpIwc.Participant=function() {
     // Handle leaving Event Channel
     var self=this;
     window.addEventListener("beforeunload",function() {
+        // Unload events can't use setTimeout's. Therefore make all sending happen with normal execution
+        self.send = function(originalPacket,callback) {
+            var packet=this.fixPacket(originalPacket);
+            if(callback) {
+                this.replyCallbacks[packet.msgId]=callback;
+            }
+            ozpIwc.Participant.prototype.send.call(this,packet);
+
+            return packet;
+        };
         self.leaveEventChannel();
     });
 };
@@ -259,7 +269,7 @@ ozpIwc.Participant.prototype.leaveEventChannel = function() {
                 participantType: this.participantType
             }
         });
-
+        console.log("Alerting that Participant(",this.address,") is leaving. Type(",this.participantType,")");
         //TODO not implemented
 //        this.router.unregisterMulticast(this, ["$bus.multicast"]);
         return true;

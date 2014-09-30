@@ -257,17 +257,6 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
         //Priority has to be the minimum possible
         self.priority=-Number.MAX_VALUE;
 
-        // Unload events can't use setTimeout's. Therefore make all sending happen with normal execution
-        self.send = function(originalPacket,callback) {
-            var packet=this.fixPacket(originalPacket);
-            if(callback) {
-                this.replyCallbacks[packet.msgId]=callback;
-            }
-            ozpIwc.Participant.prototype.send.call(this,packet);
-
-            return packet;
-        };
-
         self.events.trigger("unloadState");
 	});
 

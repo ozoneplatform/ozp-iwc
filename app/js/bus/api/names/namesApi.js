@@ -118,3 +118,31 @@ ozpIwc.NamesApi.prototype.makeValue = function(packet) {
     }
     return new ozpIwc.NamesApiValue(config);            
 };
+
+/**
+ * Handles removing participant addresses from the names api
+ * @method handleEventChannelDisconnectImpl
+ * @param packetContext
+ */
+ozpIwc.NamesApi.prototype.handleEventChannelDisconnectImpl = function (packetContext) {
+    console.log(this.participant.name,this.participant.address,packetContext);
+    //First check /address
+    var addrString = "/address/" + packetContext.packet.src;
+    var addrs = this.data["/address"].entity;
+
+    console.log(this.data["/address"],addrString);
+    for(var node in addrs){
+        var curNode = addrs[node];
+        if (this.data[curNode] && this.data[curNode].entity.address === packetContext.packet.src) {
+            console.log(this.participant.name, "Removed address resource", node,
+                "for participant", packetContext.packet.src);
+            delete this.data[curNode];
+        }
+    }
+
+    for(var node in this.dynamicNodes) {
+        var resource = this.dynamicNodes[node];
+        this.updateDynamicNode(this.data[resource]);
+    }
+    console.log(this.participant.address, this.participant.activeStates.leader, this.participant.name, this.data);
+};

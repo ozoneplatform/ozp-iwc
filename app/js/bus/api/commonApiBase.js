@@ -513,7 +513,7 @@ ozpIwc.CommonApiBase.prototype.handleEventChannelConnect = function(packetContex
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnectImpl = function(packetContext) {
-    console.log(this.participant.name,"(", self.participant.address, ") sees disconnection of (",
+    console.log(this.participant.name,"(", this.participant.address, ") sees disconnection of (",
         packetContext.packet.src,")", this.data);
 };
 /**
@@ -524,7 +524,7 @@ ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnectImpl = function(packe
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.handleEventChannelConnectImpl = function(packetContext) {
-    console.log(this.participant.name,"(", self.participant.address, ") sees connection of (",
+    console.log(this.participant.name,"(", this.participant.address, ") sees connection of (",
         packetContext.packet.src,")", this.data);
 };
 /**
