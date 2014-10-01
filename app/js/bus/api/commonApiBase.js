@@ -482,17 +482,15 @@ ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnect = function(packetContext) {
-
     for(var node in this.data){
         for(var j in this.data[node].watchers) {
-            if (this.data[node].watchers[j].src === packetContext.packet.src) {
+            if (this.data[node].watchers[j].src === packetContext.packet.entity.address) {
                 this.data[node].watchers.splice(j,1);
                 console.log(this.participant.name, "Removed watcher on resource", this.data[node].resource,
                     "for participant", packetContext.packet.src);
             }
         }
     }
-
     this.handleEventChannelDisconnectImpl(packetContext);
 };
 
@@ -514,7 +512,7 @@ ozpIwc.CommonApiBase.prototype.handleEventChannelConnect = function(packetContex
  */
 ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnectImpl = function(packetContext) {
     console.log(this.participant.name,"(", this.participant.address, ") sees disconnection of (",
-        packetContext.packet.src,")", this.data);
+        packetContext.packet.src,") Type: (",packetContext.packet.entity.participantType,")", this.data);
 };
 /**
  * Intended to be overridden by subclass.
@@ -525,7 +523,7 @@ ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnectImpl = function(packe
  */
 ozpIwc.CommonApiBase.prototype.handleEventChannelConnectImpl = function(packetContext) {
     console.log(this.participant.name,"(", this.participant.address, ") sees connection of (",
-        packetContext.packet.src,")", this.data);
+        packetContext.packet.src,") Type: (",packetContext.packet.entity.participantType,")", this.data);
 };
 /**
  * Determines which handler in the api is needed to process the given packet.

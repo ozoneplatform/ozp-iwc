@@ -257,6 +257,28 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
         //Priority has to be the minimum possible
         self.priority=-Number.MAX_VALUE;
 
+        if(self.activeStates.leader) {
+            for (var part in self.router.participants) {
+                var participant = self.router.participants[part];
+
+                // Each leaderParticipant should report out what participants are on
+                // the router so that higher level elements can clean up soon to be dead references before passing on state.
+                if (participant.address) {
+                    self.events.trigger("receiveEventChannelPacket", {
+                        packet: self.fixPacket({
+                            dst: "$bus.multicast",
+                            action: "disconnect",
+                            entity: {
+                                address: participant.address,
+                                participantType: participant.participantType,
+                                namesResource: participant.namesResource
+                            }
+                        })
+                    });
+                }
+            }
+        }
+
         self.events.trigger("unloadState");
 	});
 

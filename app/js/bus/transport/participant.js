@@ -266,10 +266,10 @@ ozpIwc.Participant.prototype.leaveEventChannel = function() {
             action: "disconnect",
             entity: {
                 address: this.address,
-                participantType: this.participantType
+                participantType: this.participantType,
+                namesResource: this.namesResource
             }
         });
-        console.log("Alerting that Participant(",this.address,") is leaving. Type(",this.participantType,")");
         //TODO not implemented
 //        this.router.unregisterMulticast(this, ["$bus.multicast"]);
         return true;

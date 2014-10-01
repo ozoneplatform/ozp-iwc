@@ -189,8 +189,6 @@ ozpIwc.IntentsApi.prototype.handleEventChannelDisconnectImpl = function (packetC
     for(var node in this.data){
         if(this.data[node] instanceof ozpIwc.IntentsApiHandlerValue) {
             if(this.data[node].entity.invokeIntent.dst === packetContext.packet.src) {
-                console.log(this.participant.name, "Removed intent handler on resource", this.data[node].resource,
-                    "for participant", packetContext.packet.src,this.data[node]);
                 delete this.data[node];
             }
         }
@@ -200,5 +198,4 @@ ozpIwc.IntentsApi.prototype.handleEventChannelDisconnectImpl = function (packetC
         var resource = this.dynamicNodes[node];
         this.updateDynamicNode(this.data[resource]);
     }
-    console.log(this.participant.name, this.data);
 };
