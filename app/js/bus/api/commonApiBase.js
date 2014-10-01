@@ -148,7 +148,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
 
     // fetch the base endpoint. it should be a HAL Json object that all of the
     // resources and keys in it
-    var endpoint=new ozpIwc.Endpoint(endpointName);
+    var endpoint=ozpIwc.endpoint(endpointName);
     var resolveLoad, rejectLoad;
 
     var p = new Promise(function(resolve,reject){
