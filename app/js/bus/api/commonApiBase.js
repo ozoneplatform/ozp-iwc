@@ -462,6 +462,7 @@ ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
     if (!this.participant.activeStates.leader) {
         return;
     }
+    console.log(packetContext.packet.src, this.participant.name);
     var packet = packetContext.packet;
     switch (packet.action) {
         case "connect":
@@ -486,8 +487,6 @@ ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnect = function(packetCon
         for(var j in this.data[node].watchers) {
             if (this.data[node].watchers[j].src === packetContext.packet.entity.address) {
                 this.data[node].watchers.splice(j,1);
-                console.log(this.participant.name, "Removed watcher on resource", this.data[node].resource,
-                    "for participant", packetContext.packet.src);
             }
         }
     }
@@ -511,8 +510,8 @@ ozpIwc.CommonApiBase.prototype.handleEventChannelConnect = function(packetContex
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnectImpl = function(packetContext) {
-    console.log(this.participant.name,"(", this.participant.address, ") sees disconnection of (",
-        packetContext.packet.src,") Type: (",packetContext.packet.entity.participantType,")", this.data);
+//    console.log(this.participant.name,"(", this.participant.address, ") sees disconnection of (",
+//        packetContext.packet.src,") Type: (",packetContext.packet.entity.participantType,")", this.data);
 };
 /**
  * Intended to be overridden by subclass.
@@ -522,8 +521,8 @@ ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnectImpl = function(packe
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.handleEventChannelConnectImpl = function(packetContext) {
-    console.log(this.participant.name,"(", this.participant.address, ") sees connection of (",
-        packetContext.packet.src,") Type: (",packetContext.packet.entity.participantType,")", this.data);
+//    console.log(this.participant.name,"(", this.participant.address, ") sees connection of (",
+//        packetContext.packet.src,") Type: (",packetContext.packet.entity.participantType,")", this.data);
 };
 /**
  * Determines which handler in the api is needed to process the given packet.
@@ -744,6 +743,13 @@ ozpIwc.CommonApiBase.prototype.setState = function(state) {
     this.data = {};
     for (var key in state) {
         this.findOrMakeValue(state[key]);
+        var node =this.findOrMakeValue(state[key]);
+        node.deserialize(state[key]);
+    }
+
+    for(var node in this.dynamicNodes) {
+        var resource = this.dynamicNodes[node];
+        this.updateDynamicNode(this.data[resource]);
     }
 };
 

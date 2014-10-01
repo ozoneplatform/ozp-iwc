@@ -38,6 +38,17 @@ ozpIwc.RouterWatchdog = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(
      * @event #connectedToRouter
      */
     this.on("connectedToRouter", this.setupWatches, this);
+
+    this.on("preLeaveEventChannel",function(){
+        this.send({
+            dst: "$bus.multicast",
+            action: "disconnect",
+            entity: {
+                address: this.router.selfId,
+                namesResource: "/router/"+this.router.selfId
+            }
+        });
+    },this);
 });
 
 /**

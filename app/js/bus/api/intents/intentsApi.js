@@ -188,7 +188,7 @@ ozpIwc.IntentsApi.prototype.chooseIntentHandler = function (nodeList, packetCont
 ozpIwc.IntentsApi.prototype.handleEventChannelDisconnectImpl = function (packetContext) {
     for(var node in this.data){
         if(this.data[node] instanceof ozpIwc.IntentsApiHandlerValue) {
-            if(this.data[node].entity.invokeIntent.dst === packetContext.packet.src) {
+            if(this.data[node].entity.invokeIntent.dst === packetContext.packet.entity.address) {
                 delete this.data[node];
             }
         }

@@ -99,6 +99,7 @@ ozpIwc.Participant=function() {
 
             return packet;
         };
+        self.events.trigger("preLeaveEventChannel");
         self.leaveEventChannel();
     });
 };
