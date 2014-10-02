@@ -39,7 +39,28 @@ ozpIwc.RouterWatchdog = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(
      */
     this.on("connectedToRouter", this.setupWatches, this);
 
-    this.on("preLeaveEventChannel",function(){
+
+});
+
+/**
+ * Removes this participant from the $bus.multicast multicast group.
+ *
+ * @method leaveEventChannel
+ */
+ozpIwc.RouterWatchdog.prototype.leaveEventChannel = function() {
+    // handle anything before leaving.
+    if(this.router) {
+
+        this.send({
+            dst: "$bus.multicast",
+            action: "disconnect",
+            entity: {
+                address: this.address,
+                participantType: this.participantType,
+                namesResource: this.namesResource
+            }
+        });
+
         this.send({
             dst: "$bus.multicast",
             action: "disconnect",
@@ -48,9 +69,14 @@ ozpIwc.RouterWatchdog = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(
                 namesResource: "/router/"+this.router.selfId
             }
         });
-    },this);
-});
+        //TODO not implemented
+//        this.router.unregisterMulticast(this, ["$bus.multicast"]);
+        return true;
+    } else {
+        return false;
+    }
 
+};
 /**
  * Sets up the watchdog for all participants connected to the router. Reports heartbeats based on
  * {{#crossLink "ozpIwc.RouterWatchdogParticipant/heartbeatFrequency:property"}}{{/crossLink}}

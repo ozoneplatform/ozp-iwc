@@ -99,7 +99,6 @@ ozpIwc.Participant=function() {
 
             return packet;
         };
-        self.events.trigger("preLeaveEventChannel");
         self.leaveEventChannel();
     });
 };
@@ -236,6 +235,8 @@ ozpIwc.Participant.prototype.heartbeat=function() {
 };
 
 /**
+ * Adds this participant to the $bus.multicast multicast group.
+ *
  * @method joinEventChannel
  * @returns {boolean}
  */
@@ -257,6 +258,7 @@ ozpIwc.Participant.prototype.joinEventChannel = function() {
 };
 
 /**
+ * Remove this participant from the $bus.multicast multicast group.
  *
  * @method leaveEventChannel
  */

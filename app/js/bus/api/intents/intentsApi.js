@@ -182,6 +182,7 @@ ozpIwc.IntentsApi.prototype.chooseIntentHandler = function (nodeList, packetCont
 
 /**
  * Handles removing participant registrations from intent handlers when said participant disconnects.
+ *
  * @method handleEventChannelDisconnectImpl
  * @param packetContext
  */

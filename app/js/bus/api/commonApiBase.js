@@ -205,10 +205,6 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
         branchesFound += data._links.item.length;
     }
 
-
-
-
-
     if(noEmbedded && noLinks) {
         this.retrievedBranches++;
         if(this.retrievedBranches === this.expectedBranches){
@@ -453,7 +449,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 };
 
 /**
- * Routes event channel messages. Intented to be overridden by subclasses. *
+ * Routes event channel messages.
  *
  * @method routeEventChannel
  * @param {ozpIwc.TransportPacketContext} packetContext
@@ -462,7 +458,6 @@ ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
     if (!this.participant.activeStates.leader) {
         return;
     }
-    console.log(packetContext.packet.src, this.participant.name);
     var packet = packetContext.packet;
     switch (packet.action) {
         case "connect":
@@ -478,6 +473,7 @@ ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
 };
 
 /**
+ * Handles disconnect messages received over the $bus.multicast group.
  *
  * @method handleEventChannelDisconnect
  * @param {ozpIwc.TransportPacketContext} packetContext
@@ -494,8 +490,9 @@ ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnect = function(packetCon
 };
 
 /**
-*
-* @method handleEventChannelConnect
+ * Handles connect messages received over the $bus.multicast group.
+ *
+ * @method handleEventChannelConnect
 * @param {ozpIwc.TransportPacketContext} packetContext
 */
 ozpIwc.CommonApiBase.prototype.handleEventChannelConnect = function(packetContext) {
@@ -510,8 +507,6 @@ ozpIwc.CommonApiBase.prototype.handleEventChannelConnect = function(packetContex
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnectImpl = function(packetContext) {
-//    console.log(this.participant.name,"(", this.participant.address, ") sees disconnection of (",
-//        packetContext.packet.src,") Type: (",packetContext.packet.entity.participantType,")", this.data);
 };
 /**
  * Intended to be overridden by subclass.
@@ -521,8 +516,6 @@ ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnectImpl = function(packe
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.CommonApiBase.prototype.handleEventChannelConnectImpl = function(packetContext) {
-//    console.log(this.participant.name,"(", this.participant.address, ") sees connection of (",
-//        packetContext.packet.src,") Type: (",packetContext.packet.entity.participantType,")", this.data);
 };
 /**
  * Determines which handler in the api is needed to process the given packet.
@@ -725,7 +718,13 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
  */
 ozpIwc.CommonApiBase.prototype.unloadState = function(){
     if(this.participant.activeStates.leader) {
+
+        // temporarily change the primative to stringify our RegExp
+        var tempToJSON = RegExp.prototype.toJSON;
+        RegExp.prototype.toJSON = RegExp.prototype.toString;
         this.participant.sendElectionMessage("election",{state: this.data, previousLeader: this.participant.address});
+
+        RegExp.prototype.toJSON = tempToJSON;
         this.data = {};
     } else {
         this.participant.sendElectionMessage("election");
@@ -742,15 +741,22 @@ ozpIwc.CommonApiBase.prototype.unloadState = function(){
 ozpIwc.CommonApiBase.prototype.setState = function(state) {
     this.data = {};
     for (var key in state) {
-        this.findOrMakeValue(state[key]);
-        var node =this.findOrMakeValue(state[key]);
-        node.deserialize(state[key]);
+        var dynIndex = this.dynamicNodes.indexOf(state[key].resource);
+        if(dynIndex > -1){
+            var node = this.data[state[key].resource] = new ozpIwc.CommonApiCollectionValue({
+                resource: state[key].resource
+            });
+            node.deserialize(state[key]);
+            this.addDynamicNode(node);
+        } else {
+            var node = this.findOrMakeValue(state[key]);
+            node.deserialize(state[key]);
+        }
     }
-
-    for(var node in this.dynamicNodes) {
-        var resource = this.dynamicNodes[node];
+    // update all the collection values
+    this.dynamicNodes.forEach(function(resource) {
         this.updateDynamicNode(this.data[resource]);
-    }
+    },this);
 };
 
 /**
@@ -883,7 +889,6 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
             // This is the first of the bus, winner doesn't obtain any previous state
             console.log(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
                 self.loadFromServer().then(function (data) {
-                    console.log(self.participant.name,self.data);
                     self.setToLeader();
                 },function(err){
                     console.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);

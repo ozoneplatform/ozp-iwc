@@ -120,7 +120,8 @@ ozpIwc.NamesApi.prototype.makeValue = function(packet) {
 };
 
 /**
- * Handles removing participant addresses from the names api
+ * Handles removing participant addresses from the names api.
+ *
  * @method handleEventChannelDisconnectImpl
  * @param packetContext
  */
