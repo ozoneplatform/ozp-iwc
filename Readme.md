@@ -17,4 +17,5 @@ To Build
 
 Demo
 ---------------
-http://ozone-development.github.io/iwc/gridster/
+Various example widgets using the ozp-iwc can be found at:
+http://ozone-development.github.io/ozp-demo/
