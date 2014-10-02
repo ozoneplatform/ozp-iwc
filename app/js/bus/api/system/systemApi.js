@@ -66,7 +66,7 @@ ozpIwc.SystemApi.prototype.loadFromServer=function() {
                             .then(function() {
                                 resolve("system.api load complete");
                             });
-                    })
+                    });
             })
             .catch(function(error) {
                 reject(error);

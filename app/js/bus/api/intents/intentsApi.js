@@ -195,8 +195,8 @@ ozpIwc.IntentsApi.prototype.handleEventChannelDisconnectImpl = function (packetC
         }
     }
 
-    for(var node in this.dynamicNodes) {
-        var resource = this.dynamicNodes[node];
+    for(var dynNode in this.dynamicNodes) {
+        var resource = this.dynamicNodes[dynNode];
         this.updateDynamicNode(this.data[resource]);
     }
 };

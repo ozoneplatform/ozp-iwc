@@ -7365,7 +7365,7 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectP
             if (object.type && object.action) {
                 resource += object.type + '/' + object.action;
                 if (object.handler) {
-                    resource += '/' + +object.handler;
+                    resource += '/' + object.handler;
                 }
             }
             break;
@@ -7460,7 +7460,7 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
     //TODO where should we get content-type?
     if (!object.contentType) {
         object.contentType = 'application/json';
-    };
+    }
     var node = this.findNodeForServerResource(object,path,endpoint);
 
     if (node) {
@@ -7759,11 +7759,9 @@ ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
     switch (packet.action) {
         case "connect":
             this.handleEventChannelConnect(packetContext);
-            console.log(this.participant.name, "connect", this);
             break;
         case "disconnect":
             this.handleEventChannelDisconnect(packetContext);
-            console.log(this.participant.name, "disconnect", this);
             break;
         default:
             console.error(this.participant.name, "No handler found for corresponding event channel action: ", packet.action);
@@ -8041,14 +8039,15 @@ ozpIwc.CommonApiBase.prototype.setState = function(state) {
     this.data = {};
     for (var key in state) {
         var dynIndex = this.dynamicNodes.indexOf(state[key].resource);
+        var node;
         if(dynIndex > -1){
-            var node = this.data[state[key].resource] = new ozpIwc.CommonApiCollectionValue({
+             node = this.data[state[key].resource] = new ozpIwc.CommonApiCollectionValue({
                 resource: state[key].resource
             });
             node.deserialize(state[key]);
             this.updateDynamicNode(node);
         } else {
-            var node = this.findOrMakeValue(state[key]);
+            node = this.findOrMakeValue(state[key]);
             node.deserialize(state[key]);
         }
     }
@@ -8074,6 +8073,8 @@ ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
 
 /**
  * Puts the API's participant into it's election state.
+ *
+ * @method startElection
  */
 ozpIwc.CommonApiBase.prototype.startElection = function(){
     if (this.participant.activeStates.leader) {
@@ -8090,6 +8091,8 @@ ozpIwc.CommonApiBase.prototype.startElection = function(){
  *  Handles taking over control of the API's participant group as the leader.
  *      <li>If this API instance's participant was the leader prior to election and won, normal functionality resumes.</li>
  *      <li>If this API instance's participant received state from a leaving leader participant, it will consume said participants state</li>
+ *
+ * @method becameLeader
  */
 ozpIwc.CommonApiBase.prototype.becameLeader= function(){
     this.participant.sendElectionMessage("victory");
@@ -8110,7 +8113,11 @@ ozpIwc.CommonApiBase.prototype.becameLeader= function(){
  * Handles a new leader being assigned to this API's participant group.
  *      <li>@TODO: If this API instance was leader prior to the election, its state will be sent off to the new leader.</li>
  *      <li>If this API instance wasn't the leader prior to the election it will resume normal functionality.</li>
- * @fires ozpIwc.leaderGroupParticipant#newLeader
+ *
+ * Fires:
+ *   - {{#crossLink "ozpIwc.leaderGroupParticipant/#newLeader:event"}}{{/crossLink}}
+ *
+ * @method newLeader
  */
 ozpIwc.CommonApiBase.prototype.newLeader = function() {
     // If this API was the leader, send its state to the new leader
@@ -8125,7 +8132,11 @@ ozpIwc.CommonApiBase.prototype.newLeader = function() {
 
 /**
  * Handles setting the API's participant to the leader state.
- * @fires ozpIwc.leaderGroupParticipant#becameLeader
+ *
+ * Fires:
+ *   - {{#crossLink "ozpIwc.leaderGroupParticipant/#becameLeader:event"}}{{/crossLink}}
+ *
+ * @method setToLeader
  */
 ozpIwc.CommonApiBase.prototype.setToLeader = function(){
     var self = this;
@@ -8140,6 +8151,8 @@ ozpIwc.CommonApiBase.prototype.setToLeader = function(){
  * Handles the syncronizing of API data from previous leaders.
  * <li> If this API's participant has a state stored from the election it is set </li>
  * <li> If no state present but expected, a listener is set to retrieve the state if acquired within 250ms </li>
+ *
+ * @method leaderSync
  */
 ozpIwc.CommonApiBase.prototype.leaderSync = function () {
     this.participant.changeState("leaderSync",{toggleDrop: true});
@@ -8197,6 +8210,10 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
     },0);
 };
 
+/**
+ * @TODO DOC
+ * @method persistNodes
+ */
 ozpIwc.CommonApiBase.prototype.persistNodes=function() {
 	// throw not implemented error
 	throw new ozpIwc.ApiError("noImplementation","Base class persistence call not implemented.  Use DataApi to persist nodes.");
@@ -8233,6 +8250,13 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
     });
 };
 
+/**
+ *
+ * @method put
+ * @param resource
+ * @param data
+ * @returns {*}
+ */
 ozpIwc.Endpoint.prototype.put=function(resource, data) {
     var self=this;
 
@@ -8246,6 +8270,21 @@ ozpIwc.Endpoint.prototype.put=function(resource, data) {
 			data: data
         });
     });
+};
+
+/**
+ * @method saveNodes
+ * @param nodes
+ */
+ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
+    // PUT each node individually
+    // Currently, send to a fixed api point
+    // Soon, switch to using the node.self endpoint and remove fixed resource
+    var resource = "/data";
+    for (var node in nodes) {
+        var nodejson = JSON.stringify(nodes[node]);
+        this.put((nodes[node].self || resource), nodejson);
+    }
 };
 
 /**
@@ -8266,15 +8305,15 @@ ozpIwc.EndpointRegistry=function(config) {
         href: apiRoot,
         method: 'GET'
     }).then(function(data) {
-        for (var ep in data._links) {
-            if (ep !== 'self') {
-                var link=data._links[ep].href;
-                self.endpoint(ep).baseUrl=link;
+        for (var linkEp in data._links) {
+            if (linkEp !== 'self') {
+                var link=data._links[linkEp].href;
+                self.endpoint(linkEp).baseUrl=link;
             }
         }
-        for (var ep in data._embedded) {
-            var link=data._embedded[ep]._links.self.href;
-            self.endpoint(ep).baseUrl=link;
+        for (var embEp in data._embedded) {
+            var embLink=data._embedded[embEp]._links.self.href;
+            self.endpoint(embEp).baseUrl=embLink;
         }
     });
 };
@@ -8290,7 +8329,7 @@ ozpIwc.EndpointRegistry.prototype.endpoint=function(name) {
     var endpoint=this.endPoints[name];
     if(!endpoint) {
         endpoint=this.endPoints[name]=new ozpIwc.Endpoint(this);
-        endpoint['name']=name;
+        endpoint.name=name;
     }
     return endpoint;
 };
@@ -8306,17 +8345,6 @@ ozpIwc.initEndpoints=function(apiRoot) {
     ozpIwc.endpoint=function(name) {
         return registry.endpoint(name);
     };
-};
-
-ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
-	// PUT each node individually
-	// Currently, send to a fixed api point
-	// Soon, switch to using the node.self endpoint and remove fixed resource
-	var resource = "/data";
-	for (node in nodes) {
-		var nodejson = JSON.stringify(nodes[node]);
-		put((nodes[node].self || resource), nodejson);
-	}
 };
 
 
@@ -8464,11 +8492,13 @@ ozpIwc.DataApi.prototype.handleRemovechild=function(node,packetContext) {
 /**
  * 	Collect list of nodes to persist, send to server, reset persist flag.
  * 	Currently sends every dirty node with a separate ajax call.
+ *
+ * 	@method persistNodes
  */
 ozpIwc.DataApi.prototype.persistNodes=function() {
 	// collect list of nodes to persist, send to server, reset persist flag
 	var nodes=[];
-	for (node in this.data) {
+	for (var node in this.data) {
 		if ((this.data[node].dirty === true) &&
 			(this.data[node].persist === true)) {
 			nodes[nodes.length]=this.data[node].serialize();
@@ -8794,8 +8824,8 @@ ozpIwc.IntentsApi.prototype.handleEventChannelDisconnectImpl = function (packetC
         }
     }
 
-    for(var node in this.dynamicNodes) {
-        var resource = this.dynamicNodes[node];
+    for(var dynNode in this.dynamicNodes) {
+        var resource = this.dynamicNodes[dynNode];
         this.updateDynamicNode(this.data[resource]);
     }
 };
@@ -9205,7 +9235,7 @@ ozpIwc.SystemApi.prototype.loadFromServer=function() {
                             .then(function() {
                                 resolve("system.api load complete");
                             });
-                    })
+                    });
             })
             .catch(function(error) {
                 reject(error);
