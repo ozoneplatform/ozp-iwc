@@ -21,7 +21,7 @@ ozpIwc.CommonApiValue = function(config) {
 	this.permissions=config.permissions || {};
 	this.version=config.version || 0;
     
-    this.persist=true;
+    this.persist=false;
     this.deleted=true;
 };
 

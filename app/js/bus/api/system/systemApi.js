@@ -21,13 +21,13 @@ var ozpIwc=ozpIwc || {};
  */
 ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
-    
+
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/application",
         pattern: /^\/application\/.*$/,
         contentType: "application/ozpIwc-application-list-v1+json"
     }));
-    
+
     this.on("changedNode",this.updateIntents,this);
 
     // @todo populate user and system endpoints
@@ -55,7 +55,23 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.SystemApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint("applications");
+
+    var self=this;
+    return new Promise(function(resolve, reject) {
+        self.loadFromEndpoint("applications")
+            .then(function() {
+                self.loadFromEndpoint("user")
+                    .then(function() {
+                        self.loadFromEndpoint("system")
+                            .then(function() {
+                                resolve("system.api load complete");
+                            });
+                    })
+            })
+            .catch(function(error) {
+                reject(error);
+            });
+    });
 };
 
 /**
@@ -93,27 +109,7 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
             }
         });
     },this);
-    
-};
 
-/**
- * Finds or creates the corresponding node to store a server loaded resource.
- *
- * @method findNodeForServerResource
- * @param {ozpIwc.TransportPacket} serverObject The object to be stored.
- * @param {String} objectPath The full path resource of the object including it's root path.
- * @param {String} rootPath The root path resource of the object.
- *
- * @returns {ozpIwc.SystemApiMailboxValue|ozpIwc.SystemApiApplicationValue} The node that is now holding the data
- * provided in the serverObject parameter.
- */
-ozpIwc.SystemApi.prototype.findNodeForServerResource=function(serverObject,objectPath,rootPath) {
-    var resource="/application" + objectPath.replace(rootPath,'');
-    return this.findOrMakeValue({
-        'resource': resource,
-        'entity': serverObject,
-        'contentType': "ozpIwc-application-definition-v1+json"
-    });
 };
 
 /**
@@ -126,16 +122,16 @@ ozpIwc.SystemApi.prototype.findNodeForServerResource=function(serverObject,objec
 ozpIwc.SystemApi.prototype.makeValue = function(packet){
     if(packet.resource.indexOf("/mailbox") === 0) {
         return new ozpIwc.SystemApiMailboxValue({
-            resource: packet.resource, 
-            entity: packet.entity, 
+            resource: packet.resource,
+            entity: packet.entity,
             contentType: packet.contentType
         });
     }
-        
+
     return new ozpIwc.SystemApiApplicationValue({
-        resource: packet.resource, 
-        entity: packet.entity, 
-        contentType: packet.contentType, 
+        resource: packet.resource,
+        entity: packet.entity,
+        contentType: packet.contentType,
         systemApi: this
     });
 };
@@ -165,30 +161,30 @@ ozpIwc.SystemApi.prototype.handleDelete = function() {
 ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
     var key=this.createKey("/mailbox/");
 
-	// save the new child
-	var mailboxNode=this.findOrMakeValue({'resource':key});
-	mailboxNode.set(packetContext.packet);
-    
+    // save the new child
+    var mailboxNode=this.findOrMakeValue({'resource':key});
+    mailboxNode.set(packetContext.packet);
+
     this.launchApplication(node,mailboxNode);
     packetContext.replyTo({'action': "ok"});
 };
 
 /**
  * Handles System api requests with an action of "invoke"
- * 
+ *
  * @method handleInvoke
  */
 ozpIwc.SystemApi.prototype.handleInvoke = function(node,packetContext) {
     var key=this.createKey("/mailbox/");
 
-	// save the new child
-	var mailboxNode=this.findOrMakeValue({'resource':key});
+    // save the new child
+    var mailboxNode=this.findOrMakeValue({'resource':key});
     mailboxNode.set({
         contentType: "application/ozpiwc-intent-invocation+json",
         permissions: packetContext.permissions,
         entity: packetContext.packet
     });
-    
+
     this.launchApplication(node,mailboxNode);
     packetContext.replyTo({'action': "ok"});
 };
@@ -202,10 +198,10 @@ ozpIwc.SystemApi.prototype.handleInvoke = function(node,packetContext) {
  */
 ozpIwc.SystemApi.prototype.launchApplication=function(node,mailboxNode) {
     var launchParams=[
-        "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),
-        "ozpIwc.mailbox="+encodeURIComponent(mailboxNode.resource)
+            "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),
+            "ozpIwc.mailbox="+encodeURIComponent(mailboxNode.resource)
     ];
-    
+
     window.open(node.entity._links.describes.href,launchParams.join("&"));
 };
 

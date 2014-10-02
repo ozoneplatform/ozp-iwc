@@ -44,7 +44,7 @@ ozpIwc.util.ajax = function (config) {
             reject(this);
         };
 
-        if(config.method === "POST") {
+        if((config.method === "POST") || (config.method === "PUT")) {
             request.send(config.data);
         }
         else {

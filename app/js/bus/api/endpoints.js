@@ -3,11 +3,11 @@ var ozpIwc=ozpIwc || {};
 /**
  * @class Endpoint
  * @namespace ozpIwc
- * @param endpointRegistry
+ * @param endpointRegistry Endpoint name
  * @constructor
  */
 ozpIwc.Endpoint=function(endpointRegistry) {
-    this.endpointRegistry=endpointRegistry;
+	this.endpointRegistry=endpointRegistry;
 };
 
 /**
@@ -29,6 +29,21 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
     });
 };
 
+ozpIwc.Endpoint.prototype.put=function(resource, data) {
+    var self=this;
+
+    return this.endpointRegistry.loadPromise.then(function() {
+        if(resource.indexOf(self.baseUrl)!==0) {
+            resource=self.baseUrl + resource;
+        }
+        return ozpIwc.util.ajax({
+            href:  resource,
+            method: 'PUT',
+			data: data
+        });
+    });
+};
+
 /**
  * @class EndpointRegistry
  * @namespace ozpIwc
@@ -40,6 +55,7 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
 ozpIwc.EndpointRegistry=function(config) {
     config=config || {};
     var apiRoot=config.apiRoot || '/api';
+    this.apiRoot = apiRoot;
     this.endPoints={};
     var self=this;
     this.loadPromise=ozpIwc.util.ajax({
@@ -51,6 +67,10 @@ ozpIwc.EndpointRegistry=function(config) {
                 var link=data._links[ep].href;
                 self.endpoint(ep).baseUrl=link;
             }
+        }
+        for (var ep in data._embedded) {
+            var link=data._embedded[ep]._links.self.href;
+            self.endpoint(ep).baseUrl=link;
         }
     });
 };
@@ -66,6 +86,7 @@ ozpIwc.EndpointRegistry.prototype.endpoint=function(name) {
     var endpoint=this.endPoints[name];
     if(!endpoint) {
         endpoint=this.endPoints[name]=new ozpIwc.Endpoint(this);
+        endpoint['name']=name;
     }
     return endpoint;
 };
@@ -82,3 +103,15 @@ ozpIwc.initEndpoints=function(apiRoot) {
         return registry.endpoint(name);
     };
 };
+
+ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
+	// PUT each node individually
+	// Currently, send to a fixed api point
+	// Soon, switch to using the node.self endpoint and remove fixed resource
+	var resource = "/data";
+	for (node in nodes) {
+		var nodejson = JSON.stringify(nodes[node]);
+		put((nodes[node].self || resource), nodejson);
+	}
+};
+
