@@ -462,9 +462,11 @@ ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
     switch (packet.action) {
         case "connect":
             this.handleEventChannelConnect(packetContext);
+            console.log(this.participant.name, "connect", this);
             break;
         case "disconnect":
             this.handleEventChannelDisconnect(packetContext);
+            console.log(this.participant.name, "disconnect", this);
             break;
         default:
             console.error(this.participant.name, "No handler found for corresponding event channel action: ", packet.action);
@@ -747,7 +749,7 @@ ozpIwc.CommonApiBase.prototype.setState = function(state) {
                 resource: state[key].resource
             });
             node.deserialize(state[key]);
-            this.addDynamicNode(node);
+            this.updateDynamicNode(node);
         } else {
             var node = this.findOrMakeValue(state[key]);
             node.deserialize(state[key]);
