@@ -2165,6 +2165,31 @@ ozpIwc.util.determineOrigin=function(url) {
 ozpIwc.util.escapeRegex=function(str) {
     return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
+<<<<<<< Updated upstream
+=======
+
+/**
+ * 
+ * @method parseOzpUrl
+ * @param {type} url
+ * @returns {ozpIwc.TransportPacket}
+ */
+ozpIwc.util.parseOzpUrl=function(url) {
+    var m=/^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(url);
+    if(m) {
+        // an action of "get" is implied
+        var packet={
+            'dst': m[1],
+            'resource': m[2],
+            'action' : "get"
+        };
+        // TODO: parse the query params into fields       
+        
+        return packet;
+    }
+    return null;
+};
+>>>>>>> Stashed changes
 (function() {
 var define, requireModule, require, requirejs;
 
@@ -2848,7 +2873,11 @@ define("promise/utils",
     __exports__.now = now;
   });
 requireModule('promise/polyfill').polyfill();
+<<<<<<< Updated upstream
 }());
+=======
+}());
+>>>>>>> Stashed changes
 /*
  * The MIT License (MIT) Copyright (c) 2012 Mike Ihbe
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -8658,12 +8687,16 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
         }
     },0);
 };
+<<<<<<< Updated upstream
 
 ozpIwc.CommonApiBase.prototype.persistNodes=function() {
 	// throw not implemented error
 	throw new ozpIwc.ApiError("noImplementation","Base class persistence call not implemented.  Use DataApi to persist nodes.");
 };
 
+=======
+
+>>>>>>> Stashed changes
 var ozpIwc=ozpIwc || {};
 
 /**
@@ -8768,6 +8801,7 @@ ozpIwc.initEndpoints=function(apiRoot) {
     ozpIwc.endpoint=function(name) {
         return registry.endpoint(name);
     };
+<<<<<<< Updated upstream
 };
 
 ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
@@ -8782,6 +8816,9 @@ ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
 };
 
 
+=======
+};
+>>>>>>> Stashed changes
 /**
  * @submodule bus.api.Type
  */
@@ -9047,6 +9084,7 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
 	this.version=serverData.version || this.version;
 	this.self=serverData.version || this.self;
 };
+<<<<<<< Updated upstream
 
 ozpIwc.DataApiValue.prototype.serialize=function() {
 	var serverData = {};
@@ -9059,6 +9097,9 @@ ozpIwc.DataApiValue.prototype.serialize=function() {
 };
 
 
+=======
+
+>>>>>>> Stashed changes
 /**
  * @submodule bus.api.Type
  */

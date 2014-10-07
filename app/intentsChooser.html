@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Choose an Intent</title>
+    <script type="text/javascript">
+        ozpIwc= {
+            runApis:false,
+            acceptPostMessageParticipants:false
+        };
+// Not used by the Intents Chooser
+        //ozpIwc.apiRootUrl = "api";
+    </script>
+    <script type="text/javascript" src="js/ozpIwc-bus.js"></script>
+    <script type="text/javascript" src="js/defaultWiring.js"></script>
+    <style>
+        .icon {
+            height: 32px;
+            width: 32px;
+            display: block;
+        }
+        button {
+            text-align: center;
+        }
+        </style>
+  </head>
+  <body>
+      <div id="handlerList">
+          
+      </div>
+    
+      <script type="text/javascript">
+        var client=new ozpIwc.InternalParticipant({'name':"intentsChooser"});
+        ozpIwc.defaultRouter.registerParticipant(client);
+        
+        function failure(msg) {
+            document.getElementById("handlerList").textContent=msg;
+        };
+        function showHandlers(handlers) {
+            handlers.forEach(function(h) {
+                var button=document.createElement("button");
+                var icon=document.createElement("img");
+                icon.setAttribute("src",h.icon);
+                icon.setAttribute("alt",h.label);
+                icon.setAttribute("class","icon");
+                button.appendChild(icon);
+                button.appendChild(document.createTextNode(h.label));
+                button.addEventListener("click",function(evt) {
+                    evt.preventDefault();
+                    console.log("Executing ", h);
+                });
+                document.getElementById("handlerList").appendChild(button);
+            });
+        };
+        showHandlers([{
+            "type": "application/incident+json",
+            "action": "view",
+            "icon": "/ok.gif",
+            "label": "View Incident History in new window"
+          },{
+            "type": "application/incident+json",
+            "action": "view",
+            "icon": "/ok.gif",
+            "label": "View Incident History in 'Some Window'"
+          },{
+            "type": "application/incident+json",
+            "action": "view",
+            "icon": "/ok.gif",
+            "label": "View Incident History in Webtop XX"
+          }
+        ]);
+        
+//        var m=/ozpIwc.intentSelection=([^&#]+)/.exec(window.location.search);
+//        if(!m) {
+//            failure("This page is intended to be launch only by the Ozone Platform intents API.");
+//        }
+//        var loc=ozpIwc.util.parseOzpUrl(m[1]);
+//
+//        client.send(loc,function(reply) {
+//            if(reply.response!=="ok") {
+//                failure();
+//                return;
+//            }
+//            showHandlers(reply.entity.handlers);
+//        });
+        
+        
+        
+        
+        
+    </script>      
+  </body>
+</html>

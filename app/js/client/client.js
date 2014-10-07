@@ -393,15 +393,9 @@ ozpIwc.Client.prototype.connect=function() {
             }
             
             // fetch the mailbox
-            var firstSlashPos=self.launchParams.mailbox.indexOf('/');
-            var dst=self.launchParams.mailbox.substr(0,firstSlashPos);
-            var resource=self.launchParams.mailbox.substr(firstSlashPos);
+            var packet=ozpIwc.util.parseOzpUrl(self.launchParams.mailbox);
             return new Promise(function(resolve,reject) {
-                self.send({
-                    'dst': dst,
-                    'resource': resource,
-                    'action': "get"
-                },function(response) {
+                self.send(packet,function(response) {
                     if(response.response==='ok') {
                         for(var k in response.entity) {
                             self.launchParams[k]=response.entity[k];

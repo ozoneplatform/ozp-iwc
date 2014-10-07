@@ -2165,6 +2165,31 @@ ozpIwc.util.determineOrigin=function(url) {
 ozpIwc.util.escapeRegex=function(str) {
     return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
+<<<<<<< Updated upstream
+=======
+
+/**
+ * 
+ * @method parseOzpUrl
+ * @param {type} url
+ * @returns {ozpIwc.TransportPacket}
+ */
+ozpIwc.util.parseOzpUrl=function(url) {
+    var m=/^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(url);
+    if(m) {
+        // an action of "get" is implied
+        var packet={
+            'dst': m[1],
+            'resource': m[2],
+            'action' : "get"
+        };
+        // TODO: parse the query params into fields       
+        
+        return packet;
+    }
+    return null;
+};
+>>>>>>> Stashed changes
 (function() {
 var define, requireModule, require, requirejs;
 
@@ -2848,7 +2873,11 @@ define("promise/utils",
     __exports__.now = now;
   });
 requireModule('promise/polyfill').polyfill();
+<<<<<<< Updated upstream
 }());
+=======
+}());
+>>>>>>> Stashed changes
 /*
  * The MIT License (MIT) Copyright (c) 2012 Mike Ihbe
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 

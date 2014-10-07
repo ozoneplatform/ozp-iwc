@@ -2165,6 +2165,31 @@ ozpIwc.util.determineOrigin=function(url) {
 ozpIwc.util.escapeRegex=function(str) {
     return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
+<<<<<<< Updated upstream
+=======
+
+/**
+ * 
+ * @method parseOzpUrl
+ * @param {type} url
+ * @returns {ozpIwc.TransportPacket}
+ */
+ozpIwc.util.parseOzpUrl=function(url) {
+    var m=/^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(url);
+    if(m) {
+        // an action of "get" is implied
+        var packet={
+            'dst': m[1],
+            'resource': m[2],
+            'action' : "get"
+        };
+        // TODO: parse the query params into fields       
+        
+        return packet;
+    }
+    return null;
+};
+>>>>>>> Stashed changes
 (function() {
 var define, requireModule, require, requirejs;
 
@@ -3244,15 +3269,9 @@ ozpIwc.Client.prototype.connect=function() {
             }
             
             // fetch the mailbox
-            var firstSlashPos=self.launchParams.mailbox.indexOf('/');
-            var dst=self.launchParams.mailbox.substr(0,firstSlashPos);
-            var resource=self.launchParams.mailbox.substr(firstSlashPos);
+            var packet=ozpIwc.util.parseOzpUrl(self.launchParams.mailbox);
             return new Promise(function(resolve,reject) {
-                self.send({
-                    'dst': dst,
-                    'resource': resource,
-                    'action': "get"
-                },function(response) {
+                self.send(packet,function(response) {
                     if(response.response==='ok') {
                         for(var k in response.entity) {
                             self.launchParams[k]=response.entity[k];

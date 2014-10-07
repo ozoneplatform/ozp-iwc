@@ -177,6 +177,9 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (node, packetContext)
  * @param {ozpIwc.TransportPacket} packetContext
  */
 ozpIwc.IntentsApi.prototype.chooseIntentHandler = function (nodeList, packetContext) {
-    throw new ozpIwc.ApiError("noImplementation","Selecting an intent is not yet implemented");
+    ozpIwc.util.openWindow("intentsChooser.html",{
+       "ozpIwc.peer":ozpIwc.BUS_ROOT,
+       "ozpIwc.intentSelection": JSON.stringify(nodeList)
+    });
 };
 
