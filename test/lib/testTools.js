@@ -28,7 +28,6 @@ var customMatchers={
             if(typeof(epsilon) !== "number") {
                 epsilon=1e-5;
             }
-            console.log(Math.abs(actual-expected)/ Math.abs(range), epsilon);
             return {pass: Math.abs(actual-expected)/ Math.abs(range) <= epsilon};
         }
     };},
