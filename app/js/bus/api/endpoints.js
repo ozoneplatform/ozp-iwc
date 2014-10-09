@@ -29,6 +29,13 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
     });
 };
 
+/**
+ *
+ * @method put
+ * @param resource
+ * @param data
+ * @returns {*}
+ */
 ozpIwc.Endpoint.prototype.put=function(resource, data) {
     var self=this;
 
@@ -42,6 +49,21 @@ ozpIwc.Endpoint.prototype.put=function(resource, data) {
 			data: data
         });
     });
+};
+
+/**
+ * @method saveNodes
+ * @param nodes
+ */
+ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
+    // PUT each node individually
+    // Currently, send to a fixed api point
+    // Soon, switch to using the node.self endpoint and remove fixed resource
+    var resource = "/data";
+    for (var node in nodes) {
+        var nodejson = JSON.stringify(nodes[node]);
+        this.put((nodes[node].self || resource), nodejson);
+    }
 };
 
 /**
@@ -62,15 +84,15 @@ ozpIwc.EndpointRegistry=function(config) {
         href: apiRoot,
         method: 'GET'
     }).then(function(data) {
-        for (var ep in data._links) {
-            if (ep !== 'self') {
-                var link=data._links[ep].href;
-                self.endpoint(ep).baseUrl=link;
+        for (var linkEp in data._links) {
+            if (linkEp !== 'self') {
+                var link=data._links[linkEp].href;
+                self.endpoint(linkEp).baseUrl=link;
             }
         }
-        for (var ep in data._embedded) {
-            var link=data._embedded[ep]._links.self.href;
-            self.endpoint(ep).baseUrl=link;
+        for (var embEp in data._embedded) {
+            var embLink=data._embedded[embEp]._links.self.href;
+            self.endpoint(embEp).baseUrl=embLink;
         }
     });
 };
@@ -86,7 +108,7 @@ ozpIwc.EndpointRegistry.prototype.endpoint=function(name) {
     var endpoint=this.endPoints[name];
     if(!endpoint) {
         endpoint=this.endPoints[name]=new ozpIwc.Endpoint(this);
-        endpoint['name']=name;
+        endpoint.name=name;
     }
     return endpoint;
 };
@@ -102,16 +124,5 @@ ozpIwc.initEndpoints=function(apiRoot) {
     ozpIwc.endpoint=function(name) {
         return registry.endpoint(name);
     };
-};
-
-ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
-	// PUT each node individually
-	// Currently, send to a fixed api point
-	// Soon, switch to using the node.self endpoint and remove fixed resource
-	var resource = "/data";
-	for (node in nodes) {
-		var nodejson = JSON.stringify(nodes[node]);
-		put((nodes[node].self || resource), nodejson);
-	}
 };
 

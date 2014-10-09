@@ -84,6 +84,23 @@ ozpIwc.Participant=function() {
         name: this.name,
         type: this.participantType || this.constructor.name
     };
+
+
+    // Handle leaving Event Channel
+    var self=this;
+    window.addEventListener("beforeunload",function() {
+        // Unload events can't use setTimeout's. Therefore make all sending happen with normal execution
+        self.send = function(originalPacket,callback) {
+            var packet=this.fixPacket(originalPacket);
+            if(callback) {
+                this.replyCallbacks[packet.msgId]=callback;
+            }
+            ozpIwc.Participant.prototype.send.call(this,packet);
+
+            return packet;
+        };
+        self.leaveEventChannel();
+    });
 };
 
 /**
@@ -148,7 +165,7 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.heartBeatStatus.address=this.address;
     this.heartBeatStatus.name=this.name;
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
-
+    this.joinEventChannel();
     this.events.trigger("connectedToRouter");
 };
 
@@ -215,4 +232,52 @@ ozpIwc.Participant.prototype.heartbeat=function() {
             'contentType' : this.heartBeatContentType
         },function() {/* eat the response*/});
     }
+};
+
+/**
+ * Adds this participant to the $bus.multicast multicast group.
+ *
+ * @method joinEventChannel
+ * @returns {boolean}
+ */
+ozpIwc.Participant.prototype.joinEventChannel = function() {
+    if(this.router) {
+        this.router.registerMulticast(this, ["$bus.multicast"]);
+        this.send({
+            dst: "$bus.multicast",
+            action: "connect",
+            entity: {
+                address: this.address,
+                participantType: this.participantType
+            }
+        });
+        return true;
+    } else {
+        return false;
+    }
+};
+
+/**
+ * Remove this participant from the $bus.multicast multicast group.
+ *
+ * @method leaveEventChannel
+ */
+ozpIwc.Participant.prototype.leaveEventChannel = function() {
+    if(this.router) {
+        this.send({
+            dst: "$bus.multicast",
+            action: "disconnect",
+            entity: {
+                address: this.address,
+                participantType: this.participantType,
+                namesResource: this.namesResource
+            }
+        });
+        //TODO not implemented
+//        this.router.unregisterMulticast(this, ["$bus.multicast"]);
+        return true;
+    } else {
+        return false;
+    }
+
 };

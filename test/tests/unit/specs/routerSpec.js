@@ -113,7 +113,7 @@ describe("Router", function() {
 
         it("allows receipt of shared permissions", function(done) {
             participant2.on("receive", function() {
-                expect(participant2.packets[0].packet.entity).toEqual({foo: "bar"});
+                expect(participant2.packets[participant2.packets.length - 1].packet.entity).toEqual({foo: "bar"});
                 done();
             });
             participant.send({

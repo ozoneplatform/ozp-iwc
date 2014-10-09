@@ -118,3 +118,19 @@ ozpIwc.NamesApi.prototype.makeValue = function(packet) {
     }
     return new ozpIwc.NamesApiValue(config);            
 };
+
+/**
+ * Handles removing participant addresses from the names api.
+ *
+ * @method handleEventChannelDisconnectImpl
+ * @param packetContext
+ */
+ozpIwc.NamesApi.prototype.handleEventChannelDisconnectImpl = function (packetContext) {
+
+    delete this.data[packetContext.packet.entity.namesResource];
+
+    for(var node in this.dynamicNodes) {
+        var resource = this.dynamicNodes[node];
+        this.updateDynamicNode(this.data[resource]);
+    }
+};
