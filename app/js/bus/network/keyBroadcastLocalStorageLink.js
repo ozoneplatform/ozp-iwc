@@ -362,6 +362,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
 
     var sendStatus = this.sendImpl(packet);
     if (sendStatus) {
+        console.log(sendStatus);
         var self = this;
         retryCount = retryCount || 0;
         var timeOut = Math.max(1, Math.pow(2, (retryCount - 1))) - 1;
@@ -398,10 +399,25 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
         sendStatus = null;
     }
     catch (e) {
-        sendStatus = e;
+        if(e.message === "localStorage is null"){
+            // Firefox about:config dom.storage.enabled = false : no mitigation with current links
+            ozpIwc.util.alert("Cannot locate localStorage. Contact your system administrator.", e);
+        } else if(e.code === 18){
+            // cookies disabled : no mitigation with current links
+            ozpIwc.util.alert("Ozone requires your browser to accept cookies. Contact your system administrator.", e);
+        } else {
+            // If the error can't be mitigated, bubble it up
+            sendStatus = e;
+        }
     }
     finally {
         return sendStatus;
     }
 };
 
+
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendErrorHandler = function (sendStatus) {
+    if(typeof sendStatus === "DOMException"){
+        console.log("merp");
+    }
+}
