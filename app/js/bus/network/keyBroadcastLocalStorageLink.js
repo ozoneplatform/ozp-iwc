@@ -362,7 +362,6 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
 
     var sendStatus = this.sendImpl(packet);
     if (sendStatus) {
-        console.log(sendStatus);
         var self = this;
         retryCount = retryCount || 0;
         var timeOut = Math.max(1, Math.pow(2, (retryCount - 1))) - 1;
@@ -414,10 +413,3 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
         return sendStatus;
     }
 };
-
-
-ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendErrorHandler = function (sendStatus) {
-    if(typeof sendStatus === "DOMException"){
-        console.log("merp");
-    }
-}
