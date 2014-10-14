@@ -18,7 +18,7 @@ describe("System API",function() {
 
         systemApi.data["/application/abcApp"]=applicationNode=systemApi.findOrMakeValue({
             'resource': "/application/abcApp",
-            'contentType' : "ozp-application-definition-v1+json",
+            'contentType' : "ozpIwc-application-definition-v1+json",
             'version' : 1,
             'entity' : {
                 "name" : "Blue Bouncing Ball",
@@ -122,7 +122,7 @@ describe("System API",function() {
 //                    intents: {
 //                    }
 //                },
-//                'contentType' : "ozp-application-definition-v1+json",
+//                'contentType' : "ozpIwc-application-definition-v1+json",
 //                'version' : 1
 //            },
 //            action: 'set',
@@ -139,13 +139,13 @@ describe("System API",function() {
 //
 //        var applicationListNode=systemApi.findOrMakeValue({
 //            'resource': "/application",
-//            'contentType' : "ozp-application-list-v1+json",
+//            'contentType' : "ozpIwc-application-list-v1+json",
 //            'version' : 1
 //        });
 //
 //        packetContext=new TestPacketContext({
 //            'packet': {
-//                'contentType' : "ozp-application-list-v1+json",
+//                'contentType' : "ozpIwc-application-list-v1+json",
 //                'version' : 1
 //            }
 //        });
@@ -158,7 +158,7 @@ describe("System API",function() {
 //
 //        applicationNode=systemApi.findOrMakeValue({
 //            'resource': "/application/abcApplication",
-//            'contentType' : "ozp-application-definition-v1+json",
+//            'contentType' : "ozpIwc-application-definition-v1+json",
 //            'version' : 2
 //        });
 //        applicationNode.watch({'src': "watcher",'msgId': 1234});
@@ -187,7 +187,7 @@ describe("System API",function() {
 //                    intents: {
 //                    }
 //                },
-//                'contentType': "ozp-application-definition-v1+json"
+//                'contentType': "ozpIwc-application-definition-v1+json"
 //            },
 //            'leaderState': "leader",
 //            action: 'set',
@@ -226,7 +226,7 @@ describe("System API",function() {
 //                    intents: {
 //                    }
 //                },
-//                'contentType' : "ozp-application-definition-v1+json",
+//                'contentType' : "ozpIwc-application-definition-v1+json",
 //                'version' : 1,
 //                srcSubject: {'modifyAuthority': 'apiLoader'}//required permission for set action on system.api
 //            }
@@ -264,7 +264,7 @@ describe("System API",function() {
 //                    intents: {
 //                    }
 //                },
-//                'contentType' : "ozp-application-definition-v1+json",
+//                'contentType' : "ozpIwc-application-definition-v1+json",
 //                'version' : 1
 //            }
 //        });
