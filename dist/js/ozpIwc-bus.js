@@ -8834,7 +8834,7 @@ ozpIwc.IntentsApi.prototype.handleEventChannelDisconnectImpl = function (packetC
  */
 
 /**
- * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
+ * The capability value for an intent. adheres to the ozpIwc-intents-type-capabilities-v1+json content type.
  * @class IntentsApiDefinitionValue
  * @namespace ozpIwc
  * @extends ozpIwc.CommonApiValue
@@ -8898,7 +8898,7 @@ ozpIwc.IntentsApiDefinitionValue.prototype.getHandlers=function(packetContext) {
  * @submodule bus.api.Value
  */
 /**
- * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
+ * The capability value for an intent. adheres to the ozpIwc-intents-type-capabilities-v1+json content type.
  * @class IntentsApiHandlerValue
  * @namespace ozpIwc
  * @extends ozpIwc.CommonApiValue
@@ -8962,7 +8962,7 @@ ozpIwc.IntentsApiHandlerValue.prototype.deserialize=function(serverData) {
  */
 
 /**
- * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
+ * The capability value for an intent. adheres to the ozpIwc-intents-type-capabilities-v1+json content type.
  * @class IntentsApiTypeValue
  * @namespace ozpIwc
  * @extends ozpIwc.CommonApiValue
