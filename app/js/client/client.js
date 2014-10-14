@@ -479,7 +479,7 @@ ozpIwc.Client.prototype.createIframePeer=function() {
     var augment = function (dst,action,client) {
         return function (resource, fragment, otherCallback) {
             // If a fragment isn't supplied argument #2 should be a callback (if supplied)
-            if(typeof fragment === "function" &&  typeof otherCallback == "undefined"){
+            if(typeof fragment === "function"){
                 otherCallback = fragment;
                 fragment = {};
             }
