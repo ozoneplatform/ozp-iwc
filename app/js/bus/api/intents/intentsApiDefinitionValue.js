@@ -3,7 +3,7 @@
  */
 
 /**
- * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
+ * The capability value for an intent. adheres to the ozpIwc-intents-type-capabilities-v1+json content type.
  * @class IntentsApiDefinitionValue
  * @namespace ozpIwc
  * @extends ozpIwc.CommonApiValue
