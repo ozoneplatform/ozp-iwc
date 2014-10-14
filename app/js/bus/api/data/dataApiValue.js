@@ -13,15 +13,33 @@
 ozpIwc.DataApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
 	ozpIwc.CommonApiValue.apply(this,arguments);
     config = config || {};
+
+    /**
+     * @property children
+     * @type Array[String]
+     */
 	this.children=config.children || [];
+
+    /**
+     * @property persist
+     * @type Boolean
+     * @default true
+     */
 	this.persist=config.persist || true;
+
+    /**
+     * @property dirty
+     * @type Boolean
+     * @default true
+     */
 	this.dirty=config.dirty || true;
 });
 
 /**
  * Adds a child resource to the Data Api value.
  *
- * @param {String} child - name of the child record of this
+ * @method addChild
+ * @param {String} child name of the child record of this
  */
 ozpIwc.DataApiValue.prototype.addChild=function(child) {
     if(this.children.indexOf(child) < 0) {
@@ -35,7 +53,8 @@ ozpIwc.DataApiValue.prototype.addChild=function(child) {
  *
  * Removes a child resource from the Data Api value.
  *
- * @param {String} child - name of the child record of this
+ * @method removeChild
+ * @param {String} child name of the child record of this
  */
 ozpIwc.DataApiValue.prototype.removeChild=function(child) {
 	this.dirty= true;
@@ -51,7 +70,8 @@ ozpIwc.DataApiValue.prototype.removeChild=function(child) {
 /**
  * Lists all children resources of the Data Api value.
  *
- * @param {string} child - name of the child record of this
+ * @method listChildren
+ * @param {string} child name of the child record of this
  * @returns {String[]}
  */
 ozpIwc.DataApiValue.prototype.listChildren=function() {
@@ -61,7 +81,8 @@ ozpIwc.DataApiValue.prototype.listChildren=function() {
 /**
  * Converts the Data Api value to a {{#crossLink "ozpIwc.TransportPacket"}}{{/crossLink}}.
  *
- * @param {String} child - name of the child record of this
+ * @method toPacket
+ * @param {String} child name of the child record of this
  * @returns {ozpIwc.TransportPacket}
  */
 ozpIwc.DataApiValue.prototype.toPacket=function() {
@@ -73,7 +94,9 @@ ozpIwc.DataApiValue.prototype.toPacket=function() {
 
 /**
  * Returns a comparison of the current Data Api value to a previous snapshot.
- * @param snapshot
+ *
+ * @method changesSince
+ * @param {ozpIwc.TransportPacket} snapshot
  * @returns {Object}
  */
 ozpIwc.DataApiValue.prototype.changesSince=function(snapshot) {
@@ -92,6 +115,7 @@ ozpIwc.DataApiValue.prototype.changesSince=function(snapshot) {
 /**
  * Deserializes a Data Api value from a packet and constructs this Data Api value.
  *
+ * @method deserialize
  * @param {ozpIwc.TransportPacket} serverData
  */
 ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
@@ -99,9 +123,20 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
     this.contentType=serverData.contentType || this.contentType;
 	this.permissions=serverData.permissions || this.permissions;
 	this.version=serverData.version || this.version;
-	this.self=serverData.version || this.self;
+
+    /**
+     * @property self
+     * @type Object
+     */
+	this.self=serverData.self || this.self;
 };
 
+/**
+ * Serializes a Data Api value from a  Data Api value to a packet.
+ *
+ * @method serialize
+ * @return {ozpIwc.TransportPacket}
+ */
 ozpIwc.DataApiValue.prototype.serialize=function() {
 	var serverData = {};
 	serverData.entity=this.entity;

@@ -36,7 +36,7 @@ ozpIwc.CommonApiBase = function(config) {
     this.events.mixinOnOff(this);
 
     /**
-     * @TODO (DOC)
+     * Api nodes that are updated based on other api nodes. Used for keeping dynamic lists of related resources.
      * @property dynamicNodes
      * @type Array
      * @default []

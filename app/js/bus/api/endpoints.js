@@ -3,17 +3,25 @@ var ozpIwc=ozpIwc || {};
 /**
  * @class Endpoint
  * @namespace ozpIwc
- * @param endpointRegistry Endpoint name
+ * @param {ozpIwc.EndpointRegistry} endpointRegistry Endpoint name
  * @constructor
  */
 ozpIwc.Endpoint=function(endpointRegistry) {
+
+    /**
+     * @property endpointRegistry
+     * @type ozpIwc.EndpointRegistry
+     */
 	this.endpointRegistry=endpointRegistry;
 };
 
 /**
+ * Performs an AJAX request of GET for specified resource href.
+ *
  * @method get
- * @param resource
- * @returns {*}
+ * @param {String} resource
+ *
+ * @returns {Promise}
  */
 ozpIwc.Endpoint.prototype.get=function(resource) {
     var self=this;
@@ -31,10 +39,13 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
 
 /**
  *
+ * Performs an AJAX request of PUT for specified resource href.
+ *
  * @method put
- * @param resource
- * @param data
- * @returns {*}
+ * @param {String} resource
+ * @param {Object} data
+ *
+ * @returns {Promise}
  */
 ozpIwc.Endpoint.prototype.put=function(resource, data) {
     var self=this;
@@ -52,13 +63,12 @@ ozpIwc.Endpoint.prototype.put=function(resource, data) {
 };
 
 /**
+ * Sends AJAX requests to PUT the specified nodes into the endpoint.
+ * @todo PUTs each node individually. Currently sends to a fixed api point switch to using the node.self endpoint and remove fixed resource
  * @method saveNodes
- * @param nodes
+ * @param {ozpIwc.CommonApiValue[]} nodes
  */
 ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
-    // PUT each node individually
-    // Currently, send to a fixed api point
-    // Soon, switch to using the node.self endpoint and remove fixed resource
     var resource = "/data";
     for (var node in nodes) {
         var nodejson = JSON.stringify(nodes[node]);
@@ -77,9 +87,30 @@ ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
 ozpIwc.EndpointRegistry=function(config) {
     config=config || {};
     var apiRoot=config.apiRoot || '/api';
+
+    /**
+     * The root path of the specified apis
+     * @property apiRoot
+     * @type String
+     * @default '/api'
+     */
     this.apiRoot = apiRoot;
+
+    /**
+     * The collection of api endpoints
+     * @property endPoints
+     * @type Object
+     * @default {}
+     */
     this.endPoints={};
+
     var self=this;
+
+    /**
+     * An AJAX GET request fired at the creation of the Endpoint Registry to gather endpoint data.
+     * @property loadPromise
+     * @type Promise
+     */
     this.loadPromise=ozpIwc.util.ajax({
         href: apiRoot,
         method: 'GET'

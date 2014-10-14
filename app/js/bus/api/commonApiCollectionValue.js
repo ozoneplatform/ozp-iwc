@@ -13,7 +13,19 @@
  */
 ozpIwc.CommonApiCollectionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
 	ozpIwc.CommonApiValue.apply(this,arguments);
-    this.persist=false;    
+
+    /**
+     * @property persist
+     * @type Boolean
+     * @default false
+     */
+    this.persist=false;
+
+    /**
+     * @property pattern
+     * @type RegExp
+     * @default ''
+     */
     this.pattern=config.pattern || '';
     this.entity=[];
 });

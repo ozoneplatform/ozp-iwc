@@ -13,6 +13,12 @@
  */
 ozpIwc.SystemApiApplicationValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
     ozpIwc.CommonApiValue.apply(this,arguments);
+
+    /**
+     * A reference to the instantiated system Api
+     * @property systemApi
+     * @type {ozpIwc.SystemApi}
+     */
     this.systemApi=config.systemApi;
 });
 
@@ -34,7 +40,7 @@ ozpIwc.SystemApiApplicationValue.prototype.deserialize=function(serverData) {
  * Returns the intents registered to this value.
  *
  * @method getIntentsRegistrations
- * @returns {?} @TODO (Doc the return)
+ * @returns {ozpIwc.IntentsApiHandlerValue[]}
  */
 ozpIwc.SystemApiApplicationValue.prototype.getIntentsRegistrations=function() {
     return this.entity.intents;

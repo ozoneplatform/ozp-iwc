@@ -18,6 +18,11 @@ ozpIwc.IntentsApiDefinitionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, fun
     config.allowedContentTypes=["application/ozpIwc-intents-definition-v1+json"];
     config.contentType="application/ozpIwc-intents-definition-v1+json";
     ozpIwc.CommonApiValue.call(this, config);
+
+    /**
+     * @property pattern
+     * @type RegExp
+     */
     this.pattern=new RegExp(ozpIwc.util.escapeRegex(this.resource)+"/[^/]*");
     this.handlers=[];
     this.entity={
@@ -28,11 +33,10 @@ ozpIwc.IntentsApiDefinitionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, fun
 });
 
 /**
- * Returns if an update is needed.
- * @todo (DOC).
+ * Returns true if the definition value contains a reference to the node specified.
  *
  * @method isUpdateNeeded
- * @param {?} node
+ * @param {ozpIwc.CommonApiValue} node
  * @returns {Boolean}
  */
 ozpIwc.IntentsApiDefinitionValue.prototype.isUpdateNeeded=function(node) {

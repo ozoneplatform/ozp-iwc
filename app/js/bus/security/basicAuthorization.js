@@ -110,4 +110,9 @@ ozpIwc.BasicAuthorization.prototype.isPermitted=function(request) {
 };
 
 
+/**
+ * The instantiated authorization object.
+ * @type {ozpIwc.BasicAuthorization}
+ * @todo Should this be with defaultWiring?
+ */
 ozpIwc.authorization=new ozpIwc.BasicAuthorization();
