@@ -3745,6 +3745,40 @@ ozpIwc.util.objectContainsAll=function(haystack,needles,equal) {
             window.location.pathname.replace(/[^\/]+$/,"");
 })();
 
+
+/**
+ * IWC alert handler.
+ *
+ * @method alert
+ * @static
+ * @param {String} message The string to display in the popup.
+ * @param {Object} errorObject The object related to the alert to give as additional information
+ * @todo fill with some form of modal popup regarding the alert.
+ * @todo store a list of alerts to not notify if the user selects "don't show me this again" in the data.api
+ *
+ */
+ozpIwc.util.alert = function (message, errorObject) {
+    this.alerts = this.alerts || {};
+    if(this.alerts[message]){
+        this.alerts[message].error = errorObject
+    } else {
+        this.alerts[message] = {
+            error: errorObject,
+            silence: false
+        };
+    }
+    if(!this.alerts[message].silence){
+        //TODO : trigger an angular/bootstrap modal alert to notify the user of the error.
+        // on return of the alert:
+            // set this.alerts[message].silence if the user silenced the alerts
+
+        // Temporary placement: all alerts are silenced after first instance, but since this is not in data.api its on
+        // a widget basis.
+        this.alerts[message].silence = true;
+        console.log(message,errorObject);
+    }
+};
+
 /**
  * Classes related to security aspects of the IWC.
  * @module bus
@@ -4409,13 +4443,21 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
         sendStatus = null;
     }
     catch (e) {
-        sendStatus = e;
+        if(e.message === "localStorage is null"){
+            // Firefox about:config dom.storage.enabled = false : no mitigation with current links
+            ozpIwc.util.alert("Cannot locate localStorage. Contact your system administrator.", e);
+        } else if(e.code === 18){
+            // cookies disabled : no mitigation with current links
+            ozpIwc.util.alert("Ozone requires your browser to accept cookies. Contact your system administrator.", e);
+        } else {
+            // If the error can't be mitigated, bubble it up
+            sendStatus = e;
+        }
     }
     finally {
         return sendStatus;
     }
 };
-
 
 /** @namespace **/
 var ozpIwc = ozpIwc || {};
