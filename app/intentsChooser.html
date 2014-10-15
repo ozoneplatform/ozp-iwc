@@ -29,59 +29,64 @@
       </div>
     
       <script type="text/javascript">
-        var client=new ozpIwc.InternalParticipant({'name':"intentsChooser"});
-        ozpIwc.defaultRouter.registerParticipant(client);
-        
+        var client=new ozpiwc.internalparticipant({'name':"intentschooser"});
+        ozpiwc.defaultrouter.registerparticipant(client);
+
         function failure(msg) {
-            document.getElementById("handlerList").textContent=msg;
-        };
-        function showHandlers(handlers) {
-            handlers.forEach(function(h) {
-                var button=document.createElement("button");
-                var icon=document.createElement("img");
-                icon.setAttribute("src",h.icon);
-                icon.setAttribute("alt",h.label);
-                icon.setAttribute("class","icon");
-                button.appendChild(icon);
-                button.appendChild(document.createTextNode(h.label));
-                button.addEventListener("click",function(evt) {
-                    evt.preventDefault();
-                    console.log("Executing ", h);
-                });
-                document.getElementById("handlerList").appendChild(button);
+            document.getelementbyid("handlerlist").textcontent=msg;
+        }
+
+        function handleselection(handler,intentinvocation){
+
+            client.send({
+                dst: "intents.api",
+                action: "choose",
+                contenttype: intentinvocation.contenttype,
+                resource: intentinvocation.resource,
+                entity: {
+                    resource: handler.resource,
+                    reason: "user"
+                }
+            },function(reply) {
+                console.log(reply);
+                if(reply.response === "ok"){
+                    window.close();
+                }
             });
-        };
-        showHandlers([{
-            "type": "application/incident+json",
-            "action": "view",
-            "icon": "/ok.gif",
-            "label": "View Incident History in new window"
-          },{
-            "type": "application/incident+json",
-            "action": "view",
-            "icon": "/ok.gif",
-            "label": "View Incident History in 'Some Window'"
-          },{
-            "type": "application/incident+json",
-            "action": "view",
-            "icon": "/ok.gif",
-            "label": "View Incident History in Webtop XX"
-          }
-        ]);
-        
-//        var m=/ozpIwc.intentSelection=([^&#]+)/.exec(window.location.search);
-//        if(!m) {
-//            failure("This page is intended to be launch only by the Ozone Platform intents API.");
-//        }
-//        var loc=ozpIwc.util.parseOzpUrl(m[1]);
-//
-//        client.send(loc,function(reply) {
-//            if(reply.response!=="ok") {
-//                failure();
-//                return;
-//            }
-//            showHandlers(reply.entity.handlers);
-//        });
+        }
+        function showhandlers(handlers,intentinvocation) {
+            handlers.foreach(function(h) {
+                var handler = h;
+                var button=document.createelement("button");
+                var icon=document.createelement("img");
+                icon.setattribute("src",handler.entity.icon);
+                icon.setattribute("alt",handler.entity.label);
+                icon.setattribute("class","icon");
+                button.appendchild(icon);
+                button.appendchild(document.createtextnode(handler.entity.label));
+                button.addeventlistener("click",function(evt) {
+                    evt.preventdefault();
+                    console.log("executing ", handler);
+                    handleselection(handler,intentinvocation);
+                });
+                document.getelementbyid("handlerlist").appendchild(button);
+            });
+        }
+
+        var m=/ozpiwc.intentselection=([^&#]+)/.exec(window.name);
+
+        if(!m) {
+            failure("this page is intended to be launch only by the ozone platform intents api.");
+        }
+        var loc=ozpiwc.util.parseozpurl(m[1]);
+
+        client.send(loc,function(reply) {
+            if(reply.response!=="ok") {
+                failure();
+                return;
+            }
+            showhandlers(reply.entity.handlerchoices,reply);
+        });
         
         
         

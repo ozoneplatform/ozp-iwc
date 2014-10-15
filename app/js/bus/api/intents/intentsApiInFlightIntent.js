@@ -19,8 +19,8 @@ ozpIwc.IntentsApiInFlightIntent = ozpIwc.util.extend(ozpIwc.CommonApiValue, func
     config.allowedContentTypes=[config.contentType];
 
     ozpIwc.CommonApiValue.apply(this, arguments);
-    
-    this.invokePacket=config.invokePacket,
+    this.resource = config.resource;
+    this.invokePacket=config.invokePacket;
     this.permissions=config.invokePacket.permissions;
     this.entity={
         'intent': {
@@ -47,3 +47,6 @@ ozpIwc.IntentsApiInFlightIntent = ozpIwc.util.extend(ozpIwc.CommonApiValue, func
 
     };
 });
+
+ozpIwc.IntentsApiInFlightIntent.prototype.acceptedReasons = ["user","pref","onlyOne"];
+ozpIwc.IntentsApiInFlightIntent.prototype.acceptedStates = ["new","choosing","delivering","running","error","complete"];

@@ -929,6 +929,8 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
             },function(err){
                 console.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
                 self.setToLeader();
+            }).catch(function(er){
+                console.log(er);
             });
         }
     },0);

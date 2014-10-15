@@ -3792,6 +3792,7 @@ ozpIwc.util.objectContainsAll=function(haystack,needles,equal) {
  * @returns {undefined}
  */
 ozpIwc.util.openWindow=function(url,windowName,features) {
+    console.log("HERE WE GO!!");
     if(typeof windowName === "object") {
         var str="";
         for(var k in windowName) {
@@ -8408,6 +8409,8 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
             },function(err){
                 console.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
                 self.setToLeader();
+            }).catch(function(er){
+                console.log(er);
             });
         }
     },0);
@@ -8928,9 +8931,9 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
  *
  * @method loadFromServer
  */
-ozpIwc.IntentsApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint("intents");
-};
+//ozpIwc.IntentsApi.prototype.loadFromServer=function() {
+//    return this.loadFromEndpoint("intents").then(function(reply){console.log("INTENTS DONE")});
+//};
 /**
  * Takes the resource of the given packet and creates an empty value in the IntentsApi. Chaining of creation is
  * accounted for (A handler requires a definition, which requires a capability).
@@ -9174,7 +9177,7 @@ ozpIwc.IntentsApiDefinitionValue.prototype.updateContent=function(changedNodes) 
  * @returns {*[]}
  */
 ozpIwc.IntentsApiDefinitionValue.prototype.getHandlers=function(packetContext) {
-    return [this.handlers];
+    return this.handlers;
 };
 /**
  * @submodule bus.api.Value
@@ -9261,7 +9264,7 @@ ozpIwc.IntentsApiInFlightIntent = ozpIwc.util.extend(ozpIwc.CommonApiValue, func
 
     ozpIwc.CommonApiValue.apply(this, arguments);
     
-    this.invokePacket=config.invokePacket,
+    this.invokePacket=config.invokePacket;
     this.permissions=config.invokePacket.permissions;
     this.entity={
         'intent': {
