@@ -2475,7 +2475,7 @@ ozpIwc.Client.prototype.on=function(event,callback) {
 
 /**
  * De-registers callbacks
- * @method on
+ * @method off
  * @param {String} event The event to call the callback on.
  * @param {Function} callback The function to be called.
  *
@@ -2508,6 +2508,12 @@ ozpIwc.Client.prototype.disconnect=function() {
 ozpIwc.Client.prototype.connect=function() {
     if(!this.connectPromise) {
         var self=this;
+
+        /**
+         * Promise to chain off of for client connection asynchronous actions.
+         * @property connectPromise
+         * @type Promise
+         */
         this.connectPromise=new Promise(function(resolve) {
             self.peerUrlCheck(self.launchParams.peer,resolve);
         }).then(function(url) {

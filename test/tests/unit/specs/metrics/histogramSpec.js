@@ -1,7 +1,6 @@
 describe("Metrics: Histogram",function() {
 	var histogram;
-	// @todo: 25% error bars is huge, but tests are unreliable.  Fix it fix it fix it
-	var tolerance=0.25;
+	var rangedTolerance=0.05;
 	beforeEach(function() {
 		histogram=new ozpIwc.metricTypes.Histogram();
 	});
@@ -25,17 +24,20 @@ describe("Metrics: Histogram",function() {
 		expect(v.percentile999).toBe(99.9);
 	});
 	it("does proper percentiles on large sets",function() {
-		for(var i=1; i <= 10000; ++i) {
-			histogram.mark(i);
+        var max = 10000;
+        var min = 1;
+		for(var i=min; i <= max*10; ++i) {
+			histogram.mark(Math.random()*(max-min)+min);
 		}
 		var v=histogram.get();
-		expect(v.percentile10).toBeApproximately(1000,tolerance);
-		expect(v.percentile25).toBeApproximately(2500,tolerance);
-		expect(v.median).toBeApproximately(5000,tolerance);
-		expect(v.percentile75).toBeApproximately(7500,tolerance);
-		expect(v.percentile90).toBeApproximately(9000,tolerance);
-		expect(v.percentile95).toBeApproximately(9500,tolerance);
-		expect(v.percentile99).toBeApproximately(9900,tolerance);
-		expect(v.percentile999).toBeApproximately(9990,tolerance);
+        var range = max-min;
+		expect(v.percentile10).toBeWithinRange(1000,range,rangedTolerance);
+		expect(v.percentile25).toBeWithinRange(2500,range,rangedTolerance);
+		expect(v.median).toBeWithinRange(5000,range,rangedTolerance);
+		expect(v.percentile75).toBeWithinRange(7500,range,rangedTolerance);
+		expect(v.percentile90).toBeWithinRange(9000,range,rangedTolerance);
+		expect(v.percentile95).toBeWithinRange(9500,range,rangedTolerance);
+		expect(v.percentile99).toBeWithinRange(9900,range,rangedTolerance);
+		expect(v.percentile999).toBeWithinRange(9990,range,rangedTolerance);
 	});
 });

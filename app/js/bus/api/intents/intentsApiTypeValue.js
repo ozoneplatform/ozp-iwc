@@ -3,7 +3,7 @@
  */
 
 /**
- * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
+ * The capability value for an intent. adheres to the ozpIwc-intents-type-capabilities-v1+json content type.
  * @class IntentsApiTypeValue
  * @namespace ozpIwc
  * @extends ozpIwc.CommonApiValue
@@ -19,6 +19,11 @@ ozpIwc.IntentsApiTypeValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function 
     config.contentType="application/ozpIwc-intents-contentType-v1+json";
 
     ozpIwc.CommonApiValue.apply(this, arguments);
+
+    /**
+     * @property pattern
+     * @type RegExp
+     */
     this.pattern=new RegExp(ozpIwc.util.escapeRegex(this.resource)+"/[^/]*");
     this.entity={
         type: config.intentType,
@@ -27,11 +32,10 @@ ozpIwc.IntentsApiTypeValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function 
 });
 
 /**
- * Returns if an update is needed.
- * @todo (DOC).
+ * Returns true if the type value contains a reference to the node specified
  *
  * @method isUpdateNeeded
- * @param {?} node
+ * @param {ozpIwc.CommonApiValue} node
  * @returns {Boolean}
  */
 ozpIwc.IntentsApiTypeValue.prototype.isUpdateNeeded=function(node) {

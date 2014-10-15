@@ -25,8 +25,8 @@ var ozpIwc = ozpIwc || {};
  *
  * @param {Object} [config] Configuration for this link
  * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] The peer to connect to.
- * @param {string} [config.prefix='ozpIwc'] Namespace for communicating, must be the same for all peers on the same network.
- * @param {string} [config.selfId] Unique name within the peer network.  Defaults to the peer id.
+ * @param {String} [config.prefix='ozpIwc'] Namespace for communicating, must be the same for all peers on the same network.
+ * @param {String} [config.selfId] Unique name within the peer network.  Defaults to the peer id.
  * @param {Number} [config.maxRetries] Number of times packet transmission will retry if failed. Defaults to 6.
  * @param {Number} [config.queueSize] Number of packets allowed to be queued at one time. Defaults to 1024.
  * @param {Number} [config.fragmentSize] Size in bytes of which any TransportPacket exceeds will be sent in FragmentPackets.
@@ -103,6 +103,13 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
      * @default []
      */
     this.sendQueue = this.sendQueue || [];
+
+    /**
+     * An array of temporarily held received packet fragments indexed by their message key.
+     * @type Array[]
+     * @default []
+     */
+    this.fragments = this.fragments || [];
 
     /**
      * Minimum size in bytes that a packet will broken into fragments.
@@ -210,7 +217,6 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
         return null;
     }
 
-    this.fragments = this.fragments || [];
     // NetworkPacket properties
     var sequence = packet.sequence;
     var srcPeer = packet.srcPeer;

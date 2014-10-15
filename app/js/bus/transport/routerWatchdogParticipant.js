@@ -114,7 +114,12 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
 
     };
 //    heartbeat();
-    
+
+    /**
+     * The timer for the heartBeat
+     * @property timer
+     * @type window.setInterval
+     */
     this.timer = window.setInterval(heartbeat, this.heartbeatFrequency);
 };
 

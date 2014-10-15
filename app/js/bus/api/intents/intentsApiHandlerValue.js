@@ -2,7 +2,7 @@
  * @submodule bus.api.Value
  */
 /**
- * The capability value for an intent. adheres to the ozp-intents-type-capabilities-v1+json content type.
+ * The capability value for an intent. adheres to the ozpIwc-intents-type-capabilities-v1+json content type.
  * @class IntentsApiHandlerValue
  * @namespace ozpIwc
  * @extends ozpIwc.CommonApiValue

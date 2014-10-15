@@ -217,6 +217,12 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 	this.name=config.name;
 
 
+    /**
+     * An internal flag used to debounce invalid leadership attempts due to high network traffic.
+     * @property toggleDrop
+     * @type Boolean
+     * @default false
+     */
     this.toggleDrop = false;
 
     /**
@@ -405,6 +411,8 @@ ozpIwc.LeaderGroupParticipant.prototype.sendVictoryMessage = function(){
  *     - {{#crossLink "ozpiwc.LeaderGroupParticipant/#becameLeader:event"}{{/crossLink}}
  *
  * @method startElection
+ * @param {Object} config
+ * @param {Object} config.state
  * @protected
  *
  */

@@ -38,6 +38,7 @@ ozpIwc.IntentsApi.prototype.loadFromServer=function() {
  * accounted for (A handler requires a definition, which requires a capability).
  *
  * @param {Object} packet
+ *
  * @returns {IntentsApiHandlerValue|IntentsAPiDefinitionValue|IntentsApiCapabilityValue}
  */
 ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
@@ -95,6 +96,7 @@ ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
 /**
  * Creates and registers a handler to the given definition resource path.
  *
+ * @method handleRegister
  * @param {Object} node the handler value to register, or the definition value the handler will register to
  * (handler will receive a generated key if definition value is provided).
  * @param {ozpIwc.TransportPacketContext} packetContext the packet received by the router.
@@ -123,6 +125,7 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
  *  @todo <li> user preference specifies which handler to use. </li>
  *  @todo <li> by prompting the user to select which handler to use. </li>
  *
+ * @method handleInvoke
  * @param {Object} node the definition or handler value used to invoke the intent.
  * @param {ozpIwc.TransportPacketContext} packetContext the packet received by the router.
  */
@@ -144,6 +147,7 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
 /**
  * Invokes an Intent Api Intent handler based on the given packetContext.
  *
+ * @method invokeIntentHandler
  * @param {ozpIwc.intentsApiHandlerValue} node
  * @param {ozpIwc.TransportPacket} packetContext
  */
@@ -173,6 +177,7 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (node, packetContext)
  * Produces a modal for the user to select a handler from the given list of intent handlrs.
  * @TODO not implemented.
  *
+ * @method chooseIntentHandler
  * @param {ozpIwc.intentsApiHandlerValue[]} nodeList
  * @param {ozpIwc.TransportPacket} packetContext
  */
