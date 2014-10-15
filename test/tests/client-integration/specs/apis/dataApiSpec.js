@@ -49,7 +49,7 @@ describe("Data API", function () {
             'action' : "set",
             'entity' : { 'foo' : 1 }
         };
-        client.api('data.api').watch(packet.resource,{},function(reply) {
+        client.api('data.api').watch(packet.resource,function(reply) {
             if(reply.response==="changed") {
                 expect(reply.entity.newValue).toEqual(packet.entity);
                 expect(reply.entity.oldValue).toEqual({});
