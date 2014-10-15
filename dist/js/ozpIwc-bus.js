@@ -2165,6 +2165,23 @@ ozpIwc.util.determineOrigin=function(url) {
 ozpIwc.util.escapeRegex=function(str) {
     return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
+
+
+/**
+ * Returns true if the specified packet meets the criteria of an IWC Packet.
+ * @method isIwcPacket
+ * @static
+ * @param {ozpIwc.TransportPacket} packet
+ * @returns {Boolean}
+ */
+ozpIwc.util.isIWCPacket=function(packet) {
+    if(typeof packet.src !== "string" ||typeof packet.dst !== "string" ||
+        typeof packet.ver !== "number" || typeof packet.msgId !== "string") {
+        return false;
+    } else {
+        return true;
+    }
+};
 /*
  * The MIT License (MIT) Copyright (c) 2012 Mike Ihbe
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -6887,7 +6904,13 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 		this.router.registerParticipant(participant,packet);
 		this.participants.push(participant);
 	}
-	participant.forwardFromPostMessage(packet,event);
+
+    if (ozpIwc.util.isIWCPacket(packet)) {
+        participant.forwardFromPostMessage(packet, event);
+    } else {
+        ozpIwc.log.log("Packet does not meet IWC Packet criteria, dropping.", packet);
+    }
+
 };
 
 /**

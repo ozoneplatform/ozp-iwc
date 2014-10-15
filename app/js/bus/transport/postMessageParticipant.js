@@ -281,5 +281,11 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 		this.router.registerParticipant(participant,packet);
 		this.participants.push(participant);
 	}
-	participant.forwardFromPostMessage(packet,event);
+
+    if (ozpIwc.util.isIWCPacket(packet)) {
+        participant.forwardFromPostMessage(packet, event);
+    } else {
+        ozpIwc.log.log("Packet does not meet IWC Packet criteria, dropping.", packet);
+    }
+
 };
