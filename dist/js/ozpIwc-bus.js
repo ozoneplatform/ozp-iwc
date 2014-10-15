@@ -3760,7 +3760,7 @@ ozpIwc.util.objectContainsAll=function(haystack,needles,equal) {
 ozpIwc.util.alert = function (message, errorObject) {
     this.alerts = this.alerts || {};
     if(this.alerts[message]){
-        this.alerts[message].error = errorObject
+        this.alerts[message].error = errorObject;
     } else {
         this.alerts[message] = {
             error: errorObject,
