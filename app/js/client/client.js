@@ -308,7 +308,7 @@ ozpIwc.Client.prototype.on=function(event,callback) {
 
 /**
  * De-registers callbacks
- * @method on
+ * @method off
  * @param {String} event The event to call the callback on.
  * @param {Function} callback The function to be called.
  *
@@ -341,6 +341,12 @@ ozpIwc.Client.prototype.disconnect=function() {
 ozpIwc.Client.prototype.connect=function() {
     if(!this.connectPromise) {
         var self=this;
+
+        /**
+         * Promise to chain off of for client connection asynchronous actions.
+         * @property connectPromise
+         * @type Promise
+         */
         this.connectPromise=new Promise(function(resolve) {
             self.peerUrlCheck(self.launchParams.peer,resolve);
         }).then(function(url) {
@@ -466,6 +472,11 @@ ozpIwc.Client.prototype.createIframePeer=function() {
 
     var augment = function (dst,action,client) {
         return function (resource, fragment, otherCallback) {
+            // If a fragment isn't supplied argument #2 should be a callback (if supplied)
+            if(typeof fragment === "function"){
+                otherCallback = fragment;
+                fragment = {};
+            }
             return new Promise(function (resolve, reject) {
                 var packet = {
                     'dst': dst,

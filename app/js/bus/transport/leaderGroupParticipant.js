@@ -217,6 +217,12 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
 	this.name=config.name;
 
 
+    /**
+     * An internal flag used to debounce invalid leadership attempts due to high network traffic.
+     * @property toggleDrop
+     * @type Boolean
+     * @default false
+     */
     this.toggleDrop = false;
 
     /**
@@ -257,16 +263,27 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
         //Priority has to be the minimum possible
         self.priority=-Number.MAX_VALUE;
 
-        // Unload events can't use setTimeout's. Therefore make all sending happen with normal execution
-        self.send = function(originalPacket,callback) {
-            var packet=this.fixPacket(originalPacket);
-            if(callback) {
-                this.replyCallbacks[packet.msgId]=callback;
-            }
-            ozpIwc.Participant.prototype.send.call(this,packet);
+        if(self.activeStates.leader) {
+            for (var part in self.router.participants) {
+                var participant = self.router.participants[part];
 
-            return packet;
-        };
+                // Each leaderParticipant should report out what participants are on
+                // the router so that higher level elements can clean up soon to be dead references before passing on state.
+                if (participant.address) {
+                    self.events.trigger("receiveEventChannelPacket", {
+                        packet: self.fixPacket({
+                            dst: "$bus.multicast",
+                            action: "disconnect",
+                            entity: {
+                                address: participant.address,
+                                participantType: participant.participantType,
+                                namesResource: participant.namesResource
+                            }
+                        })
+                    });
+                }
+            }
+        }
 
         self.events.trigger("unloadState");
 	});
@@ -394,6 +411,8 @@ ozpIwc.LeaderGroupParticipant.prototype.sendVictoryMessage = function(){
  *     - {{#crossLink "ozpiwc.LeaderGroupParticipant/#becameLeader:event"}{{/crossLink}}
  *
  * @method startElection
+ * @param {Object} config
+ * @param {Object} config.state
  * @protected
  *
  */

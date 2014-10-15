@@ -144,17 +144,33 @@ ozpIwc.util.escapeRegex=function(str) {
  * @returns {ozpIwc.TransportPacket}
  */
 ozpIwc.util.parseOzpUrl=function(url) {
-    var m=/^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(url);
-    if(m) {
+    var m = /^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(url);
+    if (m) {
         // an action of "get" is implied
-        var packet={
+        var packet = {
             'dst': m[1],
             'resource': m[2],
-            'action' : "get"
+            'action': "get"
         };
-        // TODO: parse the query params into fields       
-        
+        // TODO: parse the query params into fields
+
         return packet;
     }
     return null;
+};
+
+/**
+ * Returns true if the specified packet meets the criteria of an IWC Packet.
+ * @method isIwcPacket
+ * @static
+ * @param {ozpIwc.TransportPacket} packet
+ * @returns {Boolean}
+ */
+ozpIwc.util.isIWCPacket=function(packet) {
+    if(typeof packet.src !== "string" ||typeof packet.dst !== "string" ||
+        typeof packet.ver !== "number" || typeof packet.msgId !== "string") {
+        return false;
+    } else {
+        return true;
+    }
 };

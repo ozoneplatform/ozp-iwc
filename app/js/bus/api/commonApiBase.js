@@ -26,17 +26,17 @@ ozpIwc.CommonApiBase = function(config) {
     this.participant.on("becameLeaderEvent", this.becameLeader,this);
     this.participant.on("newLeaderEvent", this.newLeader,this);
     this.participant.on("startElection", this.startElection,this);
-
-    /**
-     * An events module for the API.
-     * @property events
-     * @type Event
-     */
-    this.events = new ozpIwc.Event();
+    this.participant.on("receiveEventChannelPacket",this.routeEventChannel,this);
+   /**
+    * An events module for the API.
+    * @property events
+    * @type Event
+    */
+	this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
 
     /**
-     * @TODO (DOC)
+     * Api nodes that are updated based on other api nodes. Used for keeping dynamic lists of related resources.
      * @property dynamicNodes
      * @type Array
      * @default []
@@ -89,7 +89,7 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectP
             if (object.type && object.action) {
                 resource += object.type + '/' + object.action;
                 if (object.handler) {
-                    resource += '/' + +object.handler;
+                    resource += '/' + object.handler;
                 }
             }
             break;
@@ -184,7 +184,7 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
     //TODO where should we get content-type?
     if (!object.contentType) {
         object.contentType = 'application/json';
-    };
+    }
     var node = this.findNodeForServerResource(object,path,endpoint);
 
     if (node) {
@@ -470,6 +470,75 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
 };
 
 /**
+ * Routes event channel messages.
+ *
+ * @method routeEventChannel
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
+    if (!this.participant.activeStates.leader) {
+        return;
+    }
+    var packet = packetContext.packet;
+    switch (packet.action) {
+        case "connect":
+            this.handleEventChannelConnect(packetContext);
+            break;
+        case "disconnect":
+            this.handleEventChannelDisconnect(packetContext);
+            break;
+        default:
+            console.error(this.participant.name, "No handler found for corresponding event channel action: ", packet.action);
+            break;
+    }
+};
+
+/**
+ * Handles disconnect messages received over the $bus.multicast group.
+ *
+ * @method handleEventChannelDisconnect
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnect = function(packetContext) {
+    for(var node in this.data){
+        for(var j in this.data[node].watchers) {
+            if (this.data[node].watchers[j].src === packetContext.packet.entity.address) {
+                this.data[node].watchers.splice(j,1);
+            }
+        }
+    }
+    this.handleEventChannelDisconnectImpl(packetContext);
+};
+
+/**
+ * Handles connect messages received over the $bus.multicast group.
+ *
+ * @method handleEventChannelConnect
+* @param {ozpIwc.TransportPacketContext} packetContext
+*/
+ozpIwc.CommonApiBase.prototype.handleEventChannelConnect = function(packetContext) {
+    this.handleEventChannelConnectImpl(packetContext);
+};
+
+/**
+ * Intended to be overridden by subclass.
+ *
+ * @abstract
+ * @method handleEventChannelDisconnectImpl
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.handleEventChannelDisconnectImpl = function(packetContext) {
+};
+/**
+ * Intended to be overridden by subclass.
+ *
+ * @abstract
+ * @method handleEventChannelDisconnectImpl
+ * @param {ozpIwc.TransportPacketContext} packetContext
+ */
+ozpIwc.CommonApiBase.prototype.handleEventChannelConnectImpl = function(packetContext) {
+};
+/**
  * Determines which handler in the api is needed to process the given packet.
  *
  * @method findHandler
@@ -670,7 +739,13 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
  */
 ozpIwc.CommonApiBase.prototype.unloadState = function(){
     if(this.participant.activeStates.leader) {
+
+        // temporarily change the primative to stringify our RegExp
+        var tempToJSON = RegExp.prototype.toJSON;
+        RegExp.prototype.toJSON = RegExp.prototype.toString;
         this.participant.sendElectionMessage("election",{state: this.data, previousLeader: this.participant.address});
+
+        RegExp.prototype.toJSON = tempToJSON;
         this.data = {};
     } else {
         this.participant.sendElectionMessage("election");
@@ -687,8 +762,23 @@ ozpIwc.CommonApiBase.prototype.unloadState = function(){
 ozpIwc.CommonApiBase.prototype.setState = function(state) {
     this.data = {};
     for (var key in state) {
-        this.findOrMakeValue(state[key]);
+        var dynIndex = this.dynamicNodes.indexOf(state[key].resource);
+        var node;
+        if(dynIndex > -1){
+             node = this.data[state[key].resource] = new ozpIwc.CommonApiCollectionValue({
+                resource: state[key].resource
+            });
+            node.deserialize(state[key]);
+            this.updateDynamicNode(node);
+        } else {
+            node = this.findOrMakeValue(state[key]);
+            node.deserialize(state[key]);
+        }
     }
+    // update all the collection values
+    this.dynamicNodes.forEach(function(resource) {
+        this.updateDynamicNode(this.data[resource]);
+    },this);
 };
 
 /**
@@ -707,6 +797,8 @@ ozpIwc.CommonApiBase.prototype.rootHandleList=function(node,packetContext) {
 
 /**
  * Puts the API's participant into it's election state.
+ *
+ * @method startElection
  */
 ozpIwc.CommonApiBase.prototype.startElection = function(){
     if (this.participant.activeStates.leader) {
@@ -723,6 +815,8 @@ ozpIwc.CommonApiBase.prototype.startElection = function(){
  *  Handles taking over control of the API's participant group as the leader.
  *      <li>If this API instance's participant was the leader prior to election and won, normal functionality resumes.</li>
  *      <li>If this API instance's participant received state from a leaving leader participant, it will consume said participants state</li>
+ *
+ * @method becameLeader
  */
 ozpIwc.CommonApiBase.prototype.becameLeader= function(){
     this.participant.sendElectionMessage("victory");
@@ -743,7 +837,11 @@ ozpIwc.CommonApiBase.prototype.becameLeader= function(){
  * Handles a new leader being assigned to this API's participant group.
  *      <li>@TODO: If this API instance was leader prior to the election, its state will be sent off to the new leader.</li>
  *      <li>If this API instance wasn't the leader prior to the election it will resume normal functionality.</li>
- * @fires ozpIwc.leaderGroupParticipant#newLeader
+ *
+ * Fires:
+ *   - {{#crossLink "ozpIwc.leaderGroupParticipant/#newLeader:event"}}{{/crossLink}}
+ *
+ * @method newLeader
  */
 ozpIwc.CommonApiBase.prototype.newLeader = function() {
     // If this API was the leader, send its state to the new leader
@@ -758,7 +856,11 @@ ozpIwc.CommonApiBase.prototype.newLeader = function() {
 
 /**
  * Handles setting the API's participant to the leader state.
- * @fires ozpIwc.leaderGroupParticipant#becameLeader
+ *
+ * Fires:
+ *   - {{#crossLink "ozpIwc.leaderGroupParticipant/#becameLeader:event"}}{{/crossLink}}
+ *
+ * @method setToLeader
  */
 ozpIwc.CommonApiBase.prototype.setToLeader = function(){
     var self = this;
@@ -773,6 +875,8 @@ ozpIwc.CommonApiBase.prototype.setToLeader = function(){
  * Handles the syncronizing of API data from previous leaders.
  * <li> If this API's participant has a state stored from the election it is set </li>
  * <li> If no state present but expected, a listener is set to retrieve the state if acquired within 250ms </li>
+ *
+ * @method leaderSync
  */
 ozpIwc.CommonApiBase.prototype.leaderSync = function () {
     this.participant.changeState("leaderSync",{toggleDrop: true});
@@ -830,6 +934,10 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
     },0);
 };
 
+/**
+ * @TODO DOC
+ * @method persistNodes
+ */
 ozpIwc.CommonApiBase.prototype.persistNodes=function() {
 	// throw not implemented error
 	throw new ozpIwc.ApiError("noImplementation","Base class persistence call not implemented.  Use DataApi to persist nodes.");

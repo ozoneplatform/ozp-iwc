@@ -13,8 +13,20 @@
  */
 ozpIwc.CommonApiCollectionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
 	ozpIwc.CommonApiValue.apply(this,arguments);
-    this.persist=false;    
-    this.pattern=config.pattern;
+
+    /**
+     * @property persist
+     * @type Boolean
+     * @default false
+     */
+    this.persist=false;
+
+    /**
+     * @property pattern
+     * @type RegExp
+     * @default ''
+     */
+    this.pattern=config.pattern || '';
     this.entity=[];
 });
 
@@ -47,4 +59,20 @@ ozpIwc.CommonApiCollectionValue.prototype.updateContent=function(changedNodes) {
  */
 ozpIwc.CommonApiCollectionValue.prototype.set=function() {
     throw new ozpIwc.ApiError("noPermission","This resource cannot be modified.");
+};
+
+/**
+ * Deserializes a Intents Api handler value from a packet and constructs this Intents Api handler value.
+ *
+ * @method deserialize
+ * @param {ozpIwc.TransportPacket} serverData
+ */
+ozpIwc.CommonApiCollectionValue.prototype.deserialize=function(serverData) {
+    this.entity=serverData.entity || this.entity;
+    this.contentType=serverData.contentType || this.contentType;
+    this.permissions=serverData.permissions || this.permissions;
+    this.pattern = new RegExp(serverData.pattern.replace(/^\/|\/$/g, '')) || this.pattern;
+    this.persist=serverData.persist || this.persist;
+    this.version=serverData.version || this.version;
+    this.watchers = serverData.watchers || this.watchers;
 };

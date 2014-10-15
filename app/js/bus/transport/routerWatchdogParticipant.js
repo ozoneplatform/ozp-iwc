@@ -38,8 +38,45 @@ ozpIwc.RouterWatchdog = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(
      * @event #connectedToRouter
      */
     this.on("connectedToRouter", this.setupWatches, this);
+
+
 });
 
+/**
+ * Removes this participant from the $bus.multicast multicast group.
+ *
+ * @method leaveEventChannel
+ */
+ozpIwc.RouterWatchdog.prototype.leaveEventChannel = function() {
+    // handle anything before leaving.
+    if(this.router) {
+
+        this.send({
+            dst: "$bus.multicast",
+            action: "disconnect",
+            entity: {
+                address: this.address,
+                participantType: this.participantType,
+                namesResource: this.namesResource
+            }
+        });
+
+        this.send({
+            dst: "$bus.multicast",
+            action: "disconnect",
+            entity: {
+                address: this.router.selfId,
+                namesResource: "/router/"+this.router.selfId
+            }
+        });
+        //TODO not implemented
+//        this.router.unregisterMulticast(this, ["$bus.multicast"]);
+        return true;
+    } else {
+        return false;
+    }
+
+};
 /**
  * Sets up the watchdog for all participants connected to the router. Reports heartbeats based on
  * {{#crossLink "ozpIwc.RouterWatchdogParticipant/heartbeatFrequency:property"}}{{/crossLink}}
@@ -77,7 +114,12 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
 
     };
 //    heartbeat();
-    
+
+    /**
+     * The timer for the heartBeat
+     * @property timer
+     * @type window.setInterval
+     */
     this.timer = window.setInterval(heartbeat, this.heartbeatFrequency);
 };
 

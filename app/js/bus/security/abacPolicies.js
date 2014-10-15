@@ -9,7 +9,6 @@
  * Attribute Based Access Control policies.
  * @class abacPolicies
  * @static
- * @type {{}}
  */
 ozpIwc.abacPolicies={};
 

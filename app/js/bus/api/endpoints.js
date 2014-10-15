@@ -3,17 +3,25 @@ var ozpIwc=ozpIwc || {};
 /**
  * @class Endpoint
  * @namespace ozpIwc
- * @param endpointRegistry Endpoint name
+ * @param {ozpIwc.EndpointRegistry} endpointRegistry Endpoint name
  * @constructor
  */
 ozpIwc.Endpoint=function(endpointRegistry) {
+
+    /**
+     * @property endpointRegistry
+     * @type ozpIwc.EndpointRegistry
+     */
 	this.endpointRegistry=endpointRegistry;
 };
 
 /**
+ * Performs an AJAX request of GET for specified resource href.
+ *
  * @method get
- * @param resource
- * @returns {*}
+ * @param {String} resource
+ *
+ * @returns {Promise}
  */
 ozpIwc.Endpoint.prototype.get=function(resource) {
     var self=this;
@@ -29,6 +37,16 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
     });
 };
 
+/**
+ *
+ * Performs an AJAX request of PUT for specified resource href.
+ *
+ * @method put
+ * @param {String} resource
+ * @param {Object} data
+ *
+ * @returns {Promise}
+ */
 ozpIwc.Endpoint.prototype.put=function(resource, data) {
     var self=this;
 
@@ -45,6 +63,20 @@ ozpIwc.Endpoint.prototype.put=function(resource, data) {
 };
 
 /**
+ * Sends AJAX requests to PUT the specified nodes into the endpoint.
+ * @todo PUTs each node individually. Currently sends to a fixed api point switch to using the node.self endpoint and remove fixed resource
+ * @method saveNodes
+ * @param {ozpIwc.CommonApiValue[]} nodes
+ */
+ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
+    var resource = "/data";
+    for (var node in nodes) {
+        var nodejson = JSON.stringify(nodes[node]);
+        this.put((nodes[node].self || resource), nodejson);
+    }
+};
+
+/**
  * @class EndpointRegistry
  * @namespace ozpIwc
  * @constructor
@@ -55,22 +87,43 @@ ozpIwc.Endpoint.prototype.put=function(resource, data) {
 ozpIwc.EndpointRegistry=function(config) {
     config=config || {};
     var apiRoot=config.apiRoot || '/api';
+
+    /**
+     * The root path of the specified apis
+     * @property apiRoot
+     * @type String
+     * @default '/api'
+     */
     this.apiRoot = apiRoot;
+
+    /**
+     * The collection of api endpoints
+     * @property endPoints
+     * @type Object
+     * @default {}
+     */
     this.endPoints={};
+
     var self=this;
+
+    /**
+     * An AJAX GET request fired at the creation of the Endpoint Registry to gather endpoint data.
+     * @property loadPromise
+     * @type Promise
+     */
     this.loadPromise=ozpIwc.util.ajax({
         href: apiRoot,
         method: 'GET'
     }).then(function(data) {
-        for (var ep in data._links) {
-            if (ep !== 'self') {
-                var link=data._links[ep].href;
-                self.endpoint(ep).baseUrl=link;
+        for (var linkEp in data._links) {
+            if (linkEp !== 'self') {
+                var link=data._links[linkEp].href;
+                self.endpoint(linkEp).baseUrl=link;
             }
         }
-        for (var ep in data._embedded) {
-            var link=data._embedded[ep]._links.self.href;
-            self.endpoint(ep).baseUrl=link;
+        for (var embEp in data._embedded) {
+            var embLink=data._embedded[embEp]._links.self.href;
+            self.endpoint(embEp).baseUrl=embLink;
         }
     });
 };
@@ -86,7 +139,7 @@ ozpIwc.EndpointRegistry.prototype.endpoint=function(name) {
     var endpoint=this.endPoints[name];
     if(!endpoint) {
         endpoint=this.endPoints[name]=new ozpIwc.Endpoint(this);
-        endpoint['name']=name;
+        endpoint.name=name;
     }
     return endpoint;
 };
@@ -102,16 +155,5 @@ ozpIwc.initEndpoints=function(apiRoot) {
     ozpIwc.endpoint=function(name) {
         return registry.endpoint(name);
     };
-};
-
-ozpIwc.Endpoint.prototype.saveNodes=function(nodes) {
-	// PUT each node individually
-	// Currently, send to a fixed api point
-	// Soon, switch to using the node.self endpoint and remove fixed resource
-	var resource = "/data";
-	for (node in nodes) {
-		var nodejson = JSON.stringify(nodes[node]);
-		put((nodes[node].self || resource), nodejson);
-	}
 };
 

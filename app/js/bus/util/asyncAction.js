@@ -58,6 +58,11 @@ ozpIwc.AsyncAction.prototype.resolve=function(status) {
 	}
 	var callback=this.callbacks[status];
 	this.resolution=status;
+
+    /**
+     * @property value
+     * @type Array
+     */
 	this.value=Array.prototype.slice.call(arguments,1);
 	
 	if(callback) {

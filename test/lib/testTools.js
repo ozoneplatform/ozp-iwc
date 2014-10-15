@@ -22,6 +22,15 @@ var customMatchers={
 			return {pass: Math.abs(actual-expected) <= epsilon * Math.abs(expected)};
 		}
 	};},
+    toBeWithinRange: function(util, customEqualityTesters) { return {
+        //compares epsilon against the range-scaled absolute error
+        compare: function(actual,expected,range,epsilon) {
+            if(typeof(epsilon) !== "number") {
+                epsilon=1e-5;
+            }
+            return {pass: Math.abs(actual-expected)/ Math.abs(range) <= epsilon};
+        }
+    };},
 	toContainAll: function(util, customEqualityTesters) { return {
 		compare: function(actual,expected) {
 			var missing=[];

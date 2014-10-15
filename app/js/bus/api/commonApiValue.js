@@ -13,15 +13,64 @@
  */
 ozpIwc.CommonApiValue = function(config) {
 	config = config || {};
+
+    /**
+     * @property watchers
+     * @type Array[String]
+     * @default []
+     */
 	this.watchers= config.watchers || [];
+
+    /**
+     * @property resource
+     * @type String
+     */
 	this.resource=config.resource;
+
+    /**
+     * @property allowedContentTypes
+     * @type Array
+     */
     this.allowedContentTypes=config.allowedContentTypes;
+
+    /**
+     * @property entity
+     * @type Object
+     */
     this.entity=config.entity;
+
+    /**
+     * @property contentType
+     * @type String
+     */
 	this.contentType=config.contentType;
+
+    /**
+     * @property permissions
+     * @type Object
+     * @default {}
+     */
 	this.permissions=config.permissions || {};
+
+    /**
+     * @property version
+     * @type Number
+     * @default 0
+     */
 	this.version=config.version || 0;
-    
+
+    /**
+     * @property persist
+     * @type Boolean
+     * @default false
+     */
     this.persist=false;
+
+    /**
+     * @property deleted
+     * @type Boolean
+     * @default true
+     */
     this.deleted=true;
 };
 
