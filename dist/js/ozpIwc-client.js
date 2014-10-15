@@ -2165,6 +2165,23 @@ ozpIwc.util.determineOrigin=function(url) {
 ozpIwc.util.escapeRegex=function(str) {
     return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
+
+
+/**
+ * Returns true if the specified packet meets the criteria of an IWC Packet.
+ * @method isIwcPacket
+ * @static
+ * @param {ozpIwc.TransportPacket} packet
+ * @returns {Boolean}
+ */
+ozpIwc.util.isIWCPacket=function(packet) {
+    if(typeof packet.src !== "string" ||typeof packet.dst !== "string" ||
+        typeof packet.ver !== "number" || typeof packet.msgId !== "string") {
+        return false;
+    } else {
+        return true;
+    }
+};
 var ozpIwc=ozpIwc || {};
 
 /**
