@@ -2071,20 +2071,27 @@ ozpIwc.util.extend=function(baseClass,newConstructor) {
 };
 
 /**
- * Detect browser support for structured clones.
+ * Detect browser support for structured clones. Returns quickly since it
+ * caches the result. However, a bug in FF will cause clone to fail fr file objects
+ * (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126). This method will
+ * not detect that, since it's designed to determine browser support and cache
+ * the result for efficiency. This method should therefore not be called except
+ * from a method which subsequently tests the ability to clone a File object. (See
+ * ozpIwc.util.getPostMessagePayload()).
+ *
+ * @private
  *
  * @method structuredCloneSupport
  *
  * @returns {Boolean} True if structured clones are supported, false otherwise.
  */
 ozpIwc.util.structuredCloneSupport=function() {
-    if (ozpIwc.util.structuredCloneSupport.cache !== undefined) {
-        return ozpIwc.util.structuredCloneSupport.cache;
+    ozpIwc.util = ozpIwc.util || {};
+    if (ozpIwc.util.structuredCloneSupportCache !== undefined) {
+        return ozpIwc.util.structuredCloneSupportCache;
     }
     var onlyStrings = false;
     //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
-    //A bug in FF will cause File clone to fail (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126)
-    //We detect this using a test Blob
     try {
         window.postMessage({
             toString: function () {
@@ -2095,11 +2102,24 @@ ozpIwc.util.structuredCloneSupport=function() {
     } catch (e) {
         onlyStrings=true;
     }
-    ozpIwc.util.structuredCloneSupport.cache=!onlyStrings;
-    return ozpIwc.util.structuredCloneSupport.cache;
+    ozpIwc.util.structuredCloneSupportCache=!onlyStrings;
+    return ozpIwc.util.structuredCloneSupportCache;
 };
 
 ozpIwc.util.structuredCloneSupport.cache=undefined;
+
+ozpIwc.util.getPostMessagePayload=function(msg) {
+    if (ozpIwc.util.structuredCloneSupport() && !(msg instanceof File)) {
+        return msg;
+    }
+    try {
+        window.postMessage(msg, "*");
+    } catch (e) {
+        msg=JSON.stringify(msg);
+    } finally {
+        return msg;
+    }
+}
 
 /**
  * Does a deep clone of a serializable object.  Note that this will not
@@ -6726,10 +6746,7 @@ ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetCon
  * @todo Only IE requires the packet to be stringified before sending, should use feature detection?
  */
 ozpIwc.PostMessageParticipant.prototype.sendToRecipient=function(packet) {
-    var data=packet;
-    if (!ozpIwc.util.structuredCloneSupport()) {
-         data=JSON.stringify(packet);
-    }
+    var data=ozpIwc.util.getPostMessagePayload(packet);
 	this.sourceWindow.postMessage(data,this.origin);
 };
 

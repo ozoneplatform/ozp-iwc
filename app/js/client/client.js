@@ -252,10 +252,7 @@ ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromise) {
     if(callback) {
         this.replyCallbacks[id]=callback;
     }
-    var data=packet;
-    if (!ozpIwc.util.structuredCloneSupport()) {
-        data=JSON.stringify(packet);
-    }
+    var data=ozpIwc.util.getPostMessagePayload(packet);
     this.peer.postMessage(data,'*');
     this.sentBytes+=data.length;
     this.sentPackets++;
