@@ -61,35 +61,53 @@ ozpIwc.util.structuredCloneSupport=function() {
     if (ozpIwc.util.structuredCloneSupportCache !== undefined) {
         return ozpIwc.util.structuredCloneSupportCache;
     }
-    var onlyStrings = false;
+    var cloneSupport = 'postMessage' in window;
     //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
     try {
         window.postMessage({
             toString: function () {
-                onlyStrings = true;
-            },
-            blob: new Blob()
+                cloneSupport = false;
+            }
         }, "*");
     } catch (e) {
-        onlyStrings=true;
+        //exception expected: objects with methods can't be cloned
+        //e.DATA_CLONE_ERR will exist only for browsers with structured clone support, which can be used as an additional check if needed
     }
-    ozpIwc.util.structuredCloneSupportCache=!onlyStrings;
+    ozpIwc.util.structuredCloneSupportCache=cloneSupport;
     return ozpIwc.util.structuredCloneSupportCache;
 };
 
 ozpIwc.util.structuredCloneSupport.cache=undefined;
 
+/**
+* Return an object suitable for passing to window.postMessage
+* based on whether or not the browser supports structured clones
+* and the object to be cloned is supported. Testing for browser support
+* is not sufficient because of a bug in Firefox which prevents successful
+* cloning of File objects. (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126)
+*
+* @method getPostMessagePayload
+*
+* @returns {Object} The object passed in, if it can be cloned; otherwise te object stringified.
+*/
 ozpIwc.util.getPostMessagePayload=function(msg) {
-    if (ozpIwc.util.structuredCloneSupport() && !(msg instanceof File)) {
-        return msg;
+    if (ozpIwc.util.structuredCloneSupport()) {
+        if (!(msg instanceof File)) {
+            //if the object is not a File, we can trust the cached indicator of browser support for structured clones
+            return msg;
+        }
+        //otherwise, test whether the object can be cloned
+        try {
+            window.postMessage(msg, "*");
+        } catch (e) {
+            msg=JSON.stringify(msg);
+        } finally {
+            return msg;
+        }
+    } else {
+        return JSON.stringify(msg);
     }
-    try {
-        window.postMessage(msg, "*");
-    } catch (e) {
-        msg=JSON.stringify(msg);
-    } finally {
-        return msg;
-    }
+
 }
 
 /**
