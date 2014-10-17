@@ -4,16 +4,15 @@ describe("Client",function() {
         var client;
         var receiveData=function(event) {
             var data=event.message.data;
-            if (isStructuredClonesSupported) {
-                expect(typeof(data)==="object");
-            } else {
+            if (!isStructuredClonesSupported) {
                 expect(typeof(data)==="string");
+            } else {
+                expect(typeof(data)==="object" || (data instanceof File && typeof(ozpIwc.util.getPostMessagePayload(data)) === 'string'));
             }
         };
 
         beforeEach(function() {
             isStructuredClonesSupported=ozpIwc.util.structuredCloneSupport();
-            isStructuredClonesSupported=false;
             client=new ozpIwc.Client({peerUrl:"http://" + window.location.hostname + ":13000"});
             client.on("message",receiveData);
         });
@@ -26,9 +25,8 @@ describe("Client",function() {
             client.send({});
         });
     });
-    
-    
-    describe("launch paramters",function() {
+
+    describe("launch parameters",function() {
         var client;
 
         beforeEach(function() {
