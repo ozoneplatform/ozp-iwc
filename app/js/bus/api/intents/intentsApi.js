@@ -109,7 +109,8 @@ ozpIwc.IntentsApi.prototype.makeIntentInvocation = function (node,packetContext)
     this.data[inflightPacket.resource] = inflightPacket;
 
     return inflightPacket;
-}
+};
+
 /**
  * Creates and registers a handler to the given definition resource path.
  *
@@ -155,10 +156,12 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
     
     var handlerNodes=node.getHandlers(packetContext);
 
+    var inflightPacket = this.makeIntentInvocation(node,packetContext);
+
     if(handlerNodes.length === 1) {
-        this.invokeIntentHandler(handlerNodes[0],packetContext);
+        this.invokeIntentHandler(handlerNodes[0],packetContext,inflightPacket);
     } else {
-        this.chooseIntentHandler(node,packetContext);
+        this.chooseIntentHandler(node,packetContext,inflightPacket);
     }
 };
 
@@ -168,7 +171,7 @@ ozpIwc.IntentsApi.prototype.handleChoose = function (node, packetContext) {
         return null;
     }
 
-    var handlerNode = this.data[packetContext.packet.entity.resource]
+    var handlerNode = this.data[packetContext.packet.entity.resource];
     if(!handlerNode){
         return null;
     }
@@ -233,10 +236,8 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (node, packetContext,
  * @param {ozpIwc.intentsApiHandlerValue[]} nodeList
  * @param {ozpIwc.TransportPacket} packetContext
  */
-ozpIwc.IntentsApi.prototype.chooseIntentHandler = function (node, packetContext) {
+ozpIwc.IntentsApi.prototype.chooseIntentHandler = function (node, packetContext,inflightPacket) {
 
-    //TODO CREATE INFLIGHT INTENT!
-    var inflightPacket = this.makeIntentInvocation(node,packetContext);
 
     inflightPacket.entity.state = "choosing";
     ozpIwc.util.openWindow("intentsChooser.html",{

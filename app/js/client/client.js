@@ -470,13 +470,12 @@ ozpIwc.Client.prototype.createIframePeer=function() {
         return wrapper;
     };
 
-    var intentInvocationHandling = function(resource,entity,callback) {
+    var intentInvocationHandling = function(client,resource,entity,callback) {
         client.send({
             dst: "intents.api",
             action: "get",
             resource: entity.inFlightIntent
         },function(response){
-            console.log("I should use this data",response);
             response.entity.handler = {
                 address : client.address,
                 resource: resource
@@ -536,7 +535,7 @@ ozpIwc.Client.prototype.createIframePeer=function() {
                     }
                     else if (otherCallback) {
                         if(reply.entity && reply.entity.inFlightIntent) {
-                            intentInvocationHandling(resource,reply.entity,otherCallback);
+                            intentInvocationHandling(client,resource,reply.entity,otherCallback);
                             return true;
                         }
                         return otherCallback(reply);

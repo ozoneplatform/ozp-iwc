@@ -2173,7 +2173,7 @@ ozpIwc.util.escapeRegex=function(str) {
  * @returns {ozpIwc.TransportPacket}
  */
 ozpIwc.util.parseOzpUrl=function(url) {
-    var m = /^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(url);
+    var m = /^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(decodeURIComponent(url));
     if (m) {
         // an action of "get" is implied
         var packet = {
@@ -2675,6 +2675,46 @@ ozpIwc.Client.prototype.createIframePeer=function() {
         return wrapper;
     };
 
+    var intentInvocationHandling = function(client,resource,entity,callback) {
+        client.send({
+            dst: "intents.api",
+            action: "get",
+            resource: entity.inFlightIntent
+        },function(response){
+            response.entity.handler = {
+                address : client.address,
+                resource: resource
+            };
+            response.entity.state = "running";
+
+
+            client.send({
+                dst: "intents.api",
+                contentType: response.contentType,
+                action: "set",
+                resource: entity.inFlightIntent,
+                entity: response.entity
+            }, function(reply){
+                console.log("I set the intent to running", reply);
+                //Now run the intent
+                callback(response.entity);
+                // then
+                response.entity.state = "complete";
+
+                client.send({
+                    dst: "intents.api",
+                    contentType: response.contentType,
+                    action: "set",
+                    resource: entity.inFlightIntent,
+                    entity: response.entity
+                }, function(resp){
+                    console.log("I set the intent to complete", resp);
+                });
+            });
+
+        });
+    };
+
     var augment = function (dst,action,client) {
         return function (resource, fragment, otherCallback) {
             // If a fragment isn't supplied argument #2 should be a callback (if supplied)
@@ -2698,7 +2738,11 @@ ozpIwc.Client.prototype.createIframePeer=function() {
                     } else if (/(bad|no).*/.test(reply.response)) {
                         reject(reply);
                     }
-                    if (otherCallback) {
+                    else if (otherCallback) {
+                        if(reply.entity && reply.entity.inFlightIntent) {
+                            intentInvocationHandling(client,resource,reply.entity,otherCallback);
+                            return true;
+                        }
                         return otherCallback(reply);
                     }
                     return !!otherCallback;

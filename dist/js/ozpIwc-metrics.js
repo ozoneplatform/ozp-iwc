@@ -2173,7 +2173,7 @@ ozpIwc.util.escapeRegex=function(str) {
  * @returns {ozpIwc.TransportPacket}
  */
 ozpIwc.util.parseOzpUrl=function(url) {
-    var m = /^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(url);
+    var m = /^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(decodeURIComponent(url));
     if (m) {
         // an action of "get" is implied
         var packet = {

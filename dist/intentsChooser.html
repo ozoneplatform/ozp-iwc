@@ -31,57 +31,62 @@
       <script type="text/javascript">
         var client=new ozpIwc.InternalParticipant({'name':"intentsChooser"});
         ozpIwc.defaultRouter.registerParticipant(client);
-        
+
         function failure(msg) {
             document.getElementById("handlerList").textContent=msg;
-        };
-        function showHandlers(handlers) {
+        }
+
+        function handleSelection(handler,intentInvocation){
+
+            client.send({
+                dst: "intents.api",
+                action: "choose",
+                contentType: intentInvocation.contentType,
+                resource: intentInvocation.resource,
+                entity: {
+                    resource: handler.resource,
+                    reason: "user"
+                }
+            },function(reply) {
+                console.log(reply);
+                if(reply.response === "ok"){
+                    window.close();
+                }
+            });
+        }
+        function showHandlers(handlers,intentInvocation) {
             handlers.forEach(function(h) {
+                var handler = h;
                 var button=document.createElement("button");
                 var icon=document.createElement("img");
-                icon.setAttribute("src",h.icon);
-                icon.setAttribute("alt",h.label);
+                icon.setAttribute("src",handler.entity.icon);
+                icon.setAttribute("alt",handler.entity.label);
                 icon.setAttribute("class","icon");
                 button.appendChild(icon);
-                button.appendChild(document.createTextNode(h.label));
+                button.appendChild(document.createTextNode(handler.entity.label));
                 button.addEventListener("click",function(evt) {
                     evt.preventDefault();
-                    console.log("Executing ", h);
+                    console.log("Executing ", handler);
+                    handleSelection(handler,intentInvocation);
                 });
                 document.getElementById("handlerList").appendChild(button);
             });
-        };
-        showHandlers([{
-            "type": "application/incident+json",
-            "action": "view",
-            "icon": "/ok.gif",
-            "label": "View Incident History in new window"
-          },{
-            "type": "application/incident+json",
-            "action": "view",
-            "icon": "/ok.gif",
-            "label": "View Incident History in 'Some Window'"
-          },{
-            "type": "application/incident+json",
-            "action": "view",
-            "icon": "/ok.gif",
-            "label": "View Incident History in Webtop XX"
-          }
-        ]);
-        
-//        var m=/ozpIwc.intentSelection=([^&#]+)/.exec(window.location.search);
-//        if(!m) {
-//            failure("This page is intended to be launch only by the Ozone Platform intents API.");
-//        }
-//        var loc=ozpIwc.util.parseOzpUrl(m[1]);
-//
-//        client.send(loc,function(reply) {
-//            if(reply.response!=="ok") {
-//                failure();
-//                return;
-//            }
-//            showHandlers(reply.entity.handlers);
-//        });
+        }
+
+        var m=/ozpIwc.intentSelection=([^&#]+)/.exec(window.name);
+
+        if(!m) {
+            failure("This page is intended to be launch only by the Ozone Platform intents API.");
+        }
+        var loc=ozpIwc.util.parseOzpUrl(m[1]);
+
+        client.send(loc,function(reply) {
+            if(reply.response!=="ok") {
+                failure();
+                return;
+            }
+            showHandlers(reply.entity.handlerChoices,reply);
+        });
         
         
         

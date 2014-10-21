@@ -205,7 +205,7 @@ module.exports = function(grunt) {
                 options: { port: 15004, base: ["dist","demo/gridster"] }
             },
             intentsDemo: {
-                options:{	port: 15006, base: ["dist","demo/intentsSandbox","test/tests/unit"]}
+                options:{	port: 15006, base: ["dist","demo/intentDemo","test/tests/unit"]}
             }
         },
         dist: {
