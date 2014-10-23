@@ -30,9 +30,9 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
  *
  * @method loadFromServer
  */
-//ozpIwc.IntentsApi.prototype.loadFromServer=function() {
-//    return this.loadFromEndpoint("intents").then(function(reply){console.log("INTENTS DONE")});
-//};
+ozpIwc.IntentsApi.prototype.loadFromServer=function() {
+    return this.loadFromEndpoint("intents");
+};
 /**
  * Takes the resource of the given packet and creates an empty value in the IntentsApi. Chaining of creation is
  * accounted for (A handler requires a definition, which requires a capability).
@@ -165,36 +165,54 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
     }
 };
 
-ozpIwc.IntentsApi.prototype.handleChoose = function (node, packetContext) {
-
-    if(node.entity.state !== "choosing"){
-        return null;
+/**
+ * Invokes the appropriate handler for set actions. If the action pertains to an In-Flight Intent, the state of the
+ * entity is used to determine how the action is handled.
+ *
+ * @method handleSet
+ * @param node
+ * @param packetContext
+ */
+ozpIwc.IntentsApi.prototype.handleSet = function (node, packetContext) {
+    if(packetContext.packet.contentType === "application/vnd.ozp-iwc-intent-in-flight-v1+json"){
+        switch (packetContext.packet.entity.state){
+            case "new":
+                // shouldn't be set externally
+                packetContext.replyTo({'response':'bad'});
+                break;
+            case "choosing":
+                this.handleInFlightChoose(node,packetContext);
+                break;
+            case "delivering":
+                // shouldn't be set externally
+                packetContext.replyTo({'response':'bad'});
+                break;
+            case "running":
+                this.handleInFlightRunning(node,packetContext);
+                break;
+            case "fail":
+                this.handleInFlightFail(node,packetContext);
+                break;
+            case "complete":
+                this.handleInFlightComplete(node,packetContext);
+                break;
+        }
+    } else {
+        ozpIwc.CommonApiBase.prototype.handleSet.apply(this, arguments);
     }
+};
 
-    var handlerNode = this.data[packetContext.packet.entity.resource];
-    if(!handlerNode){
-        return null;
-    }
 
-    if(node.acceptedReasons.indexOf(packetContext.packet.entity.reason) < 0){
-        return null;
-    }
-
-    var updateNodeEntity = ozpIwc.util.clone(node);
-
-    updateNodeEntity.entity.handlerChosen = {
-        'resource' : packetContext.packet.entity.resource,
-        'reason' : packetContext.packet.entity.reason
-    };
-    updateNodeEntity.entity.state = "delivering";
-
-    node.set(updateNodeEntity);
-
-    this.invokeIntentHandler(handlerNode,packetContext,node);
-
-    packetContext.replyTo({
-        'response':'ok'
-    });
+/**
+ *
+ * @TODO (DOC)
+ * @method handleDelete
+ * @param {ozpIwc.CommonApiValue} node @TODO (DOC)
+ * @param {ozpIwc.TransportPacketContext} packetContext @TODO (DOC)
+ */
+ozpIwc.IntentsApi.prototype.handleDelete=function(node,packetContext) {
+    delete this.data[node.resource];
+    packetContext.replyTo({'response':'ok'});
 };
 
 /**
@@ -216,6 +234,7 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (node, packetContext,
     packet.contentType=packetContext.packet.contentType;
     packet.permissions=packetContext.packet.permissions;
 
+    var self = this;
     this.participant.send(packet,function(response) {
         var blacklist=['src','dst','msgId','replyTo'];
         var packet={};
@@ -224,6 +243,12 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (node, packetContext,
                 packet[k]=response[k];
             }
         }
+        self.participant.send({
+            replyTo: packet.msgId,
+            dst: packet.src,
+            response: 'ok',
+            entity: packet
+        });
         packetContext.replyTo(packet);
     });
 };
@@ -265,4 +290,114 @@ ozpIwc.IntentsApi.prototype.handleEventChannelDisconnectImpl = function (packetC
         var resource = this.dynamicNodes[dynNode];
         this.updateDynamicNode(this.data[resource]);
     }
+};
+
+
+/**
+ * Handles in flight intent set actions with a state of "choosing"
+ * @private
+ * @method handleInFlightChoose
+ * @param node
+ * @param packetContext
+ * @returns {null}
+ */
+ozpIwc.IntentsApi.prototype.handleInFlightChoose = function (node, packetContext) {
+
+    if(node.entity.state !== "choosing"){
+        return null;
+    }
+
+    var handlerNode = this.data[packetContext.packet.entity.resource];
+    if(!handlerNode){
+        return null;
+    }
+
+    if(node.acceptedReasons.indexOf(packetContext.packet.entity.reason) < 0){
+        return null;
+    }
+
+    var updateNodeEntity = ozpIwc.util.clone(node);
+
+    updateNodeEntity.entity.handlerChosen = {
+        'resource' : packetContext.packet.entity.resource,
+        'reason' : packetContext.packet.entity.reason
+    };
+    updateNodeEntity.entity.state = "delivering";
+
+    node.set(updateNodeEntity);
+
+    this.invokeIntentHandler(handlerNode,packetContext,node);
+
+    packetContext.replyTo({
+        'response':'ok'
+    });
+};
+
+/**
+ * Handles in flight intent set actions with a state of "running"
+ *
+ * @private
+ * @method handleInFlightRunning
+ * @param node
+ * @param packetContext
+ */
+ozpIwc.IntentsApi.prototype.handleInFlightRunning = function (node, packetContext) {
+    var updateNodeEntity = ozpIwc.util.clone(node);
+    updateNodeEntity.entity.state = "running";
+
+    node.set(updateNodeEntity);
+
+    packetContext.replyTo({
+        'response':'ok'
+    });
+
+
+};
+
+/**
+ * Handles in flight intent set actions with a state of "fail"
+ *
+ * @private
+ * @method handleInFlightFail
+ * @param node
+ * @param packetContext
+ */
+ozpIwc.IntentsApi.prototype.handleInFlightFail = function (node, packetContext) {
+    var invokePacket = node.invokePacket;
+    this.handleDelete(node,packetContext);
+
+    packetContext.replyTo({
+        'response':'fail'
+    });
+
+    this.participant.send({
+        replyTo: invokePacket.msgId,
+        dst: invokePacket.src,
+        response: 'ok',
+        entity: "Intent was not invoked."
+    });
+};
+
+/**
+ * Handles in flight intent set actions with a state of "complete"
+ *
+ * @private
+ * @method handleInFlightComplete
+ * @param node
+ * @param packetContext
+ */
+ozpIwc.IntentsApi.prototype.handleInFlightComplete = function (node, packetContext) {
+    var invokePacket = node.invokePacket;
+    this.handleDelete(node,packetContext);
+
+    packetContext.replyTo({
+        'response':'ok'
+    });
+
+    this.participant.send({
+        replyTo: invokePacket.msgId,
+        dst: invokePacket.src,
+        response: 'ok',
+        entity:  packetContext.entity
+    });
 };

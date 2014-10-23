@@ -24,10 +24,9 @@
         </style>
   </head>
   <body>
-      <div id="handlerList">
-          
-      </div>
-    
+      <div id="handlerList"></div>
+      <div id="cancelButton"></div>
+
       <script type="text/javascript">
         var client=new ozpIwc.InternalParticipant({'name':"intentsChooser"});
         ozpIwc.defaultRouter.registerParticipant(client);
@@ -40,12 +39,13 @@
 
             client.send({
                 dst: "intents.api",
-                action: "choose",
+                action: "set",
                 contentType: intentInvocation.contentType,
                 resource: intentInvocation.resource,
                 entity: {
                     resource: handler.resource,
-                    reason: "user"
+                    reason: "user",
+                    state: "choosing"
                 }
             },function(reply) {
                 console.log(reply);
@@ -73,6 +73,32 @@
             });
         }
 
+        function showCancel(intentInvocation){
+
+            var button=document.createElement("button");
+            button.appendChild(document.createTextNode("Cancel"));
+            button.addEventListener("click",function(evt) {
+                evt.preventDefault();
+                client.send({
+                    dst: "intents.api",
+                    action: "set",
+                    contentType: intentInvocation.contentType,
+                    resource: intentInvocation.resource,
+                    entity: {
+                        resource: null,
+                        reason: "user",
+                        state: "fail"
+                    }
+                },function(reply) {
+                    console.log(reply);
+                    if(reply.response === "ok"){
+                        window.close();
+                    }
+                });
+            });
+            document.getElementById("handlerList").appendChild(button);
+        }
+
         var m=/ozpIwc.intentSelection=([^&#]+)/.exec(window.name);
 
         if(!m) {
@@ -86,12 +112,14 @@
                 return;
             }
             showHandlers(reply.entity.handlerChoices,reply);
+            showCancel(reply);
         });
         
         
         
         
         
-    </script>      
+    </script>
+
   </body>
 </html>

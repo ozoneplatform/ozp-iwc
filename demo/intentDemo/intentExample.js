@@ -2,6 +2,7 @@
 var client=new ozpIwc.Client({peerUrl:"http://" + window.location.hostname + ":13000"});
 var currentColor="black";
 var colorRegistered = null;
+var currentHandler = null;
 
 $(document).ready(function(){
     client.connect().then(function(){
@@ -34,23 +35,18 @@ function changeColor(color) {
     // Change the actual drawn color
     $('#intentText').css("background",color);
 
-    if(colorRegistered){
-        //TODO UNREGISTER!
-//        client.api("intents.api").unregister("/text/plain/view");
+    if(currentHandler){
+        client.api("intents.api").delete(currentHandler).then(function(response){
+            console.log("I response when deleting a handler", response);
+        });
     }
-
 
     // Register an intent handler for the color
     client.api('intents.api').register('/text/plain/view', {
         contentType: "application/ozpIwc-intents-handler-v1+json",
         entity: {
-            type: "text/plain",
-            action: "view",
             icon: "https://ozp.slack.com/emoji/explosions/b88611dd6cbbbacb.gif",
-            label: client.address + "/" + color,
-            invokeIntent: {
-                dst: client.address
-            }
+            label: client.address + "/" + color
         }
     },function(foo){
         console.log("I get called when an intent is invoked on /text/plain/view!", foo);
@@ -62,6 +58,7 @@ function changeColor(color) {
     }).then(function(response) {
         console.log("I get called once after this intent sends off its registration!", response);
         colorRegistered = color;
+        currentHandler = response.entity.resource;
 
     }).catch(function (error) {
         console.log("Error registering handler: ",error);
@@ -81,6 +78,8 @@ function invoke(resource,entity) {
     client.api('intents.api').invoke(resource, {
         contentType: "application/ozpIwc-intents-handler-v1+json",
         entity: entity
+    }).then(function(response){
+       console.log("I get called when a resolution has been made on the intent invocation!",response);
     }).catch(function(e){
         console.error("Error invoking intent:",e);
     });

@@ -490,7 +490,6 @@ ozpIwc.Client.prototype.createIframePeer=function() {
                 resource: entity.inFlightIntent,
                 entity: response.entity
             }, function(reply){
-                console.log("I set the intent to running", reply);
                 //Now run the intent
                 callback(response.entity);
                 // then
@@ -502,8 +501,6 @@ ozpIwc.Client.prototype.createIframePeer=function() {
                     action: "set",
                     resource: entity.inFlightIntent,
                     entity: response.entity
-                }, function(resp){
-                    console.log("I set the intent to complete", resp);
                 });
             });
 
