@@ -217,12 +217,24 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
 
     if(data._embedded && data._embedded.item) {
         noEmbedded = false;
-        branchesFound += data._embedded.item.length;
+        var itemLength;
+        if (Object.prototype.toString.call(data._embedded.item) === '[object Array]' ) {
+            itemLength=data._embedded.item.length
+        } else {
+            itemLength=1;
+        }
+        branchesFound+=itemLength;
     }
 
     if(data._links && data._links.item) {
         noLinks = false;
-        branchesFound += data._links.item.length;
+        var itemLength;
+        if (Object.prototype.toString.call(data._links.item) === '[object Array]' ) {
+            itemLength=data._links.item.length
+        } else {
+            itemLength=1;
+        }
+        branchesFound+=itemLength;
     }
 
     if(noEmbedded && noLinks) {
