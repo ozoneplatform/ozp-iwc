@@ -1,5 +1,5 @@
 var ozpIwc=ozpIwc || {};
-
+ozpIwc.apiRootUrl = "https://www.owfgoss.org/ng/dev/mp/api";
 ozpIwc.apiRootUrl = ozpIwc.apiRootUrl || "api";
 
 ozpIwc.defaultPeer=new ozpIwc.Peer();

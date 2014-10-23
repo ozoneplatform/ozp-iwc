@@ -22,6 +22,12 @@ $(document).ready(function(){
             changeColor(color);
         });
     });
+
+    window.addEventListener("beforeunload",function() {
+       if(currentHandler){
+           client.api("intents.api").delete(currentHandler);
+       }
+    });
 });
 
 /**

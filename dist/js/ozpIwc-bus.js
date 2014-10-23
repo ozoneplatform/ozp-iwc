@@ -7935,8 +7935,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
                     this.validatePreconditions(node,packetContext);
                     var snapshot=node.snapshot();
                     handler.call(this,node,packetContext);
-                    var exists = !!(this.data[node.resource]);
-                    this.notifyWatchers(node, node.changesSince(snapshot), exists);
+                    this.notifyWatchers(node, node.changesSince(snapshot));
 
                     // update all the collection values
                     this.dynamicNodes.forEach(function(resource) {
