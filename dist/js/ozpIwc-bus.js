@@ -9186,17 +9186,16 @@ ozpIwc.IntentsApi.prototype.handleDelete=function(node,packetContext) {
  * @param {ozpIwc.intentsApiHandlerValue} node
  * @param {ozpIwc.TransportPacket} packetContext
  */
-ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (node, packetContext,inFlightIntent) {
+ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (handlerNode, packetContext,inFlightIntent) {
     inFlightIntent = inFlightIntent || {};
 
-    // check to see if there's an invokeIntent package
-    var packet=ozpIwc.util.clone(node.entity.invokeIntent);
-
-    // assign the entity and contentType from the packet Context
-    packet.entity=ozpIwc.util.clone(packetContext.packet.entity);
-    packet.entity.inFlightIntent = inFlightIntent.resource;
-    packet.contentType=packetContext.packet.contentType;
-    packet.permissions=packetContext.packet.permissions;
+    var packet = {
+        dst: handlerNode.entity.invokeIntent.dst,
+        replyTo: handlerNode.entity.invokeIntent.replyTo,
+        entity: {
+            inFlightIntent: inFlightIntent.resource
+        }
+    };
 
     var self = this;
     this.participant.send(packet,function(response) {
