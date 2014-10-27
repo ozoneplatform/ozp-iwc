@@ -93,7 +93,6 @@ ozpIwc.util.objectContainsAll=function(haystack,needles,equal) {
  * @returns {undefined}
  */
 ozpIwc.util.openWindow=function(url,windowName,features) {
-    console.log("HERE WE GO!!");
     if(typeof windowName === "object") {
         var str="";
         for(var k in windowName) {

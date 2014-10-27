@@ -3830,7 +3830,6 @@ ozpIwc.util.objectContainsAll=function(haystack,needles,equal) {
  * @returns {undefined}
  */
 ozpIwc.util.openWindow=function(url,windowName,features) {
-    console.log("HERE WE GO!!");
     if(typeof windowName === "object") {
         var str="";
         for(var k in windowName) {
@@ -8987,6 +8986,12 @@ ozpIwc.DataApiValue.prototype.serialize=function() {
  */
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
+
+    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+        resource: "/ozpIntents/invocations",
+        pattern: /^\/ozpIntents\/invocations\/.*$/,
+        contentType: "application/ozpIwc-application-list-v1+json"
+    }));
 });
 
 /**
@@ -9123,6 +9128,15 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
     var inflightPacket = this.makeIntentInvocation(node,packetContext);
 
     if(handlerNodes.length === 1) {
+        var updateInFlightEntity = ozpIwc.util.clone(inflightPacket);
+        updateInFlightEntity.entity.handlerChosen = {
+            'resource' : handlerNodes[0].resource,
+            'reason' : "onlyOne"
+        };
+
+        updateInFlightEntity.entity.state = "delivering";
+        inflightPacket.set(updateInFlightEntity);
+
         this.invokeIntentHandler(handlerNodes[0],packetContext,inflightPacket);
     } else {
         this.chooseIntentHandler(node,packetContext,inflightPacket);
@@ -9286,7 +9300,6 @@ ozpIwc.IntentsApi.prototype.handleInFlightChoose = function (node, packetContext
         'reason' : packetContext.packet.entity.reason
     };
     updateNodeEntity.entity.state = "delivering";
-
     node.set(updateNodeEntity);
 
     this.invokeIntentHandler(handlerNode,packetContext,node);
@@ -9307,9 +9320,9 @@ ozpIwc.IntentsApi.prototype.handleInFlightChoose = function (node, packetContext
 ozpIwc.IntentsApi.prototype.handleInFlightRunning = function (node, packetContext) {
     var updateNodeEntity = ozpIwc.util.clone(node);
     updateNodeEntity.entity.state = "running";
-
+    updateNodeEntity.entity.handler.address = packetContext.packet.entity.address;
+    updateNodeEntity.entity.handler.resource = packetContext.packet.entity.resource;
     node.set(updateNodeEntity);
-
     packetContext.replyTo({
         'response':'ok'
     });
@@ -9327,16 +9340,27 @@ ozpIwc.IntentsApi.prototype.handleInFlightRunning = function (node, packetContex
  */
 ozpIwc.IntentsApi.prototype.handleInFlightFail = function (node, packetContext) {
     var invokePacket = node.invokePacket;
+
+    var updateNodeEntity = ozpIwc.util.clone(node);
+    updateNodeEntity.entity.state = packetContext.packet.entity.state;
+    updateNodeEntity.entity.reply.contentType = packetContext.packet.entity.contentType;
+    updateNodeEntity.entity.reply.entity = packetContext.packet.entity.entity;
+    node.set(updateNodeEntity);
+
+    var snapshot = node.snapshot();
+
     this.handleDelete(node,packetContext);
 
+    this.notifyWatchers(node, node.changesSince(snapshot));
+
     packetContext.replyTo({
-        'response':'fail'
+        'response':'ok'
     });
 
     this.participant.send({
         replyTo: invokePacket.msgId,
         dst: invokePacket.src,
-        response: 'ok',
+        response: 'fail',
         entity: "Intent was not invoked."
     });
 };
@@ -9351,7 +9375,17 @@ ozpIwc.IntentsApi.prototype.handleInFlightFail = function (node, packetContext) 
  */
 ozpIwc.IntentsApi.prototype.handleInFlightComplete = function (node, packetContext) {
     var invokePacket = node.invokePacket;
+    var updateNodeEntity = ozpIwc.util.clone(node);
+
+    updateNodeEntity.entity.state = packetContext.packet.entity.state;
+    updateNodeEntity.entity.reply.contentType = packetContext.packet.entity.contentType;
+    updateNodeEntity.entity.reply.entity = packetContext.packet.entity.entity;
+    node.set(updateNodeEntity);
+    var snapshot = node.snapshot();
+
     this.handleDelete(node,packetContext);
+
+    this.notifyWatchers(node, node.changesSince(snapshot));
 
     packetContext.replyTo({
         'response':'ok'
