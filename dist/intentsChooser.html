@@ -36,7 +36,6 @@
         }
 
         function handleSelection(handler,intentInvocation){
-
             client.send({
                 dst: "intents.api",
                 action: "set",
@@ -54,6 +53,7 @@
                 }
             });
         }
+
         function showHandlers(handlers,intentInvocation) {
             handlers.forEach(function(h) {
                 var handler = h;
@@ -74,7 +74,6 @@
         }
 
         function showCancel(intentInvocation){
-
             var button=document.createElement("button");
             button.appendChild(document.createTextNode("Cancel"));
             button.addEventListener("click",function(evt) {
@@ -85,8 +84,8 @@
                     contentType: intentInvocation.contentType,
                     resource: intentInvocation.resource,
                     entity: {
-                        resource: null,
                         reason: "user",
+                        entity: "User canceled the selection.",
                         state: "fail"
                     }
                 },function(reply) {
@@ -115,11 +114,6 @@
             showCancel(reply);
         });
         
-        
-        
-        
-        
     </script>
-
   </body>
 </html>

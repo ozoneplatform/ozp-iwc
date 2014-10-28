@@ -2731,10 +2731,10 @@ ozpIwc.Client.prototype.createIframePeer=function() {
                 entity: response.entity
             }, function(reply){
                 //Now run the intent
-                callback(response.entity);
-                // then
+                response.entity.reply.entity =  callback(response.entity) || {};
+                // then respond to the inflight resource
                 response.entity.state = "complete";
-
+                response.entity.reply.contentType = response.entity.intent.type;
                 client.send({
                     dst: "intents.api",
                     contentType: response.contentType,

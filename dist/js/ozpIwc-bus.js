@@ -9089,14 +9089,21 @@ ozpIwc.IntentsApi.prototype.makeIntentInvocation = function (node,packetContext)
  * @param {ozpIwc.TransportPacketContext} packetContext the packet received by the router.
  */
 ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
-	var key=this.createKey(node.resource+"/"); //+packetContext.packet.src;
+    var key=this.createKey(node.resource+"/"); //+packetContext.packet.src;
 
-	// save the new child
-	var childNode=this.findOrMakeValue({'resource':key});
+    // save the new child
+    var childNode=this.findOrMakeValue({'resource':key});
+    var clone = ozpIwc.util.clone(childNode);
+
     packetContext.packet.entity.invokeIntent = packetContext.packet.entity.invokeIntent || {};
+    packetContext.packet.entity.invokeIntent.dst = packetContext.packet.src;
     packetContext.packet.entity.invokeIntent.replyTo = packetContext.packet.msgId;
-	childNode.set(packetContext.packet);
-	
+
+    for(var i in packetContext.packet.entity){
+        clone.entity[i] = packetContext.packet.entity[i];
+    }
+    childNode.set(clone);
+
     packetContext.replyTo({
         'response':'ok',
         'entity' : {
@@ -9340,11 +9347,12 @@ ozpIwc.IntentsApi.prototype.handleInFlightRunning = function (node, packetContex
  */
 ozpIwc.IntentsApi.prototype.handleInFlightFail = function (node, packetContext) {
     var invokePacket = node.invokePacket;
-
     var updateNodeEntity = ozpIwc.util.clone(node);
+
     updateNodeEntity.entity.state = packetContext.packet.entity.state;
-    updateNodeEntity.entity.reply.contentType = packetContext.packet.entity.contentType;
-    updateNodeEntity.entity.reply.entity = packetContext.packet.entity.entity;
+    updateNodeEntity.entity.reply.contentType = packetContext.packet.entity.reply.contentType;
+    updateNodeEntity.entity.reply.entity = packetContext.packet.entity.reply.entity;
+
     node.set(updateNodeEntity);
 
     var snapshot = node.snapshot();
@@ -9360,8 +9368,11 @@ ozpIwc.IntentsApi.prototype.handleInFlightFail = function (node, packetContext) 
     this.participant.send({
         replyTo: invokePacket.msgId,
         dst: invokePacket.src,
-        response: 'fail',
-        entity: "Intent was not invoked."
+        response: 'ok',
+        entity: {
+            response: node.entity.reply,
+            invoked: false
+        }
     });
 };
 
@@ -9378,9 +9389,11 @@ ozpIwc.IntentsApi.prototype.handleInFlightComplete = function (node, packetConte
     var updateNodeEntity = ozpIwc.util.clone(node);
 
     updateNodeEntity.entity.state = packetContext.packet.entity.state;
-    updateNodeEntity.entity.reply.contentType = packetContext.packet.entity.contentType;
-    updateNodeEntity.entity.reply.entity = packetContext.packet.entity.entity;
+    updateNodeEntity.entity.reply.contentType = packetContext.packet.entity.reply.contentType;
+    updateNodeEntity.entity.reply.entity = packetContext.packet.entity.reply.entity;
+
     node.set(updateNodeEntity);
+
     var snapshot = node.snapshot();
 
     this.handleDelete(node,packetContext);
@@ -9395,7 +9408,10 @@ ozpIwc.IntentsApi.prototype.handleInFlightComplete = function (node, packetConte
         replyTo: invokePacket.msgId,
         dst: invokePacket.src,
         response: 'ok',
-        entity:  packetContext.entity
+        entity: {
+            response: node.entity.reply,
+            invoked: true
+        }
     });
 };
 /**

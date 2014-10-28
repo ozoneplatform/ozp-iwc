@@ -229,8 +229,10 @@ describe("Intent API Class", function () {
                         'dst': 'intents.api',
                         'contentType' : invocation.contentType,
                         entity: {
-                            'contentType':registerPacket.packet.entity.type,
-                            'entity': "SOME RESPONSE",
+                            reply:{
+                                'contentType':registerPacket.packet.entity.type,
+                                'entity': "SOME RESPONSE"
+                            },
                             state: "complete"
                         }
                     },
@@ -245,8 +247,10 @@ describe("Intent API Class", function () {
                         'dst': 'intents.api',
                         'contentType' : invocation.contentType,
                         entity: {
-                            'contentType':registerPacket.packet.entity.type,
-                            'entity': "Failed because I said so.",
+                            reply:{
+                                'contentType':registerPacket.packet.entity.type,
+                                'entity': "SOME FAILED RESPONSE"
+                            },
                             state: "fail"
                         }
                     },
@@ -330,8 +334,8 @@ describe("Intent API Class", function () {
                 var completePacket = getCompletePacket(invocation);
                 apiBase.routePacket(completePacket);
 
-                expect(apiBase.data[invocationResource].entity.reply.contentType).toEqual(completePacket.packet.entity.contentType);
-                expect(apiBase.data[invocationResource].entity.reply.entity).toEqual(completePacket.packet.entity.entity);
+                expect(apiBase.data[invocationResource].entity.reply.contentType).toEqual(completePacket.packet.entity.reply.contentType);
+                expect(apiBase.data[invocationResource].entity.reply.entity).toEqual(completePacket.packet.entity.reply.entity);
                 expect(apiBase.data[invocationResource].entity.state).toEqual(completePacket.packet.entity.state);
 
             });
@@ -352,8 +356,8 @@ describe("Intent API Class", function () {
                 var failPacket = getFailPacket(invocation);
                 apiBase.routePacket(failPacket);
 
-                expect(apiBase.data[invocationResource].entity.reply.contentType).toEqual(failPacket.packet.entity.contentType);
-                expect(apiBase.data[invocationResource].entity.reply.entity).toEqual(failPacket.packet.entity.entity);
+                expect(apiBase.data[invocationResource].entity.reply.contentType).toEqual(failPacket.packet.entity.reply.contentType);
+                expect(apiBase.data[invocationResource].entity.reply.entity).toEqual(failPacket.packet.entity.reply.entity);
                 expect(apiBase.data[invocationResource].entity.state).toEqual(failPacket.packet.entity.state);
 
             });

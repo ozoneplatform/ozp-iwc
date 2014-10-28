@@ -43,7 +43,7 @@ function changeColor(color) {
 
     if(currentHandler){
         client.api("intents.api").delete(currentHandler).then(function(response){
-            console.log("I response when deleting a handler", response);
+            console.log("I respond when deleting a handler", response);
         });
     }
 
@@ -59,7 +59,11 @@ function changeColor(color) {
         $("#intentText").append("Color: " + color + " Value: " + JSON.stringify(foo.entity) + "<br>");
 
         // return true for handler persistence
-        return true;
+        // return the value you want to pass back to the invoker
+        return {
+            text: foo.entity,
+            color: color
+        };
 
     }).then(function(response) {
         console.log("I get called once after this intent sends off its registration!", response);
