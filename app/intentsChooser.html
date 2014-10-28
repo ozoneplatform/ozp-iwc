@@ -46,9 +46,10 @@
                     reason: "user",
                     state: "choosing"
                 }
-            },function(reply) {
+            },function(reply,done) {
                 console.log(reply);
                 if(reply.response === "ok"){
+                    done();
                     window.close();
                 }
             });
@@ -88,9 +89,10 @@
                         entity: "User canceled the selection.",
                         state: "fail"
                     }
-                },function(reply) {
+                },function(reply,done) {
                     console.log(reply);
                     if(reply.response === "ok"){
+                        done();
                         window.close();
                     }
                 });
@@ -105,13 +107,15 @@
         }
         var loc=ozpIwc.util.parseOzpUrl(m[1]);
 
-        client.send(loc,function(reply) {
+        client.send(loc,function(reply,done) {
             if(reply.response!=="ok") {
                 failure();
+                done();
                 return;
             }
             showHandlers(reply.entity.handlerChoices,reply);
             showCancel(reply);
+            done();
         });
         
     </script>

@@ -2443,7 +2443,12 @@ ozpIwc.Client.prototype.readLaunchParams=function(rawString) {
 ozpIwc.Client.prototype.receive=function(packet) {
 
     if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
-        if (!this.replyCallbacks[packet.replyTo](packet)) {
+        var cancel = false;
+        function done() {
+            cancel = true;
+        }
+        this.replyCallbacks[packet.replyTo](packet,done);
+        if (cancel) {
             this.cancelCallback(packet.replyTo);
 
             if(this.watchMsgMap[packet.replyTo].action === "watch") {
@@ -2616,7 +2621,7 @@ ozpIwc.Client.prototype.connect=function() {
             // receive postmessage events
             window.addEventListener("message", this.postMessageHandler, false);
             return new Promise(function(resolve,reject) {
-                self.send({dst:"$transport"},function(message) {
+                self.send({dst:"$transport"},function(message,done) {
                     self.address=message.dst;
 
                     /**
@@ -2625,6 +2630,7 @@ ozpIwc.Client.prototype.connect=function() {
                      */
                     self.events.trigger("gotAddress",self);
                     resolve(self.address);
+                    done();
                 });
             });
         }).then(function() {
@@ -2715,7 +2721,7 @@ ozpIwc.Client.prototype.createIframePeer=function() {
             dst: "intents.api",
             action: "get",
             resource: entity.inFlightIntent
-        },function(response){
+        },function(response,done){
             response.entity.handler = {
                 address : client.address,
                 resource: resource
@@ -2729,7 +2735,7 @@ ozpIwc.Client.prototype.createIframePeer=function() {
                 action: "set",
                 resource: entity.inFlightIntent,
                 entity: response.entity
-            }, function(reply){
+            }, function(reply,done){
                 //Now run the intent
                 response.entity.reply.entity =  callback(response.entity) || {};
                 // then respond to the inflight resource
@@ -2742,8 +2748,9 @@ ozpIwc.Client.prototype.createIframePeer=function() {
                     resource: entity.inFlightIntent,
                     entity: response.entity
                 });
+                done();
             });
-
+            done();
         });
     };
 
@@ -2764,20 +2771,39 @@ ozpIwc.Client.prototype.createIframePeer=function() {
                 for (var k in fragment) {
                     packet[k] = fragment[k];
                 }
-                client.send(packet, function (reply) {
+                var packetResponse = false;
+                var callbackResponse = !!!otherCallback;
+                client.send(packet, function (reply,done) {
+
+                    function initialDone() {
+                        if(callbackResponse){
+                            done();
+                        } else {
+                            packetResponse = true;
+                        }
+                    }
+
+                    function callbackDone() {
+                        if(packetResponse){
+                            done();
+                        } else {
+                            callbackResponse = true;
+                        }
+                    }
                     if (reply.response === 'ok') {
                         resolve(reply);
+                        initialDone();
                     } else if (/(bad|no).*/.test(reply.response)) {
                         reject(reply);
+                        initialDone();
                     }
                     else if (otherCallback) {
                         if(reply.entity && reply.entity.inFlightIntent) {
-                            intentInvocationHandling(client,resource,reply.entity,otherCallback);
-                            return true;
+                            intentInvocationHandling(client,resource,reply.entity,otherCallback,callbackDone);
+                        } else {
+                            otherCallback(reply, callbackDone);
                         }
-                        return otherCallback(reply);
                     }
-                    return !!otherCallback;
                 });
             });
         };

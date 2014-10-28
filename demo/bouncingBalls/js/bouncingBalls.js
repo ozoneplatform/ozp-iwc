@@ -38,7 +38,6 @@ var Ball=function(ballRef,svgElement) {
             self.refreshed = true;
             self.draw(reply.entity.newValue);
         }
-        return true;//maintain persistent callback
     });
     this.removeWatchdog = function(){
         if(self.refreshed){
@@ -240,9 +239,6 @@ client.on("connected",function() {
 		resource: "/balls"
 	};
 	var onBallsChanged=function(reply) {
-		if(reply.response!=="changed") {
-			return true;//maintain persistent callback
-		}
 		if(reply.entity.addedChildren) {
 			reply.entity.addedChildren.forEach(function(b) {
     			balls[b]=new Ball(b,viewPort);
@@ -253,7 +249,6 @@ client.on("connected",function() {
                 balls[b].cleanup();
             });
 		}
-		return true;//maintain persistent callback
 	};
 	client.send(watchRequest,onBallsChanged);
 
@@ -265,11 +260,11 @@ client.on("connected",function() {
 		resource: "/balls"
 	};
 
-	client.send(listExistingBalls,function(reply) {
+	client.send(listExistingBalls,function(reply,done) {
 		for(var i=0; i<reply.entity.length;++i) {
 			balls[reply.entity[i]]=new Ball(reply.entity[i],viewPort);
 		}
-		return null;//de-register callback
+        done();
 	});
 
 	//=================================================================
@@ -281,7 +276,7 @@ client.on("connected",function() {
 		entity: {}
 	};
 
-	client.send(pushRequest,function(packet){
+	client.send(pushRequest,function(packet,done){
 		if(packet.response==="ok") {
 			ourBalls.push(new AnimatedBall({
 				resource:packet.entity.resource
@@ -290,6 +285,6 @@ client.on("connected",function() {
 		} else {
 			console.log("Failed to push our ball: " + JSON.stringify(packet,null,2));
 		}
-		return null;//de-register callback
+        done();
 	});
 });
