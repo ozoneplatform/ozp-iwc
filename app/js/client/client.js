@@ -200,7 +200,12 @@ ozpIwc.Client.prototype.readLaunchParams=function(rawString) {
 ozpIwc.Client.prototype.receive=function(packet) {
 
     if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
-        if (!this.replyCallbacks[packet.replyTo](packet)) {
+        var cancel = false;
+        function done() {
+            cancel = true;
+        }
+        this.replyCallbacks[packet.replyTo](packet,done);
+        if (cancel) {
             this.cancelCallback(packet.replyTo);
 
             if(this.watchMsgMap[packet.replyTo].action === "watch") {
@@ -373,7 +378,7 @@ ozpIwc.Client.prototype.connect=function() {
             // receive postmessage events
             window.addEventListener("message", this.postMessageHandler, false);
             return new Promise(function(resolve,reject) {
-                self.send({dst:"$transport"},function(message) {
+                self.send({dst:"$transport"},function(message,done) {
                     self.address=message.dst;
 
                     /**
@@ -382,6 +387,7 @@ ozpIwc.Client.prototype.connect=function() {
                      */
                     self.events.trigger("gotAddress",self);
                     resolve(self.address);
+                    done();
                 });
             });
         }).then(function() {
@@ -396,15 +402,9 @@ ozpIwc.Client.prototype.connect=function() {
             }
             
             // fetch the mailbox
-            var firstSlashPos=self.launchParams.mailbox.indexOf('/');
-            var dst=self.launchParams.mailbox.substr(0,firstSlashPos);
-            var resource=self.launchParams.mailbox.substr(firstSlashPos);
+            var packet=ozpIwc.util.parseOzpUrl(self.launchParams.mailbox);
             return new Promise(function(resolve,reject) {
-                self.send({
-                    'dst': dst,
-                    'resource': resource,
-                    'action': "get"
-                },function(response) {
+                self.send(packet,function(response) {
                     if(response.response==='ok') {
                         for(var k in response.entity) {
                             self.launchParams[k]=response.entity[k];
@@ -473,6 +473,44 @@ ozpIwc.Client.prototype.createIframePeer=function() {
         return wrapper;
     };
 
+    var intentInvocationHandling = function(client,resource,entity,callback) {
+        client.send({
+            dst: "intents.api",
+            action: "get",
+            resource: entity.inFlightIntent
+        },function(response,done){
+            response.entity.handler = {
+                address : client.address,
+                resource: resource
+            };
+            response.entity.state = "running";
+
+
+            client.send({
+                dst: "intents.api",
+                contentType: response.contentType,
+                action: "set",
+                resource: entity.inFlightIntent,
+                entity: response.entity
+            }, function(reply,done){
+                //Now run the intent
+                response.entity.reply.entity =  callback(response.entity) || {};
+                // then respond to the inflight resource
+                response.entity.state = "complete";
+                response.entity.reply.contentType = response.entity.intent.type;
+                client.send({
+                    dst: "intents.api",
+                    contentType: response.contentType,
+                    action: "set",
+                    resource: entity.inFlightIntent,
+                    entity: response.entity
+                });
+                done();
+            });
+            done();
+        });
+    };
+
     var augment = function (dst,action,client) {
         return function (resource, fragment, otherCallback) {
             // If a fragment isn't supplied argument #2 should be a callback (if supplied)
@@ -490,16 +528,39 @@ ozpIwc.Client.prototype.createIframePeer=function() {
                 for (var k in fragment) {
                     packet[k] = fragment[k];
                 }
-                client.send(packet, function (reply) {
+                var packetResponse = false;
+                var callbackResponse = !!!otherCallback;
+                client.send(packet, function (reply,done) {
+
+                    function initialDone() {
+                        if(callbackResponse){
+                            done();
+                        } else {
+                            packetResponse = true;
+                        }
+                    }
+
+                    function callbackDone() {
+                        if(packetResponse){
+                            done();
+                        } else {
+                            callbackResponse = true;
+                        }
+                    }
                     if (reply.response === 'ok') {
                         resolve(reply);
+                        initialDone();
                     } else if (/(bad|no).*/.test(reply.response)) {
                         reject(reply);
+                        initialDone();
                     }
-                    if (otherCallback) {
-                        return otherCallback(reply);
+                    else if (otherCallback) {
+                        if(reply.entity && reply.entity.inFlightIntent) {
+                            intentInvocationHandling(client,resource,reply.entity,otherCallback,callbackDone);
+                        } else {
+                            otherCallback(reply, callbackDone);
+                        }
                     }
-                    return !!otherCallback;
                 });
             });
         };

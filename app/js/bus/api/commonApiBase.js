@@ -490,7 +490,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
                     this.validatePreconditions(node,packetContext);
                     var snapshot=node.snapshot();
                     handler.call(this,node,packetContext);
-                    this.notifyWatchers(node,node.changesSince(snapshot));
+                    this.notifyWatchers(node, node.changesSince(snapshot));
 
                     // update all the collection values
                     this.dynamicNodes.forEach(function(resource) {
@@ -964,6 +964,8 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
             },function(err){
                 console.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
                 self.setToLeader();
+            }).catch(function(er){
+                console.log(er);
             });
         }
     },0);
