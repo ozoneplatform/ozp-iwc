@@ -19,7 +19,7 @@
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-	this.endpointUrl="https://www.owfgoss.org/ng/dev/mp/api/data";
+	this.endpointUrl=ozpIwc.linkRelPrefix+":user-data";
 });
 
 /**

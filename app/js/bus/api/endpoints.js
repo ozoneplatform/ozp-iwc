@@ -20,10 +20,13 @@ ozpIwc.Endpoint=function(endpointRegistry) {
  *
  * @method get
  * @param {String} resource
+ * @param [Object] requestHeaders
+ * @param {String} requestHeaders.name
+ * @param {String} requestHeaders.value
  *
  * @returns {Promise}
  */
-ozpIwc.Endpoint.prototype.get=function(resource) {
+ozpIwc.Endpoint.prototype.get=function(resource, requestHeaders) {
     var self=this;
 
     return this.endpointRegistry.loadPromise.then(function() {
@@ -32,7 +35,11 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
         }
         return ozpIwc.util.ajax({
             href:  resource,
-            method: 'GET'
+            method: 'GET',
+            headers: requestHeaders,
+            withCredentials: true,
+            user: ozpIwc.marketplaceUsername,
+            password: ozpIwc.marketplacePassword
         });
     });
 };
@@ -43,11 +50,14 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
  *
  * @method put
  * @param {String} resource
- * @param {Object} data
+ * @param {Object} data\
+ * @param [Object] requestHeaders
+ * @param {String} requestHeaders.name
+ * @param {String} requestHeaders.value
  *
  * @returns {Promise}
  */
-ozpIwc.Endpoint.prototype.put=function(resource, data) {
+ozpIwc.Endpoint.prototype.put=function(resource, data, requestHeaders) {
     var self=this;
 
     return this.endpointRegistry.loadPromise.then(function() {
@@ -57,7 +67,11 @@ ozpIwc.Endpoint.prototype.put=function(resource, data) {
         return ozpIwc.util.ajax({
             href:  resource,
             method: 'PUT',
-			data: data
+			data: data,
+            headers: requestHeaders,
+            withCredentials: true,
+            user: ozpIwc.marketplaceUsername,
+            password: ozpIwc.marketplacePassword
         });
     });
 };
@@ -113,7 +127,8 @@ ozpIwc.EndpointRegistry=function(config) {
      */
     this.loadPromise=ozpIwc.util.ajax({
         href: apiRoot,
-        method: 'GET'
+        method: 'GET',
+        withCredentials: true
     }).then(function(data) {
         for (var linkEp in data._links) {
             if (linkEp !== 'self') {

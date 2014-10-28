@@ -57,12 +57,15 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 ozpIwc.SystemApi.prototype.loadFromServer=function() {
 
     var self=this;
+    var headers = [
+        {name: "Accept", value: "application/vnd.ozp-application-v1+json"}
+    ];
     return new Promise(function(resolve, reject) {
-        self.loadFromEndpoint("applications")
+        self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":application", headers)
             .then(function() {
-                self.loadFromEndpoint("user")
+                self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":user")
                     .then(function() {
-                        self.loadFromEndpoint("system")
+                        self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":system")
                             .then(function() {
                                 resolve("system.api load complete");
                             });

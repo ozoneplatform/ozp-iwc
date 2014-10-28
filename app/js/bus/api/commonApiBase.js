@@ -84,8 +84,9 @@ ozpIwc.CommonApiBase = function(config) {
  */
 ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectPath,endpoint) {
     var resource = '/';
+    //Temporarily hard-code prefix. Will derive this from the server response eventually
     switch (endpoint.name) {
-        case 'intents' :
+        case ozpIwc.linkRelPrefix + ':intent' :
             if (object.type && object.action) {
                 resource += object.type + '/' + object.action;
                 if (object.handler) {
@@ -93,20 +94,19 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectP
                 }
             }
             break;
-        case 'applications':
-            if (object.name) {
-                resource += 'application/' + object.name;
+        case ozpIwc.linkRelPrefix + ':application':
+            if (object.uuid) {
+                resource += 'application/' + object.uuid;
             }
             break;
-        case 'system':
-            if (object.name || object.version) {
-                resource += 'system' + (object.name ? '/' +object.name : '') +(object.version ? '/' +object.version : '');
-            }
+        case ozpIwc.linkRelPrefix + ':system':
+            resource += 'system' + (object.name ? '/'+object.name : '') +(object.version ? '/'+object.version : '');
             break;
-        case 'user':
-            if (object.username) {
-                resource += 'user/' + object.username;
-            }
+        case ozpIwc.linkRelPrefix + ':user':
+            resource += 'user' + (object.username ? '/'+object.username : '');
+            break;
+        case ozpIwc.linkRelPrefix + ':user-data':
+            resource += 'data';
             break;
         default:
             resource+= 'FIXME_UNKNOWN_ENDPOINT_' + endpoint.name;
@@ -141,8 +141,12 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
  *
  * @method loadFromEndpoint
  * @param {String} endpointName The name of the endpoint to load from the server.
+ * @param [Object] requestHeaders
+ * @param {String} requestHeaders.name
+ * @param {String} requestHeaders.value
+ *
  */
-ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
+ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHeaders) {
     this.expectedBranches = 1;
     this.retrievedBranches = 0;
 
@@ -159,7 +163,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
     var self=this;
     endpoint.get("/")
         .then(function(data) {
-            self.loadLinkedObjectsFromServer(endpoint,data,resolveLoad);
+            self.loadLinkedObjectsFromServer(endpoint,data,resolveLoad, requestHeaders);
             self.updateResourceFromServer(data,data._links.self.href,endpoint,resolveLoad);
             // update all the collection values
             self.dynamicNodes.forEach(function(resource) {
@@ -202,8 +206,11 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
  * @method loadLinkedObjectsFromServer
  * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
  * @param data the HAL data.
+ * @parm [Object] headers
+ * @param {String} headers.name
+ * @param {String} headers.value
  */
-ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data,res) {
+ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data,res, requestHeaders) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
     if(!data) {
@@ -267,7 +274,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
             if( Object.prototype.toString.call(data._links.item) === '[object Array]' ) {
                 data._links.item.forEach(function (object) {
                     var href = object.href;
-                    endpoint.get(href).then(function (objectResource) {
+                    endpoint.get(href, requestHeaders).then(function (objectResource) {
                         self.updateResourceFromServer(objectResource, href, endpoint, res);
                     }).catch(function (error) {
                         console.error("unable to load " + object.href + " because: ", error);
@@ -275,7 +282,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                 });
             } else {
                 var href = data._links.item.href;
-                endpoint.get(href).then(function (objectResource) {
+                endpoint.get(href, requestHeaders).then(function (objectResource) {
                     self.updateResourceFromServer(objectResource, href, endpoint, res);
                 }).catch(function (error) {
                     console.error("unable to load " + object.href + " because: ", error);

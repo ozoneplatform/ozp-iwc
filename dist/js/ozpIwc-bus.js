@@ -3373,14 +3373,24 @@ ozpIwc.util=ozpIwc.util || {};
  * @param {Object} config
  * @param {String} config.method
  * @param {String} config.href
+ * @param [Object] config.headers
+ * @param {String} config.headers.name
+ * @param {String} config.headers.value
+ * @param {boolean} config.withCredentials
  *
  * @returns {Promise}
  */
 ozpIwc.util.ajax = function (config) {
     return new Promise(function(resolve,reject) {
         var request = new XMLHttpRequest();
-        request.open(config.method, config.href, true);
-        request.setRequestHeader("Content-Type", "application/json");
+        request.withCredentials = config.withCredentials;
+        request.open(config.method, config.href, true, config.user, config.password);
+//        request.setRequestHeader("Content-Type", "application/json");
+        if (Array.isArray(config.headers)) {
+            config.headers.forEach(function(header) {
+                request.setRequestHeader(header.name, header.value);
+            });
+        }
 
         request.onload = function () {
             try {
@@ -7549,8 +7559,9 @@ ozpIwc.CommonApiBase = function(config) {
  */
 ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectPath,endpoint) {
     var resource = '/';
+    //Temporarily hard-code prefix. Will derive this from the server response eventually
     switch (endpoint.name) {
-        case 'intents' :
+        case ozpIwc.linkRelPrefix + ':intent' :
             if (object.type && object.action) {
                 resource += object.type + '/' + object.action;
                 if (object.handler) {
@@ -7558,20 +7569,19 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectP
                 }
             }
             break;
-        case 'applications':
-            if (object.name) {
-                resource += 'application/' + object.name;
+        case ozpIwc.linkRelPrefix + ':application':
+            if (object.uuid) {
+                resource += 'application/' + object.uuid;
             }
             break;
-        case 'system':
-            if (object.name || object.version) {
-                resource += 'system' + (object.name ? '/' +object.name : '') +(object.version ? '/' +object.version : '');
-            }
+        case ozpIwc.linkRelPrefix + ':system':
+            resource += 'system' + (object.name ? '/'+object.name : '') +(object.version ? '/'+object.version : '');
             break;
-        case 'user':
-            if (object.username) {
-                resource += 'user/' + object.username;
-            }
+        case ozpIwc.linkRelPrefix + ':user':
+            resource += 'user' + (object.username ? '/'+object.username : '');
+            break;
+        case ozpIwc.linkRelPrefix + ':user-data':
+            resource += 'data';
             break;
         default:
             resource+= 'FIXME_UNKNOWN_ENDPOINT_' + endpoint.name;
@@ -7606,8 +7616,12 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
  *
  * @method loadFromEndpoint
  * @param {String} endpointName The name of the endpoint to load from the server.
+ * @param [Object] requestHeaders
+ * @param {String} requestHeaders.name
+ * @param {String} requestHeaders.value
+ *
  */
-ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
+ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHeaders) {
     this.expectedBranches = 1;
     this.retrievedBranches = 0;
 
@@ -7624,7 +7638,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName) {
     var self=this;
     endpoint.get("/")
         .then(function(data) {
-            self.loadLinkedObjectsFromServer(endpoint,data,resolveLoad);
+            self.loadLinkedObjectsFromServer(endpoint,data,resolveLoad, requestHeaders);
             self.updateResourceFromServer(data,data._links.self.href,endpoint,resolveLoad);
             // update all the collection values
             self.dynamicNodes.forEach(function(resource) {
@@ -7667,8 +7681,11 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
  * @method loadLinkedObjectsFromServer
  * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
  * @param data the HAL data.
+ * @parm [Object] headers
+ * @param {String} headers.name
+ * @param {String} headers.value
  */
-ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data,res) {
+ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,data,res, requestHeaders) {
     // fetch the base endpoint. it should be a HAL Json object that all of the 
     // resources and keys in it
     if(!data) {
@@ -7732,7 +7749,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
             if( Object.prototype.toString.call(data._links.item) === '[object Array]' ) {
                 data._links.item.forEach(function (object) {
                     var href = object.href;
-                    endpoint.get(href).then(function (objectResource) {
+                    endpoint.get(href, requestHeaders).then(function (objectResource) {
                         self.updateResourceFromServer(objectResource, href, endpoint, res);
                     }).catch(function (error) {
                         console.error("unable to load " + object.href + " because: ", error);
@@ -7740,7 +7757,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                 });
             } else {
                 var href = data._links.item.href;
-                endpoint.get(href).then(function (objectResource) {
+                endpoint.get(href, requestHeaders).then(function (objectResource) {
                     self.updateResourceFromServer(objectResource, href, endpoint, res);
                 }).catch(function (error) {
                     console.error("unable to load " + object.href + " because: ", error);
@@ -8458,10 +8475,13 @@ ozpIwc.Endpoint=function(endpointRegistry) {
  *
  * @method get
  * @param {String} resource
+ * @param [Object] requestHeaders
+ * @param {String} requestHeaders.name
+ * @param {String} requestHeaders.value
  *
  * @returns {Promise}
  */
-ozpIwc.Endpoint.prototype.get=function(resource) {
+ozpIwc.Endpoint.prototype.get=function(resource, requestHeaders) {
     var self=this;
 
     return this.endpointRegistry.loadPromise.then(function() {
@@ -8470,7 +8490,11 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
         }
         return ozpIwc.util.ajax({
             href:  resource,
-            method: 'GET'
+            method: 'GET',
+            headers: requestHeaders,
+            withCredentials: true,
+            user: ozpIwc.marketplaceUsername,
+            password: ozpIwc.marketplacePassword
         });
     });
 };
@@ -8481,11 +8505,14 @@ ozpIwc.Endpoint.prototype.get=function(resource) {
  *
  * @method put
  * @param {String} resource
- * @param {Object} data
+ * @param {Object} data\
+ * @param [Object] requestHeaders
+ * @param {String} requestHeaders.name
+ * @param {String} requestHeaders.value
  *
  * @returns {Promise}
  */
-ozpIwc.Endpoint.prototype.put=function(resource, data) {
+ozpIwc.Endpoint.prototype.put=function(resource, data, requestHeaders) {
     var self=this;
 
     return this.endpointRegistry.loadPromise.then(function() {
@@ -8495,7 +8522,11 @@ ozpIwc.Endpoint.prototype.put=function(resource, data) {
         return ozpIwc.util.ajax({
             href:  resource,
             method: 'PUT',
-			data: data
+			data: data,
+            headers: requestHeaders,
+            withCredentials: true,
+            user: ozpIwc.marketplaceUsername,
+            password: ozpIwc.marketplacePassword
         });
     });
 };
@@ -8551,7 +8582,8 @@ ozpIwc.EndpointRegistry=function(config) {
      */
     this.loadPromise=ozpIwc.util.ajax({
         href: apiRoot,
-        method: 'GET'
+        method: 'GET',
+        withCredentials: true
     }).then(function(data) {
         for (var linkEp in data._links) {
             if (linkEp !== 'self') {
@@ -8617,7 +8649,7 @@ ozpIwc.initEndpoints=function(apiRoot) {
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 	ozpIwc.CommonApiBase.apply(this,arguments);
-	this.endpointUrl="https://www.owfgoss.org/ng/dev/mp/api/data";
+	this.endpointUrl=ozpIwc.linkRelPrefix+":user-data";
 });
 
 /**
@@ -8943,7 +8975,7 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
  * @method loadFromServer
  */
 ozpIwc.IntentsApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint("intents");
+    return this.loadFromEndpoint(ozpIwc.linkRelPrefix + ":intent");
 };
 /**
  * Takes the resource of the given packet and creates an empty value in the IntentsApi. Chaining of creation is
@@ -9522,12 +9554,15 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
 ozpIwc.SystemApi.prototype.loadFromServer=function() {
 
     var self=this;
+    var headers = [
+        {name: "Accept", value: "application/vnd.ozp-application-v1+json"}
+    ];
     return new Promise(function(resolve, reject) {
-        self.loadFromEndpoint("applications")
+        self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":application", headers)
             .then(function() {
-                self.loadFromEndpoint("user")
+                self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":user")
                     .then(function() {
-                        self.loadFromEndpoint("system")
+                        self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":system")
                             .then(function() {
                                 resolve("system.api load complete");
                             });

@@ -1,6 +1,9 @@
 var ozpIwc=ozpIwc || {};
 
-ozpIwc.apiRootUrl = "https://www.owfgoss.org/ng/dev/mp/api";
+ozpIwc.apiRootUrl = "https://www.owfgoss.org/ng/dev-alpha/mp/api";
+ozpIwc.marketplaceUsername='testAdmin1';
+ozpIwc.marketplacePassword='password';
+ozpIwc.linkRelPrefix = "ozp";
 ozpIwc.initEndpoints(ozpIwc.apiRootUrl || "/api");
 
 ozpIwc.defaultPeer=new ozpIwc.Peer();

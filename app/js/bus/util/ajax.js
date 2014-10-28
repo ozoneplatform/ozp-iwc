@@ -22,14 +22,24 @@ ozpIwc.util=ozpIwc.util || {};
  * @param {Object} config
  * @param {String} config.method
  * @param {String} config.href
+ * @param [Object] config.headers
+ * @param {String} config.headers.name
+ * @param {String} config.headers.value
+ * @param {boolean} config.withCredentials
  *
  * @returns {Promise}
  */
 ozpIwc.util.ajax = function (config) {
     return new Promise(function(resolve,reject) {
         var request = new XMLHttpRequest();
-        request.open(config.method, config.href, true);
-        request.setRequestHeader("Content-Type", "application/json");
+        request.withCredentials = config.withCredentials;
+        request.open(config.method, config.href, true, config.user, config.password);
+//        request.setRequestHeader("Content-Type", "application/json");
+        if (Array.isArray(config.headers)) {
+            config.headers.forEach(function(header) {
+                request.setRequestHeader(header.name, header.value);
+            });
+        }
 
         request.onload = function () {
             try {
