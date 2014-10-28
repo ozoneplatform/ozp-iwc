@@ -396,15 +396,9 @@ ozpIwc.Client.prototype.connect=function() {
             }
             
             // fetch the mailbox
-            var firstSlashPos=self.launchParams.mailbox.indexOf('/');
-            var dst=self.launchParams.mailbox.substr(0,firstSlashPos);
-            var resource=self.launchParams.mailbox.substr(firstSlashPos);
+            var packet=ozpIwc.util.parseOzpUrl(self.launchParams.mailbox);
             return new Promise(function(resolve,reject) {
-                self.send({
-                    'dst': dst,
-                    'resource': resource,
-                    'action': "get"
-                },function(response) {
+                self.send(packet,function(response) {
                     if(response.response==='ok') {
                         for(var k in response.entity) {
                             self.launchParams[k]=response.entity[k];
@@ -473,6 +467,43 @@ ozpIwc.Client.prototype.createIframePeer=function() {
         return wrapper;
     };
 
+    var intentInvocationHandling = function(client,resource,entity,callback) {
+        client.send({
+            dst: "intents.api",
+            action: "get",
+            resource: entity.inFlightIntent
+        },function(response){
+            response.entity.handler = {
+                address : client.address,
+                resource: resource
+            };
+            response.entity.state = "running";
+
+
+            client.send({
+                dst: "intents.api",
+                contentType: response.contentType,
+                action: "set",
+                resource: entity.inFlightIntent,
+                entity: response.entity
+            }, function(reply){
+                //Now run the intent
+                response.entity.reply.entity =  callback(response.entity) || {};
+                // then respond to the inflight resource
+                response.entity.state = "complete";
+                response.entity.reply.contentType = response.entity.intent.type;
+                client.send({
+                    dst: "intents.api",
+                    contentType: response.contentType,
+                    action: "set",
+                    resource: entity.inFlightIntent,
+                    entity: response.entity
+                });
+            });
+
+        });
+    };
+
     var augment = function (dst,action,client) {
         return function (resource, fragment, otherCallback) {
             // If a fragment isn't supplied argument #2 should be a callback (if supplied)
@@ -496,7 +527,11 @@ ozpIwc.Client.prototype.createIframePeer=function() {
                     } else if (/(bad|no).*/.test(reply.response)) {
                         reject(reply);
                     }
-                    if (otherCallback) {
+                    else if (otherCallback) {
+                        if(reply.entity && reply.entity.inFlightIntent) {
+                            intentInvocationHandling(client,resource,reply.entity,otherCallback);
+                            return true;
+                        }
                         return otherCallback(reply);
                     }
                     return !!otherCallback;

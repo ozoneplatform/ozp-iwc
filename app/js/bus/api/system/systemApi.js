@@ -202,6 +202,6 @@ ozpIwc.SystemApi.prototype.launchApplication=function(node,mailboxNode) {
             "ozpIwc.mailbox="+encodeURIComponent(mailboxNode.resource)
     ];
 
-    window.open(node.entity._links.describes.href,launchParams.join("&"));
+    ozpIwc.util.openWindow(node.entity._links.describes.href,launchParams.join("&"));
 };
 

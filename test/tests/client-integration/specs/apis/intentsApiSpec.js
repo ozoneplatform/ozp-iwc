@@ -71,13 +71,11 @@ describe("Intents API", function () {
         }).then(function(reply) {
             expect(reply.response).toEqual("ok");
             expect(reply.entity.invokeIntent).toBeDefined();
-            expect(reply.entity.invokeIntent).toEqual(
-                jasmine.objectContaining({
-                    'dst': client.address,
-                    'resource': "/intents/text/plain/view",
-                    'action' : "invoke"
-                })
-            );
+            expect(reply.entity.invokeIntent.dst).toEqual(client.address);
+            expect(reply.entity.invokeIntent.resource).toMatch("/intents/text/plain/view");
+            expect(reply.entity.invokeIntent.replyTo).toBeDefined();
+            expect(reply.entity.invokeIntent.action).toEqual("invoke");
+
             done();
         }).catch(function (error) {
             console.error(error);
@@ -101,19 +99,7 @@ describe("Intents API", function () {
     });
     
     it('invokes handler directly', function (done) {
-        var notDone=true;
-        client.on("receive",function(packet) {
-            if(notDone && packet.action==="intentsInvocation") {
-              console.log("Handler received packet ",packet);  
-              expect(packet.entity).toEqual("This is some text");
-              expect(packet.contentType).toEqual("text/plain");
-              expect(packet.resource).toEqual("/text/plain/view");
-              notDone=false;
-              done();
-            }
-        });
-        
-        
+
        client.api('intents.api').register('/text/plain/view', {
             contentType: "application/ozpIwc-intents-handler-v1+json",
             entity: {
@@ -127,7 +113,13 @@ describe("Intents API", function () {
                     action: "intentsInvocation"
                 }
             }
-        }).then(function (reply) {
+        },function(responce){
+               console.log("Handler received packet ",responce);
+               expect(responce.entity).toEqual("This is some text");
+               expect(responce.intent.type).toEqual("text/plain");
+               expect(responce.handler.resource).toEqual("/text/plain/view");
+               done();
+       }).then(function (reply) {
             console.log("Handler is registered: ",reply);
             expect(reply.response).toEqual('ok');
             expect(reply.entity.resource).toMatch('/text/plain/view');

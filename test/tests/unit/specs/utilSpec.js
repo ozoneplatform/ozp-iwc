@@ -355,4 +355,32 @@ describe("General Utilities", function() {
         });
         
     });
+    
+    describe("OZP Url Parser",function() {
+       var cases={
+           "web+ozp://data.api/foo/bar": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"},
+           "ozp://data.api/foo/bar": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"},
+           "data.api/foo/bar": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"},
+           "data.api/foo/bar?1234": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"},
+           "data.api/foo/bar#1234": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"},
+           "data.api/foo/bar?1234#blay": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"},
+           "data.api/foo/bar?1234": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"}
+        }; 
+       var rejectedCases=[
+           "http://data.api/foo/bar",
+           "/data.api/foo/bar",
+           "http://ozp://data.api/foo/bar"
+       ];
+           
+       Object.keys(cases).forEach(function(c) {
+           it("parses " + c, function() {
+               expect(ozpIwc.util.parseOzpUrl(c)).toEqual(cases[c]);
+           });
+       });
+       rejectedCases.forEach(function(c) {
+           it("fails to parse " + c, function() {
+               expect(ozpIwc.util.parseOzpUrl(c)).toBeNull();
+           });
+       });        
+    });
 });
