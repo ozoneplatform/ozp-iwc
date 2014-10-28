@@ -54,11 +54,11 @@ function changeColor(color) {
             icon: "https://ozp.slack.com/emoji/explosions/b88611dd6cbbbacb.gif",
             label: client.address + "/" + color
         }
-    },function(foo){
+    },function(foo,done){
         console.log("I get called when an intent is invoked on /text/plain/view!", foo);
         $("#intentText").append("Color: " + color + " Value: " + JSON.stringify(foo.entity) + "<br>");
 
-        // return true for handler persistence
+        // if you want to stop the persistence of a callback, call done()
         // return the value you want to pass back to the invoker
         return {
             text: foo.entity,
