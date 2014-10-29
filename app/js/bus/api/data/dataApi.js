@@ -18,8 +18,8 @@
  * @params {ozpIwc.Participant} config.participant - the participant used for the Api communication
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
-	ozpIwc.CommonApiBase.apply(this,arguments);
-	this.endpointUrl=ozpIwc.linkRelPrefix+":user-data";
+    ozpIwc.CommonApiBase.apply(this,arguments);
+    this.endpointUrl=ozpIwc.linkRelPrefix+":user-data";
 });
 
 /**
@@ -56,12 +56,12 @@ ozpIwc.DataApi.prototype.makeValue = function(packet){
  * @returns {ozpIwc.DataApiValue} The childNode created.
  */
 ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {
-	var key=this.createKey(node.resource+"/");
+    var key=this.createKey(node.resource+"/");
 
-	// save the new child
-	var childNode=this.findOrMakeValue({'resource':key});
-	childNode.set(packetContext.packet);
-	return childNode;
+    // save the new child
+    var childNode=this.findOrMakeValue({'resource':key});
+    childNode.set(packetContext.packet);
+    return childNode;
 };
 
 /**
@@ -79,7 +79,7 @@ ozpIwc.DataApi.prototype.createChild=function(node,packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext Packet context of the list request.
  */
 ozpIwc.DataApi.prototype.handleList=function(node,packetContext) {
-	packetContext.replyTo({
+    packetContext.replyTo({
         'response': 'ok',
         'entity': node.listChildren()
     });
@@ -105,11 +105,11 @@ ozpIwc.DataApi.prototype.handleList=function(node,packetContext) {
  * @param {ozpIwc.TransportPacketContext} packetContext - The packet context of which the child is constructed from.
  */
 ozpIwc.DataApi.prototype.handleAddchild=function(node,packetContext) {
-	var childNode=this.createChild(node,packetContext);
+    var childNode=this.createChild(node,packetContext);
 
-	node.addChild(childNode.resource);
+    node.addChild(childNode.resource);
 
-	packetContext.replyTo({
+    packetContext.replyTo({
         'response':'ok',
         'entity' : {
             'resource': childNode.resource
@@ -133,10 +133,27 @@ ozpIwc.DataApi.prototype.handleAddchild=function(node,packetContext) {
  */
 ozpIwc.DataApi.prototype.handleRemovechild=function(node,packetContext) {
     node.removeChild(packetContext.packet.entity.resource);
-	// delegate to the handleGet call
-	packetContext.replyTo({
+    // delegate to the handleGet call
+    packetContext.replyTo({
         'response':'ok'
     });
+};
+
+ozpIwc.DataApi.prototype.handleSet=function(node,packetContext) {
+    ozpIwc.CommonApiBase.prototype.handleSet.apply(this,arguments);
+    if (node && packetContext.packet.entity.persist) {
+        this.persistNode(node);
+    }
+};
+
+/**
+ * 	Persists an individual node to the server
+ *
+ * 	@method persistNode
+ */
+ozpIwc.DataApi.prototype.persistNode=function(node) {
+    var endpointref= ozpIwc.endpoint(this.endpointUrl);
+    endpointref.put(node.resource, node.entity);
 };
 
 /**
@@ -146,18 +163,18 @@ ozpIwc.DataApi.prototype.handleRemovechild=function(node,packetContext) {
  * 	@method persistNodes
  */
 ozpIwc.DataApi.prototype.persistNodes=function() {
-	// collect list of nodes to persist, send to server, reset persist flag
-	var nodes=[];
-	for (var node in this.data) {
-		if ((this.data[node].dirty === true) &&
-			(this.data[node].persist === true)) {
-			nodes[nodes.length]=this.data[node].serialize();
-			this.data[node].dirty = false;
-		}
-	}
-	// send list of objects to endpoint ajax call
-	if (nodes) {
-		var endpointref= ozpIwc.EndpointRegistry.endpoint(this.endpointUrl);
-		endpointref.saveNodes(nodes);
-	}
+    // collect list of nodes to persist, send to server, reset persist flag
+    var nodes=[];
+    for (var node in this.data) {
+        if ((this.data[node].dirty === true) &&
+            (this.data[node].persist === true)) {
+            nodes[nodes.length]=this.data[node].serialize();
+            this.data[node].dirty = false;
+        }
+    }
+    // send list of objects to endpoint ajax call
+    if (nodes) {
+        var endpointref= ozpIwc.EndpointRegistry.endpoint(this.endpointUrl);
+        endpointref.saveNodes(nodes);
+    }
 };
