@@ -153,7 +153,7 @@ ozpIwc.DataApi.prototype.handleSet=function(node,packetContext) {
  */
 ozpIwc.DataApi.prototype.persistNode=function(node) {
     var endpointref= ozpIwc.endpoint(this.endpointUrl);
-    endpointref.put(node.resource, node.entity);
+    endpointref.put(node.resource, JSON.stringify(node.entity));
 };
 
 /**
