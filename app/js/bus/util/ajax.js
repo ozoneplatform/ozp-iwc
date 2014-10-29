@@ -40,6 +40,9 @@ ozpIwc.util.ajax = function (config) {
                 request.setRequestHeader(header.name, header.value);
             });
         }
+        //Setting username and password as params to open() per the API does not work. setting them
+        //explicitly in the Authorization header works (but only for BASIC authentication)
+        request.setRequestHeader("Authorization", "Basic " + btoa(config.user + ":" + config.password));
 
         request.onload = function () {
             try {
