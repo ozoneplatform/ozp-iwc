@@ -128,7 +128,9 @@ ozpIwc.EndpointRegistry=function(config) {
     this.loadPromise=ozpIwc.util.ajax({
         href: apiRoot,
         method: 'GET',
-        withCredentials: true
+        withCredentials: true,
+        user: ozpIwc.marketplaceUsername,
+        password: ozpIwc.marketplacePassword
     }).then(function(data) {
         for (var linkEp in data._links) {
             if (linkEp !== 'self') {
