@@ -256,7 +256,7 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (handlerNode, packetC
     };
 
     var self = this;
-    this.participant.send(packet,function(response) {
+    this.participant.send(packet,function(response,done) {
         var blacklist=['src','dst','msgId','replyTo'];
         var packet={};
         for(var k in response) {
@@ -271,6 +271,7 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (handlerNode, packetC
             entity: packet
         });
         packetContext.replyTo(packet);
+        done();
     });
 };
 
