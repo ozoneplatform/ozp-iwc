@@ -72,7 +72,12 @@ ozpIwc.InternalParticipant.prototype.getCallbackCount=function() {
 ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
 	var packet=packetContext.packet;
 	if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
-		if (!this.replyCallbacks[packet.replyTo](packet)) {
+        var cancel = false;
+        function done() {
+            cancel = true;
+        }
+        this.replyCallbacks[packet.replyTo](packet,done);
+		if (cancel) {
             this.cancelCallback(packet.replyTo);
         }
 	} else if (packet.dst === "$bus.multicast"){
