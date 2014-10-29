@@ -106,7 +106,9 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectP
             resource += 'user' + (object.username ? '/'+object.username : '');
             break;
         case ozpIwc.linkRelPrefix + ':user-data':
-            resource += 'data';
+            if (object.key) {
+                resource += object.key;
+            }
             break;
         default:
             resource+= 'FIXME_UNKNOWN_ENDPOINT_' + endpoint.name;
