@@ -95,8 +95,8 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectP
             }
             break;
         case ozpIwc.linkRelPrefix + ':application':
-            if (object.uuid) {
-                resource += 'application/' + object.uuid;
+            if (object.id) {
+                resource += 'application/' + object.id;
             }
             break;
         case ozpIwc.linkRelPrefix + ':system':
