@@ -77,6 +77,36 @@ ozpIwc.Endpoint.prototype.put=function(resource, data, requestHeaders) {
 };
 
 /**
+ *
+ * Performs an AJAX request of DELETE for specified resource href.
+ *
+ * @method put
+ * @param {String} resource
+ * @param [Object] requestHeaders
+ * @param {String} requestHeaders.name
+ * @param {String} requestHeaders.value
+ *
+ * @returns {Promise}
+ */
+ozpIwc.Endpoint.prototype.delete=function(resource, data, requestHeaders) {
+    var self=this;
+
+    return this.endpointRegistry.loadPromise.then(function() {
+        if(resource.indexOf(self.baseUrl)!==0) {
+            resource=self.baseUrl + resource;
+        }
+        return ozpIwc.util.ajax({
+            href:  resource,
+            method: 'DELETE',
+            headers: requestHeaders,
+            withCredentials: true,
+            user: ozpIwc.marketplaceUsername,
+            password: ozpIwc.marketplacePassword
+        });
+    });
+};
+
+/**
  * Sends AJAX requests to PUT the specified nodes into the endpoint.
  * @todo PUTs each node individually. Currently sends to a fixed api point switch to using the node.self endpoint and remove fixed resource
  * @method saveNodes
