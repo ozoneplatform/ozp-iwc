@@ -109,6 +109,10 @@ ozpIwc.DataApi.prototype.handleAddchild=function(node,packetContext) {
 
     node.addChild(childNode.resource);
 
+    if (node && packetContext.packet.entity.persist) {
+        this.persistNode(node);
+    }
+
     packetContext.replyTo({
         'response':'ok',
         'entity' : {
@@ -133,12 +137,24 @@ ozpIwc.DataApi.prototype.handleAddchild=function(node,packetContext) {
  */
 ozpIwc.DataApi.prototype.handleRemovechild=function(node,packetContext) {
     node.removeChild(packetContext.packet.entity.resource);
+    if (node && packetContext.packet.entity.persist) {
+        this.persistNode(node);
+    }
     // delegate to the handleGet call
     packetContext.replyTo({
         'response':'ok'
     });
 };
 
+
+/**
+ * Overrides the implementation of ozpIwc.CommonApiBase.handleSet
+ * to add a node to persistent storage after setting it's value.
+ *
+ * @method handleSet
+ * @param {ozpIwc.DataApiValue} node
+ * @param {ozpIwc.PacketContext} packetContext
+ */
 ozpIwc.DataApi.prototype.handleSet=function(node,packetContext) {
     ozpIwc.CommonApiBase.prototype.handleSet.apply(this,arguments);
     if (node && packetContext.packet.entity.persist) {
@@ -147,13 +163,39 @@ ozpIwc.DataApi.prototype.handleSet=function(node,packetContext) {
 };
 
 /**
- * 	Persists an individual node to the server
+ * Overrides the implementation of ozpIwc.CommonApiBase.handleDelete
+ * to delete a node from persistent storage before deleting it's value.
+ *
+ * @method handleDelete
+ * @param {ozpIwc.DataApiValue} node
+ */
+ozpIwc.DataApi.prototype.handleDelete=function(node) {
+    if (node && node.persist) {
+        this.deleteNode(node);
+    }
+    ozpIwc.CommonApiBase.prototype.handleDelete.apply(this,arguments);
+};
+
+/**
+ * 	Saves an individual node to the persistent data store
  *
  * 	@method persistNode
+ * 	@param {ozpIwc.DataApiValue} node
  */
 ozpIwc.DataApi.prototype.persistNode=function(node) {
     var endpointref= ozpIwc.endpoint(this.endpointUrl);
     endpointref.put(node.resource, JSON.stringify(node.entity));
+};
+
+/**
+ * 	Deletes an individual node from the persistent data store
+ *
+ * 	@method deleteNode
+ * 	@param {ozpIwc.DataApiValue} node
+ */
+ozpIwc.DataApi.prototype.deleteNode=function(node) {
+    var endpointref= ozpIwc.endpoint(this.endpointUrl);
+    endpointref.delete(node.resource);
 };
 
 /**
