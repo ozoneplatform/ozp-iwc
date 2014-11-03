@@ -283,7 +283,7 @@ client.on("connected",function() {
 			}));
 
 		} else {
-			console.log("Failed to push our ball: " + JSON.stringify(packet,null,2));
+            ozpIwc.log.log("Failed to push our ball: " + JSON.stringify(packet,null,2));
 		}
         done();
 	});

@@ -363,7 +363,7 @@ ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, confi
     try {
         JSON.stringify(state);
     } catch (ex) {
-        console.error(this.name,this.address,"failed to send state.", ex);
+        ozpIwc.log.error(this.name,this.address,"failed to send state.", ex);
         state = {};
     }
 
@@ -611,7 +611,7 @@ ozpIwc.LeaderGroupParticipant.prototype.heartbeatStatus=function() {
  */
 ozpIwc.LeaderGroupParticipant.prototype.changeState=function(state,config) {
     if(state !== this.leaderState){
-//        console.log(this.address, this.leaderState, state);
+//        ozpIwc.log.log(this.address, this.leaderState, state);
         if(this._validateState(state)){
             for(var key in config){
                 this[key] = config[key];
@@ -650,7 +650,7 @@ ozpIwc.LeaderGroupParticipant.prototype._validateState = function(state){
         this.leaderState = state;
         return true;
     } else {
-        console.error(this.address, this.name, "does not have state:", state);
+        ozpIwc.log.error(this.address, this.name, "does not have state:", state);
         return false;
     }
 };

@@ -172,7 +172,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHe
                 self.updateDynamicNode(self.data[resource]);
             });
         }).catch(function(e) {
-            console.error("Could not load from api (" + endpointName + "): " + e.message,e);
+            ozpIwc.log.error("Could not load from api (" + endpointName + "): " + e.message,e);
             rejectLoad("Could not load from api (" + endpointName + "): " + e.message + e);
         });
     return p;
@@ -279,7 +279,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                     endpoint.get(href, requestHeaders).then(function (objectResource) {
                         self.updateResourceFromServer(objectResource, href, endpoint, res);
                     }).catch(function (error) {
-                        console.error("unable to load " + object.href + " because: ", error);
+                        ozpIwc.log.error("unable to load " + object.href + " because: ", error);
                     });
                 });
             } else {
@@ -287,7 +287,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                 endpoint.get(href, requestHeaders).then(function (objectResource) {
                     self.updateResourceFromServer(objectResource, href, endpoint, res);
                 }).catch(function (error) {
-                    console.error("unable to load " + object.href + " because: ", error);
+                    ozpIwc.log.error("unable to load " + object.href + " because: ", error);
                 });
             }
         }
@@ -460,7 +460,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
             f.apply(self);
         } catch(e) {
             if(!e.errorAction) {
-                console.log("Unexpected error:",e);
+                ozpIwc.log.log("Unexpected error:",e);
             }
             packetContext.replyTo({
                 'response': e.errorAction || "unknownError",
@@ -475,7 +475,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
     }
 
     if(packet.response && !packet.action) {
-        console.log(this.participant.name + " dropping response packet ",packet);
+        ozpIwc.log.log(this.participant.name + " dropping response packet ",packet);
         // if it's a response packet that didn't wire an explicit handler, drop the sucker
         return;
     }
@@ -525,7 +525,7 @@ ozpIwc.CommonApiBase.prototype.routeEventChannel = function(packetContext) {
             this.handleEventChannelDisconnect(packetContext);
             break;
         default:
-            console.error(this.participant.name, "No handler found for corresponding event channel action: ", packet.action);
+            ozpIwc.log.error(this.participant.name, "No handler found for corresponding event channel action: ", packet.action);
             break;
     }
 };
@@ -951,7 +951,7 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
                     recvFunc();
                 } else {
                     self.loadFromServer();
-                    console.log(self.participant.name, "New leader(",self.participant.address, ") failed to retrieve state from previous leader(", self.participant.previousLeader, "), so is loading data from server.");
+                    ozpIwc.log.log(self.participant.name, "New leader(",self.participant.address, ") failed to retrieve state from previous leader(", self.participant.previousLeader, "), so is loading data from server.");
                 }
 
                 self.participant.off("receivedState", recvFunc);
@@ -960,14 +960,14 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
 
         } else {
             // This is the first of the bus, winner doesn't obtain any previous state
-            console.log(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
+            ozpIwc.log.log(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
             self.loadFromServer().then(function (data) {
                 self.setToLeader();
             },function(err){
-                console.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
+                ozpIwc.log.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
                 self.setToLeader();
             }).catch(function(er){
-                console.log(er);
+                ozpIwc.log.log(er);
             });
         }
     },0);

@@ -388,9 +388,9 @@ ozpIwc.Router.prototype.registerMulticast=function(participant,multicastGroups) 
             });
             self.events.trigger("registeredMulticast", registeredEvent);
         } else {
-            console.log("no address for " +  participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
+            ozpIwc.log.log("no address for " +  participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
         }
-        //console.log("registered " + participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
+        //ozpIwc.log.log("registered " + participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
     });
     return multicastGroups;
 };
