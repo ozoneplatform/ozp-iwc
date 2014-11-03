@@ -144,7 +144,7 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
         try {
             packet = JSON.parse(event.key);
         } catch (e) {
-            console.log("Parse error on " + event.key);
+            ozpIwc.log.log("Parse error on " + event.key);
             ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.parseError').inc();
             return;
         }

@@ -441,7 +441,7 @@ ozpIwc.Client.prototype.connect=function() {
              */
             self.events.trigger("connected");
         }).catch(function(error) {
-            console.log("Failed to connect to bus ",error);
+                ozpIwc.log.log("Failed to connect to bus ",error);
         });
     }
     return this.connectPromise; 

@@ -2062,7 +2062,7 @@ ozpIwc.util.now=function() {
  */
 ozpIwc.util.extend=function(baseClass,newConstructor) {
     if(!baseClass || !baseClass.prototype) {
-        console.error("Cannot create a new class for ",newConstructor," due to invalid baseclass:",baseClass);
+        ozpIwc.log.error("Cannot create a new class for ",newConstructor," due to invalid baseclass:",baseClass);
         throw new Error("Cannot create a new class due to invalid baseClass.  Dependency not loaded first?");
     }
     newConstructor.prototype = Object.create(baseClass.prototype);
@@ -2152,7 +2152,7 @@ ozpIwc.util.clone=function(value) {
         try {
             return JSON.parse(JSON.stringify(value));
         } catch (e) {
-            console.log(e);
+            ozpIwc.log.log(e);
         }
 	} else {
 		return value;

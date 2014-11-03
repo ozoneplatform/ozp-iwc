@@ -141,6 +141,6 @@ ozpIwc.util.alert = function (message, errorObject) {
         // Temporary placement: all alerts are silenced after first instance, but since this is not in data.api its on
         // a widget basis.
         this.alerts[message].silence = true;
-        console.log(message,errorObject);
+        ozpIwc.log.log(message,errorObject);
     }
 };

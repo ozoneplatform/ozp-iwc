@@ -4,7 +4,11 @@ var ozpIwc=ozpIwc || {};
 /**
  * @submodule bus.util
  */
-
+var getStackTrace = function() {
+    var obj = {};
+    Error.captureStackTrace(obj, getStackTrace);
+    return obj.stack;
+};
 /**
  * A logging wrapper for the ozpIwc namespace
  * @class log
