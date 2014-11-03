@@ -160,7 +160,7 @@ describe("IWC Client", function() {
         });
         
         it("fetches the mailbox when passed ozpIwc.mailbox",function(done) {
-             window.name="ozpIwc.mailbox=\"data.api/mailbox/1234abcdefg\"";
+             window.name="ozpIwc.inFlightIntent=\"/ozpIntents/invocations/123\"";
              client=new ozpIwc.Client({
                  peerUrl: "http://localhost:14002",
                  autoPeer: false
@@ -169,8 +169,8 @@ describe("IWC Client", function() {
              spyOn(client,"send").and.callThrough();
              client.connect().then(function() {
                 expect(client.send).toHaveBeenCalledWith(jasmine.objectContaining({
-                    'dst': "data.api",
-                    'resource' : "/mailbox/1234abcdefg",
+                    'dst': "intents.api",
+                    'resource' : "/ozpIntents/invocations/123",
                     'action' : "get"
                 }),jasmine.any(Function));
                  done();
