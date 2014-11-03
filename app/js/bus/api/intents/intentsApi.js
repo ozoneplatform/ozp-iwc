@@ -67,7 +67,7 @@ ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
         }
         var node=new ozpIwc.IntentsApiDefinitionValue({
             resource: resource,
-            intentType: path[0]+"/" + path[1] + "/" + path[2],
+            intentType: path[0]+"/" + path[1],
             intentAction: path[2]
         });
         self.addDynamicNode(node);
@@ -247,13 +247,9 @@ ozpIwc.IntentsApi.prototype.handleDelete=function(node,packetContext) {
 ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (handlerNode, packetContext,inFlightIntent) {
     inFlightIntent = inFlightIntent || {};
 
-    var packet = {
-        dst: handlerNode.entity.invokeIntent.dst,
-        replyTo: handlerNode.entity.invokeIntent.replyTo,
-        entity: {
-            inFlightIntent: inFlightIntent.resource
-        }
-    };
+    var packet = handlerNode.entity.invokeIntent;
+    packet.entity = packet.entity || {};
+    packet.entity.inFlightIntent = inFlightIntent.resource;
 
     var self = this;
     this.participant.send(packet,function(response,done) {
