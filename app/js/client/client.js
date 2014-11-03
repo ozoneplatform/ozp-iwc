@@ -589,7 +589,6 @@ ozpIwc.Client.prototype.createIframePeer=function() {
                 if(dst === "intents.api" && action === "register"){
                     for(var i in client.launchedIntents){
                         var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
-                        console.log(resource,loadedResource);
                         if(resource === loadedResource){
                             intentInvocationHandling(client,resource,client.launchedIntents[i].resource,otherCallback);
                             delete client.launchedIntents[i];
