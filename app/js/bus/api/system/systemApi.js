@@ -227,6 +227,6 @@ ozpIwc.SystemApi.prototype.launchApplication=function(node,intentResource) {
             "ozpIwc.inFlightIntent="+encodeURIComponent(intentResource)
     ];
 
-    ozpIwc.util.openWindow("http://localhost:15001/index.html?color=black",launchParams.join("&"));
+    ozpIwc.util.openWindow(node.entity._links.describes.href,launchParams.join("&"));
 };
 
