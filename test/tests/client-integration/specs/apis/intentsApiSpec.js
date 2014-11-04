@@ -134,5 +134,52 @@ describe("Intents API", function () {
             done();
         });
     });
+
+    it('broadcasts to all handlers of a definition', function(done){
+
+        var gate=doneSemaphore(2,done);
+
+        client.api('intents.api').register('/text/plain/view', {
+            contentType: "application/ozpIwc-intents-handler-v1+json",
+            entity: {
+                type: "text/plain",
+                action: "view",
+                icon: "http://example.com/view-text-plain.png",
+                label: "View Plain Text 1",
+                invokeIntent: {
+                    dst: client.address,
+                    resource: "/text/plain/view",
+                    action: "intentsInvocation"
+                }
+            }
+        },function(response){
+            console.log(response);
+            gate();
+        }).then(function(){
+            return client.api('intents.api').register('/text/plain/view', {
+                contentType: "application/ozpIwc-intents-handler-v1+json",
+                entity: {
+                    type: "text/plain",
+                    action: "view",
+                    icon: "http://example.com/view-text-plain.png",
+                    label: "View Plain Text 2",
+                    invokeIntent: {
+                        dst: client.address,
+                        resource: "/text/plain/view",
+                        action: "intentsInvocation"
+                    }
+                }
+            },function(response){
+                console.log(response);
+                gate();
+
+            });
+        }).then(function(){
+            return client.api('intents.api').broadcast('/text/plain/view', {
+                contentType: "text/plain",
+                entity: "This is some text"
+            });
+        });
+    })
     
 });

@@ -48,5 +48,5 @@ ozpIwc.IntentsApiInFlightIntent = ozpIwc.util.extend(ozpIwc.CommonApiValue, func
     };
 });
 
-ozpIwc.IntentsApiInFlightIntent.prototype.acceptedReasons = ["user","pref","onlyOne"];
+ozpIwc.IntentsApiInFlightIntent.prototype.acceptedReasons = ["user","pref","onlyOne","broadcast"];
 ozpIwc.IntentsApiInFlightIntent.prototype.acceptedStates = ["new","choosing","delivering","running","error","complete"];

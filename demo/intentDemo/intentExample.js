@@ -6,7 +6,7 @@ var currentHandler = null;
 
 $(document).ready(function(){
     client.connect().then(function(){
-        ozpIwc.log.log("The IWC Client is now connected with an address of (", client.address, ")");
+        console.log("The IWC Client is now connected with an address of (", client.address, ")");
         $('#myAddress').text(client.address);
 
         var colors=$("#intentColor option");
@@ -21,6 +21,8 @@ $(document).ready(function(){
             var color=e.target.value;
             changeColor(color);
         });
+    }).catch(function(er){
+        console.log(er);
     });
 
     window.addEventListener("beforeunload",function() {
@@ -43,7 +45,7 @@ function changeColor(color) {
 
     if(currentHandler){
         client.api("intents.api").delete(currentHandler).then(function(response){
-            ozpIwc.log.log("I respond when deleting a handler", response);
+            console.log("I respond when deleting a handler", response);
         });
     }
 
@@ -55,7 +57,7 @@ function changeColor(color) {
             label: client.address + "/" + color
         }
     },function(foo,done){
-        ozpIwc.log.log("I get called when an intent is invoked on /text/plain/view!", foo);
+        console.log("I get called when an intent is invoked on /text/plain/view!", foo);
         $("#intentText").append("Color: " + color + " Value: " + JSON.stringify(foo.entity) + "<br>");
 
         // if you want to stop the persistence of a callback, call done()
@@ -66,12 +68,12 @@ function changeColor(color) {
         };
 
     }).then(function(response) {
-        ozpIwc.log.log("I get called once after this intent sends off its registration!", response);
+        console.log("I get called once after this intent sends off its registration!", response);
         colorRegistered = color;
         currentHandler = response.entity.resource;
 
     }).catch(function (error) {
-        ozpIwc.log.log("Error registering handler: ",error);
+        console.log("Error registering handler: ",error);
     });
 }
 
@@ -89,8 +91,20 @@ function invoke(resource,entity) {
         contentType: "application/ozpIwc-intents-handler-v1+json",
         entity: entity
     }).then(function(response){
-       ozpIwc.log.log("I get called when a resolution has been made on the intent invocation!",response);
+       console.log("I get called when a resolution has been made on the intent invocation!",response);
     }).catch(function(e){
-        ozpIwc.log.error("Error invoking intent:",e);
+        console.error("Error invoking intent:",e);
     });
 }
+
+function broadcast(resource,entity) {
+    client.api('intents.api').broadcast(resource, {
+        contentType: "application/ozpIwc-intents-handler-v1+json",
+        entity: entity
+    }).then(function(response){
+        console.log("I get called when a resolution has been made on the intent broadcast!",response);
+    }).catch(function(e){
+        console.error("Error broadcasting intent:",e);
+    });
+}
+
