@@ -49,7 +49,11 @@ ozpIwc.util.ajax = function (config) {
                 resolve(JSON.parse(this.responseText));
             }
             catch (e) {
-                reject(this);
+                if(this.status === 204 && !this.responseText){
+                    resolve();
+                } else {
+                    reject(this);
+                }
             }
         };
 
