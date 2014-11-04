@@ -191,6 +191,15 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
     if (!object.contentType) {
         object.contentType = 'application/json';
     }
+    var parseEntity;
+    if(typeof object.entity === "string"){
+        try{
+            parseEntity = JSON.parse(object.entity);
+            object.entity = parseEntity;
+        }catch(e){
+            // fail silently for now
+        }
+    }
     var node = this.findNodeForServerResource(object,path,endpoint);
 
     if (node) {
