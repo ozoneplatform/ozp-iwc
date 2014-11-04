@@ -149,6 +149,38 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
     });
 };
 
+/**
+ * Invokes all handlers for the given intent.
+ *
+ * @method handleBroadcast
+ * @param {Object} node the definition or handler value used to invoke the intent.
+ * @param {ozpIwc.TransportPacketContext} packetContext the packet received by the router.
+ */
+ozpIwc.IntentsApi.prototype.handleBroadcast = function (node, packetContext) {
+    if(typeof(node.getHandlers) !== "function") {
+        throw new ozpIwc.ApiError("badResource","Resource is not an invokable intent");
+    }
+
+    var handlerNodes=node.getHandlers(packetContext);
+
+    var self = this;
+    handlerNodes.forEach(function(handler){
+
+        var inflightPacket = self.makeIntentInvocation(node,packetContext);
+
+        var updateInFlightEntity = ozpIwc.util.clone(inflightPacket);
+        updateInFlightEntity.entity.handlerChosen = {
+            'resource' : handler.resource,
+            'reason' : "broadcast"
+        };
+
+        updateInFlightEntity.entity.state = "delivering";
+
+        inflightPacket.set(updateInFlightEntity);
+
+        self.invokeIntentHandler(handler,packetContext,inflightPacket);
+    });
+};
 
 /**
  * Invokes the appropriate handler for the intent from one of the following methods:
@@ -197,17 +229,27 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
  */
 ozpIwc.IntentsApi.prototype.handleSet = function (node, packetContext) {
     if(packetContext.packet.contentType === "application/vnd.ozp-iwc-intent-in-flight-v1+json"){
+
+        var badActionResponse = {
+            'response': 'badAction',
+            'entity': {
+                'reason': "cannot drive inFlightIntent state transition",
+                'state': node.entity.state,
+                'requestedState': packetContext.packet.entity.state
+            }
+        };
+
         switch (packetContext.packet.entity.state){
             case "new":
                 // shouldn't be set externally
-                packetContext.replyTo({'response':'bad'});
+                packetContext.replyTo(badActionResponse);
                 break;
             case "choosing":
                 this.handleInFlightChoose(node,packetContext);
                 break;
             case "delivering":
                 // shouldn't be set externally
-                packetContext.replyTo({'response':'bad'});
+                packetContext.replyTo({'response':'badAction'});
                 break;
             case "running":
                 this.handleInFlightRunning(node,packetContext);
@@ -218,6 +260,10 @@ ozpIwc.IntentsApi.prototype.handleSet = function (node, packetContext) {
             case "complete":
                 this.handleInFlightComplete(node,packetContext);
                 break;
+            default:
+                if(node.acceptedStates.indexOf(packetContext.packet.entity.state) < 0){
+                    packetContext.replyTo(badActionResponse);
+                }
         }
     } else {
         ozpIwc.CommonApiBase.prototype.handleSet.apply(this, arguments);

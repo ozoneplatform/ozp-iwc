@@ -2382,7 +2382,7 @@ ozpIwc.Client=function(config) {
             'actions': ["get","set","delete","watch","unwatch","list"]
         }, 
         "intents.api" : { 'address': 'intents.api',
-            'actions': ["get","set","delete","watch","unwatch","list","register","invoke"]
+            'actions': ["get","set","delete","watch","unwatch","list","register","invoke","broadcast"]
         }
     };
 
