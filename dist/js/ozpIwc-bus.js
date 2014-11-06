@@ -5765,7 +5765,10 @@ ozpIwc.Router=function(config) {
      * @property watchdog
      * @type ozpIwc.RouterWatchdog
      */
-	this.watchdog=new ozpIwc.RouterWatchdog({router: this});
+	this.watchdog=new ozpIwc.RouterWatchdog({
+        router: this,
+        heartbeatFrequency: config.heartbeatFrequency
+    });
 	this.registerParticipant(this.watchdog);
 
     ozpIwc.metrics.gauge('transport.router.participants').set(function() {
@@ -7118,12 +7121,14 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
             contentType: "application/ozpIwc-router-v1+json",
             entity: {
                 'address': self.router.selfId,
-                'participants': self.router.getParticipantCount()
+                'participants': self.router.getParticipantCount(),
+                'time': ozpIwc.util.now()
             }
         });
 
         for (var k in self.router.participants) {
             var participant=self.router.participants[k];
+            participant.heartBeatStatus.time = ozpIwc.util.now();
             if(participant instanceof ozpIwc.MulticastParticipant) {
                 self.send({
                     'dst': "names.api",
@@ -9883,9 +9888,24 @@ ozpIwc.IntentsApiTypeValue.prototype.updateContent=function(changedNodes) {
  *
  * @type {Function}
  */
-ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
+ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function(config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
 
+    /**
+     * How often a heartbeat message should occur.
+     * @property heartbeatFrequency
+     * @type {Number}
+     * @default 10000
+     */
+    this.heartbeatFrequency = config.heartbeatFrequency || 10000;
+
+    /**
+     * The amount of heartbeats to drop an unresponsive participant after
+     * @property heartbeatDropCount
+     * @type {number|*}
+     * @default 3
+     */
+    this.heartbeatDropCount = config.heartbeatDropCount || 3;
     // map the alias "/me" to "/address/{packet.src}" upon receiving the packet
     this.on("receive", function (packetContext) {
         var packet = packetContext.packet;
@@ -9943,8 +9963,29 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
     };
     node=this.findOrMakeValue(packet);
     node.set(packet);
+    var self = this;
+    setInterval(function(){
+        self.removeDeadNodes();
+    },this.heartbeatFrequency);
 });
 
+ozpIwc.NamesApi.prototype.removeDeadNodes = function(){
+    for(var key in this.data){
+        var node = this.data[key];
+        if(this.dynamicNodes.indexOf(key) < 0) {
+            if ((ozpIwc.util.now() - node.entity.time) > this.heartbeatFrequency * this.heartbeatDropCount) {
+                var snapshot = node.snapshot();
+                node.deleteData;
+                this.notifyWatchers(node, node.changesSince(snapshot));
+                delete this.data[key];
+                // update all the collection values
+                this.dynamicNodes.forEach(function(resource) {
+                    this.updateDynamicNode(this.data[resource]);
+                },this);
+            }
+        }
+    }
+};
 /**
  * Checks that the given packet context's resource meets the requirements of the api. Throws exception if fails
  * validation

@@ -93,12 +93,14 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
             contentType: "application/ozpIwc-router-v1+json",
             entity: {
                 'address': self.router.selfId,
-                'participants': self.router.getParticipantCount()
+                'participants': self.router.getParticipantCount(),
+                'time': ozpIwc.util.now()
             }
         });
 
         for (var k in self.router.participants) {
             var participant=self.router.participants[k];
+            participant.heartBeatStatus.time = ozpIwc.util.now();
             if(participant instanceof ozpIwc.MulticastParticipant) {
                 self.send({
                     'dst': "names.api",

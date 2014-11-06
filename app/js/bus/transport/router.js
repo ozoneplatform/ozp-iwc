@@ -239,7 +239,10 @@ ozpIwc.Router=function(config) {
      * @property watchdog
      * @type ozpIwc.RouterWatchdog
      */
-	this.watchdog=new ozpIwc.RouterWatchdog({router: this});
+	this.watchdog=new ozpIwc.RouterWatchdog({
+        router: this,
+        heartbeatFrequency: config.heartbeatFrequency
+    });
 	this.registerParticipant(this.watchdog);
 
     ozpIwc.metrics.gauge('transport.router.participants').set(function() {

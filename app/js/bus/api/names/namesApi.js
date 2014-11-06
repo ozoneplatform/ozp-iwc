@@ -15,9 +15,24 @@
  *
  * @type {Function}
  */
-ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
+ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function(config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
 
+    /**
+     * How often a heartbeat message should occur.
+     * @property heartbeatFrequency
+     * @type {Number}
+     * @default 10000
+     */
+    this.heartbeatFrequency = config.heartbeatFrequency || 10000;
+
+    /**
+     * The amount of heartbeats to drop an unresponsive participant after
+     * @property heartbeatDropCount
+     * @type {number|*}
+     * @default 3
+     */
+    this.heartbeatDropCount = config.heartbeatDropCount || 3;
     // map the alias "/me" to "/address/{packet.src}" upon receiving the packet
     this.on("receive", function (packetContext) {
         var packet = packetContext.packet;
@@ -75,8 +90,29 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function() {
     };
     node=this.findOrMakeValue(packet);
     node.set(packet);
+    var self = this;
+    setInterval(function(){
+        self.removeDeadNodes();
+    },this.heartbeatFrequency);
 });
 
+ozpIwc.NamesApi.prototype.removeDeadNodes = function(){
+    for(var key in this.data){
+        var node = this.data[key];
+        if(this.dynamicNodes.indexOf(key) < 0) {
+            if ((ozpIwc.util.now() - node.entity.time) > this.heartbeatFrequency * this.heartbeatDropCount) {
+                var snapshot = node.snapshot();
+                node.deleteData;
+                this.notifyWatchers(node, node.changesSince(snapshot));
+                delete this.data[key];
+                // update all the collection values
+                this.dynamicNodes.forEach(function(resource) {
+                    this.updateDynamicNode(this.data[resource]);
+                },this);
+            }
+        }
+    }
+};
 /**
  * Checks that the given packet context's resource meets the requirements of the api. Throws exception if fails
  * validation
