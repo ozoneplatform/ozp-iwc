@@ -3421,7 +3421,11 @@ ozpIwc.util.ajax = function (config) {
                 resolve(JSON.parse(this.responseText));
             }
             catch (e) {
-                reject(this);
+                if(this.status === 204 && !this.responseText){
+                    resolve();
+                } else {
+                    reject(this);
+                }
             }
         };
 
@@ -7732,6 +7736,15 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
     if (!object.contentType) {
         object.contentType = 'application/json';
     }
+    var parseEntity;
+    if(typeof object.entity === "string"){
+        try{
+            parseEntity = JSON.parse(object.entity);
+            object.entity = parseEntity;
+        }catch(e){
+            // fail silently for now
+        }
+    }
     var node = this.findNodeForServerResource(object,path,endpoint);
 
     if (node) {
@@ -9074,16 +9087,31 @@ ozpIwc.DataApiValue.prototype.changesSince=function(snapshot) {
  * @param {ozpIwc.TransportPacket} serverData
  */
 ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
-    this.entity=serverData.entity;
-    this.contentType=serverData.contentType || this.contentType;
-	this.permissions=serverData.permissions || this.permissions;
-	this.version=serverData.version || this.version;
+    var clone = ozpIwc.util.clone(serverData);
+
+    this.entity= clone.entity.entity || {};
+    this.contentType=clone.contentType || this.contentType;
+    this.permissions=clone.permissions || this.permissions;
+    this.version=clone.version || this.version;
+
+    /**
+     * @property _links
+     * @type Object
+     */
+    this._links = clone.entity._links || this._links;
+
+    /**
+     * @property key
+     * @type String
+     */
+    this.key = clone.entity.key || this.key;
 
     /**
      * @property self
      * @type Object
      */
-	this.self=serverData.self || this.self;
+    this.self=clone.self || this.self;
+
 };
 
 /**
