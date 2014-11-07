@@ -3,7 +3,7 @@
  */
 
 /**
- * The capability value for an intent. adheres to the ozpIwc-intents-type-capabilities-v1+json content type.
+ * The capability value for an intent. adheres to the application/vnd.ozp-iwc-intent-definition-v1+json content type.
  * @class IntentsApiDefinitionValue
  * @namespace ozpIwc
  * @extends ozpIwc.CommonApiValue
@@ -15,8 +15,8 @@
  */
 ozpIwc.IntentsApiDefinitionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function (config) {
     config=config || {};
-    config.allowedContentTypes=["application/ozpIwc-intents-definition-v1+json"];
-    config.contentType="application/ozpIwc-intents-definition-v1+json";
+    config.allowedContentTypes=["application/vnd.ozp-iwc-intent-definition-v1+json"];
+    config.contentType="application/vnd.ozp-iwc-intent-definition-v1+json";
     ozpIwc.CommonApiValue.call(this, config);
 
     /**

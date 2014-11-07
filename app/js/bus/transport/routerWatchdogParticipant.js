@@ -90,7 +90,7 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
             dst: "names.api",
             action: "set",
             resource: "/router/" + self.router.selfId,
-            contentType: "application/ozpIwc-router-v1+json",
+            contentType: "application/vnd.ozp-iwc-router-v1+json",
             entity: {
                 'address': self.router.selfId,
                 'participants': self.router.getParticipantCount(),

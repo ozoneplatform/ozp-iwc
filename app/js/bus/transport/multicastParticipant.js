@@ -54,9 +54,9 @@ ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name)
      * Content type for the Participant's heartbeat status packets.
      * @property heartBeatContentType
      * @type String
-     * @default "application/ozpIwc-multicast-address-v1+json"
+     * @default "application/vnd.ozp-iwc-multicast-address-v1+json"
      */
-    this.heartBeatContentType="application/ozpIwc-multicast-address-v1+json";
+    this.heartBeatContentType="application/vnd.ozp-iwc-multicast-address-v1+json";
 
     /**
      *
