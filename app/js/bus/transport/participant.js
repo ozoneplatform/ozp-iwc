@@ -71,9 +71,9 @@ ozpIwc.Participant=function() {
      * Content type for the Participant's heartbeat status packets.
      * @property heartBeatContentType
      * @type String
-     * @default "application/ozpIwc-address-v1+json"
+     * @default "application/vnd.ozp-iwc-address-v1+json"
      */
-    this.heartBeatContentType="application/ozpIwc-address-v1+json";
+    this.heartBeatContentType="application/vnd.ozp-iwc-address-v1+json";
 
     /**
      * The heartbeat status packet of the participant.

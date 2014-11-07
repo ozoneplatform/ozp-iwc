@@ -15,7 +15,7 @@
  */
 ozpIwc.IntentsApiInFlightIntent = ozpIwc.util.extend(ozpIwc.CommonApiValue, function (config) {
     config=config || {};
-    config.contentType="application/vnd.ozp-iwc-intent-in-flight-v1+json";
+    config.contentType="application/vnd.ozp-iwc-intent-invocation-v1+json";
     config.allowedContentTypes=[config.contentType];
 
     ozpIwc.CommonApiValue.apply(this, arguments);

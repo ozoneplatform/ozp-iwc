@@ -25,7 +25,7 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/application",
         pattern: /^\/application\/.*$/,
-        contentType: "application/ozpIwc-application-list-v1+json"
+        contentType: "application/vnd.ozp-iwc-application-list-v1+json"
     }));
 
     this.on("changedNode",this.updateIntents,this);
@@ -100,7 +100,7 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
             'src' : "system.api",
             'action': "set",
             'resource': "/"+i.type+"/"+i.action+"/system.api"+node.resource.replace(/\//g,'.'),
-            'contentType': "application/ozpIwc-intents-handler-v1+json",
+            'contentType': "application/vnd.ozp-iwc-intent-handler-v1+json",
             'entity': {
                 'type': i.type,
                 'action': i.action,
@@ -145,7 +145,7 @@ ozpIwc.SystemApi.prototype.makeValue = function(packet){
     this.participant.send({
         dst: "intents.api",
         action: "register",
-        contentType: "application/ozpIwc-intents-handler-v1+json",
+        contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
         resource:launchDefinition,
         entity: {
             icon:  (packet.entity.icons && packet.entity.icons.small)  ? packet.entity.icons.small : "" ,
@@ -191,7 +191,7 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
 
     this.participant.send({
         dst: "intents.api",
-        contentType: "application/ozpIwc-intents-handler-v1+json",
+        contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
         action: "invoke",
         resource: node.entity.launchResource,
         entity: packetContext.packet.entity

@@ -41,7 +41,7 @@ describe("Intents API", function () {
     it('registers handlers', function (done) {
 
         client.api('intents.api').register('/text/plain/view', {
-            contentType: "application/ozpIwc-intents-handler-v1+json",
+            contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: registerEntity
         }).then(function (reply) {
             expect(reply.response).toEqual('ok');
@@ -57,7 +57,7 @@ describe("Intents API", function () {
     it('uses sane defaults to register handlers', function (done) {
 
         client.api('intents.api').register('/text/plain/view', {
-            contentType: "application/ozpIwc-intents-handler-v1+json",
+            contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: {
                 type: "text/plain",
                 action: "view",
@@ -86,7 +86,7 @@ describe("Intents API", function () {
 
     it('deletes handlers', function (done) {
         client.api('intents.api').register('/text/plain/view',{
-            contentType: "application/ozpIwc-intents-handler-v1+json",
+            contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: registerEntity
         }).then(function(reply) {
             return client.api('intents.api').delete(reply.entity.resource);
@@ -101,7 +101,7 @@ describe("Intents API", function () {
     it('invokes handler directly', function (done) {
 
        client.api('intents.api').register('/text/plain/view', {
-            contentType: "application/ozpIwc-intents-handler-v1+json",
+            contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: {
                 type: "text/plain",
                 action: "view",
@@ -140,7 +140,7 @@ describe("Intents API", function () {
         var gate=doneSemaphore(2,done);
 
         client.api('intents.api').register('/text/plain/view', {
-            contentType: "application/ozpIwc-intents-handler-v1+json",
+            contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: {
                 type: "text/plain",
                 action: "view",
@@ -157,7 +157,7 @@ describe("Intents API", function () {
             gate();
         }).then(function(){
             return client.api('intents.api').register('/text/plain/view', {
-                contentType: "application/ozpIwc-intents-handler-v1+json",
+                contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
                 entity: {
                     type: "text/plain",
                     action: "view",

@@ -27,7 +27,7 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/ozpIntents/invocations",
         pattern: /^\/ozpIntents\/invocations\/.*$/,
-        contentType: "application/ozpIwc-application-list-v1+json"
+        contentType: "application/vnd.ozp-iwc-intent-invocation-list-v1+json"
     }));
 });
 
@@ -228,7 +228,7 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
  * @param packetContext
  */
 ozpIwc.IntentsApi.prototype.handleSet = function (node, packetContext) {
-    if(packetContext.packet.contentType === "application/vnd.ozp-iwc-intent-in-flight-v1+json"){
+    if(packetContext.packet.contentType === "application/vnd.ozp-iwc-intent-invocation-v1+json"){
 
         var badActionResponse = {
             'response': 'badAction',

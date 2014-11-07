@@ -27,34 +27,56 @@ describe("Names API",function() {
     });
     [ {
             'resource': "/address",
-            'contentType' : "application/ozpIwc-address-v1+json"
+            'contentType' : "application/vnd.ozp-iwc-address-list-v1+json"
       },{
             'resource': "/multicast",
-            'contentType' : "application/ozpIwc-multicast-address-v1+json"
+            'contentType' : "application/vnd.ozp-iwc-multicast-list-v1+json"
       },{
             'resource': "/api",
-            'contentType' : "application/ozpIwc-api-descriptor-v1+json"
+            'contentType' : "application/vnd.ozp-iwc-api-list-v1+json"
       },{
             'resource': "/router",
-            'contentType' : "application/ozpIwc-router-v1+json"
+            'contentType' : "application/vnd.ozp-iwc-router-list-v1+json"
       }   
     ].forEach(function(r) {
-        describe("Resource tree " + r.resource, function() {
-            it("exists",function() {
-                var context=new TestPacketContext({
-                    'leaderState': "leader",
-                    'packet': {
-                        'resource': r.resource,
-                        'action': "get",
-                        'msgId' : "1234",
-                        'src' : "srcParticipant"
-                    }
+            describe("Resource tree root " + r.resource, function () {
+                it("exists", function () {
+                    var context = new TestPacketContext({
+                        'leaderState': "leader",
+                        'packet': {
+                            'resource': r.resource,
+                            'action': "get",
+                            'msgId': "1234",
+                            'src': "srcParticipant"
+                        }
+                    });
+                    namesApi.routePacket(context);
+                    expect(context.responses[0].response).toEqual("ok");
+                    expect(context.responses[0].entity).toEqual([]);
+                    expect(context.responses[0].contentType).toEqual(r.contentType);
                 });
-                namesApi.routePacket(context);            
-                expect(context.responses[0].response).toEqual("ok");
-                expect(context.responses[0].entity).toEqual([]);
-                expect(context.responses[0].contentType).toEqual(r.contentType);
             });
+        });
+
+        [ {
+            'resource': "/address",
+            'contentType' : "application/vnd.ozp-iwc-address-v1+json",
+            'listContentType' : "application/vnd.ozp-iwc-address-list-v1+json"
+        },{
+            'resource': "/multicast",
+            'contentType' : "application/vnd.ozp-iwc-multicast-address-v1+json",
+            'listContentType' : "application/vnd.ozp-iwc-multicast-list-v1+json"
+        },{
+            'resource': "/api",
+            'contentType' : "application/vnd.ozp-iwc-api-v1+json",
+            'listContentType' : "application/vnd.ozp-iwc-api-list-v1+json"
+        },{
+            'resource': "/router",
+            'contentType' : "application/vnd.ozp-iwc-router-v1+json",
+            'listContentType' : "application/vnd.ozp-iwc-router-list-v1+json"
+        }
+        ].forEach(function(r) {
+        describe("Resource tree " + r.resource, function () {
             it("responds with noPermission when attempting to set",function() {
                 var context=new TestPacketContext({
                     'leaderState': "leader",
@@ -108,7 +130,7 @@ describe("Names API",function() {
                 namesApi.routePacket(context);            
                 expect(context.responses[0].response).toEqual("ok");
                 expect(context.responses[0].entity).toContain(r.resource + "/testValue");
-                expect(context.responses[0].contentType).toEqual(r.contentType);
+                expect(context.responses[0].contentType).toEqual(r.listContentType);
                 
             });
             it("responds with badContent when missing the contentType",function() {

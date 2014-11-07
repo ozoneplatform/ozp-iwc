@@ -104,7 +104,7 @@ describe("Names API", function () {
                 address: 'testAddress',
                 participantType: 'testType'
             },
-            contentType: 'application/ozpIwc-address-v1+json'
+            contentType: 'application/vnd.ozp-iwc-address-v1+json'
         };
 
         afterEach(function (done) {

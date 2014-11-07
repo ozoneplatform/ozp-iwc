@@ -11,8 +11,8 @@ describe("Intents Content Type Value",function() {
         });
     });
     
-    it("sets the contentType to application/ozpIwc-intents-contentType-v1+json",function() {
-        expect(node.contentType).toEqual("application/ozpIwc-intents-contentType-v1+json");
+    it("sets the contentType to application/vnd.ozp-iwc-intent-type-v1+json",function() {
+        expect(node.contentType).toEqual("application/vnd.ozp-iwc-intent-type-v1+json");
     });
     
     it("marks new actions as requiring an update",function() {

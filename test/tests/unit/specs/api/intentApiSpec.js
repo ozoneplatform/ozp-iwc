@@ -24,7 +24,7 @@ describe("Intent API Class", function () {
             'packet': {
                 'resource': "/text/plain",
                 'action': "set",
-                'contentType' : "application/ozpIwc-intents-contentType-v1+json",
+                'contentType' : "application/vnd.ozp-iwc-intent-type-v1+json",
                 'entity': {
                     'bar':2
                 }
@@ -40,7 +40,7 @@ describe("Intent API Class", function () {
             'packet': {
                 'resource': "/text/plain/view",
                 'action': "set",
-                'contentType' : "application/ozpIwc-intents-definition-v1+json",
+                'contentType' : "application/vnd.ozp-iwc-intent-definition-v1+json",
                 'entity': {
                     'bar':2
                 }
@@ -56,7 +56,7 @@ describe("Intent API Class", function () {
             'packet': {
                 'resource': "/text/plain/view",
                 'action': "set",
-                'contentType' : "application/ozpIwc-intents-definition-v1+json",
+                'contentType' : "application/vnd.ozp-iwc-intent-definition-v1+json",
                 'entity': {
                     'bar':2
                 }
@@ -80,7 +80,7 @@ describe("Intent API Class", function () {
             'packet': {
                 'resource': "/text/plain/view",
                 'action': "register",
-                'contentType' : "application/ozpIwc-intents-handler-v1+json",
+                'contentType' : "application/vnd.ozp-iwc-intent-handler-v1+json",
                 'entity': {
                     'bar':2
                 }
@@ -100,7 +100,7 @@ describe("Intent API Class", function () {
                 'packet': {
                     'resource': "/text/plain/view",
                     'action': "register",
-                    'contentType' : "application/ozpIwc-intents-handler-v1+json",
+                    'contentType' : "application/vnd.ozp-iwc-intent-handler-v1+json",
                     'entity': {
                         'type': "text/plain",
                         'action' : "view",

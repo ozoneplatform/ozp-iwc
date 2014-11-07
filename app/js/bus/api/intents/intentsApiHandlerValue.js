@@ -14,8 +14,8 @@
  */
 ozpIwc.IntentsApiHandlerValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function (config) {
     config=config || {};
-    config.allowedContentTypes=["application/ozpIwc-intents-handler-v1+json"];
-    config.contentType="application/ozpIwc-intents-handler-v1+json";
+    config.allowedContentTypes=["application/vnd.ozp-iwc-intent-handler-v1+json"];
+    config.contentType="application/vnd.ozp-iwc-intent-handler-v1+json";
     ozpIwc.CommonApiValue.apply(this, arguments);
     this.entity={
         type: config.intentType,
