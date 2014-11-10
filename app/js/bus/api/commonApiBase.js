@@ -100,10 +100,10 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectP
             }
             break;
         case ozpIwc.linkRelPrefix + ':system':
-            resource += 'system' + (object.name ? '/'+object.name : '') +(object.version ? '/'+object.version : '');
+            resource += 'system';
             break;
         case ozpIwc.linkRelPrefix + ':user':
-            resource += 'user' + (object.username ? '/'+object.username : '');
+            resource += 'user';
             break;
         case ozpIwc.linkRelPrefix + ':user-data':
             if (object.key) {
