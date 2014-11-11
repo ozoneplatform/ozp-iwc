@@ -121,7 +121,8 @@ ozpIwc.DataApiValue.prototype.changesSince=function(snapshot) {
 ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
     var clone = ozpIwc.util.clone(serverData);
 
-    this.entity= clone.entity.entity || {};
+    // we need the persistent data to conform with the structure of non persistent data.
+    this.entity= (clone.entity && clone.entity.entity) ?  clone.entity.entity : clone.entity || {};
     this.contentType=clone.contentType || this.contentType;
     this.permissions=clone.permissions || this.permissions;
     this.version=clone.version || this.version;
@@ -130,19 +131,19 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
      * @property _links
      * @type Object
      */
-    this._links = clone.entity._links || this._links;
+    this._links = (clone.entity && clone.entity._links) ?  clone.entity._links : clone._links || this._links;
 
     /**
      * @property key
      * @type String
      */
-    this.key = clone.entity.key || this.key;
+    this.key = (clone.entity && clone.entity.key) ?  clone.entity.key : clone.key || this.key;
 
     /**
      * @property self
      * @type Object
      */
-    this.self=clone.self || this.self;
+    this.self= (clone.self) ?  clone.self : this.self;
 
 };
 

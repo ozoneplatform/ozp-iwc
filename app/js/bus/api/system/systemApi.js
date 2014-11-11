@@ -126,7 +126,7 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
  */
 ozpIwc.SystemApi.prototype.makeValue = function(packet){
     switch (packet.contentType){
-        case "application/vnd.ozp-iwc-application-v1+json":
+        case "application/vnd.ozp-application-v1+json":
             var launchDefinition = "/system"+packet.resource;
             packet.entity.launchDefinition = packet.entity.launchDefinition || launchDefinition;
 

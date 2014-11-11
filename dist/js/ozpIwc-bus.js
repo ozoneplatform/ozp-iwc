@@ -7412,6 +7412,10 @@ ozpIwc.CommonApiValue.prototype.updateContent=function(changedNodes) {
  * @param {ozpIwc.TransportPacket} serverData
  */
 ozpIwc.CommonApiValue.prototype.deserialize=function(serverData) {
+    this.entity=serverData.entity;
+    this.contentType=serverData.contentType || this.contentType;
+    this.permissions=serverData.permissions || this.permissions;
+    this.version=serverData.version || ++this.version;
 };
 
 /**
@@ -7734,7 +7738,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHe
 ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint,res) {
     //TODO where should we get content-type?
     if (!object.contentType) {
-        object.contentType = 'application/json';
+        object.contentType = 'application/vnd.ozp-application-v1+json';
     }
     var parseEntity;
     if(typeof object.entity === "string"){
@@ -8334,7 +8338,10 @@ ozpIwc.CommonApiBase.prototype.unloadState = function(){
         // temporarily change the primative to stringify our RegExp
         var tempToJSON = RegExp.prototype.toJSON;
         RegExp.prototype.toJSON = RegExp.prototype.toString;
-        this.participant.sendElectionMessage("election",{state: this.data, previousLeader: this.participant.address});
+        this.participant.sendElectionMessage("election",{state: {
+            data: this.data,
+            dynamicNodes: this.dynamicNodes
+        }, previousLeader: this.participant.address});
 
         RegExp.prototype.toJSON = tempToJSON;
         this.data = {};
@@ -8352,18 +8359,19 @@ ozpIwc.CommonApiBase.prototype.unloadState = function(){
  */
 ozpIwc.CommonApiBase.prototype.setState = function(state) {
     this.data = {};
-    for (var key in state) {
-        var dynIndex = this.dynamicNodes.indexOf(state[key].resource);
+    this.dynamicNodes = state.dynamicNodes;
+    for (var key in state.data) {
+        var dynIndex = this.dynamicNodes.indexOf(state.data[key].resource);
         var node;
         if(dynIndex > -1){
-             node = this.data[state[key].resource] = new ozpIwc.CommonApiCollectionValue({
-                resource: state[key].resource
+             node = this.data[state.data[key].resource] = new ozpIwc.CommonApiCollectionValue({
+                resource: state.data[key].resource
             });
-            node.deserialize(state[key]);
+            node.deserialize(state.data[key]);
             this.updateDynamicNode(node);
         } else {
-            node = this.findOrMakeValue(state[key]);
-            node.deserialize(state[key]);
+            node = this.findOrMakeValue(state.data[key]);
+            node.deserialize(state.data[key]);
         }
     }
     // update all the collection values
@@ -9089,7 +9097,8 @@ ozpIwc.DataApiValue.prototype.changesSince=function(snapshot) {
 ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
     var clone = ozpIwc.util.clone(serverData);
 
-    this.entity= clone.entity.entity || {};
+    // we need the persistent data to conform with the structure of non persistent data.
+    this.entity= (clone.entity && clone.entity.entity) ?  clone.entity.entity : clone.entity || {};
     this.contentType=clone.contentType || this.contentType;
     this.permissions=clone.permissions || this.permissions;
     this.version=clone.version || this.version;
@@ -9098,19 +9107,19 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
      * @property _links
      * @type Object
      */
-    this._links = clone.entity._links || this._links;
+    this._links = (clone.entity && clone.entity._links) ?  clone.entity._links : clone._links || this._links;
 
     /**
      * @property key
      * @type String
      */
-    this.key = clone.entity.key || this.key;
+    this.key = (clone.entity && clone.entity.key) ?  clone.entity.key : clone.key || this.key;
 
     /**
      * @property self
      * @type Object
      */
-    this.self=clone.self || this.self;
+    this.self= (clone.self) ?  clone.self : this.self;
 
 };
 
@@ -9748,18 +9757,6 @@ ozpIwc.IntentsApiHandlerValue.prototype.set=function(packet) {
 };
 
 /**
- * Deserializes a Intents Api handler value from a packet and constructs this Intents Api handler value.
- *
- * @param {ozpIwc.TransportPacket} serverData
- */
-ozpIwc.IntentsApiHandlerValue.prototype.deserialize=function(serverData) {
-    this.entity=serverData.entity;
-    this.contentType=serverData.contentType || this.contentType;
-    this.permissions=serverData.permissions || this.permissions;
-    this.version=serverData.version || this.version;
-};
-
-/**
  * @submodule bus.api.Value
  */
 
@@ -9972,7 +9969,7 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function(config) {
 ozpIwc.NamesApi.prototype.removeDeadNodes = function(){
     for(var key in this.data){
         var node = this.data[key];
-        if(this.dynamicNodes.indexOf(key) < 0) {
+        if(this.dynamicNodes.indexOf(key) < 0 && node.entity && node.entity.time) {
             if ((ozpIwc.util.now() - node.entity.time) > this.heartbeatFrequency * this.heartbeatDropCount) {
                 var snapshot = node.snapshot();
                 node.deleteData;
@@ -10193,7 +10190,7 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
  */
 ozpIwc.SystemApi.prototype.makeValue = function(packet){
     switch (packet.contentType){
-        case "application/vnd.ozp-iwc-application-v1+json":
+        case "application/vnd.ozp-application-v1+json":
             var launchDefinition = "/system"+packet.resource;
             packet.entity.launchDefinition = packet.entity.launchDefinition || launchDefinition;
 
@@ -10321,20 +10318,6 @@ ozpIwc.SystemApiApplicationValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,func
      */
     this.systemApi=config.systemApi;
 });
-
-/**
- * Deserializes a packet to set this System Api Application value
- *
- * @method deserialize
- * @param serverData
- */
-ozpIwc.SystemApiApplicationValue.prototype.deserialize=function(serverData) {
-    this.entity=serverData.entity;
-    this.contentType=serverData.contentType || this.contentType;
-	this.permissions=serverData.permissions || this.permissions;
-	this.version=serverData.version || ++this.version;
-};
-
 
 /**
  * Returns the intents registered to this value.
