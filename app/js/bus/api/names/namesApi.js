@@ -99,7 +99,7 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function(config) {
 ozpIwc.NamesApi.prototype.removeDeadNodes = function(){
     for(var key in this.data){
         var node = this.data[key];
-        if(this.dynamicNodes.indexOf(key) < 0) {
+        if(this.dynamicNodes.indexOf(key) < 0 && node.entity && node.entity.time) {
             if ((ozpIwc.util.now() - node.entity.time) > this.heartbeatFrequency * this.heartbeatDropCount) {
                 var snapshot = node.snapshot();
                 node.deleteData;

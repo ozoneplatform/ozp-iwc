@@ -48,15 +48,3 @@ ozpIwc.IntentsApiHandlerValue.prototype.set=function(packet) {
     this.entity.invokeIntent.resource = this.entity.invokeIntent.resource || "/intents" + packet.resource;
     this.entity.invokeIntent.action = this.entity.invokeIntent.action || "invoke";
 };
-
-/**
- * Deserializes a Intents Api handler value from a packet and constructs this Intents Api handler value.
- *
- * @param {ozpIwc.TransportPacket} serverData
- */
-ozpIwc.IntentsApiHandlerValue.prototype.deserialize=function(serverData) {
-    this.entity=serverData.entity;
-    this.contentType=serverData.contentType || this.contentType;
-    this.permissions=serverData.permissions || this.permissions;
-    this.version=serverData.version || this.version;
-};

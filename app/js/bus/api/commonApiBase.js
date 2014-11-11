@@ -189,7 +189,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHe
 ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint,res) {
     //TODO where should we get content-type?
     if (!object.contentType) {
-        object.contentType = 'application/json';
+        object.contentType = 'application/vnd.ozp-application-v1+json';
     }
     var parseEntity;
     if(typeof object.entity === "string"){
@@ -789,7 +789,10 @@ ozpIwc.CommonApiBase.prototype.unloadState = function(){
         // temporarily change the primative to stringify our RegExp
         var tempToJSON = RegExp.prototype.toJSON;
         RegExp.prototype.toJSON = RegExp.prototype.toString;
-        this.participant.sendElectionMessage("election",{state: this.data, previousLeader: this.participant.address});
+        this.participant.sendElectionMessage("election",{state: {
+            data: this.data,
+            dynamicNodes: this.dynamicNodes
+        }, previousLeader: this.participant.address});
 
         RegExp.prototype.toJSON = tempToJSON;
         this.data = {};
@@ -807,18 +810,19 @@ ozpIwc.CommonApiBase.prototype.unloadState = function(){
  */
 ozpIwc.CommonApiBase.prototype.setState = function(state) {
     this.data = {};
-    for (var key in state) {
-        var dynIndex = this.dynamicNodes.indexOf(state[key].resource);
+    this.dynamicNodes = state.dynamicNodes;
+    for (var key in state.data) {
+        var dynIndex = this.dynamicNodes.indexOf(state.data[key].resource);
         var node;
         if(dynIndex > -1){
-             node = this.data[state[key].resource] = new ozpIwc.CommonApiCollectionValue({
-                resource: state[key].resource
+             node = this.data[state.data[key].resource] = new ozpIwc.CommonApiCollectionValue({
+                resource: state.data[key].resource
             });
-            node.deserialize(state[key]);
+            node.deserialize(state.data[key]);
             this.updateDynamicNode(node);
         } else {
-            node = this.findOrMakeValue(state[key]);
-            node.deserialize(state[key]);
+            node = this.findOrMakeValue(state.data[key]);
+            node.deserialize(state.data[key]);
         }
     }
     // update all the collection values
