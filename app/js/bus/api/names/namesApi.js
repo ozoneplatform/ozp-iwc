@@ -48,7 +48,7 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function(config) {
     }));
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/multicast",
-        pattern: /^\/multicast\/.*$/,
+        pattern: /^\/multicast\/[^\/\n]*$/,
         contentType: "application/vnd.ozp-iwc-multicast-list-v1+json"
     }));
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
@@ -135,24 +135,40 @@ ozpIwc.NamesApi.prototype.validateResource=function(node,packetContext) {
  * @returns {ozpIwc.NamesApiValue}
  */
 ozpIwc.NamesApi.prototype.makeValue = function(packet) {
-    
     var path=packet.resource.split("/");
     var config={
         resource: packet.resource,
         contentType: packet.contentType
     };
-    
-    // only handle the root elements for now...
-    switch(path[1]) {
-        case "api": config.allowedContentTypes=["application/vnd.ozp-iwc-api-v1+json"]; break;
-        case "address": config.allowedContentTypes=["application/vnd.ozp-iwc-address-v1+json"]; break;
-        case "multicast": config.allowedContentTypes=["application/vnd.ozp-iwc-multicast-address-v1+json"]; break;
-        case "router": config.allowedContentTypes=["application/vnd.ozp-iwc-router-v1+json"]; break;
+    switch (packet.contentType) {
+        case "application/vnd.ozp-iwc-api-v1+json":
+            config.allowedContentTypes=["application/vnd.ozp-iwc-api-v1+json"];
+            break;
+        case "application/vnd.ozp-iwc-multicast-address-v1+json":
+            config.allowedContentTypes=["application/vnd.ozp-iwc-multicast-address-v1+json"];
+            if(path.length >= 3){
+                var resource = '/' + path[1] + '/' + path[2];
+                if(this.dynamicNodes.indexOf(resource) < 0){
+                    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
+                        resource: resource,
+                        pattern: new RegExp("^\/" + path[1].replace("$","\\$").replace(".","\\.") + "\/" +
+                            path[2].replace("$","\\$").replace(".","\\.") + "\/.*$"),
+                        contentType: "application/vnd.ozp-iwc-address-list-v1+json"
+                    }));
+                }
+            }
+            break;
+        case "application/vnd.ozp-iwc-address-v1+json":
+            config.allowedContentTypes=["application/vnd.ozp-iwc-address-v1+json"];
+            break;
+        case "application/vnd.ozp-iwc-router-v1+json":
+            config.allowedContentTypes=["application/vnd.ozp-iwc-router-v1+json"];
+            break;
 
         default:
-            throw new ozpIwc.ApiError("badResource","Not a valid path of names.api: " + path[1] + " in " + packet.resource);
+            throw new ozpIwc.ApiError("badContent","Not a valid contentType of names.api: " + path[1] + " in " + packet.resource);
     }
-    return new ozpIwc.NamesApiValue(config);            
+    return new ozpIwc.NamesApiValue(config);
 };
 
 /**
