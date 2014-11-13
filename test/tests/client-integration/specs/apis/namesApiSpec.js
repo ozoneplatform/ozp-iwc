@@ -165,7 +165,9 @@ describe("Names API", function () {
         it('Client deletes values', function (done) {
             var called = false;
 
-            client.api('names.api').delete(testId,{})
+            client.api('names.api').delete(testId,{
+                'contentType': testFragment.contentType
+            })
                 .then(function(reply) {
                     if (!called) {
                         called = true;

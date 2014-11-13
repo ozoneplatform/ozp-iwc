@@ -102,12 +102,14 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
             var participant=self.router.participants[k];
             participant.heartBeatStatus.time = ozpIwc.util.now();
             if(participant instanceof ozpIwc.MulticastParticipant) {
-                self.send({
-                    'dst': "names.api",
-                    'resource': participant.namesResource,
-                    'action' : "set",
-                    'entity' : participant.heartBeatStatus,
-                    'contentType' : participant.heartBeatContentType              
+                participant.members.forEach(function(member){
+                    self.send({
+                        'dst': "names.api",
+                        'resource': participant.namesResource + "/"+ member.address,
+                        'action' : "set",
+                        'entity' : member.heartBeatStatus,
+                        'contentType' : participant.heartBeatContentType
+                    });
                 });
             } else {
                 participant.heartbeat();
