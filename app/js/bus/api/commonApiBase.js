@@ -189,7 +189,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHe
 ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint,res) {
     //TODO where should we get content-type?
     if (!object.contentType) {
-        object.contentType = 'application/vnd.ozp-application-v1+json';
+        object.contentType = 'application/json';
     }
     var parseEntity;
     if(typeof object.entity === "string"){
@@ -207,8 +207,8 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
         node.deserialize(node, object);
 
         this.notifyWatchers(node, node.changesSince(snapshot));
-        this.loadLinkedObjectsFromServer(endpoint, object, res);
     }
+    this.loadLinkedObjectsFromServer(endpoint, object, res);
 };
 
 /**
@@ -259,7 +259,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
 
     if(noEmbedded && noLinks) {
         this.retrievedBranches++;
-        if(this.retrievedBranches === this.expectedBranches){
+        if(this.retrievedBranches >= this.expectedBranches){
             res("RESOLVING");
         }
     } else {
