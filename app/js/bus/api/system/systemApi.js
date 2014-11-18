@@ -29,24 +29,6 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     }));
 
     this.on("changedNode",this.updateIntents,this);
-
-    // @todo populate user and system endpoints
-//    this.data["/user"]=new ozpIwc.CommonApiValue({
-//        resource: "/user",
-//        contentType: "application/ozpIwc-user-v1+json",
-//        entity: {
-//            "name": "DataFaked BySystemApi",
-//            "userName": "fixmefixmefixme"
-//        }
-//    });
-//    this.data["/system"]=new ozpIwc.CommonApiValue({
-//        resource: "/system",
-//        contentType: "application/ozpIwc-system-info-v1+json",
-//        entity: {
-//            "version": "1.0",
-//            "name": "Fake Data from SystemAPI FIXME"
-//        }
-//    });
 });
 
 /**
@@ -125,44 +107,42 @@ ozpIwc.SystemApi.prototype.updateIntents=function(node,changes) {
  * @returns {ozpIwc.SystemApiMailboxValue|ozpIwc.SystemApiApplicationValue}
  */
 ozpIwc.SystemApi.prototype.makeValue = function(packet){
-    switch (packet.contentType){
-        case "application/vnd.ozp-application-v1+json":
-            var launchDefinition = "/system"+packet.resource;
-            packet.entity.launchDefinition = packet.entity.launchDefinition || launchDefinition;
+        switch (packet.contentType) {
+            case "application/vnd.ozp-application-v1+json":
+                var launchDefinition = "/system" + packet.resource;
+                packet.entity.launchDefinition = packet.entity.launchDefinition || launchDefinition;
 
-            var app =  new ozpIwc.SystemApiApplicationValue({
-                resource: packet.resource,
-                entity: packet.entity,
-                contentType: packet.contentType,
-                systemApi: this
-            });
+                var app = new ozpIwc.SystemApiApplicationValue({
+                    resource: packet.resource,
+                    entity: packet.entity,
+                    contentType: packet.contentType,
+                    systemApi: this
+                });
 
-            this.participant.send({
-                dst: "intents.api",
-                action: "register",
-                contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
-                resource:launchDefinition,
-                entity: {
-                    icon:  (packet.entity.icons && packet.entity.icons.small)  ? packet.entity.icons.small : "" ,
-                    label: packet.entity.name || "",
-                    contentType: "application/json",
-                    invokeIntent:{
-                        dst: "system.api",
-                        action: "invoke",
-                        resource: packet.resource
+                this.participant.send({
+                    dst: "intents.api",
+                    action: "register",
+                    contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
+                    resource: launchDefinition,
+                    entity: {
+                        icon: (packet.entity.icons && packet.entity.icons.small) ? packet.entity.icons.small : "",
+                        label: packet.entity.name || "",
+                        contentType: "application/json",
+                        invokeIntent: {
+                            dst: "system.api",
+                            action: "invoke",
+                            resource: packet.resource
+                        }
                     }
-                }
-            },function(response,done){
-                app.entity.launchResource = response.entity.resource;
-                done();
-            });
+                }, function (response, done) {
+                    app.entity.launchResource = response.entity.resource;
+                    done();
+                });
 
-            return app;
-        default:
-            var app = new ozpIwc.CommonApiValue(packet);
-            return app;
-    }
-
+                return app;
+            default:
+                return new ozpIwc.CommonApiValue(packet);
+        }
 };
 
 /**

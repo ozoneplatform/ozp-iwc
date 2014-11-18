@@ -122,7 +122,7 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
     var clone = ozpIwc.util.clone(serverData);
 
     // we need the persistent data to conform with the structure of non persistent data.
-    this.entity= (clone.entity && clone.entity.entity) ?  clone.entity.entity : clone.entity || {};
+    this.entity= (clone.entity && typeof clone.entity.entity !== "undefined") ?  clone.entity.entity : clone.entity || {};
     this.contentType=clone.contentType || this.contentType;
     this.permissions=clone.permissions || this.permissions;
     this.version=clone.version || this.version;
