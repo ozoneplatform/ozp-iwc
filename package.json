@@ -13,6 +13,7 @@
     "grunt-contrib-uglify": "*",
     "grunt-contrib-watch": "*",
     "grunt-contrib-yuidoc": "^0.5.2",
+    "grunt-bump": "0.0.6",
     "grunt-jsdoc": "*",
     "jshint-stylish": "*",
     "load-grunt-tasks": "~0.6.0"
