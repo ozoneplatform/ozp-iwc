@@ -46,11 +46,17 @@ ozpIwc.util.ajax = function (config) {
 
         request.onload = function () {
             try {
-                resolve(JSON.parse(this.responseText));
+                resolve({
+                    "response": JSON.parse(this.responseText),
+                    "header":  ozpIwc.util.ajaxResponseHeaderToJSON(this.getAllResponseHeaders())
+                });
             }
             catch (e) {
                 if(this.status === 204 && !this.responseText){
-                    resolve();
+                    resolve({
+                        "response": {},
+                        "header":  ozpIwc.util.ajaxResponseHeaderToJSON(this.getAllResponseHeaders())
+                    });
                 } else {
                     reject(this);
                 }
@@ -68,4 +74,24 @@ ozpIwc.util.ajax = function (config) {
             request.send();
         }
     });
+};
+
+
+/**
+ * Takes the Javascript ajax response header (string) and converts it to JSON
+ * @method ajaxResponseHeaderToJSON
+ * @param {String} header
+ *
+ * @returns {Object}
+ */
+ozpIwc.util.ajaxResponseHeaderToJSON = function(header) {
+    var obj = {};
+    header.split("\n").forEach(function (property) {
+        var kv = property.split(":");
+        if (kv.length === 2) {
+            obj[kv[0].trim()] = kv[1].trim();
+        }
+    });
+
+    return obj;
 };

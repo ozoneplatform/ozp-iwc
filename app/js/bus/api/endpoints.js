@@ -162,15 +162,16 @@ ozpIwc.EndpointRegistry=function(config) {
         user: ozpIwc.marketplaceUsername,
         password: ozpIwc.marketplacePassword
     }).then(function(data) {
-        for (var linkEp in data._links) {
+        var payload = data.response;
+        for (var linkEp in payload._links) {
             if (linkEp !== 'self') {
-                var link=data._links[linkEp].href;
-                self.endpoint(linkEp).baseUrl=link;
+                var link = payload._links[linkEp].href;
+                self.endpoint(linkEp).baseUrl = link;
             }
         }
-        for (var embEp in data._embedded) {
-            var embLink=data._embedded[embEp]._links.self.href;
-            self.endpoint(embEp).baseUrl=embLink;
+        for (var embEp in payload._embedded) {
+            var embLink = payload._embedded[embEp]._links.self.href;
+            self.endpoint(embEp).baseUrl = embLink;
         }
     });
 };

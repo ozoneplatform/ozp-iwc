@@ -1,6 +1,6 @@
 var ozpIwc=ozpIwc || {};
 
-ozpIwc.apiRootUrl = "/api";
+ozpIwc.apiRootUrl = "https://www.owfgoss.org/ng/dev-alpha/mp/api";
 ozpIwc.marketplaceUsername='testAdmin1';
 ozpIwc.marketplacePassword='password';
 ozpIwc.linkRelPrefix = "ozp";

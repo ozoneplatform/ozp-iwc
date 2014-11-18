@@ -27,10 +27,7 @@ ozpIwc.IntentsApiTypeValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function 
     this.pattern=new RegExp(ozpIwc.util.escapeRegex(this.resource)+"/[^/]*");
     this.entity={
         'type': config.intentType,
-        'actions': [],
-        '_embedded': {
-            'items': []            
-        }
+        'actions': []
     };
 });
 

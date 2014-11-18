@@ -3418,11 +3418,17 @@ ozpIwc.util.ajax = function (config) {
 
         request.onload = function () {
             try {
-                resolve(JSON.parse(this.responseText));
+                resolve({
+                    "response": JSON.parse(this.responseText),
+                    "header":  ozpIwc.util.ajaxResponseHeaderToJSON(this.getAllResponseHeaders())
+                });
             }
             catch (e) {
                 if(this.status === 204 && !this.responseText){
-                    resolve();
+                    resolve({
+                        "response": {},
+                        "header":  ozpIwc.util.ajaxResponseHeaderToJSON(this.getAllResponseHeaders())
+                    });
                 } else {
                     reject(this);
                 }
@@ -3440,6 +3446,26 @@ ozpIwc.util.ajax = function (config) {
             request.send();
         }
     });
+};
+
+
+/**
+ * Takes the Javascript ajax response header (string) and converts it to JSON
+ * @method ajaxResponseHeaderToJSON
+ * @param {String} header
+ *
+ * @returns {Object}
+ */
+ozpIwc.util.ajaxResponseHeaderToJSON = function(header) {
+    var obj = {};
+    header.split("\n").forEach(function (property) {
+        var kv = property.split(":");
+        if (kv.length === 2) {
+            obj[kv[0].trim()] = kv[1].trim();
+        }
+    });
+
+    return obj;
 };
 
 /** @namespace */
@@ -7412,7 +7438,9 @@ ozpIwc.CommonApiValue.prototype.updateContent=function(changedNodes) {
  * @param {ozpIwc.TransportPacket} serverData
  */
 ozpIwc.CommonApiValue.prototype.deserialize=function(serverData) {
-    this.entity=serverData.entity;
+    for(var i in serverData.entity){
+            this.entity[i] = serverData.entity[i];
+    }
     this.contentType=serverData.contentType || this.contentType;
     this.permissions=serverData.permissions || this.permissions;
     this.version=serverData.version || ++this.version;
@@ -7636,10 +7664,13 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectP
     //Temporarily hard-code prefix. Will derive this from the server response eventually
     switch (endpoint.name) {
         case ozpIwc.linkRelPrefix + ':intent' :
-            if (object.type && object.action) {
-                resource += object.type + '/' + object.action;
-                if (object.handler) {
-                    resource += '/' + object.handler;
+            if (object.type) {
+                resource += object.type;
+                if (object.action) {
+                    resource += '/' + object.action;
+                    if (object.handler) {
+                        resource += '/' + object.handler;
+                    }
                 }
             }
             break;
@@ -7669,8 +7700,9 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectP
 
     return this.findOrMakeValue({
         'resource': resource,
-        'entity': object,
-        'contentType': object.contentType
+        'entity': {},
+        'contentType': object.contentType,
+        'children': object.children // for data.api only
     });
 };
 
@@ -7714,8 +7746,10 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHe
     var self=this;
     endpoint.get("/")
         .then(function(data) {
-            self.loadLinkedObjectsFromServer(endpoint,data,resolveLoad, requestHeaders);
-            self.updateResourceFromServer(data,data._links.self.href,endpoint,resolveLoad);
+            var payload = data.response;
+            var responseHeader = data.header;
+            self.loadLinkedObjectsFromServer(endpoint,payload,resolveLoad, requestHeaders,responseHeader);
+            self.updateResourceFromServer(payload,payload._links.self.href,endpoint,resolveLoad,responseHeader);
             // update all the collection values
             self.dynamicNodes.forEach(function(resource) {
                 self.updateDynamicNode(self.data[resource]);
@@ -7735,11 +7769,11 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHe
  * @param {String} path The path of the resource retrieved.
  * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
  */
-ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint,res) {
+ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint,res,header) {
     //TODO where should we get content-type?
-    if (!object.contentType) {
-        object.contentType = 'application/json';
-    }
+    header = header || {};
+    object.contentType = object.contentType || header['Content-Type'] || 'application/json';
+
     var parseEntity;
     if(typeof object.entity === "string"){
         try{
@@ -7753,11 +7787,17 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
 
     if (node) {
         var snapshot = node.snapshot();
-        node.deserialize(node, object);
+
+        var halLess = ozpIwc.util.clone(object);
+        delete halLess._links;
+        delete halLess._embedded;
+        node.deserialize({
+            entity: halLess
+        });
 
         this.notifyWatchers(node, node.changesSince(snapshot));
+        this.loadLinkedObjectsFromServer(endpoint, object, res);
     }
-    this.loadLinkedObjectsFromServer(endpoint, object, res);
 };
 
 /**
@@ -7781,13 +7821,13 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
     var noEmbedded = true;
     var noLinks = true;
     var branchesFound = 0;
+    var itemLength = 0;
 
     if(data._embedded && data._embedded.item) {
         data._embedded.item = Array.isArray(data._embedded.item) ? data._embedded.item : [data._embedded.item];
         noEmbedded = false;
-        var itemLength;
         if (Object.prototype.toString.call(data._embedded.item) === '[object Array]' ) {
-            itemLength=data._embedded.item.length
+            itemLength=data._embedded.item.length;
         } else {
             itemLength=1;
         }
@@ -7797,9 +7837,8 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
     if(data._links && data._links.item) {
         data._links.item = Array.isArray(data._links.item) ? data._links.item : [data._links.item];
         noLinks = false;
-        var itemLength;
         if (Object.prototype.toString.call(data._links.item) === '[object Array]' ) {
-            itemLength=data._links.item.length
+            itemLength=data._links.item.length;
         } else {
             itemLength=1;
         }
@@ -7818,13 +7857,15 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
         //TODO should we parse objects from _links and _embedded not wrapped in an item object?
 
         if(data._embedded && data._embedded.item) {
+            var object = {};
+
             if( Object.prototype.toString.call(data._embedded.item) === '[object Array]' ) {
                 for (var i in data._embedded.item) {
-                    var object = data._embedded.item[i];
+                    object = data._embedded.item[i];
                     this.updateResourceFromServer(object, object._links.self.href, endpoint, res);
                 }
             } else {
-                var object = data._embedded.item;
+                object = data._embedded.item;
                 this.updateResourceFromServer(object, object._links.self.href, endpoint, res);
             }
         }
@@ -7835,7 +7876,9 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                 data._links.item.forEach(function (object) {
                     var href = object.href;
                     endpoint.get(href, requestHeaders).then(function (objectResource) {
-                        self.updateResourceFromServer(objectResource, href, endpoint, res);
+                        var payload = objectResource.response;
+                        var header = objectResource.header;
+                        self.updateResourceFromServer(payload, href, endpoint, res,header);
                     }).catch(function (error) {
                         ozpIwc.log.error("unable to load " + object.href + " because: ", error);
                     });
@@ -7843,7 +7886,9 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
             } else {
                 var href = data._links.item.href;
                 endpoint.get(href, requestHeaders).then(function (objectResource) {
-                    self.updateResourceFromServer(objectResource, href, endpoint, res);
+                    var payload = objectResource.response;
+                    var header = objectResource.header;
+                    self.updateResourceFromServer(payload, href, endpoint, res,header);
                 }).catch(function (error) {
                     ozpIwc.log.error("unable to load " + object.href + " because: ", error);
                 });
@@ -8708,15 +8753,16 @@ ozpIwc.EndpointRegistry=function(config) {
         user: ozpIwc.marketplaceUsername,
         password: ozpIwc.marketplacePassword
     }).then(function(data) {
-        for (var linkEp in data._links) {
+        var payload = data.response;
+        for (var linkEp in payload._links) {
             if (linkEp !== 'self') {
-                var link=data._links[linkEp].href;
-                self.endpoint(linkEp).baseUrl=link;
+                var link = payload._links[linkEp].href;
+                self.endpoint(linkEp).baseUrl = link;
             }
         }
-        for (var embEp in data._embedded) {
-            var embLink=data._embedded[embEp]._links.self.href;
-            self.endpoint(embEp).baseUrl=embLink;
+        for (var embEp in payload._embedded) {
+            var embLink = payload._embedded[embEp]._links.self.href;
+            self.endpoint(embEp).baseUrl = embLink;
         }
     });
 };
@@ -9098,7 +9144,7 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
     var clone = ozpIwc.util.clone(serverData);
 
     // we need the persistent data to conform with the structure of non persistent data.
-    this.entity= (clone.entity && clone.entity.entity) ?  clone.entity.entity : clone.entity || {};
+    this.entity= (clone.entity && typeof clone.entity.entity !== "undefined") ?  clone.entity.entity : clone.entity || {};
     this.contentType=clone.contentType || this.contentType;
     this.permissions=clone.permissions || this.permissions;
     this.version=clone.version || this.version;
@@ -9838,10 +9884,7 @@ ozpIwc.IntentsApiTypeValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function 
     this.pattern=new RegExp(ozpIwc.util.escapeRegex(this.resource)+"/[^/]*");
     this.entity={
         'type': config.intentType,
-        'actions': [],
-        '_embedded': {
-            'items': []            
-        }
+        'actions': []
     };
 });
 
@@ -10093,24 +10136,6 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     }));
 
     this.on("changedNode",this.updateIntents,this);
-
-    // @todo populate user and system endpoints
-//    this.data["/user"]=new ozpIwc.CommonApiValue({
-//        resource: "/user",
-//        contentType: "application/ozpIwc-user-v1+json",
-//        entity: {
-//            "name": "DataFaked BySystemApi",
-//            "userName": "fixmefixmefixme"
-//        }
-//    });
-//    this.data["/system"]=new ozpIwc.CommonApiValue({
-//        resource: "/system",
-//        contentType: "application/ozpIwc-system-info-v1+json",
-//        entity: {
-//            "version": "1.0",
-//            "name": "Fake Data from SystemAPI FIXME"
-//        }
-//    });
 });
 
 /**
@@ -10223,8 +10248,7 @@ ozpIwc.SystemApi.prototype.makeValue = function(packet){
 
                 return app;
             default:
-                var app = new ozpIwc.CommonApiValue(packet);
-                return app;
+                return new ozpIwc.CommonApiValue(packet);
         }
 };
 
