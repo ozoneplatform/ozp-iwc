@@ -110,7 +110,7 @@ module.exports = function(grunt) {
             jssrc: {
                 files: [
                     {
-                        src: ['js/defaultWiring.js','*.html','tools/**/*'],
+                        src: ['js/defaultWiring.js','*.html','debugger/**/*'],
                         dest: './dist/',
                         cwd: 'app',
                         expand: true,
