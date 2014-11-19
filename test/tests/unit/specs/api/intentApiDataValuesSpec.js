@@ -20,7 +20,7 @@ describe("Intents Content Type Value",function() {
     });
 
     it("ignores handlers on update",function() {
-        expect(node.isUpdateNeeded(handlerNode)).toBe(true);
+        expect(node.isUpdateNeeded(handlerNode)).toBe(false);
     });
     
     it("updates actions when changed",function() {
