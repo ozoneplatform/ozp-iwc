@@ -32,16 +32,18 @@ ozpIwc.util=ozpIwc.util || {};
 ozpIwc.util.ajax = function (config) {
     return new Promise(function(resolve,reject) {
         var request = new XMLHttpRequest();
-        request.withCredentials = config.withCredentials;
         request.open(config.method, config.href, true);
-//        request.setRequestHeader("Content-Type", "application/json");
         if (Array.isArray(config.headers)) {
             config.headers.forEach(function(header) {
                 request.setRequestHeader(header.name, header.value);
             });
         }
-        //Setting username and password as params to open() per the API does not work. setting them
-        //explicitly in the Authorization header works (but only for BASIC authentication)
+        /*
+        * Setting username and password as params to open() (and setting request.withCredentials = true)
+        * per the API does not work in FF. setting them explicitly in the Authorization header works
+        * (but only for BASIC authentication as coded here). If the credentials are set in the open command,
+        * FF will fail to make the request, even though the credentials are manually set in the Authorization header
+        * */
         request.setRequestHeader("Authorization", "Basic " + btoa(config.user + ":" + config.password));
 
         request.onload = function () {
