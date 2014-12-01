@@ -804,14 +804,11 @@ ozpIwc.CommonApiBase.prototype.unloadState = function(){
     if(this.participant.activeStates.leader) {
 
         // temporarily change the primative to stringify our RegExp
-        var tempToJSON = RegExp.prototype.toJSON;
-        RegExp.prototype.toJSON = RegExp.prototype.toString;
         this.participant.sendElectionMessage("election",{state: {
             data: this.data,
             dynamicNodes: this.dynamicNodes
         }, previousLeader: this.participant.address});
 
-        RegExp.prototype.toJSON = tempToJSON;
         this.data = {};
     } else {
         this.participant.sendElectionMessage("election");
