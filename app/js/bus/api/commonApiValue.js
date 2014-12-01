@@ -248,6 +248,7 @@ ozpIwc.CommonApiValue.prototype.updateContent=function(changedNodes) {
  * @param {ozpIwc.TransportPacket} serverData
  */
 ozpIwc.CommonApiValue.prototype.deserialize=function(serverData) {
+    this.entity = this.entity || {};
     for(var i in serverData.entity){
             this.entity[i] = serverData.entity[i];
     }
