@@ -7484,6 +7484,7 @@ ozpIwc.CommonApiCollectionValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,funct
      * @default ''
      */
     this.pattern=config.pattern || '';
+    this.pattern.toJSON = RegExp.prototype.toString;
     this.entity=[];
 });
 
@@ -7529,6 +7530,7 @@ ozpIwc.CommonApiCollectionValue.prototype.deserialize=function(serverData) {
     this.contentType=serverData.contentType || this.contentType;
     this.permissions=serverData.permissions || this.permissions;
     this.pattern = new RegExp(serverData.pattern.replace(/^\/|\/$/g, '')) || this.pattern;
+    this.pattern.toJSON = RegExp.prototype.toString;
     this.persist=serverData.persist || this.persist;
     this.version=serverData.version || this.version;
     this.watchers = serverData.watchers || this.watchers;
@@ -8390,14 +8392,11 @@ ozpIwc.CommonApiBase.prototype.unloadState = function(){
     if(this.participant.activeStates.leader) {
 
         // temporarily change the primative to stringify our RegExp
-        var tempToJSON = RegExp.prototype.toJSON;
-        RegExp.prototype.toJSON = RegExp.prototype.toString;
         this.participant.sendElectionMessage("election",{state: {
             data: this.data,
             dynamicNodes: this.dynamicNodes
         }, previousLeader: this.participant.address});
 
-        RegExp.prototype.toJSON = tempToJSON;
         this.data = {};
     } else {
         this.participant.sendElectionMessage("election");
