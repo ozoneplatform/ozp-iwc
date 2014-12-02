@@ -10055,17 +10055,7 @@ ozpIwc.IntentsApiTypeValue.prototype.updateContent=function(changedNodes) {
  * @param {ozpIwc.TransportPacket} serverData
  */
 ozpIwc.IntentsApiTypeValue.prototype.deserialize=function(serverData) {
-    var clone = ozpIwc.util.clone(serverData);
-// we need the persistent data to conform with the structure of non persistent data.
-    this.entity= clone.entity || {};
-
-    this.pattern = (typeof clone.pattern == "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
-    this.pattern.toJSON = RegExp.prototype.toString;
-
-    this.contentType=clone.contentType || this.contentType;
-    this.permissions=clone.permissions || this.permissions;
-    this.version=clone.version || this.version;
-    this.watchers = clone.watchers || this.watchers;
+    ozpIwc.IntentsApiDefinitionValue.prototype.deserialize.apply(this, arguments);
 };
 
 /**
@@ -10075,14 +10065,7 @@ ozpIwc.IntentsApiTypeValue.prototype.deserialize=function(serverData) {
  * @return {ozpIwc.TransportPacket}
  */
 ozpIwc.IntentsApiTypeValue.prototype.serialize=function() {
-    var serverData = {};
-    serverData.entity=this.entity;
-    serverData.pattern=this.pattern;
-    serverData.contentType=this.contentType;
-    serverData.permissions=this.permissions;
-    serverData.version=this.version;
-    serverData.watchers=this.watchers;
-    return serverData;
+    return  ozpIwc.IntentsApiDefinitionValue.prototype.serialize.apply(this,arguments);
 };
 
 /**
