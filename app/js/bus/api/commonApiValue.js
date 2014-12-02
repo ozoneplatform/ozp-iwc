@@ -248,11 +248,26 @@ ozpIwc.CommonApiValue.prototype.updateContent=function(changedNodes) {
  * @param {ozpIwc.TransportPacket} serverData
  */
 ozpIwc.CommonApiValue.prototype.deserialize=function(serverData) {
-    this.entity = this.entity || {};
-    for(var i in serverData.entity){
-            this.entity[i] = serverData.entity[i];
-    }
-    this.contentType=serverData.contentType || this.contentType;
-    this.permissions=serverData.permissions || this.permissions;
-    this.version=serverData.version || ++this.version;
+    var clone = ozpIwc.util.clone(serverData);
+// we need the persistent data to conform with the structure of non persistent data.
+    this.entity= clone.entity || {};
+    this.contentType=clone.contentType || this.contentType;
+    this.permissions=clone.permissions || this.permissions;
+    this.version=clone.version || this.version;
+    this.watchers = serverData.watchers || this.watchers;
+};
+
+/**
+ * Serializes a Common Api value to a packet.
+ *
+ * @method serialize
+ * @return {ozpIwc.TransportPacket}
+ */
+ozpIwc.CommonApiValue.prototype.serialize=function() {
+    var serverData = {};
+    serverData.entity=this.entity;
+    serverData.contentType=this.contentType;
+    serverData.permissions=this.permissions;
+    serverData.version=this.version;
+    return serverData;
 };

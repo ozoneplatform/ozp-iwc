@@ -25,6 +25,7 @@ ozpIwc.IntentsApiTypeValue = ozpIwc.util.extend(ozpIwc.CommonApiValue, function 
      * @type RegExp
      */
     this.pattern=new RegExp(this.resource.replace("$","\\$").replace(".","\\.")+"\/[^/]*$");
+    this.pattern.toJSON = RegExp.prototype.toString;
     this.entity={
         'type': config.intentType,
         'actions': []
@@ -53,4 +54,41 @@ ozpIwc.IntentsApiTypeValue.prototype.updateContent=function(changedNodes) {
     this.entity.actions=changedNodes.map(function(changedNode) { 
         return changedNode.resource; 
     });
+};
+
+/**
+ * Handles deserializing an {{#crossLink "ozpIwc.TransportPacket"}}{{/crossLink}} and setting this value with
+ * the contents.
+ *
+ * @method deserialize
+ * @param {ozpIwc.TransportPacket} serverData
+ */
+ozpIwc.IntentsApiTypeValue.prototype.deserialize=function(serverData) {
+    var clone = ozpIwc.util.clone(serverData);
+// we need the persistent data to conform with the structure of non persistent data.
+    this.entity= clone.entity || {};
+
+    this.pattern = (typeof clone.pattern == "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
+    this.pattern.toJSON = RegExp.prototype.toString;
+
+    this.contentType=clone.contentType || this.contentType;
+    this.permissions=clone.permissions || this.permissions;
+    this.version=clone.version || this.version;
+    this.watchers = clone.watchers || this.watchers;
+};
+
+/**
+ * Serializes a Intents Api Type value to a packet.
+ *
+ * @method serialize
+ * @return {ozpIwc.TransportPacket}
+ */
+ozpIwc.IntentsApiTypeValue.prototype.serialize=function() {
+    var serverData = {};
+    serverData.entity=this.entity;
+    serverData.pattern=this.pattern;
+    serverData.contentType=this.contentType;
+    serverData.permissions=this.permissions;
+    serverData.version=this.version;
+    return serverData;
 };

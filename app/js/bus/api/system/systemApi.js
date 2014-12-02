@@ -110,6 +110,7 @@ ozpIwc.SystemApi.prototype.makeValue = function(packet){
         switch (packet.contentType) {
             case "application/vnd.ozp-application-v1+json":
                 var launchDefinition = "/system" + packet.resource;
+                packet.entity = packet.entity || {};
                 packet.entity.launchDefinition = packet.entity.launchDefinition || launchDefinition;
 
                 var app = new ozpIwc.SystemApiApplicationValue({
@@ -207,6 +208,6 @@ ozpIwc.SystemApi.prototype.launchApplication=function(node,intentResource) {
             "ozpIwc.inFlightIntent="+encodeURIComponent(intentResource)
     ];
 
-    ozpIwc.util.openWindow(node.entity._links.describes.href,launchParams.join("&"));
+    ozpIwc.util.openWindow(node.entity.launchUrls.default,launchParams.join("&"));
 };
 
