@@ -1,8 +1,9 @@
 var ozpIwc=ozpIwc || {};
 
 ozpIwc.apiRootUrl = ozpIwc.apiRootUrl || "/api";
-ozpIwc.marketplaceUsername= ozpIwc.marketplaceUsername || '';
-ozpIwc.marketplacePassword= ozpIwc.marketplacePassword || '';
+ozpIwc.config = ozpIwc.config || {};
+ozpIwc.config.basicAuthUsername= ozpIwc.config.basicAuthUsername || '';
+ozpIwc.config.basicAuthPassword= ozpIwc.config.basicAuthPassword || '';
 ozpIwc.linkRelPrefix = ozpIwc.linkRelPrefix || "ozp";
 ozpIwc.initEndpoints(ozpIwc.apiRootUrl);
 

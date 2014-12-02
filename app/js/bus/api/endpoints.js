@@ -69,9 +69,6 @@ ozpIwc.Endpoint.prototype.put=function(resource, data, requestHeaders) {
             method: 'PUT',
 			data: data,
             headers: requestHeaders,
-            withCredentials: true,
-            user: ozpIwc.marketplaceUsername,
-            password: ozpIwc.marketplacePassword
         });
     });
 };
