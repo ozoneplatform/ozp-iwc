@@ -202,7 +202,12 @@ ozpIwc.DataApi.prototype.handleDelete=function(node,packetContext) {
  */
 ozpIwc.DataApi.prototype.persistNode=function(node) {
     var endpointref= ozpIwc.endpoint(this.endpointUrl);
-    endpointref.put(node.resource, JSON.stringify(node.serialize()));
+    var persistNode = node.serialize();
+
+    //Watchers don't need persistence they are run time.
+    delete persistNode.watchers;
+
+    endpointref.put(node.resource, JSON.stringify(persistNode));
 };
 
 /**
