@@ -1,6 +1,5 @@
 
 var debuggerModule=angular.module("ozpIwc.debugger",[
-    'ngRoute',
     'ui.bootstrap'
 ]);
         
