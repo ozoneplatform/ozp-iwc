@@ -214,13 +214,24 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,end
         var halLess = ozpIwc.util.clone(object);
         delete halLess._links;
         delete halLess._embedded;
-        node.deserialize({
-            entity: halLess
-        });
+        node.deserialize(this.formatServerData(halLess));
 
         this.notifyWatchers(node, node.changesSince(snapshot));
         this.loadLinkedObjectsFromServer(endpoint, object, res);
     }
+};
+
+/**
+ * A middleware function used to format server data to be deserialized into Api nodes
+ *
+ * @method formatServerData
+ * @param {Object} the data to format.
+ * @returns {{entity: object}}
+ */
+ozpIwc.CommonApiBase.prototype.formatServerData = function(object){
+    return {
+        entity: object
+    };
 };
 
 /**
@@ -803,9 +814,12 @@ ozpIwc.CommonApiBase.prototype.handleUnwatch=function(node,packetContext) {
 ozpIwc.CommonApiBase.prototype.unloadState = function(){
     if(this.participant.activeStates.leader) {
 
-        // temporarily change the primative to stringify our RegExp
+        var serializedData = {};
+        for(var  i in this.data){
+            serializedData[i] = this.data[i].serialize();
+        }
         this.participant.sendElectionMessage("election",{state: {
-            data: this.data,
+            data: serializedData,
             dynamicNodes: this.dynamicNodes
         }, previousLeader: this.participant.address});
 
@@ -826,16 +840,19 @@ ozpIwc.CommonApiBase.prototype.setState = function(state) {
     this.data = {};
     this.dynamicNodes = state.dynamicNodes;
     for (var key in state.data) {
-        var dynIndex = this.dynamicNodes.indexOf(state.data[key].resource);
+        var dynIndex = this.dynamicNodes.indexOf(key);
         var node;
         if(dynIndex > -1){
-             node = this.data[state.data[key].resource] = new ozpIwc.CommonApiCollectionValue({
-                resource: state.data[key].resource
+             node = this.data[key] = new ozpIwc.CommonApiCollectionValue({
+                resource: key
             });
             node.deserialize(state.data[key]);
             this.updateDynamicNode(node);
         } else {
-            node = this.findOrMakeValue(state.data[key]);
+            node = this.findOrMakeValue({
+                resource: key,
+                contentType: state.data[key].contentType
+            });
             node.deserialize(state.data[key]);
         }
     }
