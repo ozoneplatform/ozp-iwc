@@ -7467,6 +7467,7 @@ ozpIwc.CommonApiValue.prototype.serialize=function() {
     serverData.contentType=this.contentType;
     serverData.permissions=this.permissions;
     serverData.version=this.version;
+    serverData.watchers=this.watchers;
     return serverData;
 };
 
@@ -7561,6 +7562,7 @@ ozpIwc.CommonApiCollectionValue.prototype.serialize=function() {
     serverData.contentType=this.contentType;
     serverData.permissions=this.permissions;
     serverData.version=this.version;
+    serverData.watchers=this.watchers;
     return serverData;
 };
 
@@ -9230,7 +9232,7 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
      * @property self
      * @type Object
      */
-    this.self= (clone.self) ?  clone.self : this.self;
+    this.self= clone.self || this.self;
 
 };
 
@@ -9248,6 +9250,7 @@ ozpIwc.DataApiValue.prototype.serialize=function() {
 	serverData.permissions=this.permissions;
 	serverData.version=this.version;
 	serverData.self=this.self;
+    serverData.watchers =this.watchers;
 	return serverData;
 };
 
@@ -9874,6 +9877,7 @@ ozpIwc.IntentsApiDefinitionValue.prototype.serialize=function() {
     serverData.contentType=this.contentType;
     serverData.permissions=this.permissions;
     serverData.version=this.version;
+    serverData.watchers=this.watchers;
     return serverData;
 };
 
@@ -10073,6 +10077,7 @@ ozpIwc.IntentsApiTypeValue.prototype.serialize=function() {
     serverData.contentType=this.contentType;
     serverData.permissions=this.permissions;
     serverData.version=this.version;
+    serverData.watchers=this.watchers;
     return serverData;
 };
 

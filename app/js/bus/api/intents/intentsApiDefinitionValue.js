@@ -103,5 +103,6 @@ ozpIwc.IntentsApiDefinitionValue.prototype.serialize=function() {
     serverData.contentType=this.contentType;
     serverData.permissions=this.permissions;
     serverData.version=this.version;
+    serverData.watchers=this.watchers;
     return serverData;
 };
