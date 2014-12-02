@@ -45,8 +45,7 @@ ozpIwc.util.ajax = function (config) {
          * FF will fail to make the request, even though the credentials are manually set in the Authorization header
          * */
 
-        if (ozpIwc.config.basicAuthUsername && ozpIwc.config.basicAuthPassword) {
-            console.log("setting Authorization header");
+        if (ozpIwc.config.basicAuthUsername && ozpIwc.config.basicAuthPassword && config.href.indexOf('https') === 0) {
             request.setRequestHeader("Authorization", "Basic " + btoa(ozpIwc.config.basicAuthUsername + ":" + ozpIwc.config.basicAuthPassword));
         }
 

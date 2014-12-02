@@ -4101,8 +4101,7 @@ ozpIwc.util.ajax = function (config) {
          * FF will fail to make the request, even though the credentials are manually set in the Authorization header
          * */
 
-        if (ozpIwc.config.basicAuthUsername && ozpIwc.config.basicAuthPassword) {
-            console.log("setting Authorization header");
+        if (ozpIwc.config.basicAuthUsername && ozpIwc.config.basicAuthPassword && config.href.indexOf('https') === 0) {
             request.setRequestHeader("Authorization", "Basic " + btoa(ozpIwc.config.basicAuthUsername + ":" + ozpIwc.config.basicAuthPassword));
         }
 
@@ -8777,7 +8776,8 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
     }
 
     if(packet.response && !packet.action) {
-        ozpIwc.log.log(this.participant.name + " dropping response packet ",packet);
+        //TODO create a metric for this instead of logging to console
+        //ozpIwc.log.log(this.participant.name + " dropping response packet ",packet);
         // if it's a response packet that didn't wire an explicit handler, drop the sucker
         return;
     }
