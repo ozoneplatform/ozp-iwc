@@ -5,9 +5,15 @@
         <link rel="stylesheet" type="text/css" href="css/debugger.css">
 
         <script type="text/javascript">
-            var ozpIwc=ozpIwc || {};
-            ozpIwc.defaultLeaderPriority = 1000;
+            var ozpIwc = ozpIwc || {};
             ozpIwc.apiRootUrl="api";
+            ozpIwc.marketplaceUsername=null;
+            ozpIwc.marketplacePassword=null;
+            ozpIwc.runApis=true;
+            ozpIwc.acceptPostMessageParticipants=false;
+            
+            // forces the debugger to be the API leaders
+            ozpIwc.defaultLeaderPriority = 1000;
         </script>
         <script src="js/debugger.js"></script>
     </head>
