@@ -11125,8 +11125,14 @@ ozpIwc.SystemApi.prototype.makeValue = function(packet){
  * Handles System api requests with an action of "set"
  * @method handleSet
  */
-ozpIwc.SystemApi.prototype.handleSet = function() {
-    throw new ozpIwc.ApiError("badAction", "Cannot modify the system API");
+ozpIwc.SystemApi.prototype.handleSet = function(node,packetContext) {
+    packetContext.replyTo({
+        'response': 'badAction',
+        'entity': {
+            'action': packetContext.packet.action,
+            'originalRequest' : packetContext.packet
+        }
+    });
 };
 
 /**
@@ -11134,8 +11140,14 @@ ozpIwc.SystemApi.prototype.handleSet = function() {
  *
  * @method handleDelete
  */
-ozpIwc.SystemApi.prototype.handleDelete = function() {
-    throw new ozpIwc.ApiError("badAction", "Cannot modify the system API");
+ozpIwc.SystemApi.prototype.handleDelete = function(node,packetContext) {
+    packetContext.replyTo({
+        'response': 'badAction',
+        'entity': {
+            'action': packetContext.packet.action,
+            'originalRequest' : packetContext.packet
+        }
+    });
 };
 
 /**
@@ -11152,7 +11164,7 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
         resource: node.entity.launchResource,
         entity: packetContext.packet.entity
     });
-    packetContext.replyTo({'action': "ok"});
+    packetContext.replyTo({'response': "ok"});
 };
 
 /**
@@ -11163,9 +11175,9 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
 ozpIwc.SystemApi.prototype.handleInvoke = function(node,packetContext) {
     if(packetContext.packet.entity && packetContext.packet.entity.inFlightIntent){
         this.launchApplication(node,packetContext.packet.entity.inFlightIntent);
-        packetContext.replyTo({'action': "ok"});
+        packetContext.replyTo({'response': "ok"});
     } else{
-        packetContext.replyTo({'action': "badResource"});
+        packetContext.replyTo({'response': "badResource"});
     }
 
 };
