@@ -119,31 +119,25 @@ ozpIwc.DataApiValue.prototype.changesSince=function(snapshot) {
  * @param {ozpIwc.TransportPacket} serverData
  */
 ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
+
+    ozpIwc.CommonApiValue.prototype.deserialize.apply(this,arguments);
     var clone = ozpIwc.util.clone(serverData);
-
-    // we need the persistent data to conform with the structure of non persistent data.
-    this.entity= (clone.entity && typeof clone.entity.entity !== "undefined") ?  clone.entity.entity : clone.entity || {};
-    this.contentType=clone.contentType || this.contentType;
-    this.permissions=clone.permissions || this.permissions;
-    this.version=clone.version || this.version;
-
-    /**
-     * @property _links
-     * @type Object
-     */
-    this._links = (clone.entity && clone.entity._links) ?  clone.entity._links : clone._links || this._links;
-
     /**
      * @property key
      * @type String
      */
-    this.key = (clone.entity && clone.entity.key) ?  clone.entity.key : clone.key || this.key;
+    this.key =  clone.key || this.key;
+    /**
+     * @property children
+     * @type String
+     */
+    this.children = clone.children || this.children;
 
     /**
      * @property self
      * @type Object
      */
-    this.self= (clone.self) ?  clone.self : this.self;
+    this.self= clone.self || this.self;
 
 };
 
@@ -156,10 +150,12 @@ ozpIwc.DataApiValue.prototype.deserialize=function(serverData) {
 ozpIwc.DataApiValue.prototype.serialize=function() {
 	var serverData = {};
 	serverData.entity=this.entity;
+    serverData.children = this.children;
 	serverData.contentType=this.contentType;
 	serverData.permissions=this.permissions;
 	serverData.version=this.version;
 	serverData.self=this.self;
+    serverData.watchers =this.watchers;
 	return serverData;
 };
 

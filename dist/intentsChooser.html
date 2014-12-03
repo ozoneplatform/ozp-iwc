@@ -3,12 +3,12 @@
 <head>
     <title>Choose an Intent</title>
     <script type="text/javascript">
-        ozpIwc= {
-            runApis:false,
-            acceptPostMessageParticipants:false
-        };
-// Not used by the Intents Chooser
-        //ozpIwc.apiRootUrl = "api";
+        var ozpIwc = ozpIwc || {};
+        ozpIwc.apiRootUrl="api";
+        ozpIwc.marketplaceUsername=null;
+        ozpIwc.marketplacePassword=null;
+        ozpIwc.runApis=false;
+        ozpIwc.acceptPostMessageParticipants=false;
     </script>
     <script type="text/javascript" src="js/ozpIwc-bus.js"></script>
     <style>

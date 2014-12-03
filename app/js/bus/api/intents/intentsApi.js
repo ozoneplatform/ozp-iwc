@@ -494,3 +494,24 @@ ozpIwc.IntentsApi.prototype.handleInFlightComplete = function (node, packetConte
         }
     });
 };
+/**
+ * Sets the APIs data property. Removes current values, then constructs each API value anew.
+ *
+ * @method setState
+ * @param {Object} state The object containing key value pairs to set as this api's state.
+ */
+ozpIwc.IntentsApi.prototype.setState = function(state) {
+    this.data = {};
+    this.dynamicNodes = state.dynamicNodes;
+    for (var key in state.data) {
+        var node = this.findOrMakeValue({
+            resource: key,
+            contentType: state.data[key].contentType
+        });
+        node.deserialize(state.data[key]);
+    }
+    // update all the collection values
+    this.dynamicNodes.forEach(function(resource) {
+        this.updateDynamicNode(this.data[resource]);
+    },this);
+};
