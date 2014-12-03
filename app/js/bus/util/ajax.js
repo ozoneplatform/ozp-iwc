@@ -45,7 +45,8 @@ ozpIwc.util.ajax = function (config) {
          * FF will fail to make the request, even though the credentials are manually set in the Authorization header
          * */
 
-        if (ozpIwc.config.basicAuthUsername && ozpIwc.config.basicAuthPassword && config.href.indexOf('https') === 0) {
+        var protocol = getProtocol(config.href);
+        if (ozpIwc.config.basicAuthUsername && ozpIwc.config.basicAuthPassword && protocol === 'https:') {
             request.setRequestHeader("Authorization", "Basic " + btoa(ozpIwc.config.basicAuthUsername + ":" + ozpIwc.config.basicAuthPassword));
         }
 
@@ -103,4 +104,17 @@ ozpIwc.util.ajaxResponseHeaderToJSON = function(header) {
     });
 
     return obj;
+};
+
+/**
+ * Returns the protocol of the URL
+ * @method getProtocol
+ * @param {String} url
+ *
+ * @returns {String}
+ */
+var getProtocol =function (url){
+    var a = document.createElement('a');
+    a.href = url;
+    return a.protocol;
 };
