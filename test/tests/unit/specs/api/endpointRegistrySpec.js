@@ -35,19 +35,24 @@ describe("Endpoint Registry",function() {
         expect(e.endpoint("applications")).toBeDefined();
     });
     
-    [["data","/foo/bar","data/v1/foo/bar"],
-     ["applications","/1/2/3/4","applications/v2/1/2/3/4"],    
-     ["data","","data/v1"],    
-     ["data","/","data/v1/"]
+    [["data","data/foo/bar","data/foo/bar"],
+     ["applications","applications/1/2/3/4","applications/1/2/3/4"],
+     ["data","","data"],
+     ["data","/","data"]
     ].forEach(function(d) {
         it("endpoint " + d[0]+ " gets " +d[1] + " from " + d[2],function(done) {
             var e=new ozpIwc.EndpointRegistry();
 
-            e.endpoint(d[0]).get(d[1]).then(function() {
-                expect(ozpIwc.util.ajax).toHaveBeenCalledWith(jasmine.objectContaining({'href':d[2]}));
+            var point = e.endpoint(d[0]);
+            point.baseUrl = d[0];
+            point.get(d[1]).then(function() {
+                expect(ozpIwc.util.ajax).toHaveBeenCalledWith(jasmine.objectContaining({
+                    'href':d[2],
+                    'method': "GET"
+                }));
                 done();
-            }).catch(function(e) {
-                expect(e).toBe("not have occurred");
+            }).catch(function(err) {
+                expect(err).toBe("not have occurred");
                 done();
             });
         });

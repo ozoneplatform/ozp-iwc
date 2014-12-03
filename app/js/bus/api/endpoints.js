@@ -31,7 +31,9 @@ ozpIwc.Endpoint.prototype.get=function(resource, requestHeaders) {
 
     return this.endpointRegistry.loadPromise.then(function() {
         if (resource === '/') {
-            resource = self.baseUrl;
+            resource=self.baseUrl;
+        } else if(resource.indexOf(self.baseUrl)!==0) {
+            resource=self.baseUrl + resource;
         }
         return ozpIwc.util.ajax({
             href:  resource,
@@ -154,7 +156,10 @@ ozpIwc.EndpointRegistry=function(config) {
         href: apiRoot,
         method: 'GET'
     }).then(function(data) {
-        var payload = data.response;
+        var payload = data.response || {};
+        payload._links = payload._links || {};
+        payload._embedded = payload._embedded || {};
+
         for (var linkEp in payload._links) {
             if (linkEp !== 'self') {
                 var link = payload._links[linkEp].href;
