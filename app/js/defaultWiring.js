@@ -1,9 +1,8 @@
 var ozpIwc=ozpIwc || {};
 
 ozpIwc.apiRootUrl = ozpIwc.apiRootUrl || "/api";
-ozpIwc.config = ozpIwc.config || {};
-ozpIwc.config.basicAuthUsername= ozpIwc.config.basicAuthUsername || '';
-ozpIwc.config.basicAuthPassword= ozpIwc.config.basicAuthPassword || '';
+ozpIwc.basicAuthUsername= ozpIwc.basicAuthUsername || '';
+ozpIwc.basicAuthPassword= ozpIwc.basicAuthPassword || '';
 ozpIwc.linkRelPrefix = ozpIwc.linkRelPrefix || "ozp";
 ozpIwc.initEndpoints(ozpIwc.apiRootUrl);
 

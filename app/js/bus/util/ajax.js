@@ -46,8 +46,8 @@ ozpIwc.util.ajax = function (config) {
          * */
 
         var protocol = getProtocol(config.href);
-        if (ozpIwc.config.basicAuthUsername && ozpIwc.config.basicAuthPassword && protocol === 'https:') {
-            request.setRequestHeader("Authorization", "Basic " + btoa(ozpIwc.config.basicAuthUsername + ":" + ozpIwc.config.basicAuthPassword));
+        if (ozpIwc.basicAuthUsername && ozpIwc.basicAuthPassword && protocol === 'https:') {
+            request.setRequestHeader("Authorization", "Basic " + btoa(ozpIwc.basicAuthUsername + ":" + ozpIwc.basicAuthPassword));
         }
 
         request.onload = function () {
