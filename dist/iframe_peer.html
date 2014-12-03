@@ -6,8 +6,9 @@
         // These should be customized by the deployment
         var ozpIwc = ozpIwc || {};
         ozpIwc.apiRootUrl="api";
-        ozpIwc.basicAuthUsername=null;
-        ozpIwc.basicAuthPassword=null;
+        ozpIwc.config = ozpIwc.config || {};
+        ozpIwc.config.basicAuthUsername=null;
+        ozpIwc.config.basicAuthPassword=null;
         ozpIwc.runApis=true;
         ozpIwc.acceptPostMessageParticipants=true;
     </script>

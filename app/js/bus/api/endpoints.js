@@ -28,12 +28,10 @@ ozpIwc.Endpoint=function(endpointRegistry) {
  */
 ozpIwc.Endpoint.prototype.get=function(resource, requestHeaders) {
     var self=this;
-
+    resource = resource || '';
     return this.endpointRegistry.loadPromise.then(function() {
-        if (resource === '/') {
+        if (resource === '/' || resource === '' ) {
             resource=self.baseUrl;
-        } else if(resource.indexOf(self.baseUrl)!==0) {
-            resource=self.baseUrl + resource;
         }
         return ozpIwc.util.ajax({
             href:  resource,
