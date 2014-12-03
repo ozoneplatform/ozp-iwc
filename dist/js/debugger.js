@@ -4095,12 +4095,16 @@ ozpIwc.util.ajax = function (config) {
             });
         }
         /*
-        * Setting username and password as params to open() (and setting request.withCredentials = true)
-        * per the API does not work in FF. setting them explicitly in the Authorization header works
-        * (but only for BASIC authentication as coded here). If the credentials are set in the open command,
-        * FF will fail to make the request, even though the credentials are manually set in the Authorization header
-        * */
-        request.setRequestHeader("Authorization", "Basic " + btoa(config.user + ":" + config.password));
+         * Setting username and password as params to open() (and setting request.withCredentials = true)
+         * per the API does not work in FF. setting them explicitly in the Authorization header works
+         * (but only for BASIC authentication as coded here). If the credentials are set in the open command,
+         * FF will fail to make the request, even though the credentials are manually set in the Authorization header
+         * */
+
+        var protocol = getProtocol(config.href);
+        if (ozpIwc.config.basicAuthUsername && ozpIwc.config.basicAuthPassword && protocol === 'https:') {
+            request.setRequestHeader("Authorization", "Basic " + btoa(ozpIwc.config.basicAuthUsername + ":" + ozpIwc.config.basicAuthPassword));
+        }
 
         request.onload = function () {
             try {
@@ -4156,6 +4160,19 @@ ozpIwc.util.ajaxResponseHeaderToJSON = function(header) {
     });
 
     return obj;
+};
+
+/**
+ * Returns the protocol of the URL
+ * @method getProtocol
+ * @param {String} url
+ *
+ * @returns {String}
+ */
+var getProtocol =function (url){
+    var a = document.createElement('a');
+    a.href = url;
+    return a.protocol;
 };
 
 /** @namespace */
@@ -8814,7 +8831,8 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
     }
 
     if(packet.response && !packet.action) {
-        ozpIwc.log.log(this.participant.name + " dropping response packet ",packet);
+        //TODO create a metric for this instead of logging to console
+        //ozpIwc.log.log(this.participant.name + " dropping response packet ",packet);
         // if it's a response packet that didn't wire an explicit handler, drop the sucker
         return;
     }
@@ -9366,10 +9384,7 @@ ozpIwc.Endpoint.prototype.get=function(resource, requestHeaders) {
         return ozpIwc.util.ajax({
             href:  resource,
             method: 'GET',
-            headers: requestHeaders,
-            withCredentials: true,
-            user: ozpIwc.marketplaceUsername,
-            password: ozpIwc.marketplacePassword
+            headers: requestHeaders
         });
     });
 };
@@ -9399,9 +9414,6 @@ ozpIwc.Endpoint.prototype.put=function(resource, data, requestHeaders) {
             method: 'PUT',
 			data: data,
             headers: requestHeaders,
-            withCredentials: true,
-            user: ozpIwc.marketplaceUsername,
-            password: ozpIwc.marketplacePassword
         });
     });
 };
@@ -9432,10 +9444,7 @@ ozpIwc.Endpoint.prototype.delete=function(resource, data, requestHeaders) {
         return ozpIwc.util.ajax({
             href:  resource,
             method: 'DELETE',
-            headers: requestHeaders,
-            withCredentials: true,
-            user: ozpIwc.marketplaceUsername,
-            password: ozpIwc.marketplacePassword
+            headers: requestHeaders
         });
     });
 };
@@ -9491,10 +9500,7 @@ ozpIwc.EndpointRegistry=function(config) {
      */
     this.loadPromise=ozpIwc.util.ajax({
         href: apiRoot,
-        method: 'GET',
-        withCredentials: true,
-        user: ozpIwc.marketplaceUsername,
-        password: ozpIwc.marketplacePassword
+        method: 'GET'
     }).then(function(data) {
         var payload = data.response;
         for (var linkEp in payload._links) {
@@ -11217,8 +11223,9 @@ ozpIwc.SystemApiApplicationValue.prototype.getIntentsRegistrations=function() {
 var ozpIwc=ozpIwc || {};
 
 ozpIwc.apiRootUrl = ozpIwc.apiRootUrl || "/api";
-ozpIwc.marketplaceUsername= ozpIwc.marketplaceUsername || '';
-ozpIwc.marketplacePassword= ozpIwc.marketplacePassword || '';
+ozpIwc.config = ozpIwc.config || {};
+ozpIwc.config.basicAuthUsername= ozpIwc.config.basicAuthUsername || '';
+ozpIwc.config.basicAuthPassword= ozpIwc.config.basicAuthPassword || '';
 ozpIwc.linkRelPrefix = ozpIwc.linkRelPrefix || "ozp";
 ozpIwc.initEndpoints(ozpIwc.apiRootUrl);
 

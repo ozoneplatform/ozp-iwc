@@ -36,10 +36,7 @@ ozpIwc.Endpoint.prototype.get=function(resource, requestHeaders) {
         return ozpIwc.util.ajax({
             href:  resource,
             method: 'GET',
-            headers: requestHeaders,
-            withCredentials: true,
-            user: ozpIwc.marketplaceUsername,
-            password: ozpIwc.marketplacePassword
+            headers: requestHeaders
         });
     });
 };
@@ -69,9 +66,6 @@ ozpIwc.Endpoint.prototype.put=function(resource, data, requestHeaders) {
             method: 'PUT',
 			data: data,
             headers: requestHeaders,
-            withCredentials: true,
-            user: ozpIwc.marketplaceUsername,
-            password: ozpIwc.marketplacePassword
         });
     });
 };
@@ -102,10 +96,7 @@ ozpIwc.Endpoint.prototype.delete=function(resource, data, requestHeaders) {
         return ozpIwc.util.ajax({
             href:  resource,
             method: 'DELETE',
-            headers: requestHeaders,
-            withCredentials: true,
-            user: ozpIwc.marketplaceUsername,
-            password: ozpIwc.marketplacePassword
+            headers: requestHeaders
         });
     });
 };
@@ -161,10 +152,7 @@ ozpIwc.EndpointRegistry=function(config) {
      */
     this.loadPromise=ozpIwc.util.ajax({
         href: apiRoot,
-        method: 'GET',
-        withCredentials: true,
-        user: ozpIwc.marketplaceUsername,
-        password: ozpIwc.marketplacePassword
+        method: 'GET'
     }).then(function(data) {
         var payload = data.response;
         for (var linkEp in payload._links) {

@@ -512,7 +512,8 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
     }
 
     if(packet.response && !packet.action) {
-        ozpIwc.log.log(this.participant.name + " dropping response packet ",packet);
+        //TODO create a metric for this instead of logging to console
+        //ozpIwc.log.log(this.participant.name + " dropping response packet ",packet);
         // if it's a response packet that didn't wire an explicit handler, drop the sucker
         return;
     }
