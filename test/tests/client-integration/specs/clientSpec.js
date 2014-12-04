@@ -133,7 +133,7 @@ describe("IWC Client", function() {
         it("when peerUrl is a string, it directly connects",function(done) {
              client=new ozpIwc.Client({
                  peerUrl: testPeerUrl,
-                 autoPeer: false
+                 autoConnect: false
              });
              client.connect().then(function() {
                 expect(client.peerUrl).toEqual(testPeerUrl);
@@ -147,7 +147,7 @@ describe("IWC Client", function() {
         it("when peerUrl is an array, the first is chosen",function(done) {
              client=new ozpIwc.Client({
                  peerUrl: [testPeerUrl,"http://ozp.example.com"],
-                 autoPeer: false
+                 autoConnect: false
              });
              client.connect().then(function() {
                 expect(client.peerUrl).toEqual(testPeerUrl);
@@ -163,7 +163,7 @@ describe("IWC Client", function() {
              window.name="ozpIwc.inFlightIntent=\"/ozpIntents/invocations/123\"";
              client=new ozpIwc.Client({
                  peerUrl: "http://localhost:14002",
-                 autoPeer: false
+                 autoConnect: false
              });
              window.name="";
              spyOn(client,"send").and.callThrough();
@@ -192,7 +192,7 @@ describe("IWC Client", function() {
                 history.replaceState({}, "page 2", baseUrl + "?ozpIwc.peer=\"" + testPeerUrl + "\"");
                 client=new ozpIwc.Client({
                     peerUrl: ["http://ozp.example.com",testPeerUrl],
-                    autoPeer: false
+                    autoConnect: false
                 });
                 client.connect().then(function() {
                    expect(client.peerUrl).toEqual(testPeerUrl);
@@ -207,7 +207,7 @@ describe("IWC Client", function() {
                 history.replaceState({}, "page 2", baseUrl + "#ozpIwc.peer=\"" + testPeerUrl + "\"");
                 client=new ozpIwc.Client({
                     peerUrl: ["http://ozp.example.com",testPeerUrl],
-                    autoPeer: false
+                    autoConnect: false
                 });
                 client.connect().then(function() {
                    expect(client.peerUrl).toEqual(testPeerUrl);
@@ -225,7 +225,7 @@ describe("IWC Client", function() {
                         expect(url).toEqual(testPeerUrl);
                         resolve(testPeerUrl);
                     },
-                    autoPeer: false
+                    autoConnect: false
                 });
                 client.connect().then(function() {
                    expect(client.peerUrl).toEqual(testPeerUrl);
@@ -243,7 +243,7 @@ describe("IWC Client", function() {
                         expect(url).toEqual(testPeerUrl);
                         resolve(testPeerUrl);
                     },
-                    autoPeer: false
+                    autoConnect: false
                 });
                 client.connect().then(function() {
                    expect(client.peerUrl).toEqual(testPeerUrl);
