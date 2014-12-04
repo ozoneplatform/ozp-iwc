@@ -3375,7 +3375,9 @@ ozpIwc.Client.prototype.connect=function() {
                         (function(addr){
                             self[apiFuncName] = function(){
                                 return self.api(addr);
-                            }
+                            };
+                            self.apiMap[addr] = self.apiMap[addr] || {};
+                            self.apiMap[addr].functionName = apiFuncName;
                         })(apiObj.address)
                     }
                 }
