@@ -13,7 +13,7 @@ var ozpIwc=ozpIwc || {};
  * @todo accept a list of peer URLs that are searched in order of preference
  * @param {Object} config
  * @param {String} config.peerUrl - Base URL of the peer server
- * @param {Boolean} [config.autoPeer=true] - Whether to automatically find and connect to a peer
+ * @param {Boolean} [config.autoConnect=true] - Whether to automatically find and connect to a peer
  */
 ozpIwc.Client=function(config) {
     config=config || {};
@@ -56,10 +56,11 @@ ozpIwc.Client=function(config) {
     }
 
     /**
-     * @property autoPeer
+     * @property autoConnect
      * @type {Boolean}
+     * @default true
      */
-    this.autoPeer=("autoPeer" in config) ? config.autoPeer : true;
+    this.autoConnect=("autoConnect" in config) ? config.autoConnect : true;
 
     /**
      * @property msgIdSequence
@@ -173,7 +174,7 @@ ozpIwc.Client=function(config) {
      */
     this.launchedIntents = [];
 
-    if(this.autoPeer) {
+    if(this.autoConnect) {
         this.connect();
     }
 
