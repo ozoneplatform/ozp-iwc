@@ -456,27 +456,27 @@ ozpIwc.Client.prototype.connect=function() {
                 }
         }).then(function() {
                 // dump any queued sends, trigger that we are fully connected
-                self.preconnectionQueue.forEach(function(p) {
-                    self.send(p.fields,p.callback,p.promise);
+                self.preconnectionQueue.forEach(function (p) {
+                    self.send(p.fields, p.callback, p.promise);
                 });
-                self.preconnectionQueue=null;
+                self.preconnectionQueue = null;
 
-                if(!self.launchParams.inFlightIntent) {
+                if (!self.launchParams.inFlightIntent) {
                     return;
                 }
 
                 // fetch the inFlightIntent
-                var packet= {
+                var packet = {
                     dst: "intents.api",
                     resource: self.launchParams.inFlightIntent,
                     action: "get"
                 };
-                return new Promise(function(resolve,reject) {
-                    self.send(packet,function(response,done) {
+                return new Promise(function (resolve, reject) {
+                    self.send(packet, function (response, done) {
                         self.launchedIntents.push(response);
-                        if(response.response==='ok') {
-                            for(var k in response.entity) {
-                                self.launchParams[k]=response.entity[k];
+                        if (response.response === 'ok') {
+                            for (var k in response.entity) {
+                                self.launchParams[k] = response.entity[k];
                             }
                         }
                         resolve();
@@ -530,14 +530,16 @@ ozpIwc.Client.prototype.createIframePeer=function() {
     ozpIwc.Client.prototype.api=function(apiName) {
         var wrapper=this.wrapperMap[apiName];
         if (!wrapper) {
-            var api=this.apiMap[apiName];
-            wrapper={};
-            for (var i=0;i<api.actions.length;++i){
-                var action=api.actions[i];
-                wrapper[action]=augment(api.address,action,this);
+            if(this.apiMap.hasOwnProperty(apiName)) {
+                var api = this.apiMap[apiName];
+                wrapper = {};
+                for (var i = 0; i < api.actions.length; ++i) {
+                    var action = api.actions[i];
+                    wrapper[action] = augment(api.address, action, this);
+                }
+
+                this.wrapperMap[apiName] = wrapper;
             }
-            
-            this.wrapperMap[apiName]=wrapper;
         }
         wrapper.apiName=apiName;
         return wrapper;
