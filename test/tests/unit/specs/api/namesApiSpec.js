@@ -32,9 +32,6 @@ describe("Names API",function() {
             'resource': "/multicast",
             'contentType' : "application/vnd.ozp-iwc-multicast-list-v1+json"
       },{
-            'resource': "/api",
-            'contentType' : "application/vnd.ozp-iwc-api-list-v1+json"
-      },{
             'resource': "/router",
             'contentType' : "application/vnd.ozp-iwc-router-list-v1+json"
       }   
@@ -57,7 +54,28 @@ describe("Names API",function() {
                 });
             });
         });
-
+        describe("Resource tree root /api",function(){
+            it("exists",function(){
+                var context = new TestPacketContext({
+                    'leaderState': "leader",
+                    'packet': {
+                        'resource': '/api',
+                        'action': "get",
+                        'msgId': "1234",
+                        'src': "srcParticipant"
+                    }
+                });
+                namesApi.routePacket(context);
+                expect(context.responses[0].response).toEqual("ok");
+                expect(context.responses[0].entity).toEqual([
+                    "/api/data.api",
+                    "/api/intents.api",
+                    "/api/names.api",
+                    "/api/system.api"
+                ]);
+                expect(context.responses[0].contentType).toEqual("application/vnd.ozp-iwc-api-list-v1+json");
+            })
+        });
         [ {
             'resource': "/address",
             'contentType' : "application/vnd.ozp-iwc-address-v1+json",
