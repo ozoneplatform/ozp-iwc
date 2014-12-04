@@ -126,6 +126,56 @@ describe("IWC Client", function() {
             });
         });
     });
+    describe("api Mappings", function(){
+        it(" gets its apiMap from names.api on connection",function(done){
+            client=new ozpIwc.Client({
+                'peerUrl': "http://localhost:14002",
+                autoConnect: false
+            });
+            expect(client.apiMap).toEqual({});
+            client.connect().then(function() {
+                expect(client.apiMap['data.api']).not.toBeUndefined();
+                expect(client.apiMap['data.api'].functionName).toEqual('data');
+                expect(client.apiMap['data.api'].address).toEqual('data.api');
+                expect(client.apiMap['data.api'].actions.length).toBeGreaterThan(0);
+
+                expect(client.apiMap['names.api']).not.toBeUndefined();
+                expect(client.apiMap['names.api'].functionName).toEqual('names');
+                expect(client.apiMap['names.api'].address).toEqual('names.api');
+                expect(client.apiMap['names.api'].actions.length).toBeGreaterThan(0);
+
+                expect(client.apiMap['intents.api']).not.toBeUndefined();
+                expect(client.apiMap['intents.api'].functionName).toEqual('intents');
+                expect(client.apiMap['intents.api'].address).toEqual('intents.api');
+                expect(client.apiMap['intents.api'].actions.length).toBeGreaterThan(0);
+
+                expect(client.apiMap['system.api']).not.toBeUndefined();
+                expect(client.apiMap['system.api'].functionName).toEqual('system');
+                expect(client.apiMap['system.api'].address).toEqual('system.api');
+                expect(client.apiMap['system.api'].actions.length).toBeGreaterThan(0);
+                done();
+            });
+        });
+        it("creates api function calls on connection",function(done){
+            client=new ozpIwc.Client({
+                'peerUrl': "http://localhost:14002",
+                autoConnect: false
+            });
+            expect(client.data).toBeUndefined();
+            expect(client.names).toBeUndefined();
+            expect(client.system).toBeUndefined();
+            expect(client.intents).toBeUndefined();
+
+            client.connect().then(function() {
+                expect(client.data()).toEqual(client.api('data.api'));
+                expect(client.names()).toEqual(client.api('names.api'));
+                expect(client.system()).toEqual(client.api('system.api'));
+                expect(client.intents()).toEqual(client.api('intents.api'));
+                done();
+            });
+        })
+    });
+
     describe("launch parameters",function() {
         var testPeerUrl="http://" + window.location.hostname + ":14002";
 
