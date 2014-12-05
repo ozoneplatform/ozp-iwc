@@ -1,0 +1,27 @@
+body{
+    background: #191f25
+
+}
+div.headRow{
+    background-color:rgba(32, 31, 31, 0.7);
+    margin-top: -10px;
+    margin-left: -10px;
+    margin-right: -10px;
+}
+#iwcLogo {
+    float: left;
+}
+#ozoneLogo {
+    float: right;
+}
+.jumbotron{
+    background-color: #3b4246;
+    color: #dbdcdd;
+    padding:10px;
+    margin-top:10px;
+    box-shadow: 0px 10px 50px rgba(5, 5, 5, 1);
+}
+.codeRow{
+    margin-bottom:50px;
+    margin-top:10px;
+}
