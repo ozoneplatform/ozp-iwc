@@ -7,11 +7,13 @@ div.headRow{
     margin-top: -10px;
     margin-left: -10px;
     margin-right: -10px;
+    margin-bottom: 80px;
 }
 
 div.bodyRow{
     margin-top:80px;
 }
+
 div.codeBlock{
     margin-top:45px;
 }
@@ -28,23 +30,37 @@ div.codeBlock{
     margin-top:10px;
     box-shadow: 0px 10px 50px rgba(5, 5, 5, 1);
 }
+
+.jumbotron p{
+    font-size: 18px;
+
+}
+
 .codeRow{
     margin-bottom:50px;
     margin-top:10px;
 }
+.codeRow p{
+    font-size: 14px;
+}
 
-h1,h2,h3{
+.textTitle {
     background-color:rgba(32, 31, 31, 0.2);
     margin-left: -10px;
     margin-right: -10px;
     padding-left:10px;
     padding-right:10px;
-
 }
 #iwcLogo {
     float: left;
+    max-width: 70%;
+    height: auto;
+    width: auto\9; /* ie8 */
 }
 
 #ozoneLogo {
     float: right;
+    max-width: 30%;
+    height: auto;
+    width: auto\9; /* ie8 */
 }

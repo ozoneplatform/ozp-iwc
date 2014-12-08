@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link href='http://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
+    <script src="js/app.js"></script>
+</head>
+
+<body ng-app="app">
+    <a href="https://github.com/ozone-development/ozp-iwc">
+        <img style="position: absolute; top: 0; right: 0; border: 0; z-index:1;"
+             src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+             alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png">
+    </a>
+    <div ng-controller="mainController" class="container-fluid col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1 col-xs-12 jumbotron">
+        <div class="row headRow">
+            <img src="img/IWC_logo.png" id="iwcLogo">
+            <img src="img/Ozone_logo.png" id="ozoneLogo">
+        </div>
+        <h1>Data Api</h1>
+        <div class="row bodyRow">
+            <p>
+                A simple key/value JSON store for sharing common resources amongst applications. Has backend
+                connections for persisting storage if applications choose to.
+            </p>
+        </div>
+        <div class="row bodyRow">
+            <h2 class="textTitle">Actions</h2>
+            <ul><a href=""><b>get:</b></a> Requests the Data API to return the resource stored with a specific key.</ul>
+            <ul><a href=""><b>set:</b></a> Requests the Data API to store the given resource with the given key.</ul>
+            <ul><a href=""><b>list:</b></a> Requests the Data API to return a list of children keys pertaining to a specific key.</ul>
+            <ul><a href=""><b>watch:</b></a> Requests the Data API to respond any time the resource of the given key changes.</ul>
+            <ul><a href=""><b>unwatch:</b></a> Requests the Data API to stop responding to a specified watch request.</ul>
+            <ul><a href=""><b>addChild:</b></a> Requests the Data API to store a given resource and link it as a child of another resource.</ul>
+            <ul><a href=""><b>removeChild:</b></a>Requests the Data API to remove a given resource and unlink it as a child of another resource.</ul>
+            <ul><a href=""><b>delete:</b></a>Requests the Data API to remove a given resource.</ul>
+        </div>
+
+        <div class=""row bodyRow">
+            <h2 class="textTitle">Usage</h2>
+            <div code-doc-row url="'js/data/data.js'" class ="codeRow">
+                <h3> Accessing Data Api</h3>
+                <p>To call functions on the Data API, reference <code>client.data()</code> on the connected client.</p>
+            </div>
+            <div code-doc-row url="'js/data/set.js'" class ="codeRow">
+                <h3> Storing an object in the Data API</h3>
+                <p>
+                    Storing an object in the Data API makes it available to other connected clients. This is useful for
+                    resources that are desired among multiple applications but does not need communication between said
+                    applications.
+                </p>
+                <p>To store a resource, the <b>set</b> action is used.</p>
+                <p>In the example to the right, the resource <code>foo</code> is being stored at <code>/foo</code>.</p>
+                <p>
+                    The value of foo is wrapped in an object's <code>entity</code> field because of additional
+                    properties that can drive the APIs handling of the request:
+                </p>
+                <ul><b>entity:</b> the value of the object that will be set.</ul>
+                <ul><b>contentType:</b> the content type of the object that will be set.</ul>
+
+                <p>Seeing a <code>response</code> of 'ok' is indication that the request was handled without error.</p>
+
+            </div>
+
+        <div code-doc-row url="'js/data/setPersist.js'" class ="codeRow">
+            <h3> Storing an object in the Data API with persistence</h3>
+            <p>Persisting a Data API action to the backend is as simple as including <code>persist:true</code> to the
+             <code>entity</code> of the request.
+
+            <p>Seeing a <code>response</code> of 'ok' is indication that the request was handled without error.</p>
+
+        </div>
+
+        </div>
+    </div>
+</body>
+</html>

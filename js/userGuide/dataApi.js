@@ -1,8 +1,20 @@
+var dataApi = client.data();
 
-var client = new ozpIwc.Client({
-    peerUrl: "http://ozone-development.github.io/iwc"
+var foo = { 'bar': 'buz' };
+
+
+
+dataApi.set('/foo',{ entity: foo});
+
+
+
+dataApi.get('/foo').then(function(res){
+    //res has /foo's value
 });
 
-client.connect().then(function(){
-    var dataApi = client.data();
+
+
+dataApi.watch('/foo',function(response,done){
+    //when I'm done watching I call done
+    done();
 });

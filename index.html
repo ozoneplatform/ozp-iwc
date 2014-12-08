@@ -6,13 +6,19 @@
     <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
         <script src="js/app.js"></script>
     </head>
+
     <body ng-app="app">
-    <a href="https://github.com/ozone-development/ozp-iwc"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
-        <div ng-controller="mainController" class="col-md-6 col-md-offset-3 jumbotron">
+        <a href="https://github.com/ozone-development/ozp-iwc">
+            <img style="position: absolute; top: 0; right: 0; border: 0; z-index:1;"
+                 src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67"
+                 alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png">
+        </a>
+        <div ng-controller="mainController" class="container-fluid col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1 col-xs-12 jumbotron">
             <div class="row headRow">
                 <img src="img/IWC_logo.png" id="iwcLogo">
                 <img src="img/Ozone_logo.png" id="ozoneLogo">
             </div>
+
             <div class="row bodyRow">
                 <p>
                     The Ozone Platform's Inter-Widget Communications (IWC) enables loosely coupled integration of web
@@ -22,52 +28,198 @@
                     their own user experience.
                 </p>
 
-                <h3> The IWC provides lightweight integration.</h3>
-                <span>
+                <h3 class="textTitle"> The IWC provides lightweight integration.</h3>
+                <p>
                     Today’s rich web applications tend to carry more state than a simple link can convey, and
                     componentized development allows UI elements to be embedded, but at the cost of maintenance
                     and application size. The IWC allows application frontends to expose data and services to other
                     applications within the browser. Just like services on an ESB, these elements can be developed,
                     deployed, and extended without impact to other applications.
-                </span>
+                </p>
 
-                <h3> The IWC stays out of your way.</h3>
-                <span>
+                <h3 class="textTitle"> The IWC stays out of your way.</h3>
+                <p>
                     The IWC is designed to minimize the impact on your application. It is completely agnostic to the
                     application presentation, including a tiny client library that adds a single, invisible element to
                     your page. It uses standard web technologies, requiring no browser plugins for IE 8+, Firefox 3.5+,
                     and all versions of Chrome and Safari.
-                </span>
+                </p>
             </div>
-            <div class="bodyRow">
-                <h2>Usage</h2>
+
+            <div class="row bodyRow">
+                <h2 class="textTitle">Overview</h2>
+                <p>
+                    The IWC is composed of two components, a <b>client</b> and a <b>bus</b>.
+                </p>
+
+                <h3>Client</h3>
+                <p>
+                    The communication module used in application code to interface with other applications.
+                </p>
+
+                <h3>Bus</h3>
+                <p>
+                    The connection module that client's communicate through. The bus is made up of
+                    deployment-configurable modules. The bus is configured and deployed to a common URL to all clients.
+                    This however does not mean the bus is remote. The bus runs locally to the end-user and is gathered
+                    via a common location to allow clients to communicate through a common <b>origin</b>. This module
+                    comes with the following api's:
+                </p>
+                <div style="margin-left: 50px">
+                    <h3><a href="/data.html">Data</a></h3>
+                    <p>
+                        A simple key/value JSON store for sharing common resources amongst applications. Has backend
+                        connections for persisting storage if applications choose to.
+                    </p>
+                    <h3><a href="/intents.html">Intents</a></h3>
+                    <p>
+                        Handling for application intents. Follows the idea of android intents. Allows applications to
+                        register to handle certain intents (ex. graphing data, displaying HTML). Like android, the IWC
+                        Intents api presents the user with a dialog to choose what application should handle their
+                        request.
+                    </p>
+                    <h3><a href="/names.html">Names</a></h3>
+                    <p>
+                        Status of the bus. This api exposes information regarding applications connected to the bus.
+                    </p>
+                    <h3><a href="/system.html">System</a></h3>
+                    <p>
+                        Application registrations of the bus. This api gives connections to the bus awareness of what
+                        applications the bus has knowledge of. Different then the names api, these application's are not
+                        the current running applications, rather these are registrations of where applications are hosted
+                        and default configurations for launching them. This gives IWC clients the capability to launch
+                        other applications.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="row bodyRow">
+                <h2 class="textTitle">Setup</h2>
+                <p>
+                    An example configured bus is provided with the distributed IWC via github. Using bower, the IWC
+                    can be gathered with the following:
+                    <pre>bower install ozone-development/ozp-iwc</pre>
+                </p>
+
+                <p>
+                    To add the client module to an application, include the <code>ozpIwc-client.min.js</code> script
+                    from the dist directory.
+                    <pre>&lt;script src="../bower_components/ozp-iwc-/dist/js/ozpIwc-client.js"&gt;&lt;/script&gt;</pre>
+                </p>
+
+                <p>
+                    A pre-configured example bus is hosted at <code>http://ozone-development.github.io/iwc</code>
+                    for demonstrative purposes. See <a href="#connecting">connecting</a> for connecting a client to the
+                    bus.
+                </p>
+
+                <p> To use a configured IWC bus, refer to the IWC <a href="">deployment guide</a>.</p>
+            </div>
+
+            <div class="row bodyRow">
+                <h2 class="textTitle">Usage</h2>
                 <div code-doc-row url="'js/userGuide/connectPromise.js'" class ="bodyRow codeRow">
-                    <p> Connecting</p>
-                    <span>
+                    <h3> Connecting</h3>
+                    <p>
                         To use IWC between applications, <b> IWC client</b> connections must be added to each application. These
                         clients connect to an IWC bus that is bound by the browser as well as the domain it is obtained
                         from.
-                    </span>
-                    <p></p>
-                    <span>
+                    </p>
+                    <p>
                         In the example to the left, an IWC connection is made to the bus on domain
                         <code>http://ozone-development.github.io/iwc</code>. The actual javascript that makes up the bus
                         is gathered from that url and ran locally enclosed in the same domain.
-                    </span>
-                    <p></p>
-                    <span>
+                    </p>
+
+                    <p>
                         All aspects of the client use promises to simplify integration with asynchronous
                         applications.
-                    </span>
+                    </p>
                 </div>
 
-                <div code-doc-row url="'js/userGuide/connectCallback.js'" class ="bodyRow codeRow">
-                    <p>Callbacks vs Promises</p>
-                    <span>
-                        To integrate with applications that do not favor promise use, the IWC client is fully functional
-                        with callback style coding.
-                    </span>
+                <div code-doc-row url="'js/userGuide/disconnect.js'" class ="bodyRow codeRow">
+                    <h3> Disconnecting</h3>
+                    <p>
+                        Disconnecting an application from the IWC bus is as simple as calling <code>disconnect()</code>.
                 </div>
+                <div code-doc-row url="'js/userGuide/apiExposure.js'" class ="bodyRow codeRow">
+                    <h3>Available APIs</h3>
+                    <p>
+                        The IWC client code is not dependent on the IWC bus. When the client connects to a bus it
+                        configures function calls for available API use. This code demonstrates showing a console
+                        print out of what APIs are available, the actions they can handle, and the client's function
+                        name assigned to it.
+                    </p>
+                    <p> As an example, an output of this code may yield:</p>
+                    <ul><b>Api:</b> data.api</ul>
+                    <ul><b>Actions:</b> "get", "set", "delete", "watch", "unwatch", "addChild", "removeChild", "list"</ul>
+                    <ul><b>Function:</b> data</ul>
+                    <p>This means the developer could <b>get</b> a resource from the <b>data.api</b> by calling:</p>
+                    <ul><code>client.data().get("/some/resource");</code></ul>
+                    <p>
+                        The purpose of this is to inform the developer of what functionality they have to work with
+                        given a particular bus.
+                    </p>
+                </div>
+
+                <div code-doc-row url="'js/userGuide/dataApi.js'" class ="bodyRow codeRow">
+                    <h3>Making API calls</h3>
+                    <p>
+                        Making an api call uses the following structure:
+                    </p>
+                    <ul><code>client.${Api}().${Action}( ${Path}, [Value], [Callback] );</code></ul>
+                    <ul><b>Api:</b> The api the client is calling. <i>ex) data</i></ul>
+                    <ul><b>Action:</b> The action the client is performing. <i>ex) set</i></ul>
+                    <ul><b>Path:</b>  The path of the stored resource pertaining to the action. <i>ex) /foo</i></ul>
+                    <ul><b>Value(Optional):</b> The object sent for the Api to operate on. <i>ex: { bar: "buz"}</i></ul>
+                    <ul><b>Callback(Optional):</b> A callback function used for recurring actions.
+                        This applies to actions like watch and register. See <a href="#watching">watching</a>.
+                    </ul>
+
+                    <p>
+                        Since some actions do not require values passed (read actions) and some actions do not require
+                        callbacks, the <b>Value</b> and <b>Callback</b> parameters are optional. Since there are
+                        instances where callbacks may be used but no value needed, action calls can be also made using
+                        the following additional structures:
+                    </p>
+                    <ul><code>client.${Api}().${Action}( ${Path} );</code></ul>
+                    <ul><code>client.${Api}().${Action}( ${Path}, [Value] );</code></ul>
+                    <ul><code>client.${Api}().${Action}( ${Path}, [Callback] );</code></ul>
+
+                    <p> The one restriction is the following Api call structure is not allowed:</p>
+                    <ul><code>client.${Api}().${Action}( ${Path}, [Callback], [Value] );</code></ul>
+                </div>
+
+                <div code-doc-row url="'js/userGuide/dataApiGet.js'" class ="bodyRow codeRow">
+                    <h3>Handling API Responses</h3>
+                    <p>
+                        Since the IWC operates asynchronously, all responses sent back to a client are handled with
+                        promises. The promise structure is as follows
+                    </p>
+                    <ul><code>client.${Api}().${Action}(...).then(function(res){...});</code></ul>
+
+                    <p>The contents of the response (res) are as follows:</p>
+                    <ul><b>response:</b> {String} The result of the request. "ok" means a successful operation.</ul>
+                    <ul><b>src:</b> {String} The sender of the message. </ul>
+                    <ul><b>dst:</b> {String} The receiver of the message. </ul>
+                    <ul><b>entity:</b> {Object|String} The payload of the response. If an action is to return data it
+                    will be in this object.</ul>
+
+                </div>
+            </div>
+            <div class="row bodyRow">
+                <h2 class="textTitle">Common Practices</h2>
+                <p>
+                    While many APIs share common functionality, the purpose of the IWC is to be able to grow and
+                    incorporate additional APIs to promote versatile use. Because of this, the 4 core APIs have notable
+                    differences in capabilities and use. To better understand how to use each API, refer to their
+                    individual documentation:
+                </p>
+                <ul><a href="/data.html">Data</a></ul>
+                <ul><a href="/intents.html">Intents</a></ul>
+                <ul><a href="/names.html">Names</a></ul>
+                <ul><a href="/system.html">System</a></ul>
             </div>
         </div>
     </body>
