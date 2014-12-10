@@ -161,6 +161,10 @@ ozpIwc.EndpointRegistry=function(config) {
         for (var linkEp in payload._links) {
             if (linkEp !== 'self') {
                 var link = payload._links[linkEp].href;
+								if(Array.isArray(payload._links[linkEp])) {
+									link=payload._links[linkEp][0].href;
+								}
+
                 self.endpoint(linkEp).baseUrl = link;
             }
         }
