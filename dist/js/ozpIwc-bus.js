@@ -5295,7 +5295,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     var sendStatus;
     try {
         var p = JSON.stringify(packet);
-        localStorage.setItem(p, "");
+        localStorage.setItem(p, "x");
         ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
         localStorage.removeItem(p);
         sendStatus = null;
@@ -9509,6 +9509,10 @@ ozpIwc.EndpointRegistry=function(config) {
         for (var linkEp in payload._links) {
             if (linkEp !== 'self') {
                 var link = payload._links[linkEp].href;
+								if(Array.isArray(payload._links[linkEp])) {
+									link=payload._links[linkEp][0].href;
+								}
+
                 self.endpoint(linkEp).baseUrl = link;
             }
         }

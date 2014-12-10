@@ -398,7 +398,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     var sendStatus;
     try {
         var p = JSON.stringify(packet);
-        localStorage.setItem(p, "");
+        localStorage.setItem(p, "x");
         ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
         localStorage.removeItem(p);
         sendStatus = null;
