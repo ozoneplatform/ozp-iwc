@@ -177,7 +177,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHe
             self.dynamicNodes.forEach(function(resource) {
                 self.updateDynamicNode(self.data[resource]);
             });
-        }).catch(function(e) {
+        })['catch'](function(e) {
             ozpIwc.log.error("Could not load from api (" + endpointName + "): " + e.message,e);
             rejectLoad("Could not load from api (" + endpointName + "): " + e.message + e);
         });
@@ -313,7 +313,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                         var payload = objectResource.response;
                         var header = objectResource.header;
                         self.updateResourceFromServer(payload, href, endpoint, res,header);
-                    }).catch(function (error) {
+                    })['catch'](function (error) {
                         ozpIwc.log.error("unable to load " + object.href + " because: ", error);
                     });
                 });
@@ -323,7 +323,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                     var payload = objectResource.response;
                     var header = objectResource.header;
                     self.updateResourceFromServer(payload, href, endpoint, res,header);
-                }).catch(function (error) {
+                })['catch'](function (error) {
                     ozpIwc.log.error("unable to load " + object.href + " because: ", error);
                 });
             }
@@ -1011,7 +1011,7 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
             },function(err){
                 ozpIwc.log.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
                 self.setToLeader();
-            }).catch(function(er){
+            })['catch'](function(er){
                 ozpIwc.log.log(er);
             });
         }

@@ -489,7 +489,7 @@ ozpIwc.Client.prototype.connect=function() {
                  * @event #connected
                  */
                 self.events.trigger("connected");
-            }).catch(function(error) {
+            })['catch'](function(error) {
                 ozpIwc.log.log("Failed to connect to bus ",error);
             });
     }

@@ -53,7 +53,7 @@ ozpIwc.SystemApi.prototype.loadFromServer=function() {
                             });
                     });
             })
-            .catch(function(error) {
+            ['catch'](function(error) {
                 reject(error);
             });
     });
