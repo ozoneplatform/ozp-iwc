@@ -1,5 +1,7 @@
 
 /* jshint unused:false */
+var ozpIwc = ozpIwc || {};
+
 // doneSemaphore & tick aren't used locally.
 
 var customMatchers={

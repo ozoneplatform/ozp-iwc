@@ -4,7 +4,7 @@ describe("Post Message Participant",function() {
 
     var makeParticipant = function() {
         var l = new ozpIwc.PostMessageParticipant({
-            origin : "http://localhost:14000",
+            origin : "http://" + window.location.hostname + ":14000",
             sourceWindow : this.window,
             credentials : []
         });
