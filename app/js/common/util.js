@@ -54,7 +54,7 @@ ozpIwc.util.extend=function(baseClass,newConstructor) {
 ozpIwc.util.safePostMessage = function(window,msg,origin) {
     try {
         var data = msg;
-        if (!ozpIwc.util.structuredCloneSupport()) {
+        if (!ozpIwc.util.structuredCloneSupport() && typeof data !== 'string') {
            data=JSON.stringify(msg);
         }
         window.postMessage(data, origin);
