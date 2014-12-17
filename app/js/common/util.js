@@ -42,13 +42,40 @@ ozpIwc.util.extend=function(baseClass,newConstructor) {
 };
 
 /**
+ * Invoke postMessage on a given window in a safe manner. Test whether the browser
+ * supports structured clones, and stringifies the message if not. Catches
+ * errors (especially attempts to send non-cloneable objects), and tries to
+ * send a stringified copy of the message asa fallback.
+ *
+ * @param window a window on which to invoke postMessage
+ * @param msg the message to be sent
+ * @param origin the target origin. The message will be sent only if it matches the origin of window.
+ */
+ozpIwc.util.safePostMessage = function(window,msg,origin) {
+    try {
+        var data = msg;
+        if (!ozpIwc.util.structuredCloneSupport() && typeof data !== 'string') {
+           data=JSON.stringify(msg);
+        }
+        window.postMessage(data, origin);
+    } catch (e) {
+        try {
+            window.postMessage(JSON.stringify(msg), origin);
+        } catch (e) {
+            ozpIwc.util.log("Invalid call to window.postMessage: " + e.message);
+        }
+    }
+};
+
+/**
  * Detect browser support for structured clones. Returns quickly since it
- * caches the result. However, a bug in FF will cause clone to fail fr file objects
- * (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126). This method will
- * not detect that, since it's designed to determine browser support and cache
- * the result for efficiency. This method should therefore not be called except
- * from a method which subsequently tests the ability to clone a File object. (See
- * ozpIwc.util.getPostMessagePayload()).
+ * caches the result. This method only determines browser support for structured
+ * clones. Clients are responsible, when accessing capabilities that rely on structured
+ * cloning, to ensure that objects to be cloned meet the criteria of the structured clone
+ * algorithm. (See ozpIwc.util.safePostMessage for a method which handles attempts to
+ * clone an invalid object.). NB: a bug in FF will cause file objects to be treated as
+ * non-cloneable, even in FF versions that support structured clones.
+ * (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126).
  *
  * @private
  *
@@ -78,37 +105,6 @@ ozpIwc.util.structuredCloneSupport=function() {
 };
 
 ozpIwc.util.structuredCloneSupport.cache=undefined;
-
-/**
-* Return an object suitable for passing to window.postMessage
-* based on whether or not the browser supports structured clones
-* and the object to be cloned is supported. Testing for browser support
-* is not sufficient because of a bug in Firefox which prevents successful
-* cloning of File objects. (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126)
-*
-* @method getPostMessagePayload
-*
-* @returns {Object} The object passed in, if it can be cloned; otherwise te object stringified.
-*/
-ozpIwc.util.getPostMessagePayload=function(msg) {
-    if (ozpIwc.util.structuredCloneSupport()) {
-        if (!(msg instanceof File)) {
-            //if the object is not a File, we can trust the cached indicator of browser support for structured clones
-            return msg;
-        }
-        //otherwise, test whether the object can be cloned
-        try {
-            window.postMessage(msg, "*");
-        } catch (e) {
-            msg=JSON.stringify(msg);
-        } finally {
-            return msg;
-        }
-    } else {
-        return JSON.stringify(msg);
-    }
-
-}
 
 /**
  * Does a deep clone of a serializable object.  Note that this will not
