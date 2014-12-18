@@ -19,9 +19,12 @@ describe("IWC LocalStorage Key Broadcast", function() {
     var networkPacketGenerator = function (link,transportPacket) {
         return {
             sequence: link.peer.sequenceCounter++,
-            testing: true,
             srcPeer: ozpIwc.util.generateId(),
-            data: transportPacket
+            data: transportPacket,
+            ver:0,
+            src: "testSrc",
+            dst: "testDst",
+            msgId: "i:0"
         };
     };
 
@@ -30,14 +33,13 @@ describe("IWC LocalStorage Key Broadcast", function() {
     };
 
     var otherContextOnLoad = function(){
-        ozpIwc.heartBeatFrequency= 100000; // 100 seconds
         this.peerB = new ozpIwc.Peer();
 
         this.linkB = new ozpIwc.KeyBroadcastLocalStorageLink({
             peer: this.peerB
         });
-        console.log("ok");
     };
+
     var peerA, linkA, otherContext;
 
     beforeEach(function(){
@@ -46,26 +48,47 @@ describe("IWC LocalStorage Key Broadcast", function() {
         linkA = new ozpIwc.KeyBroadcastLocalStorageLink({
             peer: peerA
         });
-
     });
 
-    describe("Basic Functionality",function(){
-        it("sends and receives between two links",function(done){
-            linkA.peer.receive = function(linkId, packet){
+    afterEach(function(){
+        otherContext.iframe.remove();
+    });
 
-                if(packet.testing){
-                    expect(packet.data).toEqual(referencePacket.data);
-                    done();
-                }
-            };
+    describe("Basic Functionality",function() {
 
-            var referencePacket = testPacket(linkA,10);
-            otherContext = new ozpIwc.browsingContext(otherContextOnLoad,function(message,scope){
-                console.log(message);
-                if(message.data.testing) {
-                    this.linkB.send(message.data);
-                }
+        it("transfers messages through the browser storage event", function (done) {
+
+            var referencePacket = testPacket(linkA, 10);
+            spyOn(linkA.peer,'receive').and.callFake(function(linkId,packet){
+                expect(packet).toEqual(referencePacket);
+                done();
             });
+
+            otherContext = new ozpIwc.browsingContext(otherContextOnLoad, function (message, scope) {
+                scope.linkB.send(message);
+            });
+            otherContext.send(referencePacket);
+        });
+    });
+    describe("Advanced Functionality",function(){
+
+        it("transfers fragments through the browser storage event",function(done){
+
+            var referencePacket = testPacket(linkA,10*1024*1024);
+            var size = JSON.stringify(referencePacket.data).length;
+            var fragmentCount = Math.ceil(size/linkA.fragmentSize);
+
+            spyOn(linkA.peer,'receive').and.callFake(function(linkId,packet){
+                expect(packet.defragmented).toEqual(true);
+                expect(packet.sequence).toEqual(fragmentCount -1);
+                expect(packet.data.data).toEqual(referencePacket.data.data);
+                done();
+            });
+
+            otherContext = new ozpIwc.browsingContext(otherContextOnLoad,function(message,scope){
+                scope.linkB.send(message);
+            });
+
             otherContext.send(referencePacket);
         });
     });

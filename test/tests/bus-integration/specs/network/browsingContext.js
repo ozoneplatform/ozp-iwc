@@ -2,13 +2,24 @@ ozpIwc.browsingContext = function(onLoad,msgHandler,id){
     this.msgQueue = this.msgQueue || [];
 
     var msgEvent = function(e){
-        var self = this;
-        window.setTimeout(function(){
-            msgHandler(e,self);
-        },0);
+        if(e.data !== "") {
+            var message;
+            try {
+                if (typeof(e.data) === 'string') {
+                    message = JSON.parse(e.data);
+                } else {
+                    message = e.data;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            if (message !== "") {
+                msgHandler(message, self);
+            }
+        }
     };
 
-    var scripts = [ 'var ozpIwc = ozpIwc || {}; var msgHandler = ' + msgHandler.toString() + ';' +
+    var scripts = [ 'var ozpIwc = ozpIwc || {}; ozpIwc.enableDefault=false; var msgHandler = ' + msgHandler.toString() + ';' +
                         'window.addEventListener("message",'+msgEvent.toString()+',false);',
             '('+onLoad.toString()+')();'];
 
@@ -16,8 +27,10 @@ ozpIwc.browsingContext = function(onLoad,msgHandler,id){
     this.iframe.id = id || "iframe";
     this.iframe.height = 10;
     this.iframe.width = 10;
+    var html = '<body></body>';
 
     document.body.appendChild(this.iframe);
+    this.iframe.contentWindow.document.write("<!DOCTYPE html><html><body></body></html>");
     this.addScript('text',scripts[0])
         .then(this.addScript('src','/js/ozpIwc-bus.js'))
         .then(this.addScript('text',scripts[1]))
@@ -26,13 +39,19 @@ ozpIwc.browsingContext = function(onLoad,msgHandler,id){
     this.iframe.style = "display:none !important;";
 };
 
+ozpIwc.browsingContext.prototype.wrapReady = function(val){
+//    return 'document.addEventListener("DOMContentLoaded", function() {' + val + '});';
+    return val;
+};
+
 ozpIwc.browsingContext.prototype.addScript = function(type,val){
     var script = this.iframe.contentWindow.document.createElement('script');
     script.type = "text/javascript";
 
     switch(type){
         case 'text':
-            script.text = val;
+            script.text = this.wrapReady(val);
+            this.iframe.contentWindow.document.body.appendChild(script);
             return new Promise(function(res,rej) {
                 res();
             });
@@ -44,7 +63,7 @@ ozpIwc.browsingContext.prototype.addScript = function(type,val){
             // open and send a synchronous request
             xhrObj.open('GET', val, false);
             xhrObj.send('');
-            script.text = xhrObj.responseText;
+            script.text = this.wrapReady(xhrObj.responseText);
             this.iframe.contentWindow.document.body.appendChild(script);
 
             return new Promise(function(res,rej) {

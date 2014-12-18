@@ -65,7 +65,7 @@ ozpIwc.Endpoint.prototype.put=function(resource, data, requestHeaders) {
             href:  resource,
             method: 'PUT',
 			data: data,
-            headers: requestHeaders,
+            headers: requestHeaders
         });
     });
 };

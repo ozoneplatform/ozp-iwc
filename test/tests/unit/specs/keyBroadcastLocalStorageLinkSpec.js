@@ -47,6 +47,23 @@ describe("KeyBroadcastLocalStorageLink", function () {
     });
 
     describe("Sending", function () {
+        it("Reports not parseable message sending", function(){
+
+            spyOn(ozpIwc.log,"error");
+
+            var sentPacket = {
+                data: {
+                foo: [],
+                bar: []
+                }
+            };
+            sentPacket.data.foo[0] = sentPacket.data. bar;
+            sentPacket.data.bar[0] = sentPacket.data.foo;
+
+            link.send(sentPacket);
+            expect(ozpIwc.log.error.calls.mostRecent().args[0]).toContain("Failed to write packet");
+
+        });
         it("fragments packets larger than fragmentSize", function (done) {
             var called = false;
             // random packet size <= 10 mb;
