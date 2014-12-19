@@ -133,7 +133,9 @@ ozpIwc.testUtil.BrowsingContext = function(onLoad,msgHandler,id){
             var message;
             try {
                 if (typeof(e.data) === 'string') {
-                    message = JSON.parse(e.data);
+                    if(e.data.indexOf("setImmediate$") == -1) {
+                        message = JSON.parse(e.data);
+                    }
                 } else {
                     message = e.data;
                 }
