@@ -159,6 +159,26 @@
                 </tbody>
             </table>
         </tab>
+        <tab heading="Elections" ng-controller="electionController">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-2" >
+                        <label for="apiSel">Api Election</label>
+                        <select id="apiSel"ng-options="item as item.title for item in apis"
+                                ng-model="selectedElection" tooltip-placement="bottom"
+                                tooltip="Which api to display elections for.">
+                        </select>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" ng-click="clear()">Clear</button>
+                        </div></br>
+                        <label for="packetPre">Packet Contents</label>
+                        <pre id="packetPre">{{packetContents}}</pre>
+                    </div>
+                    <vis-timeline timeline-id="1" class="col-md-10" style="margin-top: 20px;"></vis-timeline>
+
+                </div>
+            </div>
+        </tab>
         <tab heading="Debugger Address: {{client.address}}" disabled="true"></tab>
     </tabset>
 </body>
