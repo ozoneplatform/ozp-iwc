@@ -946,10 +946,10 @@ ozpIwc.CommonApiBase.prototype.newLeader = function() {
  */
 ozpIwc.CommonApiBase.prototype.setToLeader = function(){
     var self = this;
-    window.setTimeout(function() {
+    ozpIwc.util.setImmediate(function() {
         self.participant.changeState("leader");
         self.participant.events.trigger("becameLeader");
-    },0);
+    });
 };
 
 
@@ -964,7 +964,7 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
     this.participant.changeState("leaderSync",{toggleDrop: true});
 
     var self = this;
-    window.setTimeout(function() {
+    ozpIwc.util.setImmediate(function() {
 
         // If the election synchronizing pushed this API out of leadership, don't try to become leader.
         if(self.participant.leaderState !== "leaderSync") {
@@ -1015,7 +1015,7 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
                 ozpIwc.log.log(er);
             });
         }
-    },0);
+    });
 };
 
 /**

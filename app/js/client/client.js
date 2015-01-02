@@ -417,7 +417,6 @@ ozpIwc.Client.prototype.connect=function() {
                 var promiseArray = [];
                 apis.forEach(function (api) {
                     promiseArray.push(new Promise(function (resolve, reject) {
-                        console.log(api);
                         self.send({
                             dst: "names.api",
                             action: "get",

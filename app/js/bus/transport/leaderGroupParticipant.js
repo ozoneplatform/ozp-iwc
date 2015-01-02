@@ -97,7 +97,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
      * @type Number
      * @default 250
      */
-	this.electionTimeout=config.electionTimeout || 250; // quarter second
+	this.electionTimeout=config.electionTimeout || 1000; // quarter second
 
     /**
      * The current state of the participant.
@@ -225,6 +225,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
      */
     this.toggleDrop = false;
 
+    this.victoryTS = -Number.MAX_VALUE;
     /**
      * Fires when the participant enters an election.
      * @event #startElection
@@ -354,11 +355,11 @@ ozpIwc.LeaderGroupParticipant.prototype.isLeader=function() {
  * @private
  * @param {String} type The type of message -- "election" or "victory"
  */
-ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, config) {
+ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, config, callback) {
     config = config || {};
     var state = config.state || {};
     var previousLeader = config.previousLeader || this.leader;
-
+    var opponent = config.opponent || "";
     // TODO: no state should have circular references, this will eventually go away.
     try {
         JSON.stringify(state);
@@ -374,9 +375,10 @@ ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, confi
 		'entity': {
 			'priority': this.priority,
             'state': state,
-            'previousLeader': previousLeader
+            'previousLeader': previousLeader,
+            'opponent': opponent
 		}
-	});
+	},callback);
 };
 
 
@@ -402,6 +404,28 @@ ozpIwc.LeaderGroupParticipant.prototype.sendVictoryMessage = function(){
     }
 };
 
+ozpIwc.LeaderGroupParticipant.prototype.leaderQuery=function(config){
+    if(this.inElection()){
+        return;
+    }
+    this.leaderQueryTimer = window.setTimeout(function(){
+        self.cancelElection();
+        self.startElection();
+    },this.electionTimeout);
+
+    var self = this;
+    this.sendElectionMessage("leaderQuery",{},function(response){
+        window.clearTimeout(self.leaderQueryTimer);
+
+        if(response.entity.priority > self.priority) {
+            this.leader = response.src;
+            this.leaderPriority = response.entity.priority;
+            this.victoryTS = response.time;
+            self.events.trigger("newLeaderEvent");
+            this.stateStore = {};
+        }
+    });
+};
 
 /**
  * Attempt to start a new election.
@@ -419,7 +443,7 @@ ozpIwc.LeaderGroupParticipant.prototype.sendVictoryMessage = function(){
 ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
     config = config || {};
     var state = config.state || {};
-
+    var opponent = config.opponent || "";
 	// don't start a new election if we are in one
 	if(this.inElection()) {
 		return;
@@ -433,7 +457,7 @@ ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
         self.events.trigger("becameLeaderEvent");
 	},this.electionTimeout);
 
-	this.sendElectionMessage("election", {state: state, previousLeader: this.leader});
+	this.sendElectionMessage("election", {state: state, previousLeader: this.leader, opponent: opponent});
 };
 
 
@@ -473,7 +497,9 @@ ozpIwc.LeaderGroupParticipant.prototype.routePacket=function(packetContext) {
         if(packet.src === this.address) {
 			// even if we see our own messages, we shouldn't act upon them
 			return;
-		} else if(packet.action === "election") {
+		} else if(packet.action === "leaderQuery"){
+            this.handleLeaderQueryMessage(packetContext);
+        } else if(packet.action === "election") {
 			this.handleElectionMessage(packet);
 		} else if(packet.action === "victory") {
 			this.handleVictoryMessage(packet);
@@ -502,7 +528,19 @@ ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) 
 	packetContext.leaderState=this.leaderState;
 	this.events.trigger("receiveApiPacket",packetContext);
 };
-	
+
+
+ozpIwc.LeaderGroupParticipant.prototype.handleLeaderQueryMessage=function(electionMessage){
+    if(!this.activeStates.leader){
+        return;
+    }
+    electionMessage.replyTo({
+        action: "leaderResponse",
+        entity: {
+            priority: this.priority
+        }
+    });
+};
 	
 /**
  * Respond to someone else starting an election.
@@ -513,7 +551,6 @@ ozpIwc.LeaderGroupParticipant.prototype.forwardToTarget=function(packetContext) 
  * @param {ozpIwc.TransportPacket} electionMessage
  */
 ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionMessage) {
-
     //If a state was received, store it case participant becomes the leader
     if(Object.keys(electionMessage.entity.state).length > 0){
         this.stateStore = electionMessage.entity.state;
@@ -530,7 +567,7 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
 
 
 	// is the new election lower priority than us?
-	if(this.priorityLessThan(electionMessage.entity.priority,this.priority)) {
+	if(this.priorityLessThan(electionMessage.entity.priority,this.priority) && this.victoryTS < electionMessage.time) {
         if(electionMessage.entity.priority === -Number.MAX_VALUE){
             this.cancelElection();
             this.activeStates.election = false;
@@ -540,12 +577,12 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
             }
         }
         // Quell the rebellion!
-        this.startElection();
+        this.startElection({opponent: electionMessage.src});
 
     } else if(this.activeStates.leader) {
         // If this participant is currently the leader but will loose the election, it sends out notification that their
         // is currently a leader (for state retrieval purposes)
-        this.sendElectionMessage("election", {previousLeader: true});
+        this.sendElectionMessage("election", {previousLeader: this.address});
 
     } else {
 
@@ -574,11 +611,12 @@ ozpIwc.LeaderGroupParticipant.prototype.handleElectionMessage=function(electionM
 ozpIwc.LeaderGroupParticipant.prototype.handleVictoryMessage=function(victoryMessage) {
 	if(this.priorityLessThan(victoryMessage.entity.priority,this.priority)) {
 		// someone usurped our leadership! start an election!
-            this.startElection();
+            this.startElection({opponent: victoryMessage.src +"USURPER"});
 	} else {
 		// submit to the bully
 		this.leader=victoryMessage.src;
 		this.leaderPriority=victoryMessage.entity.priority;
+        this.victoryTS = victoryMessage.time;
 		this.cancelElection();
 		this.events.trigger("newLeaderEvent");
         this.stateStore = {};

@@ -41,7 +41,7 @@ debuggerModule.controller("packetLogController",["$scope",function(scope) {
     
     ozpIwc.defaultPeer.on("receive",logPacket);
     ozpIwc.defaultPeer.on("send",logPacket);
-    
+
 }]);
         
         
@@ -145,9 +145,17 @@ debuggerModule.controller("metricsController",['$scope','$interval',function(sco
 }]);
 
 debuggerModule.controller('electionController',['$scope',function($scope){
+    $scope.ELECTION_TIME = 1000;
     $scope.onElectionSelect = function(election){
         $scope.selectedElection = election;
     };
+    function isNewestPacket(packet,api){
+        { return api.lastElectionTS < packet.time; }
+    }
+    function outOfElectionWindow(packet,api){
+        { return api.lastElectionTS +  $scope.ELECTION_TIME < Date.now(); }
+
+    }
 
     $scope.apis = [
         {
@@ -155,28 +163,36 @@ debuggerModule.controller('electionController',['$scope',function($scope){
             title: 'Data Api',
             elections: new vis.DataSet(),
             electionGroups: new vis.DataSet(),
-            packets: {}
+            packets: {},
+            storageEvents: {},
+            lastElectionTS: -Number.MAX_VALUE
         },
         {
             value: 'names.api',
             title: 'Names Api',
             elections: new vis.DataSet(),
             electionGroups: new vis.DataSet(),
-            packets: {}
+            packets: {},
+            storageEvents: {},
+            lastElectionTS: -Number.MAX_VALUE
         },
         {
             value: 'system.api',
             title: 'System Api',
             elections: new vis.DataSet(),
             electionGroups: new vis.DataSet(),
-            packets: {}
+            packets: {},
+            storageEvents: {},
+            lastElectionTS: -Number.MAX_VALUE
         },
         {
             value: 'intents.api',
             title: 'Intents Api',
             elections: new vis.DataSet(),
             electionGroups: new vis.DataSet(),
-            packets: {}
+            packets: {},
+            storageEvents: {},
+            lastElectionTS: -Number.MAX_VALUE
         }
     ];
 
@@ -185,76 +201,207 @@ debuggerModule.controller('electionController',['$scope',function($scope){
             $scope.apis[i].elections = new vis.DataSet();
             $scope.apis[i].electionGroups = new vis.DataSet();
             $scope.apis[i].packets = {};
+            $scope.apis[i].storageEvents = {};
         }
         $scope.selectedElection = null;
     };
 
-    function logPacket(msg) {
-        var packet=msg.packet.data;
-        var text = packet.src;
-        if(packet.action === 'victory'){
-            text = '<label> VICTORY </label>' + text
+    function genTimelineDelta(packet){
+        var delta = packet.debuggerTime - packet.time;
+        var content = 'delta: ' + delta + ' ms';
+        return {
+            id: packet.time + "_delay",
+            content: content,
+            start: new Date(packet.time),
+            end: new Date(packet.debuggerTime),
+            style: "background-color: lightgray",
+            group: packet.src,
+            subgroup: "delay"
         }
-
+    }
+    function genTimelineData(packet){
+        var state = (packet.action === "election" && typeof(packet.entity.state) !== 'undefined' && Object.keys(packet.entity.state).length > 0);
         var timelineData = {
             id: packet.time,
-            content: text,
-            start: new Date(packet.time),
-            end: new Date(packet.time + 250),
-            group: packet.src
+            content: 'Election',
+            start: new Date(packet.debuggerTime),
+            end: new Date(packet.time + $scope.ELECTION_TIME),
+            group: packet.src,
+            subgroup: "actual"
         };
 
-        var timelineBG = {
-            id: 'BG'+packet.time,
-            content: packet.src +' timer',
-            start: new Date(packet.time),
-            end: new Date(packet.time + 250),
-            type: 'background',
-            subgroup: packet.src
-        };
+        if (packet.entity.priority === -Number.MAX_VALUE){
+            timelineData.style = "background-color: gray";
+            timelineData.content += '<label> Quitting </label> ';
+        }
 
+        switch(packet.action){
+            case "leaderQuery":
+                timelineData.style = "background-color: purple";
+                timelineData.content = "<label>Leader Query</label>";
+                break;
+            case "leaderResponse":
+                timelineData.style = "background-color: purple";
+                timelineData.content = "<label>Leader Response</label>";
+                timelineData.end = null;
+                break;
+            case "victory":
+                timelineData.style = "background-color: green";
+                timelineData.content = "<label> Victory </label>";
+                break;
+        }
+
+        if(state){
+            timelineData.style = "background-color: orange";
+            timelineData.content += '</br><label> Contains State </label>';
+        }
+        if(packet.src === packet.entity.previousLeader){
+            timelineData.content += '</br><label> Was Leader </label>';
+
+        }
+        return timelineData;
+    }
+
+    function genTimelineOOS(packet){
+        return {
+            id: packet.time,
+            content: ' Out of Sync',
+            start: new Date(packet.debuggerTime),
+            end: new Date(packet.time + $scope.ELECTION_TIME),
+            group: packet.src,
+            style: "background-color: yellow",
+            subgroup: "actual"
+        };
+    }
+    function genTimelineDrop(packet){
+        return {
+            id: packet.time,
+            content: ' Out of Election Window',
+            start: new Date(packet.debuggerTime),
+            end: new Date(packet.time + $scope.ELECTION_TIME),
+            group: packet.src,
+            style: "background-color: red",
+            subgroup: "actual"
+        };
+    }
+
+    function updateApiTimeline(packet,api){
         var timelineGroup = {
             id: packet.src,
             content: packet.src
         };
 
+
         var packetData = {
             id: packet.time,
             data: packet
         };
+
+        api.electionGroups.update(timelineGroup);
+
+        if(isNewestPacket(packet,api)) {
+            api.elections.add(genTimelineDelta(packet));
+            api.elections.add(genTimelineData(packet));
+        } else if(outOfElectionWindow(packet,api)){
+            api.elections.add(genTimelineDelta(packet));
+            api.elections.add(genTimelineDrop(packet));
+        } else {
+            api.elections.add(genTimelineDelta(packet));
+            api.elections.add(genTimelineOOS(packet));
+        }
+        if(packet.action === 'victory'){
+            api.lastElectionTS = packet.time;
+        }
+        api.packets[packetData.id] = packetData.data;
+    }
+
+    function logPacket(msg) {
+        var packet = msg.packet.data;
+        packet.debuggerTime = Date.now();
+        var actions = ['election','victory','leaderQuery','leaderResponse'];
+        if(actions.indexOf(packet.action) < 0) return;
+
+        if(packet.action === 'leaderResponse')console.log(packet);
         switch (packet.dst) {
             case "data.api.election":
                 $scope.$apply(function() {
-                    $scope.apis[0].electionGroups.update(timelineGroup);
-                    $scope.apis[0].elections.add(timelineData);
-                    $scope.apis[0].packets[packetData.id] = packetData.data;
+                    updateApiTimeline(packet,$scope.apis[0]);
                 });
                 break;
+
             case "names.api.election":
                 $scope.$apply(function() {
-                    $scope.apis[1].electionGroups.update(timelineGroup);
-                    $scope.apis[1].elections.add(timelineData);
-                    $scope.apis[1].packets[packetData.id] = packetData.data;
+                    updateApiTimeline(packet,$scope.apis[1]);
                 });
                 break;
+
             case "system.api.election":
                 $scope.$apply(function() {
-                    $scope.apis[2].electionGroups.update(timelineGroup);
-                    $scope.apis[2].elections.add(timelineData);
-                    $scope.apis[2].packets[packetData.id] = packetData.data;
+                    updateApiTimeline(packet,$scope.apis[2]);
                 });
                 break;
+
             case "intents.api.election":
                 $scope.$apply(function() {
-                    $scope.apis[3].electionGroups.update(timelineGroup);
-                    $scope.apis[3].elections.add(timelineData);
-                    $scope.apis[3].packets[packetData.id] = packetData.data;
+                    updateApiTimeline(packet,$scope.apis[3]);
                 });
                 break;
+
             default:
+                switch (packet.src) {
+                    case "data.api.election":
+                        $scope.$apply(function() {
+                            updateApiTimeline(packet,$scope.apis[0]);
+                        });
+                        break;
+
+                    case "names.api.election":
+                        $scope.$apply(function() {
+                            updateApiTimeline(packet,$scope.apis[1]);
+                        });
+                        break;
+
+                    case "system.api.election":
+                        $scope.$apply(function() {
+                            updateApiTimeline(packet,$scope.apis[2]);
+                        });
+                        break;
+
+                    case "intents.api.election":
+                        $scope.$apply(function() {
+                            updateApiTimeline(packet,$scope.apis[3]);
+                        });
+                        break;
+
+                    default:
+                        break;
+                }
                 break;
         }
     }
+
+
+    window.addEventListener("storage",function(event){
+        if(event.newValue && $scope.recvToggle){
+            var date = Date.now();
+            var id = date +'_'+ Math.floor(Math.random() * 10000);
+            var packet = JSON.parse(event.key);
+            for(var i in $scope.apis) {
+                $scope.apis[i].electionGroups.update({
+                    id: 'storageEvent',
+                    content: 'storageEvent'
+                });
+                $scope.apis[i].elections.add({
+                    id: id,
+                    content: packet.data.action || packet.data.response,
+                    style: (packet.data.action) ? "" : "background-color: yellow",
+                    start: date,
+                    group: 'storageEvent'
+                });
+                $scope.apis[i].storageEvents[id] =packet;
+            }
+        }
+    });
 
     ozpIwc.defaultPeer.on("receive",logPacket);
     ozpIwc.defaultPeer.on("send",logPacket);
@@ -273,7 +420,7 @@ debuggerModule.controller('electionController',['$scope',function($scope){
 
                 // Configuration for the Timeline
                 $scope.options = {
-                    stack:true,
+                    stack:false,
                     maxHeight: "900px",
                     groupOrder: 'content'
                 };
@@ -282,8 +429,20 @@ debuggerModule.controller('electionController',['$scope',function($scope){
                 $scope.timeline = new vis.Timeline($scope.container, $scope.data, $scope.options);
 
                 $scope.timeline.on('select', function (properties) {
-                    $scope.$parent.packetContents =
-                        JSON.stringify($scope.$parent.selectedElection.packets[properties.items[0]],null,2);
+
+                    if(properties.items.length > 0){
+
+                            var electionMsg = $scope.$parent.selectedElection.packets[properties.items[0]];
+                            if(electionMsg){
+                                $scope.$parent.packetContents = JSON.stringify(electionMsg,null,2);
+                            } else{
+                                var storageEvent = $scope.$parent.selectedElection.storageEvents[properties.items[0]];
+                                $scope.$parent.packetContents = JSON.stringify(storageEvent,null,2);
+                            }
+
+                    } else {
+                        $scope.$parent.packetContents = "";
+                    }
 
                 });
             },
