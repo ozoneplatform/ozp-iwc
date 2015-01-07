@@ -177,7 +177,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHe
             self.dynamicNodes.forEach(function(resource) {
                 self.updateDynamicNode(self.data[resource]);
             });
-        }).catch(function(e) {
+        })['catch'](function(e) {
             ozpIwc.log.error("Could not load from api (" + endpointName + "): " + e.message,e);
             rejectLoad("Could not load from api (" + endpointName + "): " + e.message + e);
         });
@@ -313,7 +313,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                         var payload = objectResource.response;
                         var header = objectResource.header;
                         self.updateResourceFromServer(payload, href, endpoint, res,header);
-                    }).catch(function (error) {
+                    })['catch'](function (error) {
                         ozpIwc.log.error("unable to load " + object.href + " because: ", error);
                     });
                 });
@@ -323,7 +323,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                     var payload = objectResource.response;
                     var header = objectResource.header;
                     self.updateResourceFromServer(payload, href, endpoint, res,header);
-                }).catch(function (error) {
+                })['catch'](function (error) {
                     ozpIwc.log.error("unable to load " + object.href + " because: ", error);
                 });
             }
@@ -946,10 +946,10 @@ ozpIwc.CommonApiBase.prototype.newLeader = function() {
  */
 ozpIwc.CommonApiBase.prototype.setToLeader = function(){
     var self = this;
-    window.setTimeout(function() {
+    ozpIwc.util.setImmediate(function() {
         self.participant.changeState("leader");
         self.participant.events.trigger("becameLeader");
-    },0);
+    });
 };
 
 
@@ -964,7 +964,7 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
     this.participant.changeState("leaderSync",{toggleDrop: true});
 
     var self = this;
-    window.setTimeout(function() {
+    ozpIwc.util.setImmediate(function() {
 
         // If the election synchronizing pushed this API out of leadership, don't try to become leader.
         if(self.participant.leaderState !== "leaderSync") {
@@ -1011,11 +1011,11 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
             },function(err){
                 ozpIwc.log.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
                 self.setToLeader();
-            }).catch(function(er){
+            })['catch'](function(er){
                 ozpIwc.log.log(er);
             });
         }
-    },0);
+    });
 };
 
 /**

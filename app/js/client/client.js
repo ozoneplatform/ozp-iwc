@@ -416,7 +416,6 @@ ozpIwc.Client.prototype.connect=function() {
                 var promiseArray = [];
                 apis.forEach(function (api) {
                     promiseArray.push(new Promise(function (resolve, reject) {
-                        console.log(api);
                         self.send({
                             dst: "names.api",
                             action: "get",
@@ -488,7 +487,7 @@ ozpIwc.Client.prototype.connect=function() {
                  * @event #connected
                  */
                 self.events.trigger("connected");
-            }).catch(function(error) {
+            })['catch'](function(error) {
                 ozpIwc.log.log("Failed to connect to bus ",error);
             });
     }

@@ -9,7 +9,7 @@ describe("Intents API", function () {
 
     beforeEach(function(done) {
         client=new ozpIwc.Client({
-            peerUrl: "http://localhost:14002"
+            peerUrl: "http://" + window.location.hostname + ":14002"
         });
 //        participant=new ozpIwc.test.MockParticipant({
 //            clientUrl: "http://localhost:14001",
@@ -48,7 +48,7 @@ describe("Intents API", function () {
             expect(reply.entity.resource).toMatch('/text/plain/view');
             done();
         })
-        .catch(function (error) {
+        ['catch'](function (error) {
             expect(error).toEqual('');
             done();
         });
@@ -77,7 +77,7 @@ describe("Intents API", function () {
             expect(reply.entity.invokeIntent.action).toEqual("invoke");
 
             done();
-        }).catch(function (error) {
+        })['catch'](function (error) {
             console.error(error);
             expect(error).toEqual('');
             done();
@@ -92,7 +92,7 @@ describe("Intents API", function () {
             return client.api('intents.api').delete(reply.entity.resource);
         }).then(function(reply) {
             expect(reply.response).toEqual('ok');
-        }).catch(function(error) {
+        })['catch'](function(error) {
             expect(error).toEqual('');
         }).then(done,done);
 
@@ -128,7 +128,7 @@ describe("Intents API", function () {
                 contentType: "text/plain",
                 entity: "This is some text"
             });
-        }).catch(function (error) {
+        })['catch'](function (error) {
             console.log("Error registering handler: ",error);
             expect(error).toEqual('');
             done();

@@ -35,26 +35,34 @@ ozpIwc.test.MockParticipant.prototype.postMessageHandler=function(event) {
     if(event.source !== this.iframe.contentWindow) {
         return;
     }
-    
-    switch(event.data.msgType) {
-        case "address": 
-            this.address=event.data.address;
-            this.sendDirectly({
-                'msgType': "address",
-                'address': this.client.address
-            });
-            this.events.trigger("connected",this);
-            break;
-        case "return":
-            var cb=this.callbacks[event.data.runId];
-            if(cb) {
-                cb.call(null,event.data.returnValue);
-                delete this.callbacks[event.data.runId];
-            }
-            break;
-        default:
-            console.log("Unknown message type from mock participant: ",event.data);
-            break;
+    var message=event.data;
+    try {
+        if (typeof(message) === 'string') {
+            message = JSON.parse(event.data);
+        }
+        console.log(JSON.stringify(message));
+        switch (message.msgType) {
+            case "address":
+                this.address = message.address;
+                this.sendDirectly({
+                    'msgType': "address",
+                    'address': this.client.address
+                });
+                this.events.trigger("connected", this);
+                break;
+            case "return":
+                var cb = this.callbacks[message.runId];
+                if (cb) {
+                    cb.call(null, message.returnValue);
+                    delete this.callbacks[message.runId];
+                }
+                break;
+            default:
+                console.log("Unknown message type from mock participant: ",message);
+                break;
+        }
+    } catch (e){
+        //nothing
     }
 };
 
@@ -63,7 +71,7 @@ ozpIwc.test.MockParticipant.prototype.sendDirectly=function(data,callback) {
         data.runId=this.runId;
         this.callbacks[this.runId++]=callback;
     }
-    this.iframe.contentWindow.postMessage(data,"*");
+    ozpIwc.util.safePostMessage(this.iframe.contentWindow,data,'*');
 };
 
 ozpIwc.test.MockParticipant.prototype.send=function(packet,callback) {

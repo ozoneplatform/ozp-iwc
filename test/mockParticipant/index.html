@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html>
 <head>
     <title>Mock Participant for OZP IWC integration testing</title>
+    <script type="text/javascript" src="/js/0json2.js"></script>
+    <script type="text/javascript" src="/js/ie-console-shim.js"></script>
+    <script type="text/javascript" src="/js/ozpIwc-client.js"></script>
     <script type="text/javascript" src="/js/ozpIwc-bus.js"></script>
     <script type="text/javascript" src="/js/ozpIwc-metrics.js"></script>
-    <script type="text/javascript" src="/js/ozpIwc-client.js"></script>
     <script type="text/javascript">
-        var client = new ozpIwc.Client({peerUrl: "http://localhost:14002"});
+        var client = new ozpIwc.Client({peerUrl: "http://" + window.location.hostname + ":14002"});
         var testAddress = "";
         var sendToParent=function(data) {
-//            console.log("Sending to test",data);
-            parent.postMessage(data,"*");
+            console.log("Sending to test",JSON.stringify(data));
+            ozpIwc.util.safePostMessage(parent,data,'*');
         };
         
         window.addEventListener("message", function(event) {
@@ -18,34 +19,41 @@
                 if(event.source !== window.parent) {
                     return;
                 }
-//            console.log("Fake IWC App received: ",event.data);
-
-                switch(event.data.msgType) {
-                    case "run": 
-                        func=eval('( function() { return '+event.data.func+';})();');
-//                        console.log("Fake App running ", func.toString());
-                        var rv=func.call(null,client,testAddress);
-                        sendToParent({
-                            'msgType': "return",
-                            'runId' : event.data.runId,
-                            'returnValue' : rv
-                        });
-                        break;
-                    case "address":
-                        testAddress=event.data.address;
-                        break;
-                    case "send":
-                        client.send(event.data.packet,function(response) {
+            console.log("Fake IWC App received: ",event.data);
+                var message=event.data;
+                try {
+                    if (typeof(message) === 'string') {
+                        message = JSON.parse(event.data);
+                    }
+                    switch (message.msgType) {
+                        case "run":
+                            func = eval('( function() { return ' + message.func + ';})();');
+                                                    console.log("Fake App running ", func.toString());
+                            var rv = func.call(null, client, testAddress);
                             sendToParent({
                                 'msgType': "return",
-                                'runId' : event.data.runId,
-                                'returnValue' : response
+                                'runId': message.runId,
+                                'returnValue': rv
                             });
-                        });
-                        break;
-                    default:
-                        console.log("Fake App received unknown command from parent: ",event.data);
-                        break;
+                            break;
+                        case "address":
+                            testAddress = message.address;
+                            break;
+                        case "send":
+                            client.send(event.data.packet, function (response) {
+                                sendToParent({
+                                    'msgType': "return",
+                                    'runId': message.runId,
+                                    'returnValue': response
+                                });
+                            });
+                            break;
+                        default:
+                            console.log("Fake App received unknown command from parent: ", message);
+                            break;
+                    }
+                } catch (e){
+                    //nothing
                 }
             
             }, false);

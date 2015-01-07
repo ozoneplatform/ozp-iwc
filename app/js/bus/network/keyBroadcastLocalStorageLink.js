@@ -141,18 +141,20 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     var self = this;
     var packet;
     var receiveStorageEvent = function (event) {
-        try {
-            packet = JSON.parse(event.key);
-        } catch (e) {
-            ozpIwc.log.log("Parse error on " + event.key);
-            ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.parseError').inc();
-            return;
-        }
-        if (packet.data.fragment) {
-            self.handleFragment(packet);
-        } else {
-            self.peer.receive(self.linkId, packet);
-            ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
+        if(event.newValue) {
+            try {
+                packet = JSON.parse(event.key);
+            } catch (e) {
+                ozpIwc.log.log("Parse error on " + event.key);
+                ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.parseError').inc();
+                return;
+            }
+            if (packet.data.fragment) {
+                self.handleFragment(packet);
+            } else {
+                self.peer.receive(self.linkId, packet);
+                ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
+            }
         }
     };
     window.addEventListener('storage', receiveStorageEvent, false);
@@ -302,7 +304,14 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragm
  * @param {ozpIwc.NetworkPacket} packet
  */
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
-    var str = JSON.stringify(packet.data);
+    var str;
+    try {
+       str = JSON.stringify(packet.data);
+    } catch (e){
+        var msgId = packet.msgId || "unknown";
+        ozpIwc.log.error("Failed to write packet(msgId=" + msgId+ "):" + e.message);
+        return;
+    }
 
     if (str.length < this.fragmentSize) {
         this.queueSend(packet);
@@ -398,7 +407,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     var sendStatus;
     try {
         var p = JSON.stringify(packet);
-        localStorage.setItem(p, "");
+        localStorage.setItem(p, "x");
         ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
         localStorage.removeItem(p);
         sendStatus = null;

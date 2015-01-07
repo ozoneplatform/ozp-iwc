@@ -65,7 +65,7 @@ ozpIwc.Endpoint.prototype.put=function(resource, data, requestHeaders) {
             href:  resource,
             method: 'PUT',
 			data: data,
-            headers: requestHeaders,
+            headers: requestHeaders
         });
     });
 };
@@ -161,6 +161,10 @@ ozpIwc.EndpointRegistry=function(config) {
         for (var linkEp in payload._links) {
             if (linkEp !== 'self') {
                 var link = payload._links[linkEp].href;
+								if(Array.isArray(payload._links[linkEp])) {
+									link=payload._links[linkEp][0].href;
+								}
+
                 self.endpoint(linkEp).baseUrl = link;
             }
         }

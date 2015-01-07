@@ -4,10 +4,10 @@ describe("Data API", function () {
 
     beforeEach(function(done) {
         client=new ozpIwc.Client({
-            peerUrl: "http://localhost:14002"
+            peerUrl: "http://" + window.location.hostname + ":14002"
         });
         participant=new ozpIwc.test.MockParticipant({
-            clientUrl: "http://localhost:14001",
+            clientUrl: "http://" + window.location.hostname + ":14001",
             'client': client
         });
 
@@ -36,7 +36,7 @@ describe("Data API", function () {
                 .then(function(reply) {
                     expect(reply.entity).toEqual(packet.entity);
                     done();
-                }).catch(function(error) {
+                })['catch'](function(error) {
                     expect(error).toEqual('not have happened');
                 });
         });
@@ -58,7 +58,7 @@ describe("Data API", function () {
             return true;
         }).then(function(reply) {
             participant.send(packet);
-        }).catch(function(error) {
+        })['catch'](function(error) {
             expect(error).toEqual('');
         });
 
@@ -80,11 +80,11 @@ describe("Data API", function () {
                             expect(reply.entity).toBeUndefined();
                             done();
                         })
-                        .catch(function(error) {
+                        ['catch'](function(error) {
                             expect(error).toEqual('');
                         });
                 })
-                .catch(function(error) {
+                ['catch'](function(error) {
                     expect(error).toEqual('');
                 });
         });
@@ -97,7 +97,7 @@ describe("Data API", function () {
                 expect(reply.entity).toEqual({});
                 done();
             })
-            .catch(function(error) {
+            ['catch'](function(error) {
                 expect(error).toEqual('');
             });
     });
@@ -133,7 +133,7 @@ describe("Data API", function () {
                         called = true;
                         done();
                     }
-                }).catch(function (error) {
+                })['catch'](function (error) {
                     expect(error).toEqual('');
                 });
         });
@@ -146,7 +146,7 @@ describe("Data API", function () {
             client.api('data.api').delete('/test')
                 .then(function (packet) {
                     expect(packet.response).toEqual('ok');
-                }).catch(function (error) {
+                })['catch'](function (error) {
                     expect(error).toEqual('');
                 });
             if (!called) {
@@ -166,7 +166,7 @@ describe("Data API", function () {
                         done();
                     }
                 })
-                .catch(function (error) {
+                ['catch'](function (error) {
                     expect(error).toEqual('');
                 });
         });
@@ -187,11 +187,11 @@ describe("Data API", function () {
                                 done();
                             }
                         })
-                        .catch(function (error) {
+                        ['catch'](function (error) {
                             expect(error).toEqual('');
                         });
                 })
-                .catch(function (error) {
+                ['catch'](function (error) {
                     expect(error).toEqual('');
                 });
         });
@@ -205,7 +205,7 @@ describe("Data API", function () {
                         called = true;
                         done();
                     }
-                }).catch(function (error) {
+                })['catch'](function (error) {
                     expect(error).toEqual('');
                 });
         });

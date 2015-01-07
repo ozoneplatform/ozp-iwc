@@ -9,10 +9,10 @@ describe("System API", function() {
 
     beforeEach(function(done) {
         client = new ozpIwc.Client({
-            peerUrl: "http://localhost:14002"
+            peerUrl: "http://" + window.location.hostname + ":14002"
         });
         participant = new ozpIwc.test.MockParticipant({
-            clientUrl: "http://localhost:14001",
+            clientUrl: "http://" + window.location.hostname + ":14001",
             'client': client
         });
 
@@ -33,7 +33,7 @@ describe("System API", function() {
                 expect(reply.response).toEqual("ok");
                 expect(reply.entity).toBeDefined();
                 done();
-            }).catch(function(error) {
+            })['catch'](function(error) {
                 expect(error).toEqual("Should not happen");
                 done();
             });
@@ -44,7 +44,7 @@ describe("System API", function() {
                 expect(reply.response).toEqual("ok");
                 expect(reply.entity).toBeDefined();
                 done();
-            }).catch(function(error) {
+            })['catch'](function(error) {
                 expect(error).toEqual("Should not happen");
                 done();
             });
@@ -61,7 +61,7 @@ describe("System API", function() {
                 expect(reply.entity).toContain("/application/8e8265bb-fef8-49ab-8b13-2356a1647b6b");
                 expect(reply.entity).toContain("/application/f084e827-ce8d-4f2c-97f8-13eba94ae889");
                 done();
-            }).catch(function(error) {
+            })['catch'](function(error) {
                 expect(error).toEqual("Should not happen");
                 done();
             });
@@ -74,7 +74,7 @@ describe("System API", function() {
                 .then(function(reply) {
                     expect(reply).toEqual("Should not happen");
                     done();
-                }).catch(function(error) {
+                })['catch'](function(error) {
                     expect(error.response).toEqual("badAction");
                     done();
                 });
@@ -85,7 +85,7 @@ describe("System API", function() {
                 .then(function(reply) {
                     expect(reply).toEqual("Should not happen");
                     done();
-                }).catch(function(error) {
+                })['catch'](function(error) {
                     expect(error.response).toEqual("badAction");
                     done();
                 });

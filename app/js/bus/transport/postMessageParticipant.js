@@ -257,8 +257,12 @@ ozpIwc.PostMessageParticipantListener.prototype.findParticipant=function(sourceW
  */
 ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(event) {
 	var participant=this.findParticipant(event.source);
-	var packet=event.data;
-
+    var packet=event.data;
+    if(event.source === window) {
+        // the IE profiler seems to make the window receive it's own postMessages
+        // ... don't ask.  I don't know why
+        return;
+    }
 	if(typeof(event.data)==="string") {
 		try {
             packet=JSON.parse(event.data);

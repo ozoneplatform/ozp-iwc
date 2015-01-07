@@ -102,8 +102,9 @@ ozpIwc.InternalParticipant.prototype.send=function(originalPacket,callback) {
 		this.replyCallbacks[packet.msgId]=callback;
 	}
     var self=this;
+    var send = ozpIwc.Participant.prototype.send;
 	ozpIwc.util.setImmediate(function() {
-        ozpIwc.Participant.prototype.send.call(self,packet);
+        send.call(self,packet);
     });
 
 	return packet;

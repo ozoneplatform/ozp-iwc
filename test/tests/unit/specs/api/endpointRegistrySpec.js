@@ -51,7 +51,7 @@ describe("Endpoint Registry",function() {
                     'method': "GET"
                 }));
                 done();
-            }).catch(function(err) {
+            })['catch'](function(err) {
                 expect(err).toBe("not have occurred");
                 done();
             });

@@ -27,27 +27,27 @@ describe("System API",function() {
                 {
                     "type": "application/ozp-demo-ball+json",
                     "action": "view",
-                    "icon": "http://localhost:15000/largeIcon.png",
+                    "icon": "http://" + window.location.hostname + ":15000/largeIcon.png",
                     "label": "Blue Ball"
                 }
             ],
             "icons" : {
-                "small": "http://localhost:15000/largeIcon.png",
-                "large": "http://localhost:15000/smallIcon.png"
+                "small": "http://" + window.location.hostname + ":15000/largeIcon.png",
+                "large": "http://" + window.location.hostname + ":15000/smallIcon.png"
             },
             "screenShots" : [
                 {
-                    "href" : "http://localhost:15000/screenShot.png",
+                    "href" : "http://" + window.location.hostname + ":15000/screenShot.png",
                     "title" : "A screenshot"
                 }
             ],
             "launchUrls" : {
-                "default": "http://localhost:15000/?color=blue",
+                "default": "http://" + window.location.hostname + ":15000/?color=blue",
                 "test" : "http://test.localhost:15000/?color=blue"
             },
             "_links": {
                 "self" : { "href": "/api/application/v1/12345"},
-                "describes" : { "href": "http://localhost:15000/?color=blue"}
+                "describes" : { "href": "http://" + window.location.hostname + ":15000/?color=blue"}
             }
         }
     };
@@ -156,7 +156,7 @@ describe("System API",function() {
         var reply=packetContext.responses[0];
         expect(reply.response).toEqual("ok");
 
-        expect(ozpIwc.util.openWindow.calls.mostRecent().args[0]).toEqual("http://localhost:15000/?color=blue");
+        expect(ozpIwc.util.openWindow.calls.mostRecent().args[0]).toEqual("http://" + window.location.hostname + ":15000/?color=blue");
         var params= decodeURIComponent(ozpIwc.util.openWindow.calls.mostRecent().args[1]).split('&');
         expect(params.length).toEqual(2);
         expect(params[0]).toEqual('ozpIwc.peer='+ozpIwc.BUS_ROOT);
