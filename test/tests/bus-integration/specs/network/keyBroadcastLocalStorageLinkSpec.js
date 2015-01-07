@@ -52,5 +52,23 @@ describe("IWC LocalStorage Key Broadcast", function() {
 
             otherContext.send(referencePacket);
         });
+
+        xit("handles not parseable messages", function(done){
+
+            spyOn(ozpIwc.log,"error");
+
+
+            var referencePacket = ozpIwc.testUtil.testPacket(linkA,10);
+
+            otherContext = new ozpIwc.testUtil.BrowsingContext(otherContextOnLoad,function(message,scope){
+                message = {
+                    data: {
+                        foo: this
+                    }
+                } ;
+                scope.linkB.send(message);
+            });
+            otherContext.send(referencePacket);
+        })
     });
 });

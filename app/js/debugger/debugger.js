@@ -47,31 +47,35 @@ debuggerModule.controller("packetLogController",["$scope",function(scope) {
         
 debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(scope,client) {
     scope.keys=[];
-    scope.loadKey=function(key) {
-        client.send({
-            'dst': scope.api.address,
-            'action': "get",
-            'resource': key.resource
-        },function(response,done) {
-            for(i in response) {
-                key[i]=response[i];
-            }
-            key.isLoaded=true;
-            done();
-        });
-        client.send({
-            'dst': scope.api.address,
-            'action': "list",
-            'resource': key.resource
-        },function(response,done) {
-            if(response.response==="ok") {
-                key.children=response.entity;
-            }else {
-                key.children="Not Supported: " + response.response;
-            }
-            done();
-        });
+    scope.query = function() {
+        scope.loadKey = function (key) {
+            client.send({
+                'dst': scope.api.address,
+                'action': "get",
+                'resource': key.resource
+            }, function (response, done) {
+                for (i in response) {
+                    key[i] = response[i];
+                }
+                key.isLoaded = true;
+                done();
+            });
+            client.send({
+                'dst': scope.api.address,
+                'action': "list",
+                'resource': key.resource
+            }, function (response, done) {
+                if (response.response === "ok") {
+                    key.children = response.entity;
+                } else {
+                    key.children = "Not Supported: " + response.response;
+                }
+                done();
+            });
+        };
+        scope.refresh();
     };
+
     scope.refresh=function() {
         client.send({
             'dst': scope.api.address,
@@ -145,7 +149,7 @@ debuggerModule.controller("metricsController",['$scope','$interval',function(sco
 }]);
 
 debuggerModule.controller('electionController',['$scope',function($scope){
-    $scope.ELECTION_TIME = 1000;
+    $scope.ELECTION_TIME = ozpIwc.ELECTION_TIMEOUT;
     $scope.onElectionSelect = function(election){
         $scope.selectedElection = election;
     };
@@ -316,12 +320,12 @@ debuggerModule.controller('electionController',['$scope',function($scope){
     }
 
     function logPacket(msg) {
+        if($scope.enableOrNot === "disabled") return;
         var packet = msg.packet.data;
         packet.debuggerTime = Date.now();
         var actions = ['election','victory','leaderQuery','leaderResponse'];
         if(actions.indexOf(packet.action) < 0) return;
 
-        if(packet.action === 'leaderResponse')console.log(packet);
         switch (packet.dst) {
             case "data.api.election":
                 $scope.$apply(function() {
@@ -380,9 +384,8 @@ debuggerModule.controller('electionController',['$scope',function($scope){
         }
     }
 
-
-    window.addEventListener("storage",function(event){
-        if(event.newValue && $scope.recvToggle){
+    var storeEvt =  function(event){
+        if(event.newValue && $scope.recvToggle && $scope.enableOrNot === "enabled"){
             var date = Date.now();
             var id = date +'_'+ Math.floor(Math.random() * 10000);
             var packet = JSON.parse(event.key);
@@ -401,11 +404,22 @@ debuggerModule.controller('electionController',['$scope',function($scope){
                 $scope.apis[i].storageEvents[id] =packet;
             }
         }
-    });
+    };
 
-    ozpIwc.defaultPeer.on("receive",logPacket);
-    ozpIwc.defaultPeer.on("send",logPacket);
+    $scope.evtListener = null;
+    $scope.enableOrNot = "disabled";
 
+    $scope.toggle = function(){
+        if ($scope.enableOrNot === "disabled"){
+            $scope.enableOrNot = "enabled";
+            $scope.evtListener = window.addEventListener("storage",storeEvt);
+        } else {
+            $scope.enableOrNot = "disabled";
+            window.removeEventListener("storage",$scope.evtListener);
+        }
+        ozpIwc.defaultPeer.on("receive",logPacket);
+        ozpIwc.defaultPeer.on("send",logPacket);
+    };
 }]).directive('visTimeline', function() {
         return {
             restrict : 'EA',

@@ -19,7 +19,7 @@ var Widget=function(config) {
 	
 	var self=this;
 	close.click(function() {
-        $(self.el[0].children[1]).attr("src",null);
+        $(self.el[0].children[1]).attr("src",'about:blank');
 		self.gridster.remove_widget(self.el);
 	});
 	popout.click(function() {

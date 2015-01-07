@@ -438,6 +438,8 @@ ozpIwc.Router.prototype.send=function(packet,sendingParticipant) {
  */
 ozpIwc.Router.prototype.receiveFromPeer=function(packet) {
     ozpIwc.metrics.counter("transport.packets.receivedFromPeer").inc();
+    var now = Date.now();
+    ozpIwc.metrics.histogram("transport.packets.latency").mark(now-packet.data.time,now);
     var peerReceiveEvent=new ozpIwc.CancelableEvent({
         'packet' : packet.data,
         'rawPacket' : packet
