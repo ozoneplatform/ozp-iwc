@@ -103,8 +103,7 @@ ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetCon
  * @todo Only IE requires the packet to be stringified before sending, should use feature detection?
  */
 ozpIwc.PostMessageParticipant.prototype.sendToRecipient=function(packet) {
-    var data=ozpIwc.util.getPostMessagePayload(packet);
-	this.sourceWindow.postMessage(data,this.origin);
+	ozpIwc.util.safePostMessage(this.sourceWindow,packet,this.origin);
 };
 
 /**

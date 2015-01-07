@@ -11,7 +11,7 @@
         var testAddress = "";
         var sendToParent=function(data) {
             console.log("Sending to test",JSON.stringify(data));
-            parent.postMessage(ozpIwc.util.getPostMessagePayload(data),"*");
+            ozpIwc.util.safePostMessage(parent,data,'*');
         };
         
         window.addEventListener("message", function(event) {

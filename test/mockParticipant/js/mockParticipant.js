@@ -71,7 +71,7 @@ ozpIwc.test.MockParticipant.prototype.sendDirectly=function(data,callback) {
         data.runId=this.runId;
         this.callbacks[this.runId++]=callback;
     }
-    this.iframe.contentWindow.postMessage(ozpIwc.util.getPostMessagePayload(data),"*");
+    ozpIwc.util.safePostMessage(this.iframe.contentWindow,data,'*');
 };
 
 ozpIwc.test.MockParticipant.prototype.send=function(packet,callback) {

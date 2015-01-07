@@ -259,9 +259,8 @@ ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromise) {
     if(callback) {
         this.replyCallbacks[id]=callback;
     }
-    var data=ozpIwc.util.getPostMessagePayload(packet);
-    this.peer.postMessage(data,'*');
-    this.sentBytes+=data.length;
+    ozpIwc.util.safePostMessage(this.peer,packet,'*');
+    this.sentBytes+=packet.length;
     this.sentPackets++;
 
     if(packet.action === "watch") {

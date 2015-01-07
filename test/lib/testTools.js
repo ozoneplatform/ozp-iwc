@@ -229,6 +229,6 @@ ozpIwc.testUtil.BrowsingContext .prototype.send = function(message){
     if(!this.ready){
         this.msgQueue.push(message);
     } else {
-        this.iframe.contentWindow.postMessage(ozpIwc.util.getPostMessagePayload(message),'*');
+        ozpIwc.util.safePostMessage(this.iframe.contentWindow,message,'*');
     }
 };
