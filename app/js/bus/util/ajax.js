@@ -32,6 +32,7 @@ ozpIwc.util=ozpIwc.util || {};
 ozpIwc.util.ajax = function (config) {
     return new Promise(function(resolve,reject) {
         var request = new XMLHttpRequest();
+        request.withCredentials = true;
         request.open(config.method, config.href, true);
         if (Array.isArray(config.headers)) {
             config.headers.forEach(function(header) {
@@ -44,11 +45,6 @@ ozpIwc.util.ajax = function (config) {
          * (but only for BASIC authentication as coded here). If the credentials are set in the open command,
          * FF will fail to make the request, even though the credentials are manually set in the Authorization header
          * */
-
-        var protocol = getProtocol(config.href);
-        if (ozpIwc.basicAuthUsername && ozpIwc.basicAuthPassword && protocol === 'https:') {
-            request.setRequestHeader("Authorization", "Basic " + btoa(ozpIwc.basicAuthUsername + ":" + ozpIwc.basicAuthPassword));
-        }
 
         request.onload = function () {
             try {
