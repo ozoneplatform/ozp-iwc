@@ -1,6 +1,6 @@
 ozpIwc = ozpIwc || {};
 
-ozpIwc.security = ozpIwc.security || {};
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 
 
 /**
@@ -10,7 +10,7 @@ ozpIwc.security = ozpIwc.security || {};
  * A rule can be evaluated on the basis of its contents.  The main components of a rule are:
  *
  * @class Rule
- * @namespace ozpIwc.security
+ * @namespace ozpIwc.authorization
  *
  * @param {Object} config
  * @param {Object} config.target
@@ -20,7 +20,8 @@ ozpIwc.security = ozpIwc.security || {};
  *
  * @constructor
  */
-ozpIwc.security.Rule = function(config){
+ozpIwc.policyAuth.Rule = function(config){
+    config=config || {};
     /**
      * @property target
      * @type Object
@@ -77,7 +78,7 @@ ozpIwc.security.Rule = function(config){
  * @method setEffect
  * @param {String} effect
  */
-ozpIwc.security.Rule.prototype.setEffect = function(effect){
+ozpIwc.policyAuth.Rule.prototype.setEffect = function(effect){
     switch(effect){
         case "Permit":
             this.effect = effect;

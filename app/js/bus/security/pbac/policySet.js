@@ -1,16 +1,17 @@
 ozpIwc = ozpIwc || {};
 
-ozpIwc.security = ozpIwc.security || {};
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 
 /**
- * A collection of {{#crossLink "ozpIwc.security.Policy"}}{{/crossLink}}.
+ * A collection of {{#crossLink "ozpIwc.authorization.Policy"}}{{/crossLink}}.
  * @class PolicySet
- * @namespace ozpIwc.security
+ * @namespace ozpIwc.authorization
  *
  * @param config
  * @constructor
  */
-ozpIwc.security.PolicySet = function(config){
+ozpIwc.policyAuth.PolicySet = function(config){
+    config=config || {};
     /**
      * @property target
      * @type Object
@@ -29,9 +30,9 @@ ozpIwc.security.PolicySet = function(config){
     this.policyCombining = config.policyCombining || null;
 
     /**
-     * An array of {{#crossLink "ozpIwc.security.Policy"}}{{/crossLink}}
+     * An array of {{#crossLink "ozpIwc.authorization.Policy"}}{{/crossLink}}
      * @property rules
-     * @type Array<ozpIwc.security.Policy>
+     * @type Array<ozpIwc.authorization.Policy>
      * @default []
      */
     this.policies = config.policies || [];
