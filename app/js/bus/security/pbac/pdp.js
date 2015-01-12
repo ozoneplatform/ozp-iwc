@@ -5,7 +5,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 /**
  * System entity that evaluates applicable policy and renders an authorization decision.
  * @class PDP
- * @namespace ozpIwc.authorization
+ * @namespace ozpIwc.policyAuth
  *
  * @param {Object} config
  * @constructor
@@ -45,19 +45,25 @@ ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
 };
 
 /**
- * Processes an {{#crossLink "ozpIwc.authorization.PEP"}}{{/crossLink}} request.
+ * Processes an {{#crossLink "ozpIwc.policyAuth.PEP"}}{{/crossLink}} request.
  * @TODO
  * @method handleRequest
  * @param request
  * @returns {Promise}
  */
 ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request){
-    var self = this;
-    return new Promise(function(resolve,reject){
-        // a hook for logging capabilities
-        self.events.trigger("pepRequest",request);
-        reject("NOT IMPLEMENTED");
-    });
+	var action=new ozpIwc.AsyncAction();
+
+    var result=this.policies.some(function(policy) {
+        return policy.call(this,request)==="permit";
+    },this);
+
+
+    if(result) {
+        return action.resolve("success");
+    } else {
+		return action.resolve('failure');
+    }
 };
 
-//ozpIwc.auth = new ozpIwc.authorization.PDP();
+ozpIwc.authorization = new ozpIwc.policyAuth.PDP();

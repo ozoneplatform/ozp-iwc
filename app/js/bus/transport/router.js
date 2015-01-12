@@ -248,6 +248,14 @@ ozpIwc.Router=function(config) {
     ozpIwc.metrics.gauge('transport.router.participants').set(function() {
         return self.getParticipantCount();
     });
+
+    /**
+     * Policy Enforcer module for the router.
+     * @property policyEnforcer
+     * @type {ozpIwc.policyAuth.PEP}
+     * @default new ozpIwc.policyAuth.PEP()
+     */
+    this.policyEnforcer = new ozpIwc.policyAuth.PEP();
 };
 
 /**
@@ -350,7 +358,7 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
         return;
     }
 
-    ozpIwc.authorization.isPermitted({
+    this.policyEnforcer.request({
         'subject':localParticipant.securityAttributes,
         'object': packet.permissions,
         'action': {'action': 'receive'}

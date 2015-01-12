@@ -5401,7 +5401,332 @@ ozpIwc.BasicAuthorization.prototype.isPermitted=function(request) {
  * @type {ozpIwc.BasicAuthorization}
  * @todo Should this be with defaultWiring?
  */
-ozpIwc.authorization=new ozpIwc.BasicAuthorization();
+//ozpIwc.authorization=new ozpIwc.BasicAuthorization();
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * System entity that evaluates applicable policy and renders an authorization decision.
+ * @class PDP
+ * @namespace ozpIwc.policyAuth
+ *
+ * @param {Object} config
+ * @constructor
+ */
+ozpIwc.policyAuth.PDP = function(config){
+    config=config || {};
+    /**
+     * An events module for the API.
+     * @property events
+     * @type Event
+     */
+    this.events = new ozpIwc.Event();
+    this.events.mixinOnOff(this);
+
+    /**
+     * A cache of policies
+     * @TODO define how desired policies will be loaded in from the back-end
+     * @property policies
+     */
+    this.policies= config.policies || [
+        ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes,
+        ozpIwc.abacPolicies.subjectHasAllObjectAttributes
+    ];
+};
+
+/**
+ *  Sends a request to the given URI to retrieve the desired Policy Set.
+ *  If the set cannot be retrieved, the desired set will default to always deny.
+ * @TODO
+ * @method gatherPolicies
+ * @param {Object} config
+ * @param {String} config.policyID The unique ID of the policy to gather
+ * @param {String} config.uri The uri path of where the policy is expected to be found.
+ */
+ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
+
+};
+
+/**
+ * Processes an {{#crossLink "ozpIwc.policyAuth.PEP"}}{{/crossLink}} request.
+ * @TODO
+ * @method handleRequest
+ * @param request
+ * @returns {Promise}
+ */
+ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request){
+	var action=new ozpIwc.AsyncAction();
+
+    var result=this.policies.some(function(policy) {
+        return policy.call(this,request)==="permit";
+    },this);
+
+
+    if(result) {
+        return action.resolve("success");
+    } else {
+		return action.resolve('failure');
+    }
+};
+
+ozpIwc.authorization = new ozpIwc.policyAuth.PDP();
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * System entity that performs access control, by making decision requests and enforcing authorization decisions.
+ *
+ * @class PEP
+ * @namespace ozpIwc.policyAuth
+ *
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.PEP = function(config){
+    config=config || {};
+
+    /**
+     * The Policy Decision Point to which this PEP will send requests to be authorized.
+     * @property PDP
+     * @type {ozpIwc.policyAuth.PDP}
+     * @default ozpIwc.defaultPDP
+     */
+    this.PDP = config.PDP || ozpIwc.authorization;
+
+};
+
+/**
+ * Sends a request to the PDP to determine whether the given action has authority to be completed.
+ * @TODO
+ * @method decide
+ * @param {Object} request
+ * @returns {Promise}
+ */
+ozpIwc.policyAuth.PEP.prototype.request = function(request){
+    return this.PDP.handleRequest(request);
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * 3.3.2 Policy
+ * Rules are not exchanged amongst system entities. Therefore, a PAP combines rules in a policy.
+ *
+ * @class Policy
+ * @namespace ozpIwc.policyAuth
+ *
+ *
+ * @param {Object} config
+ * @param {Object} config.target
+ * @param {Function} config.ruleCombining
+ * @param {Array<ozpIwc.policyAuth.Rules>} config.rules
+ * @param {Array<Function>} config.obligations
+ * @param {Array<Function>} config.advices
+ * @constructor
+ */
+ozpIwc.policyAuth.Policy = function(config){
+    config=config || {};
+
+    /**
+     * @property target
+     * @type Object
+     * @default {}
+     */
+    this.target = config.target || {};
+
+    /**
+     * Specifies the procedure by which the results of evaluating the component rules are combined when
+     * evaluating the policy
+     *
+     * @property ruleCombining
+     * @type Function
+     * @default null
+     */
+    this.ruleCombining = config.ruleCombining || null;
+
+    /**
+     * An array of {{#crossLink "ozpIwc.policyAuth.Rule"}}{{/crossLink}}
+     * @property rules
+     * @type Array<ozpIwc.policyAuth.Rule>
+     * @default []
+     */
+    this.rules = config.rules || [];
+
+    /**
+     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
+     *
+     * @property obligations
+     * @type Array<Function>
+     * @default []
+     */
+    this.obligations = config.obligations || [];
+
+    /**
+     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
+     * ignored by the PEP.
+     *
+     * @property advices
+     * @type Array<Function>
+     * @default []
+     */
+    this.advices = config.advices || [];
+
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * A collection of {{#crossLink "ozpIwc.policyAuth.Policy"}}{{/crossLink}}.
+ * @class PolicySet
+ * @namespace ozpIwc.policyAuth
+ *
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.PolicySet = function(config){
+    config=config || {};
+    /**
+     * @property target
+     * @type Object
+     * @default {}
+     */
+    this.target = config.target || {};
+
+    /**
+     * Specifies the procedure by which the results of evaluating the component policies are combined when
+     * evaluating the policy
+     *
+     * @property ruleCombining
+     * @type Function
+     * @default null
+     */
+    this.policyCombining = config.policyCombining || null;
+
+    /**
+     * An array of {{#crossLink "ozpIwc.policyAuth.Policy"}}{{/crossLink}}
+     * @property rules
+     * @type Array<ozpIwc.policyAuth.Policy>
+     * @default []
+     */
+    this.policies = config.policies || [];
+
+    /**
+     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
+     *
+     * @property obligations
+     * @type Array<Function>
+     * @default []
+     */
+    this.obligations = config.obligations || [];
+
+    /**
+     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
+     * ignored by the PEP.
+     *
+     * @property advices
+     * @type Array<Function>
+     * @default []
+     */
+    this.advices = config.advices || [];
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+
+/**
+ * 3.3.1 Rule
+ * A rule is the most elementary unit of policy.  It may exist in isolation only within one of the major actors of
+ * the XACML domain.  In order to exchange rules between major actors, they must be encapsulated in a policy.
+ * A rule can be evaluated on the basis of its contents.  The main components of a rule are:
+ *
+ * @class Rule
+ * @namespace ozpIwc.policyAuth
+ *
+ * @param {Object} config
+ * @param {Object} config.target
+ * @param {String} config.effect
+ * @param {Array<Function>} config.obligations
+ * @param {Array<Function>} config.advices
+ *
+ * @constructor
+ */
+ozpIwc.policyAuth.Rule = function(config){
+    config=config || {};
+    /**
+     * @property target
+     * @type Object
+     * @default {}
+     */
+    this.target = config.target || null ;
+
+    /**
+     * The rule-writer's intended consequence of a "True" evaluation for the rule.
+     * Two values are allowed: "Permit" and "Deny".
+     * @property effect
+     * @type String
+     * @default "Permit"
+     */
+    this.setEffect(config.effect);
+
+    /**
+     * A Boolean expression that refines the applicability of the rule beyond the predicates implied by its target.
+     * Therefore, it may be absent.
+     *
+     * @property condition
+     * @type Function
+     * @default null
+     */
+    this.condition = config.condition || null;
+
+    /**
+     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
+     *
+     * @property obligations
+     * @type Array<Function>
+     * @default []
+     */
+    this.obligations = config.obligations || [];
+
+    /**
+     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
+     * ignored by the PEP.
+     *
+     * @property advices
+     * @type Array<Function>
+     * @default []
+     */
+    this.advices = config.advices || [];
+
+};
+
+
+/**
+ * 3.3.1.2 Effect
+ * The effect of the rule indicates the rule-writer's intended consequence of a "True" evaluation for the rule.
+ * Two values are allowed: "Permit" and "Deny".
+ *
+ * @method setEffect
+ * @param {String} effect
+ */
+ozpIwc.policyAuth.Rule.prototype.setEffect = function(effect){
+    switch(effect){
+        case "Permit":
+            this.effect = effect;
+            break;
+        case "Deny":
+            this.effect = effect;
+            break;
+        default:
+            this.effect = "Permit";
+    }
+};
+
+
 ///** @namespace **/
 //var ozpIwc = ozpIwc || {};
 //
@@ -6906,6 +7231,14 @@ ozpIwc.Participant=function() {
         };
         self.leaveEventChannel();
     });
+
+    /**
+     * Policy Enforcement module for the participant.
+     * @property policyEnforcer
+     * @type {ozpIwc.policyAuth.PEP}
+     * @default new ozpIwc.policyAuth.PEP()
+     */
+    this.policyEnforcer = new ozpIwc.policyAuth.PEP();
 };
 
 /**
@@ -6918,7 +7251,7 @@ ozpIwc.Participant=function() {
  */
 ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     var self = this;
-    ozpIwc.authorization.isPermitted({
+    this.policyEnforcer.request({
         'subject': this.securityAttributes,
         'object': packetContext.packet.permissions
     })
@@ -7465,6 +7798,14 @@ ozpIwc.Router=function(config) {
     ozpIwc.metrics.gauge('transport.router.participants').set(function() {
         return self.getParticipantCount();
     });
+
+    /**
+     * Policy Enforcer module for the router.
+     * @property policyEnforcer
+     * @type {ozpIwc.policyAuth.PEP}
+     * @default new ozpIwc.policyAuth.PEP()
+     */
+    this.policyEnforcer = new ozpIwc.policyAuth.PEP();
 };
 
 /**
@@ -7567,7 +7908,7 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
         return;
     }
 
-    ozpIwc.authorization.isPermitted({
+    this.policyEnforcer.request({
         'subject':localParticipant.securityAttributes,
         'object': packet.permissions,
         'action': {'action': 'receive'}
@@ -8550,7 +8891,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
     var self = this;
-    return ozpIwc.authorization.isPermitted({
+    return this.policyEnforcer.request({
         'subject': this.securityAttributes,
         'object':  {
             receiveAs: packetContext.packet.dst
@@ -8637,7 +8978,7 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
     var self = this;
-    return ozpIwc.authorization.isPermitted({
+    return this.policyEnforcer.request({
         'subject': this.securityAttributes,
         'object': {
             sendAs: packet.src
@@ -9696,7 +10037,7 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
         'rawAddress':packetContext.packet.src
     };
 
-    return ozpIwc.authorization.isPermitted({
+    return this.participant.policyEnforcer.request({
         'subject': subject,
         'object': node.permissions,
         'action': {'action':packetContext.action}
@@ -12257,8 +12598,7 @@ if(typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
         peer: ozpIwc.defaultPeer
     });
 
-    ozpIwc.authorization = new ozpIwc.BasicAuthorization();
-
+    ozpIwc.authorization = new ozpIwc.policyAuth.PDP();
     ozpIwc.heartBeatFrequency = 10000; // 10 seconds
     ozpIwc.defaultRouter = new ozpIwc.Router({
         peer: ozpIwc.defaultPeer,

@@ -80,7 +80,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
     var self = this;
-    return ozpIwc.authorization.isPermitted({
+    return this.policyEnforcer.request({
         'subject': this.securityAttributes,
         'object':  {
             receiveAs: packetContext.packet.dst
@@ -167,7 +167,7 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
     var self = this;
-    return ozpIwc.authorization.isPermitted({
+    return this.policyEnforcer.request({
         'subject': this.securityAttributes,
         'object': {
             sendAs: packet.src

@@ -376,7 +376,7 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
         'rawAddress':packetContext.packet.src
     };
 
-    return ozpIwc.authorization.isPermitted({
+    return this.participant.policyEnforcer.request({
         'subject': subject,
         'object': node.permissions,
         'action': {'action':packetContext.action}

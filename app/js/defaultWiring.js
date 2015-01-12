@@ -12,8 +12,7 @@ if(typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
         peer: ozpIwc.defaultPeer
     });
 
-    ozpIwc.authorization = new ozpIwc.BasicAuthorization();
-
+    ozpIwc.authorization = new ozpIwc.policyAuth.PDP();
     ozpIwc.heartBeatFrequency = 10000; // 10 seconds
     ozpIwc.defaultRouter = new ozpIwc.Router({
         peer: ozpIwc.defaultPeer,

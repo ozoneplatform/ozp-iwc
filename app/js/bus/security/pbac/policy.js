@@ -7,13 +7,13 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * Rules are not exchanged amongst system entities. Therefore, a PAP combines rules in a policy.
  *
  * @class Policy
- * @namespace ozpIwc.authorization
+ * @namespace ozpIwc.policyAuth
  *
  *
  * @param {Object} config
  * @param {Object} config.target
  * @param {Function} config.ruleCombining
- * @param {Array<ozpIwc.authorization.Rules>} config.rules
+ * @param {Array<ozpIwc.policyAuth.Rules>} config.rules
  * @param {Array<Function>} config.obligations
  * @param {Array<Function>} config.advices
  * @constructor
@@ -39,9 +39,9 @@ ozpIwc.policyAuth.Policy = function(config){
     this.ruleCombining = config.ruleCombining || null;
 
     /**
-     * An array of {{#crossLink "ozpIwc.authorization.Rule"}}{{/crossLink}}
+     * An array of {{#crossLink "ozpIwc.policyAuth.Rule"}}{{/crossLink}}
      * @property rules
-     * @type Array<ozpIwc.authorization.Rule>
+     * @type Array<ozpIwc.policyAuth.Rule>
      * @default []
      */
     this.rules = config.rules || [];

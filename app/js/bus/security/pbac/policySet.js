@@ -3,9 +3,9 @@ ozpIwc = ozpIwc || {};
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 
 /**
- * A collection of {{#crossLink "ozpIwc.authorization.Policy"}}{{/crossLink}}.
+ * A collection of {{#crossLink "ozpIwc.policyAuth.Policy"}}{{/crossLink}}.
  * @class PolicySet
- * @namespace ozpIwc.authorization
+ * @namespace ozpIwc.policyAuth
  *
  * @param config
  * @constructor
@@ -30,9 +30,9 @@ ozpIwc.policyAuth.PolicySet = function(config){
     this.policyCombining = config.policyCombining || null;
 
     /**
-     * An array of {{#crossLink "ozpIwc.authorization.Policy"}}{{/crossLink}}
+     * An array of {{#crossLink "ozpIwc.policyAuth.Policy"}}{{/crossLink}}
      * @property rules
-     * @type Array<ozpIwc.authorization.Policy>
+     * @type Array<ozpIwc.policyAuth.Policy>
      * @default []
      */
     this.policies = config.policies || [];

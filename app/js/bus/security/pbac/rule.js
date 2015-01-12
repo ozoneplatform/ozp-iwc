@@ -10,7 +10,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * A rule can be evaluated on the basis of its contents.  The main components of a rule are:
  *
  * @class Rule
- * @namespace ozpIwc.authorization
+ * @namespace ozpIwc.policyAuth
  *
  * @param {Object} config
  * @param {Object} config.target

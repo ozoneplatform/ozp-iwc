@@ -102,6 +102,14 @@ ozpIwc.Participant=function() {
         };
         self.leaveEventChannel();
     });
+
+    /**
+     * Policy Enforcement module for the participant.
+     * @property policyEnforcer
+     * @type {ozpIwc.policyAuth.PEP}
+     * @default new ozpIwc.policyAuth.PEP()
+     */
+    this.policyEnforcer = new ozpIwc.policyAuth.PEP();
 };
 
 /**
@@ -114,7 +122,7 @@ ozpIwc.Participant=function() {
  */
 ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     var self = this;
-    ozpIwc.authorization.isPermitted({
+    this.policyEnforcer.request({
         'subject': this.securityAttributes,
         'object': packetContext.packet.permissions
     })

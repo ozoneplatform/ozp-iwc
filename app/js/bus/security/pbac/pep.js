@@ -6,7 +6,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * System entity that performs access control, by making decision requests and enforcing authorization decisions.
  *
  * @class PEP
- * @namespace ozpIwc.authorization
+ * @namespace ozpIwc.policyAuth
  *
  * @param config
  * @constructor
@@ -17,10 +17,10 @@ ozpIwc.policyAuth.PEP = function(config){
     /**
      * The Policy Decision Point to which this PEP will send requests to be authorized.
      * @property PDP
-     * @type {ozpIwc.authorization.PDP}
+     * @type {ozpIwc.policyAuth.PDP}
      * @default ozpIwc.defaultPDP
      */
-    this.PDP = config.PDP || ozpIwc.auth;
+    this.PDP = config.PDP || ozpIwc.authorization;
 
 };
 
