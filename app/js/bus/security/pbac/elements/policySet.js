@@ -4,6 +4,9 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 
 /**
  * A collection of {{#crossLink "ozpIwc.policyAuth.Policy"}}{{/crossLink}}.
+ *
+ * The <PolicySet> element is of PolicySetType complex type.
+ *
  * @class PolicySet
  * @namespace ozpIwc.policyAuth
  *
@@ -12,6 +15,28 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  */
 ozpIwc.policyAuth.PolicySet = function(config){
     config=config || {};
+
+    /**
+     * @property policyId
+     * @type String
+     * @default null
+     */
+    this.policyId = config.policyId;
+
+    /**
+     * @property version
+     * @type Number
+     * @default null
+     */
+    this.version = config.version;
+
+    /**
+     * @property policyCombiningAlgId
+     * @type String
+     * @default null
+     */
+    this.policyCombiningAlgId = config.policyCombiningAlgId;
+
     /**
      * @property target
      * @type Object
@@ -31,12 +56,37 @@ ozpIwc.policyAuth.PolicySet = function(config){
 
     /**
      * An array of {{#crossLink "ozpIwc.policyAuth.Policy"}}{{/crossLink}}
-     * @property rules
+     * @property policies
      * @type Array<ozpIwc.policyAuth.Policy>
      * @default []
      */
     this.policies = config.policies || [];
 
+    /**
+     * An array of {{#crossLink "ozpIwc.policyAuth.PolicySet"}}{{/crossLink}}
+     * @property policySets
+     * @type Array<ozpIwc.policyAuth.PolicySet>
+     * @default []
+     */
+    this.policySets = config.policySets || [];
+
+    /**
+     * An array of references to policies that MUST be included in this policy set.  If the <PolicyIdReference>
+     * is a URL, then it MAY be resolvable.
+     * @property policyIdReference
+     * @type Array<String>
+     * @default
+     */
+    this.policyIdReference = config.policyIdReference || [];
+
+    /**
+     * An array of references to policy sets that MUST be included in this policy set.  If the <PolicyIdReference>
+     * is a URL, then it MAY be resolvable.
+     * @property policySetIdReference
+     * @type Array<ozpIwc.policyAuth.PolicySet>
+     * @default []
+     */
+    this.policySetIdReference = config.policySetIdReference || [];
     /**
      * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
      *

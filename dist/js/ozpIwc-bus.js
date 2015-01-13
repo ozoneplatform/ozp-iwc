@@ -5407,6 +5407,1607 @@ ozpIwc = ozpIwc || {};
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 
 /**
+ * The <Advice> element SHALL contain an identifier for the advice and a set of attributes that form
+ * arguments of the supplemental information defined by the advice.
+ *
+ * The <Advice> element is of AdviceType complexType.
+ * See Section 7.18 for a description of how the set of advice to be returned by the PDP is determined.
+ *
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Advice = function(config){
+
+    /**
+     * Advice identifier.  The value of the advice identifier MAY be interpreted by the PEP.
+     * @property adviceId
+     * @type String
+     * @default null
+     */
+    this.adviceId = config.adviceId;
+
+    /**
+     * Advice arguments assignment.  The values of the advice arguments MAY be interpreted by the PEP.
+     * @property attributeAssignment
+     * @type {ozpIwc.policyAuth.AttributeAssignment}
+     * @defualt null
+     */
+    this.attributeAssignment = config.attributeAssignment;
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <AdviceExpression> element evaluates to an advice and SHALL contain an identifier for an advice and a set of
+ * expressions that form arguments of the supplemental information defined by the advice.  The AppliesTo attribute
+ * SHALL indicate the effect for which this advice must be provided to the PEP.
+ *
+ * The <AdviceExpression> element is of AdviceExpressionType complexType.
+ * See Section 7.18 for a description of how the set of advice to be returned by the PDP is determined.
+ *
+ * @class AdviceExpression
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.AdviceExpression = function(config){
+
+    /**
+     * Advice identifier. The value of the advice identifier MAY be interpreted by the PEP.
+     * @property adviceId
+     * @type {String}
+     * @default null
+     */
+    this.adviceId = config.adviceId;
+
+    /**
+     * The effect for which this advice must be provided to the PEP.
+     * @property appliesTo
+     * @type{ozpIwc.policyAuth.Effect}
+     */
+    this.appliesTo = config.appliesTo;
+
+    /**
+     * Advice arguments in the form of expressions. The expressions SHALL be evaluated by the PDP to constant
+     * <AttributeValue> elements or bags, which shall be the attribute assignments in the <Advice> returned to the
+     * PEP.  If an <AttributeAssignmentExpression> evaluates to an atomic attribute value, then there MUST be one
+     * resulting <AttributeAssignment> which MUST contain this single attribute value. If the
+     * <AttributeAssignmentExpression> evaluates to a bag, then there MUST be a resulting <AttributeAssignment> for
+     * each of the values in the bag. If the bag is empty, there shall be no <AttributeAssignment> from this
+     * <AttributeAssignmentExpression>.  The values of the advice arguments MAY be interpreted by the PEP.
+     *
+     * Optional
+     *
+     * @property attributeAssignmentExpression
+     * @type {ozpIwc.policyAuth.AttributeAssignmentExpression}
+     */
+    this.attributeAssignmentExpression = config.attributeAssignmentExpression;
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <AdviceExpressions> element SHALL contain a set of <AdviceExpression> elements.
+ *
+ * The <AdviceExpressions> element is of AdviceExpressionsType complexType.
+ *
+ * @class AdviceExpressions
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.AdviceExpressions = function(config){
+
+    /**
+     * A sequence of advice expressions.  See Section 5.40.
+     * @property adviceExpressions
+     * @type {Array<ozpIwc.policyAuth.AdviceExpression>}
+     */
+    this.adviceExpressions = config.adviceExpressions;
+
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <AllOf> element SHALL contain a conjunctive sequence of <Match> elements.
+ *
+ * The <AllOf> element is of AllOfType complex type.
+ *
+ * @class AllOf
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.AllOf = function(config){
+
+    /**
+     * A conjunctive sequence of individual matches of the attributes in the request context and the embedded
+     * attribute values
+     *
+     * @property allOf
+     * @type {Array<ozpIwc.policyAuth.Match>}
+     */
+    this.match = config.allOf || [];
+};
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <AnyOf> element SHALL contain a disjunctive sequence of <AllOf> elements.
+ *
+ * The <AnyOf> element is of AnyOfType complex type.
+ *
+ * @class AnyOf
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.AnyOf = function(config){
+
+    /**
+     * The <AllOf> element SHALL contain a conjunctive sequence of <Match> elements.
+     * @property allOf
+     * @type {Array<ozpIwc.policyAuth.AllOf>}
+     */
+    this.allOf = config.allOf || [];
+};
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Apply> element denotes application of a function to its arguments, thus encoding a function call.
+ * The <Apply> element can be applied to any combination of the members of the <Expression> element substitution group.
+ * See Section 5.25.
+ *
+ * The <Apply> element is of ApplyType complex type.
+ *
+ * @class Apply
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Apply = function(config){
+
+    /**
+     * The identifier of the function to be applied to the arguments.
+     * XACML-defined functions are described in Appendix A.3.
+     *
+     * @property functionId
+     * @type {String}
+     * @default null
+     */
+    this.functionId = config.functionId;
+
+    /**
+     * A free-form description of the <Apply> element.
+     * @property description
+     * @type {String}
+     * @default ""
+     */
+    this.description = config.description || "";
+
+    /**
+     * Arguments to the function, which may include other functions.
+     * @property expression
+     * @type {ozpIwc.policyAuth.Expression}
+     * @default null
+     */
+    this.expression = config.expression;
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <AssociatedAdvice> element SHALL contain a set of <Advice> elements.
+ *
+ * The <AssociatedAdvice> element is of AssociatedAdviceType complexType.
+ *
+ * @class AssociatedAdvice
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.AssociatedAdvice = function(config){
+    /**
+     * A sequence of advice.  See Section 5.35.
+     * @property advice
+     * @type {Array<ozpIwc.policyAuth.Advice>}
+     * @default null
+     */
+    this.advice = config.advice
+};
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Attribute> element is the central abstraction of the request context.  It contains attribute meta-data and
+ * one or more attribute values.  The attribute meta-data comprises the attribute identifier and the attribute issuer.
+ * AttributeDesignator> elements in the policy MAY refer to attributes by means of this meta-data.
+ *
+ * @class Attribute
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Attribute = function(config){
+
+    /**
+     * The Attribute identifier.  A number of identifiers are reserved by XACML to denote commonly used attributes.
+     * See Appendix Appendix B.
+     * @property attributeId
+     *
+     * @type {String}
+     */
+    this.attributeId = config.attributeId;
+
+    /**
+     * Optional. The Attribute issuer.  For example, this attribute value MAY be an x500Name that binds to a public
+     * key, or it may be some other identifier exchanged out-of-band by issuing and relying parties.
+     *
+     * @property issuer
+     * @type {String}
+     */
+    this.issuer = config.issuer;
+
+    /**
+     * Whether to include this attribute in the result. This is useful to correlate requests with their
+     * responses in case of multiple requests.
+     *
+     * @property includeInResult
+     * @type {Boolean}
+     * @default false
+     */
+    this.includeInResult = config.includeInResult || false;
+
+    /**
+     * One or more attribute values.  Each attribute value MAY have contents that are empty,
+     * occur once or occur multiple times.
+     *
+     * @property attributeValue
+     * @type {Array<ozpIwc.policyAuth.AttributeValue>}
+     */
+    this.attributeValue = config.AttributeValue;
+
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <AttributeAssignment> element is used for including arguments in obligation and advice expressions.
+ * It SHALL contain an AttributeId and the corresponding attribute value, by extending the
+ * AttributeValueType type definition.  The <AttributeAssignment> element MAY be used in any way that is consistent
+ * with the schema syntax, which is a sequence of <xs:any> elements. The value specified SHALL be understood by
+ * the PEP, but it is not further specified by XACML. See Section 7.18.  Section 4.2.4.3 provides a number of
+ * examples of arguments included in obligation.expressions.
+ *
+ * The <AttributeAssignment> element is of AttributeAssignmentType complex type.
+ *
+ * @class AttributeAssignment
+ * @namespace ozpIwc.policyAuth
+ * @param {Object} config
+ * @constructor
+ */
+ozpIwc.policyAuth.AttributeAssignment = function(config){
+
+    /**
+     * The attribute Identifier.
+     *
+     * @property attributeId
+     * @type {String}
+     * @default null
+     */
+    this.attributeId = config.attributeId;
+
+    /**
+     * An optional category of the attribute. If this attribute is missing, the attribute has no category. The PEP
+     * SHALL interpret the significance and meaning of any Category attribute. Non-normative note: an expected use of
+     * the category is to disambiguate attributes which are relayed from the request.
+     *
+     * @property category
+     * @type {String}
+     * @default null
+     */
+    this.category = config.category;
+
+    /**
+     * An optional issuer of the attribute. If this attribute is missing, the attribute has no issuer. The PEP SHALL
+     * interpret the significance and meaning of any Issuer attribute. Non-normative note: an expected use of the
+     * issuer is to disambiguate attributes which are relayed from the request.
+     *
+     * @property issuer
+     * @type {String}
+     * @default null
+     */
+    this.issuer = config.issuer;
+};
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <AttributeAssignmentExpression> element is used for including arguments in obligations and advice.
+ * It SHALL contain an AttributeId and an expression which SHALL by evaluated into the corresponding attribute value.
+ * The value specified SHALL be understood by the PEP, but it is not further specified by XACML. See Section 7.18.
+ * Section 4.2.4.3 provides a number of examples of arguments included in obligations.
+
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.AttributeAssignmentExpression = function(config){
+
+    /**
+     *The expression which evaluates to a constant attribute value or a bag of zero or more attribute values.
+     * See section 5.25.
+     *
+     * @property expression
+     * @type {ozpIwc.policyAuth.Expression}
+     */
+    this.expression = config.expression;
+
+    /**
+     * The attribute identifier. The value of the AttributeId attribute in the resulting <AttributeAssignment>
+     * element MUST be equal to this value.
+     * @property attributeId
+     * @type {String}
+     */
+    this.attributeId = config.attributeId;
+
+    /**
+     * An optional category of the attribute. If this attribute is missing, the attribute has no category.
+     * The value of the Category attribute in the resulting <AttributeAssignment> element MUST be equal to this value.
+     * @property category
+     * @type {String}
+     */
+    this.category = config.category;
+
+    /**
+     * An optional issuer of the attribute. If this attribute is missing, the attribute has no issuer. The value of the
+     * Issuer attribute in the resulting <AttributeAssignment> element MUST be equal to this value.
+     * @property issuer
+     * @type {String}
+     */
+    this.issuer = config.issuer;
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <AttributeDesignator> element retrieves a bag of values for a named attribute from the request context.
+ * A named attribute SHALL be considered present if there is at least one attribute that matches the
+ * criteria set out below.
+ *
+ * The <AttributeDesignator> element SHALL return a bag containing all the attribute values that are matched by the
+ * named attribute. In the event that no matching attribute is present in the context, the MustBePresent attribute
+ * governs whether this element returns an empty bag or “Indeterminate”.  See Section 7.3.5.
+ *
+ * The <AttributeDesignator> MAY appear in the <Match> element and MAY be passed to the <Apply> element as an argument.
+ *
+ * The <AttributeDesignator> element is of the AttributeDesignatorType complex type.
+ *
+ *
+ * @class AttributeDesignator
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.AttributeDesignator = function(config){
+
+    /**
+     * This attribute SHALL specify the Category with which to match the attribute.
+     *  type='xs:anyURI'
+     *
+     * @property category
+     * @type {String}
+     */
+    this.category = config.category;
+
+    /**
+     * This attribute SHALL specify the AttributeId with which to match the attribute.
+     *  type='xs:anyURI'
+     *
+     * @property attributeId
+     * @type {String}
+     */
+    this.attributeId = config.attributeId;
+
+    /**
+     * The bag returned by the <AttributeDesignator> element SHALL contain values of this data-type.
+     *  type='xs:anyURI'
+     *
+     * @property dataType
+     * @type {String}
+     */
+    this.dataType = config.dataType;
+
+    /**
+     * This attribute, if supplied, SHALL specify the Issuer with which to match the attribute.
+     *  type='xs:anyURI'
+     *
+     * @property category
+     * @type {String}
+     */
+    this.issuer = config.issuer;
+
+    /**
+     * This attribute governs whether the element returns “Indeterminate” or an empty bag in the event the named
+     * attribute is absent from the request context.  See Section 7.3.5.  Also see Sections 7.19.2 and 7.19.3.
+     *
+     * @property category
+     * @type {Boolean}
+     */
+    this.mustBePresent = config.mustBePresent;
+};
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Obligations> element SHALL contain a set of <Obligation> elements.
+ *
+ * The <Obligations> element is of ObligationsType complexType.
+ *
+ * @class Obligations
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Obligations = function(config){
+    /**
+     * A sequence of obligations.  See Section 5.34.
+     * @property obligations
+     * @type {Array<ozpIwc.policyAuth.Obligation>}
+     * @default null
+     */
+    this.obligations = config.obligations
+};
+
+/**
+ * The <AttributeValue> element SHALL contain a literal attribute value.
+ *
+ * The <AttributeValue> element is of AttributeValueType complex type.
+ *
+ * @class AttributeValue
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.AttributeValue = function(config){
+
+    /**
+     * The data-type of the attribute value.
+     * @property dataType
+     * @type String
+     * @default null
+     */
+    this.dataType = config.dataType;
+};
+
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Attributes> element specifies attributes of a subject, resource, action, environment or another category by
+ * listing a sequence of <Attribute> elements associated with the category.
+ *
+ * The <Attributes> element is of AttributesType complex type.
+ *
+ * @Class Attributes
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Attributes = function(config){
+
+    /**
+     * This attribute indicates which attribute category the contained attributes belong to. The Category attribute is
+     * used to differentiate between attributes of subject, resource, action, environment or other categories.
+     *
+     * @property category
+     * @type {String}
+     */
+    this.category = config.category;
+
+    /**
+     * This attribute provides a unique identifier for this <Attributes> element. See [XMLid] It is primarily
+     * intended to be referenced in multiple requests. See [Multi].
+     *
+     * @property xml:id
+     * @type {String}
+     */
+    this['xml:id'] = config['xml:id'];
+
+    /**
+     * Specifies additional sources of attributes in free form XML document format which can be referenced using
+     * <AttributeSelector> elements.
+     *
+     * @property content
+     * @type {ozpIwc.policyAuth.Content}
+     */
+    this.content = config.content;
+
+    /**
+     * A sequence of attributes that apply to the category of the request.
+     * @property attributes
+     * @type {Array<ozpIwc.policyAuth.Attribute>}
+     */
+    this.attributes = config.attributes;
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Condition> element is a Boolean function over attributes or functions of attributes.
+ * @class Condition
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Condition = function(config){
+
+    /**
+     * The <Condition> contains one <Expression> element, with the restriction that the <Expression> return data-type
+     * MUST be “http://www.w3.org/2001/XMLSchema#boolean”.
+     * Evaluation of the <Condition> element is described in Section 7.9.
+     *
+     * @property expression
+     * @type {ozpIwc.policyAuth.Expression}
+     * @default null
+     */
+    this.expression = config.expression;
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Content> element is a notional placeholder for additional attributes, typically the content of the resource.
+ *
+ * The <Content> element is of ContentType complex type.
+ *
+ * @class Content
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Content = function(config){
+    /**
+     * The <Content> element has exactly one arbitrary type child element.
+     */
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Decision> element contains the result of policy evaluation.
+ *
+ * The <Decision> element is of DecisionType simple type.
+ *
+ * @class Decision
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Decision = function(config){
+
+    /**
+     * The values of the <Decision> element have the following meanings:
+     * “Permit”: the requested access is permitted.
+     * “Deny”: the requested access is denied.
+     * “Indeterminate”: the PDP is unable to evaluate the requested access.  Reasons for such inability include:
+     *      missing attributes, network errors while retrieving policies, division by zero during policy evaluation,
+     *      syntax errors in the decision request or in the policy, etc.
+     * “NotApplicable”: the PDP does not have any policy that applies to this decision request.
+     *
+     * @property decision
+     * @type {String}
+     */
+    this.decision = config.decision;
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Description> element contains a free-form description of the <PolicySet>, <Policy>, <Rule> or <Apply> element.
+ * The <Description> element is of xs:string simple type.
+ * @class Description
+ * @namespace ozpIwc.policyAuth
+ * @param string
+ * @returns {*}
+ * @constructor
+ */
+ozpIwc.policyAuth.Description = function(string){
+    var ret = string;
+    if(typeof ret !== "string"){
+        ret = JSON.stringify(string);
+    }
+    return ret;
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Function> element SHALL be used to name a function as an argument to the function defined by
+ * the parent <Apply> element.
+ *
+ * The <Function> element is of FunctionType complex type.
+ *
+ * @class Function
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Function = function(config){
+
+    /**
+     * The identifier of the function.
+     * @property functionId
+     * @type {String}
+     * @defualt null
+     */
+    this.functionId = config.functionId;
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Match> element SHALL identify a set of entities by matching attribute values in an <Attributes> element of the
+ * request context with the embedded attribute value.
+ *
+ * The <Match> element is of MatchType complex type.
+ *
+ * @class Match
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Match = function(config){
+
+    /**
+     * Specifies a matching function.  The value of this attribute MUST be of type xs:anyURI
+     * @policy matchId
+     * @type String
+     * @default null
+     */
+    this.matchId = config.matchId;
+
+    /**
+     * Embedded attribute value
+     * @policy attributeValue
+     * @type *
+     * @default null
+     */
+    this.attributeValue = config.attributeValue;
+
+    /**
+     * MAY be used to identify one or more attribute values in an <Attributes> element of the request context.
+     * @policy attributeDesignator
+     * @type *
+     * @default null
+     */
+    this.attributeDesignator = config.attributeDesignator;
+
+    /**
+     * MAY be used to identify one or more attribute values in a <Content> element of the request context.
+     * @policy attributeSelector
+     * @type *
+     * @default null
+     */
+    this.attributeSelector = config.attributeSelector;
+
+
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <MissingAttributeDetail> element conveys information about attributes required for policy evaluation that were
+ * missing from the request context.
+ *
+ * The <MissingAttributeDetail> element is of MissingAttributeDetailType complex type.
+ *
+ * @class MissingAttributeDetail
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.MissingAttributeDetail = function(config){
+
+    /**
+     * The required value of the missing attribute.
+     * @property attributeValue
+     * @type {ozpIwc.policyAuth.AttributeValue}
+     */
+    this.attributeValue = config.attributeValue;
+
+    /**
+     * The category identifier of the missing attribute.
+     * @property category
+     * @type {String}
+     */
+    this.category = config.category;
+
+    /**
+     * The identifier of the missing attribute.
+     * @property attributeId
+     * @type {String}
+     */
+    this.attributeId = config.attributeId;
+
+    /**
+     * The data-type of the missing attribute.
+     * @proeprty dataType
+     * @type {String}
+     */
+    this.dataType = config.dataType;
+
+    /**
+     * This attribute, if supplied, SHALL specify the required Issuer of the missing attribute.
+     * @property issuer
+     * @type {String}
+     */
+    this.issuer = config.issuer;
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Obligation> element SHALL contain an identifier for the obligation and a set of attributes that form
+ * arguments of the action defined by the obligation.
+ *
+ * The <Obligation> element is of ObligationType complexType.  See Section 7.18 for a description of how the set of
+ * obligations to be returned by the PDP is determined.
+ *
+ * @class Obligation
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Obligation = function(config){
+    /**
+     * Obligation identifier.  The value of the obligation identifier SHALL be interpreted by the PEP.
+     * @property obligationId
+     * @type {String}
+     * @default null
+     */
+    this.obligationId = config.obligationId;
+
+    /**
+     * Obligation arguments assignment.  The values of the obligation arguments SHALL be interpreted by the PEP.
+     * (Optional)
+     * @property attributeAssignment
+     * @type {ozpIwc.policyAuth.AttributeAssignment}
+     */
+    this.attributeAssignment = config.attributeAssignment;
+};
+
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <ObligationExpressions> element SHALL contain a set of <ObligationExpression> elements.
+ *
+ * The <ObligationExpressions> element is of ObligationExpressionsType complexType.
+ *
+ * @class ObligationExpressions
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.ObligationExpressions = function(config){
+
+    /**
+     * A sequence of obligation expressions.  See Section 5.39.
+     * @property obligationExpressions
+     * @type {Array<ozpIwc.policyAuth.ObligationExpression>}
+     * @defualt null
+     */
+    this.obligationExpressions = config.obligationExpressions;
+
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Obligations> element SHALL contain a set of <Obligation> elements.
+ *
+ * The <Obligations> element is of ObligationsType complexType.
+ *
+ * @class Obligations
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Obligations = function(config){
+    /**
+     * A sequence of obligations.  See Section 5.34.
+     * @property obligations
+     * @type {Array<ozpIwc.policyAuth.Obligation>}
+     * @default null
+     */
+    this.obligations = config.obligations
+};
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * 3.3.2 Policy
+ * Rules are not exchanged amongst system entities. Therefore, a PAP combines rules in a policy.
+ *
+ * The <Policy> element is of PolicyType complex type.
+ *
+ * @class Policy
+ * @namespace ozpIwc.policyAuth
+ *
+ *
+ * @param {Object} config
+ * @param {Object} config.target
+ * @param {Function} config.ruleCombining
+ * @param {Array<ozpIwc.policyAuth.Rules>} config.rules
+ * @param {Array<Function>} config.obligations
+ * @param {Array<Function>} config.advices
+ * @constructor
+ */
+ozpIwc.policyAuth.Policy = function(config){
+    config=config || {};
+
+    /**
+     * @property policyId
+     * @type String
+     * @default null
+     */
+    this.policyId = config.policyId;
+
+    /**
+     * @property version
+     * @type Number
+     * @default null
+     */
+    this.version = config.version;
+
+    /**
+     * @property ruleCombiningAlgId
+     * @type String
+     * @default null
+     */
+    this.ruleCombiningAlgId = config.ruleCombiningAlgId;
+
+    /**
+     * @property target
+     * @type Object
+     * @default {}
+     */
+    this.target = config.target || {};
+
+    /**
+     * Specifies the procedure by which the results of evaluating the component rules are combined when
+     * evaluating the policy
+     *
+     * @property ruleCombining
+     * @type Function
+     * @default null
+     */
+    this.ruleCombining = config.ruleCombining || null;
+
+    /**
+     * An array of {{#crossLink "ozpIwc.policyAuth.Rule"}}{{/crossLink}}
+     * @property rules
+     * @type Array<ozpIwc.policyAuth.Rule>
+     * @default []
+     */
+    this.rules = config.rules || [];
+
+    /**
+     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
+     *
+     * @property obligations
+     * @type Array<Function>
+     * @default []
+     */
+    this.obligations = config.obligations || [];
+
+    /**
+     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
+     * ignored by the PEP.
+     *
+     * @property advices
+     * @type Array<Function>
+     * @default []
+     */
+    this.advices = config.advices || [];
+
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <PolicyIdReference> element SHALL be used to reference a <Policy> element by id.  If <PolicyIdReference>
+ * is a URL, then it MAY be resolvable to the <Policy> element.  However, the mechanism for resolving a policy
+ * reference to the corresponding policy is outside the scope of this specification.
+ *
+ * Element <PolicyIdReference> is of xacml:IdReferenceType complex type (see Section 5.10) .
+ *
+ * @class PolicyIdReference
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.PolicyIdReference = function(config){
+
+    // parse as a URL
+    // @TODO validate the URL
+    if(typeof config === "string"){
+        /*
+        @TODO PARSE URL OF POLICY SET?
+         */
+    } else {
+     /*
+       @TODO Throw error that the reference wasn't a valid URL?
+      */
+    }
+};
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * A collection of {{#crossLink "ozpIwc.policyAuth.Policy"}}{{/crossLink}}.
+ *
+ * The <PolicySet> element is of PolicySetType complex type.
+ *
+ * @class PolicySet
+ * @namespace ozpIwc.policyAuth
+ *
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.PolicySet = function(config){
+    config=config || {};
+
+    /**
+     * @property policyId
+     * @type String
+     * @default null
+     */
+    this.policyId = config.policyId;
+
+    /**
+     * @property version
+     * @type Number
+     * @default null
+     */
+    this.version = config.version;
+
+    /**
+     * @property policyCombiningAlgId
+     * @type String
+     * @default null
+     */
+    this.policyCombiningAlgId = config.policyCombiningAlgId;
+
+    /**
+     * @property target
+     * @type Object
+     * @default {}
+     */
+    this.target = config.target || {};
+
+    /**
+     * Specifies the procedure by which the results of evaluating the component policies are combined when
+     * evaluating the policy
+     *
+     * @property ruleCombining
+     * @type Function
+     * @default null
+     */
+    this.policyCombining = config.policyCombining || null;
+
+    /**
+     * An array of {{#crossLink "ozpIwc.policyAuth.Policy"}}{{/crossLink}}
+     * @property policies
+     * @type Array<ozpIwc.policyAuth.Policy>
+     * @default []
+     */
+    this.policies = config.policies || [];
+
+    /**
+     * An array of {{#crossLink "ozpIwc.policyAuth.PolicySet"}}{{/crossLink}}
+     * @property policySets
+     * @type Array<ozpIwc.policyAuth.PolicySet>
+     * @default []
+     */
+    this.policySets = config.policySets || [];
+
+    /**
+     * An array of references to policies that MUST be included in this policy set.  If the <PolicyIdReference>
+     * is a URL, then it MAY be resolvable.
+     * @property policyIdReference
+     * @type Array<String>
+     * @default
+     */
+    this.policyIdReference = config.policyIdReference || [];
+
+    /**
+     * An array of references to policy sets that MUST be included in this policy set.  If the <PolicyIdReference>
+     * is a URL, then it MAY be resolvable.
+     * @property policySetIdReference
+     * @type Array<ozpIwc.policyAuth.PolicySet>
+     * @default []
+     */
+    this.policySetIdReference = config.policySetIdReference || [];
+    /**
+     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
+     *
+     * @property obligations
+     * @type Array<Function>
+     * @default []
+     */
+    this.obligations = config.obligations || [];
+
+    /**
+     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
+     * ignored by the PEP.
+     *
+     * @property advices
+     * @type Array<Function>
+     * @default []
+     */
+    this.advices = config.advices || [];
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <PolicySetIdReference> element SHALL be used to reference a <PolicySet> element by id.
+ * If <PolicySetIdReference> is a URL, then it MAY be resolvable to the <PolicySet> element.
+ * However, the mechanism for resolving a policy set reference to the corresponding policy set is outside the scope
+ * of this specification.
+ *
+ * Element <PolicySetIdReference> is of xacml:IdReferenceType complex type.
+ *
+ * @class PolicySetIdReference
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.PolicySetIdReference = function(config){
+
+    // parse as a URL
+    if(typeof config === "string"){
+        /*
+         @TODO PARSE URL OF POLICY SET?
+         */
+    } else {
+        /**
+         * Specifies a matching expression for the version of the policy set referenced.
+         * @property version
+         * @type String
+         * @default ""
+         */
+        this.version = config.version;
+
+        /**
+         * Specifies a matching expression for the earliest acceptable version of the policy set referenced.
+         * @property earliestVersion
+         * @type String
+         * @default ""
+         */
+        this.earliestVersion = config.earliestVersion || "";
+
+        /**
+         * Specifies a matching expression for the latest acceptable version of the policy set referenced.
+         * @property latestVersion
+         * @type String
+         * @default ""
+         */
+        this.latestVersion = config.latestVersion || "";
+    }
+
+
+};
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Request> element is an abstraction layer used by the policy language.  For simplicity of expression, this
+ * document describes policy evaluation in terms of operations on the context.  However a conforming PDP is not
+ * required to actually instantiate the context in the form of an XML document.  But, any system conforming to the
+ * XACML specification MUST produce exactly the same authorization decisions as if all the inputs had been transformed
+ * into the form of an <Request> element.
+ *
+ * The <Request> element contains <Attributes> elements.  There may be multiple <Attributes> elements with the same
+ * Category attribute if the PDP implements the multiple decision profile, see [Multi].  Under other conditions, it
+ * is a syntax error if there are multiple <Attributes> elements with the same Category (see Section 7.19.2 for
+ * error codes).
+ *
+ * The <Request> element is of RequestType complex type.
+ *
+ * @class Request
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Request = function(config){
+
+    /**
+     * This attribute is used to request that the PDP return a list of all fully applicable policies and policy sets
+     * which were used in the decision as a part of the decision response.
+     *
+     * @property returnPolicyIdList
+     * @type {Boolean}
+     * @default false
+     */
+    this.returnPolicyIdList = config.returnPolicyIdList;
+
+    /**
+     * This attribute is used to request that the PDP combines multiple decisions into a single decision. The use of
+     * this attribute is specified in [Multi]. If the PDP does not implement the relevant functionality in [Multi],
+     * then the PDP must return an Indeterminate with a status code of
+     * urn:oasis:names:tc:xacml:1.0:status:processing-error if it receives a request with this attribute set to “true”.
+     *
+     * @property combinedDecision
+     * @type {Boolean}
+     * @default false
+     */
+    this.combinedDecision = config.combinedDecision;
+
+    /**
+     * Optional. Contains default values for the request, such as XPath version. See section 5.43.
+     *
+     * @proerty requestDefaults
+     * @type {ozpIwc.policyAuth.RequestDefaults}
+     */
+    this.requestDefaults = config.requestDefaults;
+
+    /**
+     * Specifies information about attributes of the request context by listing a sequence of <Attribute> elements
+     * associated with an attribute category.  One or more <Attributes> elements are allowed.  Different <Attributes>
+     * elements with different categories are used to represent information about the subject, resource, action,
+     * environment or other categories of the access request.
+     *
+     * @property attributes
+     * @type {Array<ozpIwc.policyAuth.Attributes>}
+     */
+    this.attributes = config.attributes;
+
+    /**
+     * Lists multiple request contexts by references to the <Attributes> elements. Implementation of this element is
+     * optional. The semantics of this element is defined in [Multi]. If the implementation does not implement this
+     * element, it MUST return an Indeterminate result if it encounters this element. See section 5.50.
+     *
+     * @property multiRequests
+     * @type {Array<ozpIwc.policyAuth.MultiRequests>}
+     */
+    this.multiRequests = config.multiRequests;
+
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Response> element is an abstraction layer used by the policy language.
+ * Any proprietary system using the XACML specification MUST transform an XACML context <Response> element into the
+ * form of its authorization decision.
+ *
+ * The <Response> element encapsulates the authorization decision produced by the PDP.  It includes a sequence of
+ * one or more results, with one <Result> element per requested resource.  Multiple results MAY be returned by
+ * some implementations, in particular those that support the XACML Profile for Requests for Multiple Resources
+ * [Multi].  Support for multiple results is OPTIONAL.
+ *
+ * The <Response> element is of ResponseType complex type.
+ *
+ *
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Response = function(config){
+
+    /**
+     * An authorization decision result.  See Section 5.48.
+     *
+     * @property result
+     * @type {Array<ozpIwc.policyAuth.Result>}
+     */
+    this.result = config.result;
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Result> element represents an authorization decision result.  It MAY include a set of obligations that MUST be
+ * fulfilled by the PEP.  If the PEP does not understand or cannot fulfill an obligation, then the action of the PEP is
+ * determined by its bias, see section 7.1. It MAY include a set of advice with supplemental information which
+ * MAY be safely ignored by the PEP.
+ *
+ * The <Result> element is of ResultType complex type.
+ *
+ * @class Result
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Result = function(config){
+
+    /**
+     * The authorization decision: “Permit”, “Deny”, “Indeterminate” or “NotApplicable”.
+     *
+     * @property decision
+     * @type {ozpIwc.policyAuth.Decision}
+     */
+    this.decision = config.decision;
+
+    /**
+     * Indicates whether errors occurred during evaluation of the decision request, and optionally, information about
+     * those errors.  If the <Response> element contains <Result> elements whose <Status> elements are all identical,
+     * and the <Response> element is contained in a protocol wrapper that can convey status information, then the
+     * common status information MAY be placed in the protocol wrapper and this <Status> element MAY be
+     * omitted from all <Result> elements.
+     *
+     * @property status
+     * @type {ozpIwc.policyAuth.Status}
+     */
+    this.status = config.status;
+
+    /**
+     * A list of obligations that MUST be fulfilled by the PEP.  If the PEP does not understand or cannot fulfill an
+     * obligation, then the action of the PEP is determined by its bias, see section 7.2.  See Section 7.18 for a
+     * description of how the set of obligations to be returned by the PDP is determined.
+     *
+     * @property obligations
+     * @type {ozpIwc.policyAuth.Obligations}
+     */
+    this.obligations = config.obligations;
+
+    /**
+     * A list of advice that provide supplemental information to the PEP.  If the PEP does not understand an advice,
+     * the PEP may safely ignore the advice. See Section 7.18 for a description of how the set of advice to be
+     * returned by the PDP is determined.
+     *
+     * @property associatedAdvice
+     * @type {ozpIwc.policyAuth.AssociatedAdvice}
+     */
+    this.associatedAdvice = config.associatedAdvice;
+
+    /**
+     * A list of attributes that were part of the request. The choice of which attributes are included here is
+     * made with the IncludeInResult attribute of the <Attribute> elements of the request. See section 5.46.
+     *
+     * @property attributes
+     * @type {ozpIwc.policyAuth.Attributes}
+     */
+    this.attributes = config.attributes;
+
+    /**
+     * If the ReturnPolicyIdList attribute in the <Request> is true (see section 5.42), a PDP that implements this
+     * optional feature MUST return a list of all policies which were found to be fully applicable. That is, all
+     * policies where both the <Target> matched and the <Condition> evaluated to true, whether or not the <Effect>
+     * was the same or different from the <Decision>.
+     *
+     * @property policyIdentifierList
+     * @type {ozpIwc.policyAuth.policyIdentiferList}
+     */
+    this.policyIdentifierList = config.policyIdentifierList;
+
+};
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+
+/**
+ * 3.3.1 Rule
+ * A rule is the most elementary unit of policy.  It may exist in isolation only within one of the major actors of
+ * the XACML domain.  In order to exchange rules between major actors, they must be encapsulated in a policy.
+ * A rule can be evaluated on the basis of its contents.  The main components of a rule are:
+ *
+ * The <Rule> element is of RuleType complex type.
+ *
+ * @class Rule
+ * @namespace ozpIwc.policyAuth
+ *
+ * @param {Object} config
+ * @param {Object} config.target
+ * @param {String} config.effect
+ * @param {Array<Function>} config.obligations
+ * @param {Array<Function>} config.advices
+ *
+ * @constructor
+ */
+ozpIwc.policyAuth.Rule = function(config){
+    config=config || {};
+
+    /**
+     * A string identifying this rule.
+     * @property ruleId
+     * @type String
+     * @default null
+     */
+    this.ruleId = config.ruleId;
+
+    /**
+     * @property target
+     * @type Object
+     * @default {}
+     */
+    this.target = config.target || null ;
+
+    /**
+     * The rule-writer's intended consequence of a "True" evaluation for the rule.
+     * Two values are allowed: "Permit" and "Deny".
+     * @property effect
+     * @type String
+     * @default "Permit"
+     */
+    this.setEffect(config.effect);
+
+    /**
+     * A Boolean expression that refines the applicability of the rule beyond the predicates implied by its target.
+     * Therefore, it may be absent.
+     *
+     * @property condition
+     * @type Function
+     * @default null
+     */
+    this.condition = config.condition || null;
+
+    /**
+     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
+     *
+     * @property obligations
+     * @type Array<Function>
+     * @default []
+     */
+    this.obligations = config.obligations || [];
+
+    /**
+     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
+     * ignored by the PEP.
+     *
+     * @property advices
+     * @type Array<Function>
+     * @default []
+     */
+    this.advices = config.advices || [];
+
+};
+
+
+/**
+ * 3.3.1.2 Effect
+ * The effect of the rule indicates the rule-writer's intended consequence of a "True" evaluation for the rule.
+ * Two values are allowed: "Permit" and "Deny".
+ *
+ * @method setEffect
+ * @param {String} effect
+ */
+ozpIwc.policyAuth.Rule.prototype.setEffect = function(effect){
+    switch(effect){
+        case "Permit":
+            this.effect = effect;
+            break;
+        case "Deny":
+            this.effect = effect;
+            break;
+        default:
+            this.effect = "Permit";
+    }
+};
+
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <Status> element represents the status of the authorization decision result.
+ *
+ * The <Status> element is of StatusType complex type.
+ *
+ * @class Status
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Status = function(config){
+
+    /**
+     * Status Code
+     * @property statusCode
+     * @type {ozpIwc.policyAuth.StatusCode}
+     */
+    this.statusCode = config.statusCode;
+
+    /**
+     * A status message describing the status code.
+     * @property statusMessage
+     * @type {ozpIwc.policyAuth.StatusMessage}
+     */
+    this.statusMessage = config.statusMessage;
+
+    /**
+     * Additional status information.
+     * @property statusDetail
+     * @type {ozpIwc.policyAuth.StatusDetail}
+     */
+    this.statusDetail = config.statusDetail;
+
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <StatusCode> element contains a major status code value and an optional sequence of minor status codes.
+ *
+ * The <StatusCode> element is of StatusCodeType complex type.
+ *
+ * @class StatusCode
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.StatusCode = function(config){
+
+    /**
+     * See Section B.8 for a list of values.
+     * @property value
+     * @type {ozpIwc.policyAuth.StatusCode}
+     */
+    this.value = config.statusCode;
+
+    /**
+     * Minor status code.  This status code qualifies its parent status code.
+     * @property statusCode
+     * @type {ozpIwc.policyAuth.StatusCode}
+     */
+    this.statusCode = config.statusCode;
+
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+
+/**
+ * The <Target> element identifies the set of decision requests that the parent element is intended to evaluate.
+ * The <Target> element SHALL appear as a child of a <PolicySet> and <Policy> element and MAY appear as a child of
+ * a <Rule> element.
+ *
+ * The <Target> element is of TargetType complex type.
+ *
+ * @class Target
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.Target = function(config){
+
+    /**
+     * Matching specification for attributes in the context.  If this element is missing, then the target
+     * SHALL match all contexts.
+     * @property anyOf
+     * @type {Array<ozpIwc.policyAuth.AnyOf>}
+     */
+    this.anyOf = config.anyOf || [];
+}
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <VariableDefinition> element SHALL be used to define a value that can be referenced by a <VariableReference>
+ * element.  The name supplied for its VariableId attribute SHALL NOT occur in the VariableId attribute of any other
+ *<VariableDefinition> element within the encompassing policy.  The <VariableDefinition> element MAY contain undefined
+ * VariableReference> elements, but if it does, a corresponding <VariableDefinition> element MUST be defined later in
+ * the encompassing policy.  <VariableDefinition> elements MAY be grouped together or MAY be placed close to the
+ * reference in the encompassing policy.  There MAY be zero or more references to each <VariableDefinition> element.
+ *
+ * The <VariableDefinition> element is of VariableDefinitionType complex type.
+ *
+ * @class VariableDefinition
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.VariableDefinition = function(config){
+
+    /**
+     * @property expression
+     * @type {ozpIwc.policyAuth.Expression}
+     * @default null
+     */
+    this.expression = config.expression;
+
+    /**
+     * The name of the variable definition.
+     * @property variableId
+     * @type {String}
+     */
+    this.variableId = config.variableId;
+};
+
+/**
+ * The <Expression> element is not used directly in a policy.  The <Expression> element signifies that an element that
+ * extends the ExpressionType and is a member of the <Expression> element substitution group SHALL appear in its place.
+ *
+ * The following elements are in the <Expression> element substitution group:
+ * <Apply>, <AttributeSelector>, <AttributeValue>, <Function>, <VariableReference> and <AttributeDesignator>.
+ *
+ * @class Expression
+ * @namesapce ozpIwc.policyAuth
+ */
+
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <VariableReference> element is used to reference a value defined within the same encompassing <Policy> element.
+ * The <VariableReference> element SHALL refer to the <VariableDefinition> element by identifier equality on the value
+ * of their respective VariableId attributes.  One and only one <VariableDefinition> MUST exist within the same
+ * encompassing <Policy> element to which the <VariableReference> refers.  There MAY be zero or more
+ * <VariableReference> elements that refer to the same <VariableDefinition> element.
+ *
+ * The <VariableReference> element is of the VariableReferenceType complex type, which is of the ExpressionType complex
+ * type and is a member of the <Expression> element substitution group.  The <VariableReference> element MAY appear
+ * any place where an <Expression> element occurs in the schema.
+ *
+ * @class VariableReference
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.VariableReference = function(config){
+
+    /**
+     * The name used to refer to the value defined in a <VariableDefinition> element.
+     * @property variableId
+     * @type {String}
+     */
+    this.variableId = config.variableId;
+
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
  * System entity that evaluates applicable policy and renders an authorization decision.
  * @class PDP
  * @namespace ozpIwc.policyAuth
@@ -5508,225 +7109,89 @@ ozpIwc.policyAuth.PEP.prototype.request = function(request){
     return this.PDP.handleRequest(request);
 };
 ozpIwc = ozpIwc || {};
+ozpIwc.polyAuth = ozpIwc.polyAuth || {};
+ozpIwc.polyAuth.policyCombining = ozpIwc.polyAuth.policyCombining || {};
 
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 
 /**
- * 3.3.2 Policy
- * Rules are not exchanged amongst system entities. Therefore, a PAP combines rules in a policy.
- *
- * @class Policy
- * @namespace ozpIwc.policyAuth
- *
- *
- * @param {Object} config
- * @param {Object} config.target
- * @param {Function} config.ruleCombining
- * @param {Array<ozpIwc.policyAuth.Rules>} config.rules
- * @param {Array<Function>} config.obligations
- * @param {Array<Function>} config.advices
- * @constructor
+ * urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides
  */
-ozpIwc.policyAuth.Policy = function(config){
-    config=config || {};
+ozpIwc.polyAuth.policyCombining.denyOverrides = function(){};
 
-    /**
-     * @property target
-     * @type Object
-     * @default {}
-     */
-    this.target = config.target || {};
 
-    /**
-     * Specifies the procedure by which the results of evaluating the component rules are combined when
-     * evaluating the policy
-     *
-     * @property ruleCombining
-     * @type Function
-     * @default null
-     */
-    this.ruleCombining = config.ruleCombining || null;
+/**
+ * urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides
+ */
+ozpIwc.polyAuth.policyCombining.permitOverrides = function(){};
 
-    /**
-     * An array of {{#crossLink "ozpIwc.policyAuth.Rule"}}{{/crossLink}}
-     * @property rules
-     * @type Array<ozpIwc.policyAuth.Rule>
-     * @default []
-     */
-    this.rules = config.rules || [];
+/**
+ * urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable
+ */
+ozpIwc.polyAuth.policyCombining.firstApplicable = function(){};
 
-    /**
-     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
-     *
-     * @property obligations
-     * @type Array<Function>
-     * @default []
-     */
-    this.obligations = config.obligations || [];
+/**
+ * urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable
+ */
+ozpIwc.polyAuth.policyCombining.onlyOneApplicable = function(){};
 
-    /**
-     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
-     * ignored by the PEP.
-     *
-     * @property advices
-     * @type Array<Function>
-     * @default []
-     */
-    this.advices = config.advices || [];
+/**
+ * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
+ */
+ozpIwc.polyAuth.policyCombining.orderedDenyOverrides = function(){};
 
-};
+/**
+ * urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides
+ */
+ozpIwc.polyAuth.policyCombining.orderedPermitOverrides = function(){};
+
+/**
+ * urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit
+ */
+ozpIwc.polyAuth.policyCombining.denyUnlessPermit = function(){};
+
+/**
+ * urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-unless-deny
+ */
+ozpIwc.polyAuth.policyCombining.permitUnlessDeny = function(){};
 ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * A collection of {{#crossLink "ozpIwc.policyAuth.Policy"}}{{/crossLink}}.
- * @class PolicySet
- * @namespace ozpIwc.policyAuth
- *
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.PolicySet = function(config){
-    config=config || {};
-    /**
-     * @property target
-     * @type Object
-     * @default {}
-     */
-    this.target = config.target || {};
-
-    /**
-     * Specifies the procedure by which the results of evaluating the component policies are combined when
-     * evaluating the policy
-     *
-     * @property ruleCombining
-     * @type Function
-     * @default null
-     */
-    this.policyCombining = config.policyCombining || null;
-
-    /**
-     * An array of {{#crossLink "ozpIwc.policyAuth.Policy"}}{{/crossLink}}
-     * @property rules
-     * @type Array<ozpIwc.policyAuth.Policy>
-     * @default []
-     */
-    this.policies = config.policies || [];
-
-    /**
-     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
-     *
-     * @property obligations
-     * @type Array<Function>
-     * @default []
-     */
-    this.obligations = config.obligations || [];
-
-    /**
-     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
-     * ignored by the PEP.
-     *
-     * @property advices
-     * @type Array<Function>
-     * @default []
-     */
-    this.advices = config.advices || [];
-};
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+ozpIwc.polyAuth = ozpIwc.polyAuth || {};
+ozpIwc.polyAuth.ruleCombining = ozpIwc.polyAuth.ruleCombining || {};
 
 
 /**
- * 3.3.1 Rule
- * A rule is the most elementary unit of policy.  It may exist in isolation only within one of the major actors of
- * the XACML domain.  In order to exchange rules between major actors, they must be encapsulated in a policy.
- * A rule can be evaluated on the basis of its contents.  The main components of a rule are:
- *
- * @class Rule
- * @namespace ozpIwc.policyAuth
- *
- * @param {Object} config
- * @param {Object} config.target
- * @param {String} config.effect
- * @param {Array<Function>} config.obligations
- * @param {Array<Function>} config.advices
- *
- * @constructor
+ * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides
  */
-ozpIwc.policyAuth.Rule = function(config){
-    config=config || {};
-    /**
-     * @property target
-     * @type Object
-     * @default {}
-     */
-    this.target = config.target || null ;
-
-    /**
-     * The rule-writer's intended consequence of a "True" evaluation for the rule.
-     * Two values are allowed: "Permit" and "Deny".
-     * @property effect
-     * @type String
-     * @default "Permit"
-     */
-    this.setEffect(config.effect);
-
-    /**
-     * A Boolean expression that refines the applicability of the rule beyond the predicates implied by its target.
-     * Therefore, it may be absent.
-     *
-     * @property condition
-     * @type Function
-     * @default null
-     */
-    this.condition = config.condition || null;
-
-    /**
-     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
-     *
-     * @property obligations
-     * @type Array<Function>
-     * @default []
-     */
-    this.obligations = config.obligations || [];
-
-    /**
-     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
-     * ignored by the PEP.
-     *
-     * @property advices
-     * @type Array<Function>
-     * @default []
-     */
-    this.advices = config.advices || [];
-
-};
-
+ozpIwc.polyAuth.ruleCombining.denyOverrides = function(){};
 
 /**
- * 3.3.1.2 Effect
- * The effect of the rule indicates the rule-writer's intended consequence of a "True" evaluation for the rule.
- * Two values are allowed: "Permit" and "Deny".
- *
- * @method setEffect
- * @param {String} effect
+ * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides
  */
-ozpIwc.policyAuth.Rule.prototype.setEffect = function(effect){
-    switch(effect){
-        case "Permit":
-            this.effect = effect;
-            break;
-        case "Deny":
-            this.effect = effect;
-            break;
-        default:
-            this.effect = "Permit";
-    }
-};
+ozpIwc.polyAuth.ruleCombining.permitOverrides = function(){};
 
+/**
+ * urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable
+ */
+ozpIwc.polyAuth.ruleCombining.firstApplicable = function(){};
 
+/**
+ * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
+ */
+ozpIwc.polyAuth.ruleCombining.orderedDenyOverrides = function(){};
+
+/**
+ * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides
+ */
+ozpIwc.polyAuth.ruleCombining.orderedPermitOverrides = function(){};
+
+/**
+ * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit
+ */
+ozpIwc.polyAuth.ruleCombining.denyUnlessPermit = function(){};
+
+/**
+ * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny
+ */
+ozpIwc.polyAuth.ruleCombining.permitUnlessDeny = function(){};
 ///** @namespace **/
 //var ozpIwc = ozpIwc || {};
 //

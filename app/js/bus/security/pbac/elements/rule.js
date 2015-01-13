@@ -9,6 +9,8 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * the XACML domain.  In order to exchange rules between major actors, they must be encapsulated in a policy.
  * A rule can be evaluated on the basis of its contents.  The main components of a rule are:
  *
+ * The <Rule> element is of RuleType complex type.
+ *
  * @class Rule
  * @namespace ozpIwc.policyAuth
  *
@@ -22,6 +24,15 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  */
 ozpIwc.policyAuth.Rule = function(config){
     config=config || {};
+
+    /**
+     * A string identifying this rule.
+     * @property ruleId
+     * @type String
+     * @default null
+     */
+    this.ruleId = config.ruleId;
+
     /**
      * @property target
      * @type Object

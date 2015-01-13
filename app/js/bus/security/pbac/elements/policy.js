@@ -6,6 +6,8 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * 3.3.2 Policy
  * Rules are not exchanged amongst system entities. Therefore, a PAP combines rules in a policy.
  *
+ * The <Policy> element is of PolicyType complex type.
+ *
  * @class Policy
  * @namespace ozpIwc.policyAuth
  *
@@ -20,6 +22,27 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  */
 ozpIwc.policyAuth.Policy = function(config){
     config=config || {};
+
+    /**
+     * @property policyId
+     * @type String
+     * @default null
+     */
+    this.policyId = config.policyId;
+
+    /**
+     * @property version
+     * @type Number
+     * @default null
+     */
+    this.version = config.version;
+
+    /**
+     * @property ruleCombiningAlgId
+     * @type String
+     * @default null
+     */
+    this.ruleCombiningAlgId = config.ruleCombiningAlgId;
 
     /**
      * @property target
