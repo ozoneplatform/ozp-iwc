@@ -12,7 +12,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Obligations = function(config){
+ozpIwc.policyAuth.Obligations = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     /**
      * A sequence of obligations.  See Section 5.34.
      * @property obligations
@@ -20,7 +20,7 @@ ozpIwc.policyAuth.Obligations = function(config){
      * @default null
      */
     this.obligations = config.obligations
-};
+});
 
 /**
  * The <AttributeValue> element SHALL contain a literal attribute value.

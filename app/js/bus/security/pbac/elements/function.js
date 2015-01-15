@@ -13,7 +13,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Function = function(config){
+ozpIwc.policyAuth.Function = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The identifier of the function.
@@ -22,4 +22,4 @@ ozpIwc.policyAuth.Function = function(config){
      * @defualt null
      */
     this.functionId = config.functionId;
-};
+});

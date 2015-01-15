@@ -20,7 +20,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param {Array<Function>} config.advices
  * @constructor
  */
-ozpIwc.policyAuth.Policy = function(config){
+ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     config=config || {};
 
     /**
@@ -88,4 +88,13 @@ ozpIwc.policyAuth.Policy = function(config){
      */
     this.advices = config.advices || [];
 
-};
+    if(config.element){
+        this.construct(config.element);
+    }
+
+});
+
+ozpIwc.policyAuth.Policy.prototype.requiredAttributes = ['PolicyId', 'Version', 'RuleCombiningAlgId'];
+ozpIwc.policyAuth.Policy.prototype.requiredNodes = ['Target'];
+ozpIwc.policyAuth.Policy.prototype.optionalNodes = ['Description','PolicyIssuer','PolicyDefaults','CombinerParameters','RuleCombinerParameters',
+    'VariableDefinition','Rule','ObligationExpressions','AdviceExpressions'];

@@ -12,7 +12,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Advice = function(config){
+ozpIwc.policyAuth.Advice = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * Advice identifier.  The value of the advice identifier MAY be interpreted by the PEP.
@@ -29,4 +29,4 @@ ozpIwc.policyAuth.Advice = function(config){
      * @defualt null
      */
     this.attributeAssignment = config.attributeAssignment;
-};
+});

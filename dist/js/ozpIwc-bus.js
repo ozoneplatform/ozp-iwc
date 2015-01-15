@@ -2752,6 +2752,92 @@ ozpIwc.util.isIWCPacket=function(packet) {
         return true;
     }
 };
+
+/**
+ * Returns true if the the given node is a direct descendant of the parent node.
+ * @method isDirectDescendant
+ * @param parent
+ * @param child
+ * @returns {boolean}
+ */
+ozpIwc.util.isDirectDescendant = function(child,parent){
+    if (child.parentNode == parent) {
+        return true;
+    }
+    return false;
+};
+
+/**
+ *
+ * @param {Object} config
+ * @param {Array<String>} config.reqAttrs
+ * @param {Array<String>} config.optAttrs
+ * @param {Array<String>} config.reqNodes
+ * @param {Array<String>} config.optNodes
+ */
+ozpIwc.util.elementParser = function(config){
+    config = config || {};
+
+    config.reqAttrs = config.reqAttrs || [];
+    config.optAttrs = config.optAttrs || [];
+    config.reqNodes = config.reqNodes || [];
+    config.optNodes = config.optNodes || [];
+
+    var element = config.element || {};
+
+    var findings = {
+        attrs: {},
+        nodes: {}
+    };
+    config.reqAttrs.forEach(function(attr){
+        var attribute = element.getAttribute(attr);
+        if(attribute){
+            console.log('Found attribute of policy,(',attr,',',attribute,')');
+            findings.attrs[attr] = attribute;
+        } else {
+            console.error('Required attribute not found,(',attr,')');
+        }
+
+    });
+
+    config.optAttrs.forEach(function(attr){
+        var attribute = element.getAttribute(attr);
+        if(attribute){
+            console.log('Found attribute of policy,(',attr,',',attribute,')');
+            findings.attrs[attr] = attribute;
+        }
+
+    });
+
+    config.reqNodes.forEach(function(tag){
+        var nodes = element.getElementsByTagName(tag);
+        findings.nodes[tag] = findings.nodes[tag] || [];
+        for(var i in nodes){
+            if(ozpIwc.util.isDirectDescendant(nodes[i],element)){
+                console.log('Found node of policy: ', nodes[i]);
+                findings.nodes[tag].push(nodes[i]);
+            }
+        }
+        if(findings.nodes[tag].length <= 0) {
+            console.error('Required node not found,(',tag,')');
+        }
+    });
+    config.optNodes.forEach(function(tag){
+        var nodes = element.getElementsByTagName(tag);
+        for(var i in nodes){
+            if(ozpIwc.util.isDirectDescendant(nodes[i],element)){
+                console.log('Found node of policy: ', nodes[i]);
+                findings.nodes[tag] = findings.nodes[tag] || [];
+                findings.nodes[tag].push(nodes[i]);
+            }
+        }
+    });
+    return findings;
+};
+
+ozpIwc.util.camelCased = function(string){
+    return string.charAt(0).toLowerCase() + string.substring(1);
+};
 (function() {
 var define, requireModule, require, requirejs;
 
@@ -5406,6 +5492,225 @@ ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 
+ozpIwc.policyAuth.BaseElement = function(config){
+    config = config || {};
+};
+
+
+ozpIwc.policyAuth.BaseElement.prototype.construct = function(element){
+    var parsed = ozpIwc.util.elementParser({
+        element: element,
+        reqAttrs: this.requiredAttributes,
+        optAttrs: this.optionalAttributes,
+        reqNodes: this.requiredNodes,
+        optNodes: this.optionalNodes
+    });
+    this.constructNodes(parsed);
+};
+
+/**
+ *
+ *
+ * @method constructNodes
+ * @param {Object}config
+ * @param {Object} config.attrs
+ * @param {Object} config.nodes
+ */
+ozpIwc.policyAuth.BaseElement.prototype.constructNodes = function(config){
+    config = config || {};
+    config.attrs = config.attrs || {};
+    config.nodes = config.nodes || {};
+    // Attributes are just strings, simple assignment
+    for(var i in config.attrs){
+        // The property of the policy is the camelCase version of the tagName
+        // (ex. this.policyId = parsed.attrs.PolicyId)
+        var camelCasedProperty = ozpIwc.util.camelCased(i);
+        this[camelCasedProperty] = config.attrs[i];
+    }
+
+    // Each node is likely to be mapped to a XACML element, construct said element and set it as this elements property.
+    for(var j in config.nodes){
+        // The property of the policy is the camelCase version of the tagName
+        var camelCasedProperty = ozpIwc.util.camelCased(j);
+
+        // If a property of the Policy accepts multiple elements, it's defaulted as an array.
+        if(Array.isArray(this[camelCasedProperty])){
+
+            // Check if the parsed node type is an array, then we will append all its elements to this element.
+            if(Array.isArray(config.nodes[j])){
+                for(var k in config.nodes[j]){
+                    // The property of the element is the camelCase version of the tagName, the node to construct from the
+                    // parsed object uses the same notation as the tagName for the class call
+                    // (ex.ozpIwc.policyAuth[i] = ozpIwc.policyAuth.Target)
+                    this[camelCasedProperty].push(new ozpIwc.policyAuth[j]({element: config.nodes[j][k]}));
+                }
+            }else{
+                for(var k in config.nodes[j]) {
+                    this[camelCasedProperty].push(new ozpIwc.policyAuth[j]({element: config.nodes[j][k]}));
+                }
+            }
+        } else {
+            for(var k in config.nodes[j]) {
+                this[camelCasedProperty] = new ozpIwc.policyAuth[j]({element: config.nodes[j][k]});
+            }
+        }
+    }
+};
+
+
+ozpIwc.policyAuth.BaseElement.prototype.requiredAttributes = [];
+ozpIwc.policyAuth.BaseElement.prototype.optionalAttributes = [];
+ozpIwc.policyAuth.BaseElement.prototype.requiredNodes = [];
+ozpIwc.policyAuth.BaseElement.prototype.optionalNodes = [];
+ozpIwc = ozpIwc || {};
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * A collection of DataTypes for the XACML policy decision process.
+ * @class DataTypes
+ * @namespace ozpIwc.policyAuth
+ */
+ozpIwc.policyAuth.DataTypes = ozpIwc.policyAuth.DataTypes || {};
+/**
+ * @property urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name'] = function(obj){
+
+};
+
+/**
+ * @property urn:oasis:names:tc:xacml:1.0:data-type:x500Name
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['urn:oasis:names:tc:xacml:1.0:data-type:x500Name'] = function(obj){
+
+};
+
+/**
+ * @property urn:oasis:names:tc:xacml:2.0:data-type:ipAddress
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['urn:oasis:names:tc:xacml:2.0:data-type:ipAddress'] = function(obj){
+
+};
+
+/**
+ * @property urn:oasis:names:tc:xacml:2.0:data-type:dnsName
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['urn:oasis:names:tc:xacml:2.0:data-type:dnsName'] = function(obj){
+
+};
+ozpIwc = ozpIwc || {};
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * A collection of DataTypes for the XACML policy decision process.
+ * @class DataTypes
+ * @namespace ozpIwc.policyAuth
+ */
+ozpIwc.policyAuth.DataTypes = ozpIwc.policyAuth.DataTypes || {};
+
+/**
+ * @property http://www.w3.org/2001/XMLSchema#string
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#string'] = function(obj){
+
+};
+
+/**
+ * @property http://www.w3.org/2001/XMLSchema#boolean
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#boolean'] = function(obj){
+
+};
+
+/**
+ * @property http://www.w3.org/2001/XMLSchema#integer
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#integer'] = function(obj){
+
+};
+
+/**
+ * @property http://www.w3.org/2001/XMLSchema#double
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#double'] = function(obj){
+
+};
+
+/**
+ * @property http://www.w3.org/2001/XMLSchema#time
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#time'] = function(obj){
+
+};
+
+/**
+ * @property http://www.w3.org/2001/XMLSchema#date
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#date'] = function(obj){
+
+};
+
+/**
+ * @property http://www.w3.org/2001/XMLSchema#dateTime
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#dateTime'] = function(obj){
+
+};
+
+/**
+ * @property http://www.w3.org/2001/XMLSchema#dayTimeDuration
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#dayTimeDuration'] = function(obj){
+
+};
+
+/**
+ * @property http://www.w3.org/2001/XMLSchema#yearMonthDuration
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#yearMonthDuration'] = function(obj){
+
+};
+
+/**
+ * @property http://www.w3.org/2001/XMLSchema#anyURI
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#anyURI'] = function(obj){
+
+};
+
+/**
+ * @property http://www.w3.org/2001/XMLSchema#hexBinary
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#hexBinary'] = function(obj){
+
+};
+
+/**
+ * @property http://www.w3.org/2001/XMLSchema#base64Binary
+ * @param obj
+ */
+ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#base64Binary'] = function(obj){
+
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
 /**
  * The <Advice> element SHALL contain an identifier for the advice and a set of attributes that form
  * arguments of the supplemental information defined by the advice.
@@ -5416,7 +5721,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Advice = function(config){
+ozpIwc.policyAuth.Advice = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * Advice identifier.  The value of the advice identifier MAY be interpreted by the PEP.
@@ -5433,7 +5738,7 @@ ozpIwc.policyAuth.Advice = function(config){
      * @defualt null
      */
     this.attributeAssignment = config.attributeAssignment;
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -5451,7 +5756,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AdviceExpression = function(config){
+ozpIwc.policyAuth.AdviceExpression = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * Advice identifier. The value of the advice identifier MAY be interpreted by the PEP.
@@ -5483,7 +5788,7 @@ ozpIwc.policyAuth.AdviceExpression = function(config){
      * @type {ozpIwc.policyAuth.AttributeAssignmentExpression}
      */
     this.attributeAssignmentExpression = config.attributeAssignmentExpression;
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -5498,7 +5803,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AdviceExpressions = function(config){
+ozpIwc.policyAuth.AdviceExpressions = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * A sequence of advice expressions.  See Section 5.40.
@@ -5507,7 +5812,7 @@ ozpIwc.policyAuth.AdviceExpressions = function(config){
      */
     this.adviceExpressions = config.adviceExpressions;
 
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -5522,7 +5827,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AllOf = function(config){
+ozpIwc.policyAuth.AllOf = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * A conjunctive sequence of individual matches of the attributes in the request context and the embedded
@@ -5532,7 +5837,7 @@ ozpIwc.policyAuth.AllOf = function(config){
      * @type {Array<ozpIwc.policyAuth.Match>}
      */
     this.match = config.allOf || [];
-};
+});
 
 ozpIwc = ozpIwc || {};
 
@@ -5548,7 +5853,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AnyOf = function(config){
+ozpIwc.policyAuth.AnyOf = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The <AllOf> element SHALL contain a conjunctive sequence of <Match> elements.
@@ -5556,7 +5861,7 @@ ozpIwc.policyAuth.AnyOf = function(config){
      * @type {Array<ozpIwc.policyAuth.AllOf>}
      */
     this.allOf = config.allOf || [];
-};
+});
 
 ozpIwc = ozpIwc || {};
 
@@ -5574,7 +5879,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Apply = function(config){
+ozpIwc.policyAuth.Apply = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The identifier of the function to be applied to the arguments.
@@ -5601,7 +5906,7 @@ ozpIwc.policyAuth.Apply = function(config){
      * @default null
      */
     this.expression = config.expression;
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -5616,7 +5921,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AssociatedAdvice = function(config){
+ozpIwc.policyAuth.AssociatedAdvice = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     /**
      * A sequence of advice.  See Section 5.35.
      * @property advice
@@ -5624,7 +5929,7 @@ ozpIwc.policyAuth.AssociatedAdvice = function(config){
      * @default null
      */
     this.advice = config.advice
-};
+});
 
 ozpIwc = ozpIwc || {};
 
@@ -5640,7 +5945,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Attribute = function(config){
+ozpIwc.policyAuth.Attribute = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The Attribute identifier.  A number of identifiers are reserved by XACML to denote commonly used attributes.
@@ -5679,7 +5984,7 @@ ozpIwc.policyAuth.Attribute = function(config){
      */
     this.attributeValue = config.AttributeValue;
 
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -5699,7 +6004,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param {Object} config
  * @constructor
  */
-ozpIwc.policyAuth.AttributeAssignment = function(config){
+ozpIwc.policyAuth.AttributeAssignment = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The attribute Identifier.
@@ -5731,7 +6036,7 @@ ozpIwc.policyAuth.AttributeAssignment = function(config){
      * @default null
      */
     this.issuer = config.issuer;
-};
+});
 
 ozpIwc = ozpIwc || {};
 
@@ -5746,7 +6051,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AttributeAssignmentExpression = function(config){
+ozpIwc.policyAuth.AttributeAssignmentExpression = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      *The expression which evaluates to a constant attribute value or a bag of zero or more attribute values.
@@ -5780,7 +6085,7 @@ ozpIwc.policyAuth.AttributeAssignmentExpression = function(config){
      * @type {String}
      */
     this.issuer = config.issuer;
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -5804,7 +6109,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AttributeDesignator = function(config){
+ozpIwc.policyAuth.AttributeDesignator = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * This attribute SHALL specify the Category with which to match the attribute.
@@ -5850,7 +6155,7 @@ ozpIwc.policyAuth.AttributeDesignator = function(config){
      * @type {Boolean}
      */
     this.mustBePresent = config.mustBePresent;
-};
+});
 
 ozpIwc = ozpIwc || {};
 
@@ -5866,7 +6171,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Obligations = function(config){
+ozpIwc.policyAuth.Obligations = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     /**
      * A sequence of obligations.  See Section 5.34.
      * @property obligations
@@ -5874,7 +6179,7 @@ ozpIwc.policyAuth.Obligations = function(config){
      * @default null
      */
     this.obligations = config.obligations
-};
+});
 
 /**
  * The <AttributeValue> element SHALL contain a literal attribute value.
@@ -5913,7 +6218,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Attributes = function(config){
+ozpIwc.policyAuth.Attributes = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * This attribute indicates which attribute category the contained attributes belong to. The Category attribute is
@@ -5948,7 +6253,7 @@ ozpIwc.policyAuth.Attributes = function(config){
      * @type {Array<ozpIwc.policyAuth.Attribute>}
      */
     this.attributes = config.attributes;
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -5960,7 +6265,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Condition = function(config){
+ozpIwc.policyAuth.Condition = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The <Condition> contains one <Expression> element, with the restriction that the <Expression> return data-type
@@ -5972,7 +6277,7 @@ ozpIwc.policyAuth.Condition = function(config){
      * @default null
      */
     this.expression = config.expression;
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -5987,11 +6292,11 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Content = function(config){
+ozpIwc.policyAuth.Content = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     /**
      * The <Content> element has exactly one arbitrary type child element.
      */
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6006,7 +6311,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Decision = function(config){
+ozpIwc.policyAuth.Decision = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The values of the <Decision> element have the following meanings:
@@ -6021,7 +6326,7 @@ ozpIwc.policyAuth.Decision = function(config){
      * @type {String}
      */
     this.decision = config.decision;
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6035,13 +6340,13 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @returns {*}
  * @constructor
  */
-ozpIwc.policyAuth.Description = function(string){
-    var ret = string;
-    if(typeof ret !== "string"){
-        ret = JSON.stringify(string);
+ozpIwc.policyAuth.Description = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
+    this.value = config.value || "";
+
+    if(config.element.textContent){
+        this.value = config.element.textContent;
     }
-    return ret;
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6057,7 +6362,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Function = function(config){
+ozpIwc.policyAuth.Function = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The identifier of the function.
@@ -6066,7 +6371,7 @@ ozpIwc.policyAuth.Function = function(config){
      * @defualt null
      */
     this.functionId = config.functionId;
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6082,7 +6387,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Match = function(config){
+ozpIwc.policyAuth.Match = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * Specifies a matching function.  The value of this attribute MUST be of type xs:anyURI
@@ -6117,7 +6422,7 @@ ozpIwc.policyAuth.Match = function(config){
     this.attributeSelector = config.attributeSelector;
 
 
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6133,7 +6438,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.MissingAttributeDetail = function(config){
+ozpIwc.policyAuth.MissingAttributeDetail = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The required value of the missing attribute.
@@ -6169,7 +6474,7 @@ ozpIwc.policyAuth.MissingAttributeDetail = function(config){
      * @type {String}
      */
     this.issuer = config.issuer;
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6186,7 +6491,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Obligation = function(config){
+ozpIwc.policyAuth.Obligation = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     /**
      * Obligation identifier.  The value of the obligation identifier SHALL be interpreted by the PEP.
      * @property obligationId
@@ -6202,7 +6507,7 @@ ozpIwc.policyAuth.Obligation = function(config){
      * @type {ozpIwc.policyAuth.AttributeAssignment}
      */
     this.attributeAssignment = config.attributeAssignment;
-};
+});
 
 
 ozpIwc = ozpIwc || {};
@@ -6219,7 +6524,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.ObligationExpressions = function(config){
+ozpIwc.policyAuth.ObligationExpressions = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * A sequence of obligation expressions.  See Section 5.39.
@@ -6229,7 +6534,7 @@ ozpIwc.policyAuth.ObligationExpressions = function(config){
      */
     this.obligationExpressions = config.obligationExpressions;
 
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6244,7 +6549,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Obligations = function(config){
+ozpIwc.policyAuth.Obligations = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     /**
      * A sequence of obligations.  See Section 5.34.
      * @property obligations
@@ -6252,7 +6557,7 @@ ozpIwc.policyAuth.Obligations = function(config){
      * @default null
      */
     this.obligations = config.obligations
-};
+});
 
 ozpIwc = ozpIwc || {};
 
@@ -6276,7 +6581,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param {Array<Function>} config.advices
  * @constructor
  */
-ozpIwc.policyAuth.Policy = function(config){
+ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     config=config || {};
 
     /**
@@ -6344,7 +6649,16 @@ ozpIwc.policyAuth.Policy = function(config){
      */
     this.advices = config.advices || [];
 
-};
+    if(config.element){
+        this.construct(config.element);
+    }
+
+});
+
+ozpIwc.policyAuth.Policy.prototype.requiredAttributes = ['PolicyId', 'Version', 'RuleCombiningAlgId'];
+ozpIwc.policyAuth.Policy.prototype.requiredNodes = ['Target'];
+ozpIwc.policyAuth.Policy.prototype.optionalNodes = ['Description','PolicyIssuer','PolicyDefaults','CombinerParameters','RuleCombinerParameters',
+    'VariableDefinition','Rule','ObligationExpressions','AdviceExpressions'];
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6361,7 +6675,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.PolicyIdReference = function(config){
+ozpIwc.policyAuth.PolicyIdReference = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     // parse as a URL
     // @TODO validate the URL
@@ -6374,7 +6688,7 @@ ozpIwc.policyAuth.PolicyIdReference = function(config){
        @TODO Throw error that the reference wasn't a valid URL?
       */
     }
-};
+});
 
 ozpIwc = ozpIwc || {};
 
@@ -6391,7 +6705,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.PolicySet = function(config){
+ozpIwc.policyAuth.PolicySet = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     config=config || {};
 
     /**
@@ -6483,7 +6797,7 @@ ozpIwc.policyAuth.PolicySet = function(config){
      * @default []
      */
     this.advices = config.advices || [];
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6501,7 +6815,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.PolicySetIdReference = function(config){
+ozpIwc.policyAuth.PolicySetIdReference = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     // parse as a URL
     if(typeof config === "string"){
@@ -6535,7 +6849,7 @@ ozpIwc.policyAuth.PolicySetIdReference = function(config){
     }
 
 
-};
+});
 
 ozpIwc = ozpIwc || {};
 
@@ -6560,7 +6874,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Request = function(config){
+ozpIwc.policyAuth.Request = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * This attribute is used to request that the PDP return a list of all fully applicable policies and policy sets
@@ -6613,7 +6927,7 @@ ozpIwc.policyAuth.Request = function(config){
      */
     this.multiRequests = config.multiRequests;
 
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6634,7 +6948,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Response = function(config){
+ozpIwc.policyAuth.Response = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * An authorization decision result.  See Section 5.48.
@@ -6643,7 +6957,7 @@ ozpIwc.policyAuth.Response = function(config){
      * @type {Array<ozpIwc.policyAuth.Result>}
      */
     this.result = config.result;
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6661,7 +6975,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Result = function(config){
+ozpIwc.policyAuth.Result = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The authorization decision: “Permit”, “Deny”, “Indeterminate” or “NotApplicable”.
@@ -6723,7 +7037,7 @@ ozpIwc.policyAuth.Result = function(config){
      */
     this.policyIdentifierList = config.policyIdentifierList;
 
-};
+});
 
 ozpIwc = ozpIwc || {};
 
@@ -6749,7 +7063,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  *
  * @constructor
  */
-ozpIwc.policyAuth.Rule = function(config){
+ozpIwc.policyAuth.Rule = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     config=config || {};
 
     /**
@@ -6805,8 +7119,14 @@ ozpIwc.policyAuth.Rule = function(config){
      */
     this.advices = config.advices || [];
 
-};
+    if(config.element){
+        this.construct(config.element);
+        this.setEffect(this.effect);
+    }
+});
 
+ozpIwc.policyAuth.Rule.prototype.requiredAttributes = ['RuleId', 'Effect'];
+ozpIwc.policyAuth.Rule.prototype.optionalNodes = ['Description','Target','Condition','ObligationExpressions','AdviceExpressions'];
 
 /**
  * 3.3.1.2 Effect
@@ -6844,7 +7164,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Status = function(config){
+ozpIwc.policyAuth.Status = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * Status Code
@@ -6867,7 +7187,7 @@ ozpIwc.policyAuth.Status = function(config){
      */
     this.statusDetail = config.statusDetail;
 
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6882,7 +7202,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.StatusCode = function(config){
+ozpIwc.policyAuth.StatusCode = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * See Section B.8 for a list of values.
@@ -6898,7 +7218,7 @@ ozpIwc.policyAuth.StatusCode = function(config){
      */
     this.statusCode = config.statusCode;
 
-};
+});
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6916,7 +7236,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Target = function(config){
+ozpIwc.policyAuth.Target = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * Matching specification for attributes in the context.  If this element is missing, then the target
@@ -6925,7 +7245,14 @@ ozpIwc.policyAuth.Target = function(config){
      * @type {Array<ozpIwc.policyAuth.AnyOf>}
      */
     this.anyOf = config.anyOf || [];
-}
+
+
+    if(config.element){
+        this.construct(config.element);
+    }
+});
+
+ozpIwc.policyAuth.Target.prototype.optionalNodes = ['AnyOf'];
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6945,7 +7272,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.VariableDefinition = function(config){
+ozpIwc.policyAuth.VariableDefinition = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * @property expression
@@ -6960,7 +7287,7 @@ ozpIwc.policyAuth.VariableDefinition = function(config){
      * @type {String}
      */
     this.variableId = config.variableId;
-};
+});
 
 /**
  * The <Expression> element is not used directly in a policy.  The <Expression> element signifies that an element that
@@ -6993,7 +7320,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.VariableReference = function(config){
+ozpIwc.policyAuth.VariableReference = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The name used to refer to the value defined in a <VariableDefinition> element.
@@ -7002,7 +7329,7 @@ ozpIwc.policyAuth.VariableReference = function(config){
      */
     this.variableId = config.variableId;
 
-};
+});
 ozpIwc = ozpIwc || {};
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 
@@ -7169,25 +7496,101 @@ ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:1.0:function:anyURI-equal'
     return (uToS(valA) === uToS(valB));
 };
 ozpIwc = ozpIwc || {};
+
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 
 ozpIwc.policyAuth.Operations = ozpIwc.policyAuth.Operations || {};
 
 
+/**
+ * 10.4.9 op:date-equal
+ *
+ * op:date-equal($arg1 as xs:date, $arg2 as xs:date) as xs:boolean
+ *
+ * Summary: Returns true if and only if the starting instant of $arg1 is equal to starting instant of $arg2.
+ * Returns false otherwise.
+ * The starting instant of an xs:date is the xs:dateTime at time 00:00:00 on that date.
+ *
+ * The two starting instants are compared using op:dateTime-equal.
+ *
+ * This function backs up the "eq", "ne", "le" and "ge" operators on xs:date values.
+ *
+ * @TODO
+ * @property op:time-equal
+ * @param valA
+ * @param valB
+ * @returns {Boolean}
+ */
 ozpIwc.policyAuth.Operations['op:date-equal'] = function(valA,valB){
-
+    return true;
 };
 
+/**
+ * 10.4.12 op:time-equal
+ *
+ * op:time-equal($arg1 as xs:time, $arg2 as xs:time) as xs:boolean
+ *
+ * Summary: Returns true if and only if the value of $arg1 converted to an xs:dateTime using the date components
+ * from the reference xs:dateTime is equal to the value of $arg2 converted to an xs:dateTime using the date components
+ * from the same reference xs:dateTime. Returns false otherwise.
+ *
+ * The two xs:dateTime values are compared using op:dateTime-equal.
+ *
+ * This function backs up the "eq", "ne", "le" and "ge" operators on xs:time values.
+ *
+ * @TODO
+ * @property op:time-equal
+ * @param valA
+ * @param valB
+ * @returns {Boolean}
+ */
 ozpIwc.policyAuth.Operations['op:time-equal'] = function(valA,valB){
-
+    return true;
 };
 
+/**
+ * 10.4.6 op:dateTime-equal
+ *
+ * op:dateTime-equal($arg1 as xs:dateTime, $arg2 as xs:dateTime) as xs:boolean
+ *
+ * Summary: Returns true if and only if the value of $arg1 is equal to the value of $arg2 according to the algorithm
+ * defined in section 3.2.7.4 of [XML Schema Part 2: Datatypes Second Edition] "Order relation on dateTime" for
+ * xs:dateTime values with timezones. Returns false otherwise.
+ * This function backs up the "eq", "ne", "le" and "ge" operators on xs:dateTime values.
+ *
+ * @TODO
+ * @property op:dateTime-equal
+ * @param valA
+ * @param valB
+ * @returns {Boolean}
+ */
 ozpIwc.policyAuth.Operations['op:dateTime-equal'] = function(valA,valB){
-
+    return true;
 };
 
+/**
+ * 10.4.5 op:duration-equal
+ *
+ * op:duration-equal($arg1 as xs:duration, $arg2 as xs:duration) as xs:boolean
+ *
+ * Summary: Returns true if and only if the xs:yearMonthDuration and the xs:dayTimeDuration components of
+ * $arg1 and $arg2 compare equal respectively. Returns false otherwise.
+ *
+ * This function backs up the "eq" and "ne" operators on xs:duration values.
+ *
+ * Note that this function, like any other, may be applied to arguments that are derived from the types given in
+ * the function signature, including the two subtypes xs:dayTimeDuration and xs:yearMonthDuration.
+ * With the exception of the zero-length duration, no instance of xs:dayTimeDuration can ever be
+ * equal to an instance of xs:yearMonthDuration.
+ *
+ * @TODO
+ * @property op:duration-equal
+ * @param valA
+ * @param valB
+ * @returns {Boolean}
+ */
 ozpIwc.policyAuth.Operations['op:duration-equal'] = function(valA,valB){
-
+    return true;
 };
 
 
@@ -7234,7 +7637,25 @@ ozpIwc.policyAuth.PDP = function(config){
  * @param {String} config.uri The uri path of where the policy is expected to be found.
  */
 ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
+    ozpIwc.util.ajax({
+        href: uri,
+        method: "GET"
+    }).then(function(resp){
 
+    })['catch'](function(er){
+        // We have to catch because onload does json.parse.... and this is xml... @TODO fix...
+        var xml = er.responseXML;
+        var policies = [];
+        for(var i  in xml.children){
+            if(xml.children[i].tagName === "Policy"){
+                policies.push(xml.children[i]);
+            }
+        }
+
+        for(var i in policies){
+            new ozpIwc.policyAuth.Policy({element: policies[i]});
+        }
+    });
 };
 
 /**
@@ -7302,84 +7723,172 @@ ozpIwc.polyAuth.policyCombining = ozpIwc.polyAuth.policyCombining || {};
 
 
 /**
- * urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides
+ *
+ *
+ * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides
  */
-ozpIwc.polyAuth.policyCombining.denyOverrides = function(){};
+ozpIwc.polyAuth.policyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides']
+    = function(){
+
+};
 
 
 /**
- * urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides
+ * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides
  */
-ozpIwc.polyAuth.policyCombining.permitOverrides = function(){};
+ozpIwc.polyAuth.policyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable
+ * @method urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable
  */
-ozpIwc.polyAuth.policyCombining.firstApplicable = function(){};
+ozpIwc.polyAuth.policyCombining['urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable
+ * @method urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable
  */
-ozpIwc.polyAuth.policyCombining.onlyOneApplicable = function(){};
+ozpIwc.polyAuth.policyCombining['urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
  */
-ozpIwc.polyAuth.policyCombining.orderedDenyOverrides = function(){};
+ozpIwc.polyAuth.policyCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides
+ * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides
  */
-ozpIwc.polyAuth.policyCombining.orderedPermitOverrides = function(){};
+ozpIwc.polyAuth.policyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit
+ * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit
  */
-ozpIwc.polyAuth.policyCombining.denyUnlessPermit = function(){};
+ozpIwc.polyAuth.policyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-unless-deny
+ * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-unless-deny
  */
-ozpIwc.polyAuth.policyCombining.permitUnlessDeny = function(){};
+ozpIwc.polyAuth.policyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-unless-deny']
+    = function(){
+
+};
 ozpIwc = ozpIwc || {};
 ozpIwc.polyAuth = ozpIwc.polyAuth || {};
 ozpIwc.polyAuth.ruleCombining = ozpIwc.polyAuth.ruleCombining || {};
 
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides
  */
-ozpIwc.polyAuth.ruleCombining.denyOverrides = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides']
+    = function(rules){
+    var atLeastOneErrorD,
+        atLeastOneErrorP,
+        atLeastOneErrorDP,
+        atLeastOnePermit = false;
+
+    for(var i in rules){
+        var decision = rules[i].evaluate();
+        switch(decision){
+            case "Deny":
+                return Deny;
+            case "Permit":
+                atLeastOnePermit = true;
+                break;
+            case "NotApplicable":
+                continue;
+            case "Indeterminate{D}":
+                atLeastOneErrorD = true;
+                break;
+            case "Indeterminate{P}":
+                atLeastOneErrorP = true;
+                break;
+            case "Indeterminate{DP}":
+                atLeastOneErrorDP = true;
+                break;
+            default:
+                continue;
+        }
+    }
+
+    if(atLeastOneErrorDP){
+        return "Indeterminate{DP}";
+    } else if(atLeastOneErrorD && (atLeastOneErrorP || atLeastOnePermit)){
+        return "Indeterminate{DP}";
+    } else if(atLeastOneErrorD){
+        return "Indeterminate{D}";
+    } else if(atLeastOnePermit) {
+        return "Permit";
+    } else if(atLeastOneErrorP){
+        return "Indeterminate{P}";
+    }
+
+    return "NotApplicable";
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides
  */
-ozpIwc.polyAuth.ruleCombining.permitOverrides = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable
+ * @method urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable
  */
-ozpIwc.polyAuth.ruleCombining.firstApplicable = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
  */
-ozpIwc.polyAuth.ruleCombining.orderedDenyOverrides = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides
  */
-ozpIwc.polyAuth.ruleCombining.orderedPermitOverrides = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit
  */
-ozpIwc.polyAuth.ruleCombining.denyUnlessPermit = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny
  */
-ozpIwc.polyAuth.ruleCombining.permitUnlessDeny = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny']
+    = function(){
+
+};
 ///** @namespace **/
 //var ozpIwc = ozpIwc || {};
 //

@@ -21,7 +21,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Request = function(config){
+ozpIwc.policyAuth.Request = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * This attribute is used to request that the PDP return a list of all fully applicable policies and policy sets
@@ -74,4 +74,4 @@ ozpIwc.policyAuth.Request = function(config){
      */
     this.multiRequests = config.multiRequests;
 
-};
+});

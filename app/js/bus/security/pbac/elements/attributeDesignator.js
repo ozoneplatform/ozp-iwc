@@ -21,7 +21,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AttributeDesignator = function(config){
+ozpIwc.policyAuth.AttributeDesignator = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * This attribute SHALL specify the Category with which to match the attribute.
@@ -67,4 +67,4 @@ ozpIwc.policyAuth.AttributeDesignator = function(config){
      * @type {Boolean}
      */
     this.mustBePresent = config.mustBePresent;
-};
+});

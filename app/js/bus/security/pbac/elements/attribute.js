@@ -12,7 +12,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Attribute = function(config){
+ozpIwc.policyAuth.Attribute = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The Attribute identifier.  A number of identifiers are reserved by XACML to denote commonly used attributes.
@@ -51,4 +51,4 @@ ozpIwc.policyAuth.Attribute = function(config){
      */
     this.attributeValue = config.AttributeValue;
 
-};
+});

@@ -18,7 +18,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Response = function(config){
+ozpIwc.policyAuth.Response = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * An authorization decision result.  See Section 5.48.
@@ -27,4 +27,4 @@ ozpIwc.policyAuth.Response = function(config){
      * @type {Array<ozpIwc.policyAuth.Result>}
      */
     this.result = config.result;
-};
+});

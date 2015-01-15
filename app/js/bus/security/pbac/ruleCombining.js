@@ -4,36 +4,98 @@ ozpIwc.polyAuth.ruleCombining = ozpIwc.polyAuth.ruleCombining || {};
 
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides
  */
-ozpIwc.polyAuth.ruleCombining.denyOverrides = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides']
+    = function(rules){
+    var atLeastOneErrorD,
+        atLeastOneErrorP,
+        atLeastOneErrorDP,
+        atLeastOnePermit = false;
+
+    for(var i in rules){
+        var decision = rules[i].evaluate();
+        switch(decision){
+            case "Deny":
+                return Deny;
+            case "Permit":
+                atLeastOnePermit = true;
+                break;
+            case "NotApplicable":
+                continue;
+            case "Indeterminate{D}":
+                atLeastOneErrorD = true;
+                break;
+            case "Indeterminate{P}":
+                atLeastOneErrorP = true;
+                break;
+            case "Indeterminate{DP}":
+                atLeastOneErrorDP = true;
+                break;
+            default:
+                continue;
+        }
+    }
+
+    if(atLeastOneErrorDP){
+        return "Indeterminate{DP}";
+    } else if(atLeastOneErrorD && (atLeastOneErrorP || atLeastOnePermit)){
+        return "Indeterminate{DP}";
+    } else if(atLeastOneErrorD){
+        return "Indeterminate{D}";
+    } else if(atLeastOnePermit) {
+        return "Permit";
+    } else if(atLeastOneErrorP){
+        return "Indeterminate{P}";
+    }
+
+    return "NotApplicable";
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides
  */
-ozpIwc.polyAuth.ruleCombining.permitOverrides = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable
+ * @method urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable
  */
-ozpIwc.polyAuth.ruleCombining.firstApplicable = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
  */
-ozpIwc.polyAuth.ruleCombining.orderedDenyOverrides = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides
  */
-ozpIwc.polyAuth.ruleCombining.orderedPermitOverrides = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit
  */
-ozpIwc.polyAuth.ruleCombining.denyUnlessPermit = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit']
+    = function(){
+
+};
 
 /**
- * urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny
  */
-ozpIwc.polyAuth.ruleCombining.permitUnlessDeny = function(){};
+ozpIwc.polyAuth.ruleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny']
+    = function(){
+
+};

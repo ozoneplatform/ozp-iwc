@@ -15,7 +15,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Result = function(config){
+ozpIwc.policyAuth.Result = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The authorization decision: “Permit”, “Deny”, “Indeterminate” or “NotApplicable”.
@@ -77,4 +77,4 @@ ozpIwc.policyAuth.Result = function(config){
      */
     this.policyIdentifierList = config.policyIdentifierList;
 
-};
+});

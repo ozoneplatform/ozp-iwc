@@ -13,7 +13,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.MissingAttributeDetail = function(config){
+ozpIwc.policyAuth.MissingAttributeDetail = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The required value of the missing attribute.
@@ -49,4 +49,4 @@ ozpIwc.policyAuth.MissingAttributeDetail = function(config){
      * @type {String}
      */
     this.issuer = config.issuer;
-};
+});

@@ -208,3 +208,89 @@ ozpIwc.util.isIWCPacket=function(packet) {
         return true;
     }
 };
+
+/**
+ * Returns true if the the given node is a direct descendant of the parent node.
+ * @method isDirectDescendant
+ * @param parent
+ * @param child
+ * @returns {boolean}
+ */
+ozpIwc.util.isDirectDescendant = function(child,parent){
+    if (child.parentNode == parent) {
+        return true;
+    }
+    return false;
+};
+
+/**
+ *
+ * @param {Object} config
+ * @param {Array<String>} config.reqAttrs
+ * @param {Array<String>} config.optAttrs
+ * @param {Array<String>} config.reqNodes
+ * @param {Array<String>} config.optNodes
+ */
+ozpIwc.util.elementParser = function(config){
+    config = config || {};
+
+    config.reqAttrs = config.reqAttrs || [];
+    config.optAttrs = config.optAttrs || [];
+    config.reqNodes = config.reqNodes || [];
+    config.optNodes = config.optNodes || [];
+
+    var element = config.element || {};
+
+    var findings = {
+        attrs: {},
+        nodes: {}
+    };
+    config.reqAttrs.forEach(function(attr){
+        var attribute = element.getAttribute(attr);
+        if(attribute){
+            console.log('Found attribute of policy,(',attr,',',attribute,')');
+            findings.attrs[attr] = attribute;
+        } else {
+            console.error('Required attribute not found,(',attr,')');
+        }
+
+    });
+
+    config.optAttrs.forEach(function(attr){
+        var attribute = element.getAttribute(attr);
+        if(attribute){
+            console.log('Found attribute of policy,(',attr,',',attribute,')');
+            findings.attrs[attr] = attribute;
+        }
+
+    });
+
+    config.reqNodes.forEach(function(tag){
+        var nodes = element.getElementsByTagName(tag);
+        findings.nodes[tag] = findings.nodes[tag] || [];
+        for(var i in nodes){
+            if(ozpIwc.util.isDirectDescendant(nodes[i],element)){
+                console.log('Found node of policy: ', nodes[i]);
+                findings.nodes[tag].push(nodes[i]);
+            }
+        }
+        if(findings.nodes[tag].length <= 0) {
+            console.error('Required node not found,(',tag,')');
+        }
+    });
+    config.optNodes.forEach(function(tag){
+        var nodes = element.getElementsByTagName(tag);
+        for(var i in nodes){
+            if(ozpIwc.util.isDirectDescendant(nodes[i],element)){
+                console.log('Found node of policy: ', nodes[i]);
+                findings.nodes[tag] = findings.nodes[tag] || [];
+                findings.nodes[tag].push(nodes[i]);
+            }
+        }
+    });
+    return findings;
+};
+
+ozpIwc.util.camelCased = function(string){
+    return string.charAt(0).toLowerCase() + string.substring(1);
+};

@@ -13,7 +13,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Attributes = function(config){
+ozpIwc.policyAuth.Attributes = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * This attribute indicates which attribute category the contained attributes belong to. The Category attribute is
@@ -48,4 +48,4 @@ ozpIwc.policyAuth.Attributes = function(config){
      * @type {Array<ozpIwc.policyAuth.Attribute>}
      */
     this.attributes = config.attributes;
-};
+});

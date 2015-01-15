@@ -17,7 +17,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.VariableDefinition = function(config){
+ozpIwc.policyAuth.VariableDefinition = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * @property expression
@@ -32,7 +32,7 @@ ozpIwc.policyAuth.VariableDefinition = function(config){
      * @type {String}
      */
     this.variableId = config.variableId;
-};
+});
 
 /**
  * The <Expression> element is not used directly in a policy.  The <Expression> element signifies that an element that

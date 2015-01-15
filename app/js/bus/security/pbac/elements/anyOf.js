@@ -12,7 +12,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AnyOf = function(config){
+ozpIwc.policyAuth.AnyOf = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The <AllOf> element SHALL contain a conjunctive sequence of <Match> elements.
@@ -20,4 +20,4 @@ ozpIwc.policyAuth.AnyOf = function(config){
      * @type {Array<ozpIwc.policyAuth.AllOf>}
      */
     this.allOf = config.allOf || [];
-};
+});

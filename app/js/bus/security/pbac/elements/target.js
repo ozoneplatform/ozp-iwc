@@ -15,7 +15,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Target = function(config){
+ozpIwc.policyAuth.Target = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * Matching specification for attributes in the context.  If this element is missing, then the target
@@ -24,4 +24,11 @@ ozpIwc.policyAuth.Target = function(config){
      * @type {Array<ozpIwc.policyAuth.AnyOf>}
      */
     this.anyOf = config.anyOf || [];
-}
+
+
+    if(config.element){
+        this.construct(config.element);
+    }
+});
+
+ozpIwc.policyAuth.Target.prototype.optionalNodes = ['AnyOf'];

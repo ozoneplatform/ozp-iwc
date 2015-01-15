@@ -12,7 +12,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.StatusCode = function(config){
+ozpIwc.policyAuth.StatusCode = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * See Section B.8 for a list of values.
@@ -28,4 +28,4 @@ ozpIwc.policyAuth.StatusCode = function(config){
      */
     this.statusCode = config.statusCode;
 
-};
+});

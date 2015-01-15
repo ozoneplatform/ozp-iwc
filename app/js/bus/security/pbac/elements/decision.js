@@ -12,7 +12,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Decision = function(config){
+ozpIwc.policyAuth.Decision = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The values of the <Decision> element have the following meanings:
@@ -27,4 +27,4 @@ ozpIwc.policyAuth.Decision = function(config){
      * @type {String}
      */
     this.decision = config.decision;
-};
+});

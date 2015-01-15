@@ -15,7 +15,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.PolicySetIdReference = function(config){
+ozpIwc.policyAuth.PolicySetIdReference = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     // parse as a URL
     if(typeof config === "string"){
@@ -49,4 +49,4 @@ ozpIwc.policyAuth.PolicySetIdReference = function(config){
     }
 
 
-};
+});

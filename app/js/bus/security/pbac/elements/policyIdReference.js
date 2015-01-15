@@ -14,7 +14,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.PolicyIdReference = function(config){
+ozpIwc.policyAuth.PolicyIdReference = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     // parse as a URL
     // @TODO validate the URL
@@ -27,4 +27,4 @@ ozpIwc.policyAuth.PolicyIdReference = function(config){
        @TODO Throw error that the reference wasn't a valid URL?
       */
     }
-};
+});

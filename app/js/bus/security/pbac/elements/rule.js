@@ -22,7 +22,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  *
  * @constructor
  */
-ozpIwc.policyAuth.Rule = function(config){
+ozpIwc.policyAuth.Rule = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     config=config || {};
 
     /**
@@ -78,8 +78,14 @@ ozpIwc.policyAuth.Rule = function(config){
      */
     this.advices = config.advices || [];
 
-};
+    if(config.element){
+        this.construct(config.element);
+        this.setEffect(this.effect);
+    }
+});
 
+ozpIwc.policyAuth.Rule.prototype.requiredAttributes = ['RuleId', 'Effect'];
+ozpIwc.policyAuth.Rule.prototype.optionalNodes = ['Description','Target','Condition','ObligationExpressions','AdviceExpressions'];
 
 /**
  * 3.3.1.2 Effect

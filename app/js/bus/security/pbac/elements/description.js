@@ -11,10 +11,10 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @returns {*}
  * @constructor
  */
-ozpIwc.policyAuth.Description = function(string){
-    var ret = string;
-    if(typeof ret !== "string"){
-        ret = JSON.stringify(string);
+ozpIwc.policyAuth.Description = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
+    this.value = config.value || "";
+
+    if(config.element.textContent){
+        this.value = config.element.textContent;
     }
-    return ret;
-};
+});

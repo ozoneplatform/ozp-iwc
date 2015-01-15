@@ -41,7 +41,25 @@ ozpIwc.policyAuth.PDP = function(config){
  * @param {String} config.uri The uri path of where the policy is expected to be found.
  */
 ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
+    ozpIwc.util.ajax({
+        href: uri,
+        method: "GET"
+    }).then(function(resp){
 
+    })['catch'](function(er){
+        // We have to catch because onload does json.parse.... and this is xml... @TODO fix...
+        var xml = er.responseXML;
+        var policies = [];
+        for(var i  in xml.children){
+            if(xml.children[i].tagName === "Policy"){
+                policies.push(xml.children[i]);
+            }
+        }
+
+        for(var i in policies){
+            new ozpIwc.policyAuth.Policy({element: policies[i]});
+        }
+    });
 };
 
 /**

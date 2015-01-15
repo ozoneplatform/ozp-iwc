@@ -18,7 +18,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.VariableReference = function(config){
+ozpIwc.policyAuth.VariableReference = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The name used to refer to the value defined in a <VariableDefinition> element.
@@ -27,4 +27,4 @@ ozpIwc.policyAuth.VariableReference = function(config){
      */
     this.variableId = config.variableId;
 
-};
+});

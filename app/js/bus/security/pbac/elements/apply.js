@@ -14,7 +14,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Apply = function(config){
+ozpIwc.policyAuth.Apply = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The identifier of the function to be applied to the arguments.
@@ -41,4 +41,4 @@ ozpIwc.policyAuth.Apply = function(config){
      * @default null
      */
     this.expression = config.expression;
-};
+});

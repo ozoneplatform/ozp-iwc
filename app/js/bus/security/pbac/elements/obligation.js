@@ -14,7 +14,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Obligation = function(config){
+ozpIwc.policyAuth.Obligation = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     /**
      * Obligation identifier.  The value of the obligation identifier SHALL be interpreted by the PEP.
      * @property obligationId
@@ -30,4 +30,4 @@ ozpIwc.policyAuth.Obligation = function(config){
      * @type {ozpIwc.policyAuth.AttributeAssignment}
      */
     this.attributeAssignment = config.attributeAssignment;
-};
+});

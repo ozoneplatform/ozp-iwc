@@ -12,8 +12,8 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Content = function(config){
+ozpIwc.policyAuth.Content = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     /**
      * The <Content> element has exactly one arbitrary type child element.
      */
-};
+});

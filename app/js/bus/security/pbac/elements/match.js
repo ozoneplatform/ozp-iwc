@@ -13,7 +13,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Match = function(config){
+ozpIwc.policyAuth.Match = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * Specifies a matching function.  The value of this attribute MUST be of type xs:anyURI
@@ -48,4 +48,4 @@ ozpIwc.policyAuth.Match = function(config){
     this.attributeSelector = config.attributeSelector;
 
 
-};
+});

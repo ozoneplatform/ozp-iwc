@@ -9,7 +9,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.Condition = function(config){
+ozpIwc.policyAuth.Condition = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The <Condition> contains one <Expression> element, with the restriction that the <Expression> return data-type
@@ -21,4 +21,4 @@ ozpIwc.policyAuth.Condition = function(config){
      * @default null
      */
     this.expression = config.expression;
-};
+});

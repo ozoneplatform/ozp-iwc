@@ -12,7 +12,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.ObligationExpressions = function(config){
+ozpIwc.policyAuth.ObligationExpressions = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * A sequence of obligation expressions.  See Section 5.39.
@@ -22,4 +22,4 @@ ozpIwc.policyAuth.ObligationExpressions = function(config){
      */
     this.obligationExpressions = config.obligationExpressions;
 
-};
+});

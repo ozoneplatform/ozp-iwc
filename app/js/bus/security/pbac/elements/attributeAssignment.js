@@ -17,7 +17,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param {Object} config
  * @constructor
  */
-ozpIwc.policyAuth.AttributeAssignment = function(config){
+ozpIwc.policyAuth.AttributeAssignment = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The attribute Identifier.
@@ -49,4 +49,4 @@ ozpIwc.policyAuth.AttributeAssignment = function(config){
      * @default null
      */
     this.issuer = config.issuer;
-};
+});

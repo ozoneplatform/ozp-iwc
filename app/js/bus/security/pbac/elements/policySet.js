@@ -13,7 +13,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.PolicySet = function(config){
+ozpIwc.policyAuth.PolicySet = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     config=config || {};
 
     /**
@@ -105,4 +105,4 @@ ozpIwc.policyAuth.PolicySet = function(config){
      * @default []
      */
     this.advices = config.advices || [];
-};
+});

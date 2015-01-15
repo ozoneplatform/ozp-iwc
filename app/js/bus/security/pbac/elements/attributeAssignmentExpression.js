@@ -11,7 +11,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AttributeAssignmentExpression = function(config){
+ozpIwc.policyAuth.AttributeAssignmentExpression = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      *The expression which evaluates to a constant attribute value or a bag of zero or more attribute values.
@@ -45,4 +45,4 @@ ozpIwc.policyAuth.AttributeAssignmentExpression = function(config){
      * @type {String}
      */
     this.issuer = config.issuer;
-};
+});

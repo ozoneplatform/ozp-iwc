@@ -12,7 +12,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AssociatedAdvice = function(config){
+ozpIwc.policyAuth.AssociatedAdvice = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
     /**
      * A sequence of advice.  See Section 5.35.
      * @property advice
@@ -20,4 +20,4 @@ ozpIwc.policyAuth.AssociatedAdvice = function(config){
      * @default null
      */
     this.advice = config.advice
-};
+});
