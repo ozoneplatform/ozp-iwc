@@ -20,4 +20,23 @@ ozpIwc.policyAuth.AnyOf = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,funct
      * @type {Array<ozpIwc.policyAuth.AllOf>}
      */
     this.allOf = config.allOf || [];
+    if(config.element){
+        this.construct(config.element);
+    }
 });
+
+ozpIwc.policyAuth.AnyOf.prototype.any = function(request){
+    //@TODO : is True if no allOf's? Is that a global all?
+    if(this.allOf.length === 0 ){
+        return true;
+    }
+    var any = false;
+    for(var i in this.allOf){
+        if(this.allOf[i].all(request)){
+            any = true;
+        }
+    }
+    return any;
+};
+
+ozpIwc.policyAuth.AnyOf.prototype.requiredNodes = ['AllOf'];

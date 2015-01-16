@@ -67,7 +67,7 @@ ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
      * @type Array<ozpIwc.policyAuth.Rule>
      * @default []
      */
-    this.rules = config.rules || [];
+    this.rule = config.rule || [];
 
     /**
      * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
@@ -93,6 +93,17 @@ ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
     }
 
 });
+
+/**
+ * @property evaluate
+ * @param request
+ */
+ozpIwc.policyAuth.Policy.prototype.evaluate = function(request){
+    if(this.target.isTargeted(request)){
+
+    }
+};
+
 
 ozpIwc.policyAuth.Policy.prototype.requiredAttributes = ['PolicyId', 'Version', 'RuleCombiningAlgId'];
 ozpIwc.policyAuth.Policy.prototype.requiredNodes = ['Target'];

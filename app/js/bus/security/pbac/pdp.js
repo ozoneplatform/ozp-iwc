@@ -25,10 +25,7 @@ ozpIwc.policyAuth.PDP = function(config){
      * @TODO define how desired policies will be loaded in from the back-end
      * @property policies
      */
-    this.policies= config.policies || [
-        ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes,
-        ozpIwc.abacPolicies.subjectHasAllObjectAttributes
-    ];
+    this.policies= config.policies || [];
 };
 
 /**
@@ -41,23 +38,23 @@ ozpIwc.policyAuth.PDP = function(config){
  * @param {String} config.uri The uri path of where the policy is expected to be found.
  */
 ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
-    ozpIwc.util.ajax({
+    var self = this;
+    return ozpIwc.util.ajax({
         href: uri,
         method: "GET"
     }).then(function(resp){
-
-    })['catch'](function(er){
+        var response = resp.response;
         // We have to catch because onload does json.parse.... and this is xml... @TODO fix...
-        var xml = er.responseXML;
         var policies = [];
-        for(var i  in xml.children){
-            if(xml.children[i].tagName === "Policy"){
-                policies.push(xml.children[i]);
+        for(var i in response.children){
+            if(response.children[i].tagName === "Policy"){
+                policies.push(response.children[i]);
             }
         }
 
         for(var i in policies){
-            new ozpIwc.policyAuth.Policy({element: policies[i]});
+            var policy = new ozpIwc.policyAuth.Policy({element: policies[i]});
+            self.policies.push(policy);
         }
     });
 };
@@ -69,11 +66,11 @@ ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
  * @param request
  * @returns {Promise}
  */
-ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request){
+ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request) {
 	var action=new ozpIwc.AsyncAction();
 
     var result=this.policies.some(function(policy) {
-        return policy.call(this,request)==="permit";
+        return policy.evaluate(this,request)==="permit";
     },this);
 
 

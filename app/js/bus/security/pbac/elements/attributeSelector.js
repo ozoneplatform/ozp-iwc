@@ -21,7 +21,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AttributeDesignator = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
+ozpIwc.policyAuth.AttributeSelector = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * This attribute SHALL specify the Category with which to match the attribute.
@@ -33,13 +33,18 @@ ozpIwc.policyAuth.AttributeDesignator = ozpIwc.util.extend(ozpIwc.policyAuth.Bas
     this.category = config.category;
 
     /**
-     * This attribute SHALL specify the AttributeId with which to match the attribute.
-     *  type='xs:anyURI'
+     * This attribute refers to the attribute (by its AttributeId) in the request context in the category given by the
+     * Category attribute. The referenced attribute MUST have data type
+     * urn:oasis:names:tc:xacml:3.0:data-type:xpathExpression, and must select a single node in the <Content> element.
+     * The XPathCategory attribute of the referenced attribute MUST be equal to the Category attribute of the
+     * attribute selector.
      *
-     * @property attributeId
+     * @property contextSelectorId
      * @type {String}
+     * @default null
      */
-    this.attributeId = config.attributeId;
+    this.contextSelectorId = config.contextSelectorId;
+
 
     /**
      * The bag returned by the <AttributeDesignator> element SHALL contain values of this data-type.
@@ -50,14 +55,16 @@ ozpIwc.policyAuth.AttributeDesignator = ozpIwc.util.extend(ozpIwc.policyAuth.Bas
      */
     this.dataType = config.dataType;
 
+
     /**
-     * This attribute, if supplied, SHALL specify the Issuer with which to match the attribute.
-     *  type='xs:anyURI'
+     * This attribute SHALL contain an XPath expression to be evaluated against the specified XML content.
+     * See Section 7.3.7 for details of the XPath evaluation during <AttributeSelector> processing.
      *
-     * @property category
+     * @property path
      * @type {String}
+     * @default null
      */
-    this.issuer = config.issuer;
+    this.path = config.path;
 
     /**
      * This attribute governs whether the element returns “Indeterminate” or an empty bag in the event the named
@@ -73,36 +80,6 @@ ozpIwc.policyAuth.AttributeDesignator = ozpIwc.util.extend(ozpIwc.policyAuth.Bas
     }
 });
 
-/**
- * A named attribute SHALL match an attribute if the values of their respective Category, AttributeId, DataType and
- * Issuer attributes match. The attribute designator’s Category MUST match, by identifier equality, the Category of
- * the <Attributes> element in which the attribute is present. The attribute designator’s AttributeId MUST match, by
- * identifier equality, the AttributeId of the attribute.  The attribute designator’s DataType MUST match, by
- * identifier equality, the DataType of the same attribute.
- *
- * @method designate
- * @param {Object}request
- * @returns {Array}
- */
-ozpIwc.policyAuth.AttributeDesignator.prototype.designate = function(request){
-    if(!request.attributes){
-        return [];
-    }
-    var bag = [];
-    for(var i in request.attributes){
-        if(request.attributes[i].category === this.category){
-            for(var j in request.attributes[i].attribute){
-                if(request.attributes[i].attribute[j].attributeId === this.attributeId &&
-                   request.attributes[i].attribute[j].dataType === this.dataType &&
-                   request.attributes[i].attribute[j].issuer === this.issuer){
-                    bag.push[request.attributes[i].attribute[j]];
-                }
-            }
-        }
-    }
-    return bag;
-
-}
-ozpIwc.policyAuth.AttributeDesignator.prototype.requiredAttributes = ['Category', 'AttributeId',
+ozpIwc.policyAuth.AttributeSelector.prototype.requiredAttributes = ['Category', 'Path',
                                                                       'DataType','MustBePresent'];
-ozpIwc.policyAuth.AttributeDesignator.prototype.optionalAttributes = ['Issuer'];
+ozpIwc.policyAuth.AttributeSelector.prototype.optionalAttributes = ['ContextSelectorId'];

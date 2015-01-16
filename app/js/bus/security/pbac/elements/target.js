@@ -31,4 +31,18 @@ ozpIwc.policyAuth.Target = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
     }
 });
 
+
+
+/**
+ * Determines if the given  target meets the criteria of the request
+ *   For the parent of the <Target> element to be applicable to the decision request, there MUST be at least one
+ *   positive match between each <AnyOf> element of the <Target> element and the corresponding section of the <Request> element.
+ * @method isTargeted
+ * @param {Object} request
+ * @returns {Boolean}
+ */
+ozpIwc.policyAuth.Target.prototype.isTargeted = function(request){
+    return this.anyOf.any(request);
+};
+
 ozpIwc.policyAuth.Target.prototype.optionalNodes = ['AnyOf'];

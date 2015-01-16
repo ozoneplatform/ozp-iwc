@@ -21,5 +21,27 @@ ozpIwc.policyAuth.AllOf = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,funct
      * @property allOf
      * @type {Array<ozpIwc.policyAuth.Match>}
      */
-    this.match = config.allOf || [];
+    this.match = config.match || [];
+    if(config.element){
+        this.construct(config.element);
+    }
 });
+
+/**
+ * Determines if the request meets the criteria of this AllOf element.
+ * Returns true IF AND ONLY IF all match tests return true.
+ *
+ * @method all
+ * @param {Object} request
+ * @returns {Boolean}
+ */
+ozpIwc.policyAuth.AllOf.prototype.all = function(request){
+    for(var i in this.match){
+        if(!this.match[i](request)){
+            return false;
+        }
+    }
+    return true;
+};
+
+ozpIwc.policyAuth.AllOf.prototype.requiredNodes = ['Match'];

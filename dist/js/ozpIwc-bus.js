@@ -4707,12 +4707,17 @@ ozpIwc.util.ajax = function (config) {
                 });
             }
             catch (e) {
-                if(this.status === 204 && !this.responseText){
+                if(this.status === 200 && this.responseXML){
                     resolve({
-                        "response": {},
+                        "response": this.responseXML,
                         "header":  ozpIwc.util.ajaxResponseHeaderToJSON(this.getAllResponseHeaders())
                     });
-                } else {
+                } else if(this.status === 204 && !this.responseText) {
+                    resolve({
+                        "response": {},
+                        "header": ozpIwc.util.ajaxResponseHeaderToJSON(this.getAllResponseHeaders())
+                    });
+                }  else {
                     reject(this);
                 }
             }
@@ -5836,9 +5841,30 @@ ozpIwc.policyAuth.AllOf = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,funct
      * @property allOf
      * @type {Array<ozpIwc.policyAuth.Match>}
      */
-    this.match = config.allOf || [];
+    this.match = config.match || [];
+    if(config.element){
+        this.construct(config.element);
+    }
 });
 
+/**
+ * Determines if the request meets the criteria of this AllOf element.
+ * Returns true IF AND ONLY IF all match tests return true.
+ *
+ * @method all
+ * @param {Object} request
+ * @returns {Boolean}
+ */
+ozpIwc.policyAuth.AllOf.prototype.all = function(request){
+    for(var i in this.match){
+        if(!this.match[i](request)){
+            return false;
+        }
+    }
+    return true;
+};
+
+ozpIwc.policyAuth.AllOf.prototype.requiredNodes = ['Match'];
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -5861,7 +5887,26 @@ ozpIwc.policyAuth.AnyOf = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,funct
      * @type {Array<ozpIwc.policyAuth.AllOf>}
      */
     this.allOf = config.allOf || [];
+    if(config.element){
+        this.construct(config.element);
+    }
 });
+
+ozpIwc.policyAuth.AnyOf.prototype.any = function(request){
+    //@TODO : is True if no allOf's? Is that a global all?
+    if(this.allOf.length === 0 ){
+        return true;
+    }
+    var any = false;
+    for(var i in this.allOf){
+        if(this.allOf[i].all(request)){
+            any = true;
+        }
+    }
+    return any;
+};
+
+ozpIwc.policyAuth.AnyOf.prototype.requiredNodes = ['AllOf'];
 
 ozpIwc = ozpIwc || {};
 
@@ -6155,8 +6200,130 @@ ozpIwc.policyAuth.AttributeDesignator = ozpIwc.util.extend(ozpIwc.policyAuth.Bas
      * @type {Boolean}
      */
     this.mustBePresent = config.mustBePresent;
+
+    if(config.element){
+        this.construct(config.element);
+    }
 });
 
+/**
+ * A named attribute SHALL match an attribute if the values of their respective Category, AttributeId, DataType and
+ * Issuer attributes match. The attribute designator’s Category MUST match, by identifier equality, the Category of
+ * the <Attributes> element in which the attribute is present. The attribute designator’s AttributeId MUST match, by
+ * identifier equality, the AttributeId of the attribute.  The attribute designator’s DataType MUST match, by
+ * identifier equality, the DataType of the same attribute.
+ *
+ * @method designate
+ * @param {Object}request
+ * @returns {Array}
+ */
+ozpIwc.policyAuth.AttributeDesignator.prototype.designate = function(request){
+    if(!request.attributes){
+        return [];
+    }
+    var bag = [];
+    for(var i in request.attributes){
+        if(request.attributes[i].category === this.category){
+            for(var j in request.attributes[i].attribute){
+                if(request.attributes[i].attribute[j].attributeId === this.attributeId &&
+                   request.attributes[i].attribute[j].dataType === this.dataType &&
+                   request.attributes[i].attribute[j].issuer === this.issuer){
+                    bag.push[request.attributes[i].attribute[j]];
+                }
+            }
+        }
+    }
+    return bag;
+
+}
+ozpIwc.policyAuth.AttributeDesignator.prototype.requiredAttributes = ['Category', 'AttributeId',
+                                                                      'DataType','MustBePresent'];
+ozpIwc.policyAuth.AttributeDesignator.prototype.optionalAttributes = ['Issuer'];
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * The <AttributeDesignator> element retrieves a bag of values for a named attribute from the request context.
+ * A named attribute SHALL be considered present if there is at least one attribute that matches the
+ * criteria set out below.
+ *
+ * The <AttributeDesignator> element SHALL return a bag containing all the attribute values that are matched by the
+ * named attribute. In the event that no matching attribute is present in the context, the MustBePresent attribute
+ * governs whether this element returns an empty bag or “Indeterminate”.  See Section 7.3.5.
+ *
+ * The <AttributeDesignator> MAY appear in the <Match> element and MAY be passed to the <Apply> element as an argument.
+ *
+ * The <AttributeDesignator> element is of the AttributeDesignatorType complex type.
+ *
+ *
+ * @class AttributeDesignator
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.AttributeSelector = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
+
+    /**
+     * This attribute SHALL specify the Category with which to match the attribute.
+     *  type='xs:anyURI'
+     *
+     * @property category
+     * @type {String}
+     */
+    this.category = config.category;
+
+    /**
+     * This attribute refers to the attribute (by its AttributeId) in the request context in the category given by the
+     * Category attribute. The referenced attribute MUST have data type
+     * urn:oasis:names:tc:xacml:3.0:data-type:xpathExpression, and must select a single node in the <Content> element.
+     * The XPathCategory attribute of the referenced attribute MUST be equal to the Category attribute of the
+     * attribute selector.
+     *
+     * @property contextSelectorId
+     * @type {String}
+     * @default null
+     */
+    this.contextSelectorId = config.contextSelectorId;
+
+
+    /**
+     * The bag returned by the <AttributeDesignator> element SHALL contain values of this data-type.
+     *  type='xs:anyURI'
+     *
+     * @property dataType
+     * @type {String}
+     */
+    this.dataType = config.dataType;
+
+
+    /**
+     * This attribute SHALL contain an XPath expression to be evaluated against the specified XML content.
+     * See Section 7.3.7 for details of the XPath evaluation during <AttributeSelector> processing.
+     *
+     * @property path
+     * @type {String}
+     * @default null
+     */
+    this.path = config.path;
+
+    /**
+     * This attribute governs whether the element returns “Indeterminate” or an empty bag in the event the named
+     * attribute is absent from the request context.  See Section 7.3.5.  Also see Sections 7.19.2 and 7.19.3.
+     *
+     * @property category
+     * @type {Boolean}
+     */
+    this.mustBePresent = config.mustBePresent;
+
+    if(config.element){
+        this.construct(config.element);
+    }
+});
+
+ozpIwc.policyAuth.AttributeSelector.prototype.requiredAttributes = ['Category', 'Path',
+                                                                      'DataType','MustBePresent'];
+ozpIwc.policyAuth.AttributeSelector.prototype.optionalAttributes = ['ContextSelectorId'];
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6191,7 +6358,7 @@ ozpIwc.policyAuth.Obligations = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AttributeValue = function(config){
+ozpIwc.policyAuth.AttributeValue = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The data-type of the attribute value.
@@ -6200,9 +6367,13 @@ ozpIwc.policyAuth.AttributeValue = function(config){
      * @default null
      */
     this.dataType = config.dataType;
-};
 
+    if(config.element){
+        this.construct(config.element);
+    }
+});
 
+ozpIwc.policyAuth.AttributeValue.prototype.requiredAttributes = ['DataType'];
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6421,8 +6592,42 @@ ozpIwc.policyAuth.Match = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,funct
      */
     this.attributeSelector = config.attributeSelector;
 
-
+    if(config.element){
+        this.construct(config.element);
+    }
 });
+
+/**
+ * Evaluates the given match statement against the request object with this match element's matching function.
+ *
+ * @method evaluate
+ * @param {Object}request
+ * @returns {Boolean}
+ */
+ozpIwc.policyAuth.Match.prototype.evaluate = function(request){
+    // If the matching function specified is not available force a failing match.
+    // @TODO Determine if this is proper behavior.
+    if(!ozpIwc.policyAuth.Functions[this.matchId]){
+        return false;
+    }
+    var values = [];
+
+    if(this.attributeDesignator){
+        values = this.attributeDesignator.designate(request);
+    }
+    for(var i in value){
+        if(!ozpIwc.policyAuth.Functions[this.matchId](this.AttributeValue,value[i])){
+            return false;
+        }
+    }
+    return true;
+};
+
+ozpIwc.policyAuth.Match.prototype.requiredAttributes = ['MatchId'];
+ozpIwc.policyAuth.Match.prototype.requiredNodes = ['AttributeValue'];
+
+//@TODO one of these 2 optional nodes must be present. how should we address this?
+ozpIwc.policyAuth.Match.prototype.optionalNodes = ['AttributeDesignator', 'AttributeSelector'];
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6628,7 +6833,7 @@ ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
      * @type Array<ozpIwc.policyAuth.Rule>
      * @default []
      */
-    this.rules = config.rules || [];
+    this.rule = config.rule || [];
 
     /**
      * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
@@ -6654,6 +6859,17 @@ ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
     }
 
 });
+
+/**
+ * @property evaluate
+ * @param request
+ */
+ozpIwc.policyAuth.Policy.prototype.evaluate = function(request){
+    if(this.target.isTargeted(request)){
+
+    }
+};
+
 
 ozpIwc.policyAuth.Policy.prototype.requiredAttributes = ['PolicyId', 'Version', 'RuleCombiningAlgId'];
 ozpIwc.policyAuth.Policy.prototype.requiredNodes = ['Target'];
@@ -7252,6 +7468,20 @@ ozpIwc.policyAuth.Target = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
     }
 });
 
+
+
+/**
+ * Determines if the given  target meets the criteria of the request
+ *   For the parent of the <Target> element to be applicable to the decision request, there MUST be at least one
+ *   positive match between each <AnyOf> element of the <Target> element and the corresponding section of the <Request> element.
+ * @method isTargeted
+ * @param {Object} request
+ * @returns {Boolean}
+ */
+ozpIwc.policyAuth.Target.prototype.isTargeted = function(request){
+    return this.anyOf.any(request);
+};
+
 ozpIwc.policyAuth.Target.prototype.optionalNodes = ['AnyOf'];
 ozpIwc = ozpIwc || {};
 
@@ -7621,10 +7851,7 @@ ozpIwc.policyAuth.PDP = function(config){
      * @TODO define how desired policies will be loaded in from the back-end
      * @property policies
      */
-    this.policies= config.policies || [
-        ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes,
-        ozpIwc.abacPolicies.subjectHasAllObjectAttributes
-    ];
+    this.policies= config.policies || [];
 };
 
 /**
@@ -7637,23 +7864,23 @@ ozpIwc.policyAuth.PDP = function(config){
  * @param {String} config.uri The uri path of where the policy is expected to be found.
  */
 ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
-    ozpIwc.util.ajax({
+    var self = this;
+    return ozpIwc.util.ajax({
         href: uri,
         method: "GET"
     }).then(function(resp){
-
-    })['catch'](function(er){
+        var response = resp.response;
         // We have to catch because onload does json.parse.... and this is xml... @TODO fix...
-        var xml = er.responseXML;
         var policies = [];
-        for(var i  in xml.children){
-            if(xml.children[i].tagName === "Policy"){
-                policies.push(xml.children[i]);
+        for(var i in response.children){
+            if(response.children[i].tagName === "Policy"){
+                policies.push(response.children[i]);
             }
         }
 
         for(var i in policies){
-            new ozpIwc.policyAuth.Policy({element: policies[i]});
+            var policy = new ozpIwc.policyAuth.Policy({element: policies[i]});
+            self.policies.push(policy);
         }
     });
 };
@@ -7665,11 +7892,11 @@ ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
  * @param request
  * @returns {Promise}
  */
-ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request){
+ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request) {
 	var action=new ozpIwc.AsyncAction();
 
     var result=this.policies.some(function(policy) {
-        return policy.call(this,request)==="permit";
+        return policy.evaluate(this,request)==="permit";
     },this);
 
 

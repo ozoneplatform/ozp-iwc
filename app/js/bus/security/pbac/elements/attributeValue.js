@@ -32,7 +32,7 @@ ozpIwc.policyAuth.Obligations = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement
  * @param config
  * @constructor
  */
-ozpIwc.policyAuth.AttributeValue = function(config){
+ozpIwc.policyAuth.AttributeValue = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
 
     /**
      * The data-type of the attribute value.
@@ -41,5 +41,10 @@ ozpIwc.policyAuth.AttributeValue = function(config){
      * @default null
      */
     this.dataType = config.dataType;
-};
 
+    if(config.element){
+        this.construct(config.element);
+    }
+});
+
+ozpIwc.policyAuth.AttributeValue.prototype.requiredAttributes = ['DataType'];

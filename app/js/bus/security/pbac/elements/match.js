@@ -47,5 +47,39 @@ ozpIwc.policyAuth.Match = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,funct
      */
     this.attributeSelector = config.attributeSelector;
 
-
+    if(config.element){
+        this.construct(config.element);
+    }
 });
+
+/**
+ * Evaluates the given match statement against the request object with this match element's matching function.
+ *
+ * @method evaluate
+ * @param {Object}request
+ * @returns {Boolean}
+ */
+ozpIwc.policyAuth.Match.prototype.evaluate = function(request){
+    // If the matching function specified is not available force a failing match.
+    // @TODO Determine if this is proper behavior.
+    if(!ozpIwc.policyAuth.Functions[this.matchId]){
+        return false;
+    }
+    var values = [];
+
+    if(this.attributeDesignator){
+        values = this.attributeDesignator.designate(request);
+    }
+    for(var i in value){
+        if(!ozpIwc.policyAuth.Functions[this.matchId](this.AttributeValue,value[i])){
+            return false;
+        }
+    }
+    return true;
+};
+
+ozpIwc.policyAuth.Match.prototype.requiredAttributes = ['MatchId'];
+ozpIwc.policyAuth.Match.prototype.requiredNodes = ['AttributeValue'];
+
+//@TODO one of these 2 optional nodes must be present. how should we address this?
+ozpIwc.policyAuth.Match.prototype.optionalNodes = ['AttributeDesignator', 'AttributeSelector'];
