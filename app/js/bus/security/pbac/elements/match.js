@@ -59,7 +59,7 @@ ozpIwc.policyAuth.Match = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,funct
  * @param {Object}request
  * @returns {Boolean}
  */
-ozpIwc.policyAuth.Match.prototype.evaluate = function(request){
+ozpIwc.policyAuth.Match.prototype.match = function(request){
     // If the matching function specified is not available force a failing match.
     // @TODO Determine if this is proper behavior.
     if(!ozpIwc.policyAuth.Functions[this.matchId]){
@@ -70,8 +70,11 @@ ozpIwc.policyAuth.Match.prototype.evaluate = function(request){
     if(this.attributeDesignator){
         values = this.attributeDesignator.designate(request);
     }
-    for(var i in value){
-        if(!ozpIwc.policyAuth.Functions[this.matchId](this.AttributeValue,value[i])){
+    if(values.length === 0){
+        return false;
+    }
+    for(var i in values){
+        if(!ozpIwc.policyAuth.Functions[this.matchId](this.attributeValue.value,values[i].value)){
             return false;
         }
     }

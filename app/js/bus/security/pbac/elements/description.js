@@ -15,6 +15,6 @@ ozpIwc.policyAuth.Description = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement
     this.value = config.value || "";
 
     if(config.element.textContent){
-        this.value = config.element.textContent;
+        this.value = config.element.textContent.trim();
     }
 });

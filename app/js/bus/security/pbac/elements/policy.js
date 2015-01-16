@@ -100,7 +100,9 @@ ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
  */
 ozpIwc.policyAuth.Policy.prototype.evaluate = function(request){
     if(this.target.isTargeted(request)){
-
+        return ozpIwc.policyAuth.RuleCombining[this.ruleCombiningAlgId](this.rule,request);
+    } else {
+        return "Deny";
     }
 };
 

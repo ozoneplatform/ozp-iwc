@@ -70,7 +70,7 @@ ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request) {
 	var action=new ozpIwc.AsyncAction();
 
     var result=this.policies.some(function(policy) {
-        return policy.evaluate(this,request)==="permit";
+        return policy.evaluate(request)==="Permit";
     },this);
 
 

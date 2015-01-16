@@ -36,8 +36,11 @@ ozpIwc.policyAuth.AllOf = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,funct
  * @returns {Boolean}
  */
 ozpIwc.policyAuth.AllOf.prototype.all = function(request){
+    if(this.match.length === 0){
+        return true;
+    }
     for(var i in this.match){
-        if(!this.match[i](request)){
+        if(!this.match[i].match(request)){
             return false;
         }
     }

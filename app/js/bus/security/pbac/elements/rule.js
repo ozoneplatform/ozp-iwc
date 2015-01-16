@@ -108,3 +108,13 @@ ozpIwc.policyAuth.Rule.prototype.setEffect = function(effect){
     }
 };
 
+
+ozpIwc.policyAuth.Rule.prototype.evaluate = function(request){
+
+    if(this.target.isTargeted(request)) {
+        return this.effect;
+    } else {
+        return (this.effect === "Permit") ? "Deny" : "Permit";
+    }
+};
+

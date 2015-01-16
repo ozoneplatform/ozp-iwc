@@ -44,6 +44,8 @@ ozpIwc.policyAuth.AttributeValue = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElem
 
     if(config.element){
         this.construct(config.element);
+        //@TODO this is stringed, parse?
+        this.value = config.element.textContent.trim();
     }
 });
 

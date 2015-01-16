@@ -95,7 +95,7 @@ ozpIwc.policyAuth.AttributeDesignator.prototype.designate = function(request){
                 if(request.attributes[i].attribute[j].attributeId === this.attributeId &&
                    request.attributes[i].attribute[j].dataType === this.dataType &&
                    request.attributes[i].attribute[j].issuer === this.issuer){
-                    bag.push[request.attributes[i].attribute[j]];
+                    bag.push(request.attributes[i].attribute[j]);
                 }
             }
         }

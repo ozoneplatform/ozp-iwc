@@ -42,7 +42,14 @@ ozpIwc.policyAuth.Target = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
  * @returns {Boolean}
  */
 ozpIwc.policyAuth.Target.prototype.isTargeted = function(request){
-    return this.anyOf.any(request);
+    //@TODO : is True if no anyOf's? Is that a global all?
+    for(var i in this.anyOf){
+        if(!this.anyOf[i].any(request)){
+            return false;
+        }
+    }
+    return true;
+
 };
 
 ozpIwc.policyAuth.Target.prototype.optionalNodes = ['AnyOf'];
