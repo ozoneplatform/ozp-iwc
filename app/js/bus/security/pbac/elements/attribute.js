@@ -49,6 +49,6 @@ ozpIwc.policyAuth.Attribute = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,f
      * @property attributeValue
      * @type {Array<ozpIwc.policyAuth.AttributeValue>}
      */
-    this.attributeValue = config.AttributeValue;
+    this.attributeValue = config.attributeValue || [];
 
 });

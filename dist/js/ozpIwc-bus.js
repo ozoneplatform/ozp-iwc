@@ -5867,7 +5867,7 @@ ozpIwc.policyAuth.AllOf.prototype.all = function(request){
     return true;
 };
 
-ozpIwc.policyAuth.AllOf.prototype.requiredNodes = ['Match'];
+ozpIwc.policyAuth.AllOf.prototype.optionalNodes = ['Match'];
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -6030,7 +6030,7 @@ ozpIwc.policyAuth.Attribute = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,f
      * @property attributeValue
      * @type {Array<ozpIwc.policyAuth.AttributeValue>}
      */
-    this.attributeValue = config.AttributeValue;
+    this.attributeValue = config.attributeValue || [];
 
 });
 ozpIwc = ozpIwc || {};

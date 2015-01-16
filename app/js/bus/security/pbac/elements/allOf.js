@@ -47,4 +47,4 @@ ozpIwc.policyAuth.AllOf.prototype.all = function(request){
     return true;
 };
 
-ozpIwc.policyAuth.AllOf.prototype.requiredNodes = ['Match'];
+ozpIwc.policyAuth.AllOf.prototype.optionalNodes = ['Match'];
