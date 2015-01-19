@@ -22,7 +22,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @constructor
  */
 ozpIwc.policyAuth.Request = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
+    config = config || {};
     /**
      * This attribute is used to request that the PDP return a list of all fully applicable policies and policy sets
      * which were used in the decision as a part of the decision response.
@@ -62,7 +62,7 @@ ozpIwc.policyAuth.Request = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,fun
      * @property attributes
      * @type {Array<ozpIwc.policyAuth.Attributes>}
      */
-    this.attributes = config.attributes;
+    this.attributes = config.attributes || [];
 
     /**
      * Lists multiple request contexts by references to the <Attributes> elements. Implementation of this element is
@@ -75,3 +75,64 @@ ozpIwc.policyAuth.Request = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,fun
     this.multiRequests = config.multiRequests;
 
 });
+ozpIwc.policyAuth.Request.prototype.isValidAttribute = function(attribute){
+    if(attribute.dataType && attribute.value){
+        return true;
+    }
+    return false;
+};
+
+ozpIwc.policyAuth.Request.prototype.addAttribute = function(category,attribute){
+    var index;
+    for(var  i in this.attributes){
+        if(this.attributes[i].category === category) {
+            index = i;
+            if(this.isValidAttribute(attribute)) {
+                this.attributes[i].attribute.push(attribute);
+            }
+            break;
+        }
+    }
+    if(!index){
+        if(this.isValidAttribute(attribute)) {
+            this.attributes.push({
+                'category': category,
+                attribute: [attribute]
+            });
+        }
+    }
+};
+ozpIwc.policyAuth.Request.prototype.defaultSubjectCategory = "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject";
+ozpIwc.policyAuth.Request.prototype.defaultSubjectId = "urn:oasis:names:tc:xacml:1.0:subject:subject-id";
+
+ozpIwc.policyAuth.Request.prototype.defaultResourceCategory = "urn:oasis:names:tc:xacml:3.0:attribute-category:resource";
+ozpIwc.policyAuth.Request.prototype.defaultResourceId = "urn:oasis:names:tc:xacml:1.0:resource:resource-id";
+
+ozpIwc.policyAuth.Request.prototype.defaultActionCategory = "urn:oasis:names:tc:xacml:3.0:attribute-category:action";
+ozpIwc.policyAuth.Request.prototype.defaultActionId = "urn:oasis:names:tc:xacml:1.0:action:action-id";
+
+
+
+/**
+ * @method addSubject
+ */
+ozpIwc.policyAuth.Request.prototype.addSubject = function(attribute){
+    attribute.attributeId  = attribute.attributeId || this.defaultSubjectId;
+    this.addAttribute(this.defaultSubjectCategory,attribute);
+};
+
+/**
+ *  @method addResource
+ */
+ozpIwc.policyAuth.Request.prototype.addResource = function(attribute){
+    attribute.attributeId  = attribute.attributeId || this.defaultResourceId;
+    this.addAttribute(this.defaultResourceCategory,attribute);
+};
+
+/**
+ *  @method addAction
+ */
+ozpIwc.policyAuth.Request.prototype.addAction = function(attribute){
+    attribute.attributeId  = attribute.attributeId || this.defaultActionId;
+    this.addAttribute(this.defaultActionCategory,attribute);
+};

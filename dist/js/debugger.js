@@ -2792,7 +2792,7 @@ ozpIwc.util.elementParser = function(config){
     config.reqAttrs.forEach(function(attr){
         var attribute = element.getAttribute(attr);
         if(attribute){
-            console.log('Found attribute of policy,(',attr,',',attribute,')');
+//            console.log('Found attribute of policy,(',attr,',',attribute,')');
             findings.attrs[attr] = attribute;
         } else {
             console.error('Required attribute not found,(',attr,')');
@@ -2803,7 +2803,7 @@ ozpIwc.util.elementParser = function(config){
     config.optAttrs.forEach(function(attr){
         var attribute = element.getAttribute(attr);
         if(attribute){
-            console.log('Found attribute of policy,(',attr,',',attribute,')');
+//            console.log('Found attribute of policy,(',attr,',',attribute,')');
             findings.attrs[attr] = attribute;
         }
 
@@ -2814,7 +2814,7 @@ ozpIwc.util.elementParser = function(config){
         findings.nodes[tag] = findings.nodes[tag] || [];
         for(var i in nodes){
             if(ozpIwc.util.isDirectDescendant(nodes[i],element)){
-                console.log('Found node of policy: ', nodes[i]);
+//                console.log('Found node of policy: ', nodes[i]);
                 findings.nodes[tag].push(nodes[i]);
             }
         }
@@ -2826,7 +2826,7 @@ ozpIwc.util.elementParser = function(config){
         var nodes = element.getElementsByTagName(tag);
         for(var i in nodes){
             if(ozpIwc.util.isDirectDescendant(nodes[i],element)){
-                console.log('Found node of policy: ', nodes[i]);
+//                console.log('Found node of policy: ', nodes[i]);
                 findings.nodes[tag] = findings.nodes[tag] || [];
                 findings.nodes[tag].push(nodes[i]);
             }
@@ -7101,7 +7101,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @constructor
  */
 ozpIwc.policyAuth.Request = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
+    config = config || {};
     /**
      * This attribute is used to request that the PDP return a list of all fully applicable policies and policy sets
      * which were used in the decision as a part of the decision response.
@@ -7141,7 +7141,7 @@ ozpIwc.policyAuth.Request = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,fun
      * @property attributes
      * @type {Array<ozpIwc.policyAuth.Attributes>}
      */
-    this.attributes = config.attributes;
+    this.attributes = config.attributes || [];
 
     /**
      * Lists multiple request contexts by references to the <Attributes> elements. Implementation of this element is
@@ -7154,6 +7154,67 @@ ozpIwc.policyAuth.Request = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,fun
     this.multiRequests = config.multiRequests;
 
 });
+ozpIwc.policyAuth.Request.prototype.isValidAttribute = function(attribute){
+    if(attribute.dataType && attribute.value){
+        return true;
+    }
+    return false;
+};
+
+ozpIwc.policyAuth.Request.prototype.addAttribute = function(category,attribute){
+    var index;
+    for(var  i in this.attributes){
+        if(this.attributes[i].category === category) {
+            index = i;
+            if(this.isValidAttribute(attribute)) {
+                this.attributes[i].attribute.push(attribute);
+            }
+            break;
+        }
+    }
+    if(!index){
+        if(this.isValidAttribute(attribute)) {
+            this.attributes.push({
+                'category': category,
+                attribute: [attribute]
+            });
+        }
+    }
+};
+ozpIwc.policyAuth.Request.prototype.defaultSubjectCategory = "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject";
+ozpIwc.policyAuth.Request.prototype.defaultSubjectId = "urn:oasis:names:tc:xacml:1.0:subject:subject-id";
+
+ozpIwc.policyAuth.Request.prototype.defaultResourceCategory = "urn:oasis:names:tc:xacml:3.0:attribute-category:resource";
+ozpIwc.policyAuth.Request.prototype.defaultResourceId = "urn:oasis:names:tc:xacml:1.0:resource:resource-id";
+
+ozpIwc.policyAuth.Request.prototype.defaultActionCategory = "urn:oasis:names:tc:xacml:3.0:attribute-category:action";
+ozpIwc.policyAuth.Request.prototype.defaultActionId = "urn:oasis:names:tc:xacml:1.0:action:action-id";
+
+
+
+/**
+ * @method addSubject
+ */
+ozpIwc.policyAuth.Request.prototype.addSubject = function(attribute){
+    attribute.attributeId  = attribute.attributeId || this.defaultSubjectId;
+    this.addAttribute(this.defaultSubjectCategory,attribute);
+};
+
+/**
+ *  @method addResource
+ */
+ozpIwc.policyAuth.Request.prototype.addResource = function(attribute){
+    attribute.attributeId  = attribute.attributeId || this.defaultResourceId;
+    this.addAttribute(this.defaultResourceCategory,attribute);
+};
+
+/**
+ *  @method addAction
+ */
+ozpIwc.policyAuth.Request.prototype.addAction = function(attribute){
+    attribute.attributeId  = attribute.attributeId || this.defaultActionId;
+    this.addAttribute(this.defaultActionCategory,attribute);
+};
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -7899,6 +7960,15 @@ ozpIwc.policyAuth.PDP = function(config){
      * @property policies
      */
     this.policies= config.policies || [];
+
+    /**
+     * An array of policy URIs to load.
+     * @property loadPolicies
+     * @type {Array<String>}
+     */
+    this.loadPolicies = config.loadPolicies || [];
+
+    this.hasInitialized = false;
 };
 
 /**
@@ -7911,50 +7981,65 @@ ozpIwc.policyAuth.PDP = function(config){
  * @param {String} config.uri The uri path of where the policy is expected to be found.
  */
 ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
-    var self = this;
-    return ozpIwc.util.ajax({
-        href: uri,
-        method: "GET"
-    }).then(function(resp){
-        var response = resp.response;
-        // We have to catch because onload does json.parse.... and this is xml... @TODO fix...
-        var policies = [];
-        for(var i in response.children){
-            if(response.children[i].tagName === "Policy"){
-                policies.push(response.children[i]);
-            }
-        }
+        var uriArray = Array.isArray(uri) ? uri : [uri];
+        var promiseArray = [];
+        var self = this;
+        for(var i in uriArray){
+            var promise = ozpIwc.util.ajax({
+                href: uri[i],
+                method: "GET"
+            }).then(function (resp) {
+                var response = resp.response;
+                // We have to catch because onload does json.parse.... and this is xml... @TODO fix...
+                var policies = [];
+                for (var i in response.children) {
+                    if (response.children[i].tagName === "Policy") {
+                        policies.push(response.children[i]);
+                    }
+                }
 
-        for(var i in policies){
-            var policy = new ozpIwc.policyAuth.Policy({element: policies[i]});
-            self.policies.push(policy);
+                for (var i in policies) {
+                    var policy = new ozpIwc.policyAuth.Policy({element: policies[i]});
+                    self.policies.push(policy);
+                }
+            });
+            promiseArray.push(promise);
         }
-    });
+        return Promise.all(promiseArray);
 };
 
 /**
  * Processes an {{#crossLink "ozpIwc.policyAuth.PEP"}}{{/crossLink}} request.
- * @TODO
  * @method handleRequest
  * @param request
  * @returns {Promise}
  */
 ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request) {
-	var action=new ozpIwc.AsyncAction();
+    var process = function() {
+        return new Promise(function (resolve, reject) {
+            var result = self.policies.some(function (policy) {
+                return policy.evaluate(request) === "Permit";
+            }, self);
 
-    var result=this.policies.some(function(policy) {
-        return policy.evaluate(request)==="Permit";
-    },this);
+            if (result) {
+                resolve();
+            } else {
+                reject();
+            }
+        })
+    };
 
-
-    if(result) {
-        return action.resolve("success");
+    if(!this.hasInitialized){
+        var self = this;
+        return self.gatherPolicies(this.loadPolicies).then(function() {
+            self.hasInitialized = true;
+            return process();
+        });
     } else {
-		return action.resolve('failure');
+        return process();
     }
 };
 
-ozpIwc.authorization = new ozpIwc.policyAuth.PDP();
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -9687,19 +9772,19 @@ ozpIwc.Participant=function() {
  */
 ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     var self = this;
-    this.policyEnforcer.request({
-        'subject': this.securityAttributes,
-        'object': packetContext.packet.permissions
-    })
-        .success(function(){
+//    this.policyEnforcer.request({
+//        'subject': this.securityAttributes,
+//        'object': packetContext.packet.permissions
+//    })
+//        .success(function(){
             self.receivedPacketsMeter.mark();
 
             self.receiveFromRouterImpl(packetContext);
-        })
-        .failure(function() {
-            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-            self.forbiddenPacketsMeter.mark();
-        });
+//        })
+//        .failure(function() {
+//            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
+//            self.forbiddenPacketsMeter.mark();
+//        });
 };
 
 /**
@@ -10229,11 +10314,6 @@ ozpIwc.Router=function(config) {
         router: this,
         heartbeatFrequency: config.heartbeatFrequency
     });
-	this.registerParticipant(this.watchdog);
-
-    ozpIwc.metrics.gauge('transport.router.participants').set(function() {
-        return self.getParticipantCount();
-    });
 
     /**
      * Policy Enforcer module for the router.
@@ -10242,6 +10322,13 @@ ozpIwc.Router=function(config) {
      * @default new ozpIwc.policyAuth.PEP()
      */
     this.policyEnforcer = new ozpIwc.policyAuth.PEP();
+
+	this.registerParticipant(this.watchdog);
+
+    ozpIwc.metrics.gauge('transport.router.participants').set(function() {
+        return self.getParticipantCount();
+    });
+
 };
 
 /**
@@ -10344,19 +10431,19 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
         return;
     }
 
-    this.policyEnforcer.request({
-        'subject':localParticipant.securityAttributes,
-        'object': packet.permissions,
-        'action': {'action': 'receive'}
-    })
-        .success(function() {
+//    this.policyEnforcer.request({
+//        'subject':localParticipant.securityAttributes,
+//        'object': packet.permissions,
+//        'action': {'action': 'receive'}
+//    })
+//        .success(function() {
             ozpIwc.metrics.counter("transport.packets.delivered").inc();
             localParticipant.receiveFromRouter(packetContext);
-        })
-        .failure(function() {
-            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-        });
+//        })
+//        .failure(function() {
+//            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
+//            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+//        });
 
 };
 
@@ -11327,18 +11414,18 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
     var self = this;
-    return this.policyEnforcer.request({
-        'subject': this.securityAttributes,
-        'object':  {
-            receiveAs: packetContext.packet.dst
-        }
-    })
-        .success(function(){
+//    return this.policyEnforcer.request({
+//        'subject': this.securityAttributes,
+//        'object':  {
+//            receiveAs: packetContext.packet.dst
+//        }
+//    })
+//        .success(function(){
             self.sendToRecipient(packetContext.packet);
-        })
-        .failure(function(){
-            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-        });
+//        })
+//        .failure(function(){
+//            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+//        });
 };
 
 /**
@@ -11414,18 +11501,18 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
     var self = this;
-    return this.policyEnforcer.request({
-        'subject': this.securityAttributes,
-        'object': {
-            sendAs: packet.src
-        }
-    })
-        .success(function(){
+//    return this.policyEnforcer.request({
+//        'subject': this.securityAttributes,
+//        'object': {
+//            sendAs: packet.src
+//        }
+//    })
+//        .success(function(){
             self.router.send(packet,this);
-        })
-        .failure(function(){
-            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-        });
+//        })
+//        .failure(function(){
+//            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+//        });
 };
 
 
@@ -11518,23 +11605,47 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
             return;
         }
 	}
+
+    var isPacket = function(packet){
+        if (ozpIwc.util.isIWCPacket(packet)) {
+            participant.forwardFromPostMessage(packet, event);
+        } else {
+            ozpIwc.log.log("Packet does not meet IWC Packet criteria, dropping.", packet);
+        }
+    };
+
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
-		participant=new ozpIwc.PostMessageParticipant({
-			'origin': event.origin,
-			'sourceWindow': event.source,
-			'credentials': packet.entity
-		});
-		this.router.registerParticipant(participant,packet);
-		this.participants.push(participant);
-	}
+        var request = new ozpIwc.policyAuth.Request();
+        request.addSubject({
+            'dataType': 'http://www.w3.org/2001/XMLSchema#anyURI',
+            'value': event.origin
+        });
+        request.addResource({
+            'dataType': 'http://www.w3.org/2001/XMLSchema#string',
+            'value': '$bus.multicast'
+        });
+        request.addAction({
+            'dataType': 'http://www.w3.org/2001/XMLSchema#string',
+            'value': 'connect'
+        });
+        var self = this;
+        this.router.policyEnforcer.request(request).then(function(){
+                participant=new ozpIwc.PostMessageParticipant({
+                    'origin': event.origin,
+                    'sourceWindow': event.source,
+                    'credentials': packet.entity
+                });
+                self.router.registerParticipant(participant,packet);
+                self.participants.push(participant);
+                isPacket(packet);
+        })['catch'](function(){
+            console.error("COULD NOT CONNECT");
+        });
 
-    if (ozpIwc.util.isIWCPacket(packet)) {
-        participant.forwardFromPostMessage(packet, event);
-    } else {
-        ozpIwc.log.log("Packet does not meet IWC Packet criteria, dropping.", packet);
+	} else{
+        isPacket(packet);
     }
-
 };
 
 /**
@@ -12472,12 +12583,12 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
     var subject=packetContext.srcSubject || {
         'rawAddress':packetContext.packet.src
     };
-
-    return this.participant.policyEnforcer.request({
-        'subject': subject,
-        'object': node.permissions,
-        'action': {'action':packetContext.action}
-    });
+    return new ozpIwc.AsyncAction().resolve('success');
+//    return this.participant.policyEnforcer.request({
+//        'subject': subject,
+//        'object': node.permissions,
+//        'action': {'action':packetContext.action}
+//    });
 };
 
 
@@ -15034,7 +15145,9 @@ if(typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
         peer: ozpIwc.defaultPeer
     });
 
-    ozpIwc.authorization = new ozpIwc.policyAuth.PDP();
+    ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
+        loadPolicies: ['/policy/connectPolicy.xml','/policy/policy.xml']
+    });
     ozpIwc.heartBeatFrequency = 10000; // 10 seconds
     ozpIwc.defaultRouter = new ozpIwc.Router({
         peer: ozpIwc.defaultPeer,

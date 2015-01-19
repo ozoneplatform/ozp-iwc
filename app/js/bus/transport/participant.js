@@ -122,19 +122,19 @@ ozpIwc.Participant=function() {
  */
 ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     var self = this;
-    this.policyEnforcer.request({
-        'subject': this.securityAttributes,
-        'object': packetContext.packet.permissions
-    })
-        .success(function(){
+//    this.policyEnforcer.request({
+//        'subject': this.securityAttributes,
+//        'object': packetContext.packet.permissions
+//    })
+//        .success(function(){
             self.receivedPacketsMeter.mark();
 
             self.receiveFromRouterImpl(packetContext);
-        })
-        .failure(function() {
-            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-            self.forbiddenPacketsMeter.mark();
-        });
+//        })
+//        .failure(function() {
+//            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
+//            self.forbiddenPacketsMeter.mark();
+//        });
 };
 
 /**

@@ -26,6 +26,15 @@ ozpIwc.policyAuth.PDP = function(config){
      * @property policies
      */
     this.policies= config.policies || [];
+
+    /**
+     * An array of policy URIs to load.
+     * @property loadPolicies
+     * @type {Array<String>}
+     */
+    this.loadPolicies = config.loadPolicies || [];
+
+    this.hasInitialized = false;
 };
 
 /**
@@ -38,47 +47,61 @@ ozpIwc.policyAuth.PDP = function(config){
  * @param {String} config.uri The uri path of where the policy is expected to be found.
  */
 ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
-    var self = this;
-    return ozpIwc.util.ajax({
-        href: uri,
-        method: "GET"
-    }).then(function(resp){
-        var response = resp.response;
-        // We have to catch because onload does json.parse.... and this is xml... @TODO fix...
-        var policies = [];
-        for(var i in response.children){
-            if(response.children[i].tagName === "Policy"){
-                policies.push(response.children[i]);
-            }
-        }
+        var uriArray = Array.isArray(uri) ? uri : [uri];
+        var promiseArray = [];
+        var self = this;
+        for(var i in uriArray){
+            var promise = ozpIwc.util.ajax({
+                href: uri[i],
+                method: "GET"
+            }).then(function (resp) {
+                var response = resp.response;
+                // We have to catch because onload does json.parse.... and this is xml... @TODO fix...
+                var policies = [];
+                for (var i in response.children) {
+                    if (response.children[i].tagName === "Policy") {
+                        policies.push(response.children[i]);
+                    }
+                }
 
-        for(var i in policies){
-            var policy = new ozpIwc.policyAuth.Policy({element: policies[i]});
-            self.policies.push(policy);
+                for (var i in policies) {
+                    var policy = new ozpIwc.policyAuth.Policy({element: policies[i]});
+                    self.policies.push(policy);
+                }
+            });
+            promiseArray.push(promise);
         }
-    });
+        return Promise.all(promiseArray);
 };
 
 /**
  * Processes an {{#crossLink "ozpIwc.policyAuth.PEP"}}{{/crossLink}} request.
- * @TODO
  * @method handleRequest
  * @param request
  * @returns {Promise}
  */
 ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request) {
-	var action=new ozpIwc.AsyncAction();
+    var process = function() {
+        return new Promise(function (resolve, reject) {
+            var result = self.policies.some(function (policy) {
+                return policy.evaluate(request) === "Permit";
+            }, self);
 
-    var result=this.policies.some(function(policy) {
-        return policy.evaluate(request)==="Permit";
-    },this);
+            if (result) {
+                resolve();
+            } else {
+                reject();
+            }
+        })
+    };
 
-
-    if(result) {
-        return action.resolve("success");
+    if(!this.hasInitialized){
+        var self = this;
+        return self.gatherPolicies(this.loadPolicies).then(function() {
+            self.hasInitialized = true;
+            return process();
+        });
     } else {
-		return action.resolve('failure');
+        return process();
     }
 };
-
-ozpIwc.authorization = new ozpIwc.policyAuth.PDP();

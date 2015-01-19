@@ -375,12 +375,12 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
     var subject=packetContext.srcSubject || {
         'rawAddress':packetContext.packet.src
     };
-
-    return this.participant.policyEnforcer.request({
-        'subject': subject,
-        'object': node.permissions,
-        'action': {'action':packetContext.action}
-    });
+    return new ozpIwc.AsyncAction().resolve('success');
+//    return this.participant.policyEnforcer.request({
+//        'subject': subject,
+//        'object': node.permissions,
+//        'action': {'action':packetContext.action}
+//    });
 };
 
 

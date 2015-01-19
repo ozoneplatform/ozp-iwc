@@ -80,18 +80,18 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
     var self = this;
-    return this.policyEnforcer.request({
-        'subject': this.securityAttributes,
-        'object':  {
-            receiveAs: packetContext.packet.dst
-        }
-    })
-        .success(function(){
+//    return this.policyEnforcer.request({
+//        'subject': this.securityAttributes,
+//        'object':  {
+//            receiveAs: packetContext.packet.dst
+//        }
+//    })
+//        .success(function(){
             self.sendToRecipient(packetContext.packet);
-        })
-        .failure(function(){
-            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-        });
+//        })
+//        .failure(function(){
+//            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+//        });
 };
 
 /**
@@ -167,18 +167,18 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
     var self = this;
-    return this.policyEnforcer.request({
-        'subject': this.securityAttributes,
-        'object': {
-            sendAs: packet.src
-        }
-    })
-        .success(function(){
+//    return this.policyEnforcer.request({
+//        'subject': this.securityAttributes,
+//        'object': {
+//            sendAs: packet.src
+//        }
+//    })
+//        .success(function(){
             self.router.send(packet,this);
-        })
-        .failure(function(){
-            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-        });
+//        })
+//        .failure(function(){
+//            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+//        });
 };
 
 
@@ -271,21 +271,45 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
             return;
         }
 	}
+
+    var isPacket = function(packet){
+        if (ozpIwc.util.isIWCPacket(packet)) {
+            participant.forwardFromPostMessage(packet, event);
+        } else {
+            ozpIwc.log.log("Packet does not meet IWC Packet criteria, dropping.", packet);
+        }
+    };
+
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
-		participant=new ozpIwc.PostMessageParticipant({
-			'origin': event.origin,
-			'sourceWindow': event.source,
-			'credentials': packet.entity
-		});
-		this.router.registerParticipant(participant,packet);
-		this.participants.push(participant);
-	}
+        var request = new ozpIwc.policyAuth.Request();
+        request.addSubject({
+            'dataType': 'http://www.w3.org/2001/XMLSchema#anyURI',
+            'value': event.origin
+        });
+        request.addResource({
+            'dataType': 'http://www.w3.org/2001/XMLSchema#string',
+            'value': '$bus.multicast'
+        });
+        request.addAction({
+            'dataType': 'http://www.w3.org/2001/XMLSchema#string',
+            'value': 'connect'
+        });
+        var self = this;
+        this.router.policyEnforcer.request(request).then(function(){
+                participant=new ozpIwc.PostMessageParticipant({
+                    'origin': event.origin,
+                    'sourceWindow': event.source,
+                    'credentials': packet.entity
+                });
+                self.router.registerParticipant(participant,packet);
+                self.participants.push(participant);
+                isPacket(packet);
+        })['catch'](function(){
+            console.error("COULD NOT CONNECT");
+        });
 
-    if (ozpIwc.util.isIWCPacket(packet)) {
-        participant.forwardFromPostMessage(packet, event);
-    } else {
-        ozpIwc.log.log("Packet does not meet IWC Packet criteria, dropping.", packet);
+	} else{
+        isPacket(packet);
     }
-
 };

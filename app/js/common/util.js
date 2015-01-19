@@ -248,7 +248,7 @@ ozpIwc.util.elementParser = function(config){
     config.reqAttrs.forEach(function(attr){
         var attribute = element.getAttribute(attr);
         if(attribute){
-            console.log('Found attribute of policy,(',attr,',',attribute,')');
+//            console.log('Found attribute of policy,(',attr,',',attribute,')');
             findings.attrs[attr] = attribute;
         } else {
             console.error('Required attribute not found,(',attr,')');
@@ -259,7 +259,7 @@ ozpIwc.util.elementParser = function(config){
     config.optAttrs.forEach(function(attr){
         var attribute = element.getAttribute(attr);
         if(attribute){
-            console.log('Found attribute of policy,(',attr,',',attribute,')');
+//            console.log('Found attribute of policy,(',attr,',',attribute,')');
             findings.attrs[attr] = attribute;
         }
 
@@ -270,7 +270,7 @@ ozpIwc.util.elementParser = function(config){
         findings.nodes[tag] = findings.nodes[tag] || [];
         for(var i in nodes){
             if(ozpIwc.util.isDirectDescendant(nodes[i],element)){
-                console.log('Found node of policy: ', nodes[i]);
+//                console.log('Found node of policy: ', nodes[i]);
                 findings.nodes[tag].push(nodes[i]);
             }
         }
@@ -282,7 +282,7 @@ ozpIwc.util.elementParser = function(config){
         var nodes = element.getElementsByTagName(tag);
         for(var i in nodes){
             if(ozpIwc.util.isDirectDescendant(nodes[i],element)){
-                console.log('Found node of policy: ', nodes[i]);
+//                console.log('Found node of policy: ', nodes[i]);
                 findings.nodes[tag] = findings.nodes[tag] || [];
                 findings.nodes[tag].push(nodes[i]);
             }

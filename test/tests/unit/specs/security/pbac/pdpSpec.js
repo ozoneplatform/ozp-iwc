@@ -29,41 +29,24 @@ describe("Policy Decision Point",function() {
     });
 
     describe("Request handling", function(){
-        var request = {
-            'attributes':[
-                {
-                    'category': 'urn:oasis:names:tc:xacml:1.0:subject-category:access-subject',
-                    'attribute':[
-                        {
-                            'attributeId': 'urn:oasis:names:tc:xacml:1.0:subject:subject-id',
-                            'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                            'value': 'Julius Hibbert'
-                        }
-                    ]
-                },
-                {
-                    'category': 'urn:oasis:names:tc:xacml:3.0:attribute-category:resource',
-                    'attribute': [
-                        {
-                            'attributeId': 'urn:oasis:names:tc:xacml:1.0:resource:resource-id',
-                            'dataType': "http://www.w3.org/2001/XMLSchema#anyURI",
-                            'value': 'http://medico.com/record/patient/BartSimpson'
-                        }
-                    ]
-                },
-                {
-                    'category': 'urn:oasis:names:tc:xacml:3.0:attribute-category:action',
-                    'attribute': [
-                        {
-                            'attributeId': 'urn:oasis:names:tc:xacml:1.0:action:action-id',
-                            'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                            'value': 'write'
-                        }
-                    ]
-                }
-            ]
-        };
+
+
         it("Permits a valid request",function(done){
+            var request = new ozpIwc.policyAuth.Request();
+            request.addSubject({
+                'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                'value': 'Julius Hibbert'
+            });
+            request.addResource({
+                'dataType': "http://www.w3.org/2001/XMLSchema#anyURI",
+                'value': 'http://medico.com/record/patient/BartSimpson'
+            });
+
+            request.addAction({
+                'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                'value': 'write'
+            });
+
             pdp.handleRequest(request)
                 .success(function(){
                     done();
@@ -73,9 +56,22 @@ describe("Policy Decision Point",function() {
                 })
         });
         it("Denies an invalid request",function(done){
+            var request = new ozpIwc.policyAuth.Request();
+            request.addSubject({
+                'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                'value': 'Julius Hibbert'
+            });
+            request.addResource({
+                'dataType': "http://www.w3.org/2001/XMLSchema#anyURI",
+                'value': 'http://medico.com/record/patient/BartSimpson'
+            });
+
+            request.addAction({
+                'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                'value': 'delete'
+            });
 
             // Julius wants to delete Bart's medical records!
-            request.attributes[2].attribute[0].value = 'delete';
             pdp.handleRequest(request)
                 .success(function(){
                     expect(false).toEqual(true);

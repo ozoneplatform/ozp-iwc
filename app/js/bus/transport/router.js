@@ -243,11 +243,6 @@ ozpIwc.Router=function(config) {
         router: this,
         heartbeatFrequency: config.heartbeatFrequency
     });
-	this.registerParticipant(this.watchdog);
-
-    ozpIwc.metrics.gauge('transport.router.participants').set(function() {
-        return self.getParticipantCount();
-    });
 
     /**
      * Policy Enforcer module for the router.
@@ -256,6 +251,13 @@ ozpIwc.Router=function(config) {
      * @default new ozpIwc.policyAuth.PEP()
      */
     this.policyEnforcer = new ozpIwc.policyAuth.PEP();
+
+	this.registerParticipant(this.watchdog);
+
+    ozpIwc.metrics.gauge('transport.router.participants').set(function() {
+        return self.getParticipantCount();
+    });
+
 };
 
 /**
@@ -358,19 +360,19 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
         return;
     }
 
-    this.policyEnforcer.request({
-        'subject':localParticipant.securityAttributes,
-        'object': packet.permissions,
-        'action': {'action': 'receive'}
-    })
-        .success(function() {
+//    this.policyEnforcer.request({
+//        'subject':localParticipant.securityAttributes,
+//        'object': packet.permissions,
+//        'action': {'action': 'receive'}
+//    })
+//        .success(function() {
             ozpIwc.metrics.counter("transport.packets.delivered").inc();
             localParticipant.receiveFromRouter(packetContext);
-        })
-        .failure(function() {
-            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-        });
+//        })
+//        .failure(function() {
+//            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
+//            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+//        });
 
 };
 
