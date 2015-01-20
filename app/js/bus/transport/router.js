@@ -307,6 +307,7 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
     });
     this.events.trigger("preRegisterParticipant",registerEvent);
 
+
     if(registerEvent.canceled){
         // someone vetoed this participant
         ozpIwc.log.log("registeredParticipant[DENIED] origin:"+participant.origin+

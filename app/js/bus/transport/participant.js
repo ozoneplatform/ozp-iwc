@@ -174,6 +174,9 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.heartBeatStatus.address=this.address;
     this.heartBeatStatus.name=this.name;
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
+
+    this.addSendAsPolicy();
+    this.addReceiveAsPolicy();
     this.joinEventChannel();
     this.events.trigger("connectedToRouter");
 };
@@ -289,4 +292,40 @@ ozpIwc.Participant.prototype.leaveEventChannel = function() {
         return false;
     }
 
+};
+
+ozpIwc.Participant.prototype.addSendAsPolicy = function() {
+    this.sendAsPolicyId = this.policyEnforcer.PDP.addPolicy({
+        'subject': {
+            'value': this.address
+        },
+        'resource': {
+            'value': this.address
+        },
+        'action': {
+            'value': 'sendAs'
+        }
+    });
+};
+
+ozpIwc.Participant.prototype.removeSendAsPolicy = function() {
+    this.policyEnforcer.PDP.removePolicy(this.sendAsPolicyId);
+};
+
+ozpIwc.Participant.prototype.addReceiveAsPolicy = function() {
+    this.sendAsPolicyId = this.policyEnforcer.PDP.addPolicy({
+        'subject': {
+            'value': this.address
+        },
+        'resource': {
+            'value': this.address
+        },
+        'action': {
+            'value': 'receiveAs'
+        }
+    });
+};
+
+ozpIwc.Participant.prototype.removeReceiveAsPolicy = function() {
+    this.policyEnforcer.PDP.removePolicy(this.receiveAsPolicyId);
 };

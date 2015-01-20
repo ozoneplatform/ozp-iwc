@@ -13,7 +13,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @constructor
  */
 ozpIwc.policyAuth.AllOf = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
+    config = config || {};
     /**
      * A conjunctive sequence of individual matches of the attributes in the request context and the embedded
      * attribute values

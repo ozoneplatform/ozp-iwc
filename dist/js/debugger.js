@@ -5833,7 +5833,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @constructor
  */
 ozpIwc.policyAuth.AllOf = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
+    config = config || {};
     /**
      * A conjunctive sequence of individual matches of the attributes in the request context and the embedded
      * attribute values
@@ -6362,7 +6362,7 @@ ozpIwc.policyAuth.Obligations = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement
  * @constructor
  */
 ozpIwc.policyAuth.AttributeValue = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
+    config = config || {};
     /**
      * The data-type of the attribute value.
      * @property dataType
@@ -6370,7 +6370,7 @@ ozpIwc.policyAuth.AttributeValue = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElem
      * @default null
      */
     this.dataType = config.dataType;
-
+    this.value = config.value;
     if(config.element){
         this.construct(config.element);
         //@TODO this is stringed, parse?
@@ -7571,6 +7571,15 @@ ozpIwc.policyAuth.Target.prototype.isTargeted = function(request){
 };
 
 ozpIwc.policyAuth.Target.prototype.optionalNodes = ['AnyOf'];
+
+
+ozpIwc.policyAuth.Target.prototype.generateEmptyTarget = function(){
+    return new ozpIwc.policyAuth.Target({
+        anyOf: [new ozpIwc.policyAuth.AnyOf({
+            allOf: [new ozpIwc.policyAuth.AllOf()]
+        })]
+    });
+};
 ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
@@ -8015,28 +8024,98 @@ ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
  * @returns {Promise}
  */
 ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request) {
-    var process = function() {
-        return new Promise(function (resolve, reject) {
-            var result = self.policies.some(function (policy) {
-                return policy.evaluate(request) === "Permit";
-            }, self);
 
-            if (result) {
-                resolve();
-            } else {
-                reject();
-            }
-        })
-    };
-
+    var self = this;
     if(!this.hasInitialized){
-        var self = this;
         return self.gatherPolicies(this.loadPolicies).then(function() {
             self.hasInitialized = true;
-            return process();
+            return new Promise(function (resolve, reject) {
+                var result = self.policies.some(function (policy) {
+                    return policy.evaluate(request) === "Permit";
+                }, self);
+
+                if (result) {
+                    resolve();
+                } else {
+                    reject();
+                }
+            });
         });
     } else {
-        return process();
+            return new Promise(function (resolve, reject) {
+                var result = self.policies.some(function (policy) {
+                    return policy.evaluate(request) === "Permit";
+                }, self);
+
+                if (result) {
+                    resolve();
+                } else {
+                    reject();
+                }
+            });
+    }
+};
+
+
+/**
+ * Creates a policy for the given participant to be able to send with its given address
+ * @method addSendAsPolicy
+ * @param {object} config
+ * @param {object} config.subject
+ * @param {*} config.subject.value
+ * @param [String] config.subject.matchId
+ * @param [String] config.subject.dataType
+ * @param {object} config.resource
+ * @param {*} config.resource.value
+ * @param [String] config.resource.matchId
+ * @param [String] config.resource.dataType
+ * @param {object} config.action
+ * @param {*} config.action.value
+ * @param [String] config.action.matchId
+ * @param [String] config.action.dataType
+ */
+ozpIwc.policyAuth.PDP.prototype.addPolicy = function(config){
+    config = config || {};
+    var policyId;
+
+    if(config.subject && config.resource && config.action){
+        policyId = 'urn:ozp:iwc:xacml:policy:'+config.subject.value+':'+config.action.value + ":" + config.resource.value;
+        this.policies.push(new ozpIwc.policyAuth.Policy({
+            policyId : policyId,
+            version: '0.1',
+            ruleCombiningAlgId: 'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides',
+            target: ozpIwc.policyAuth.util.generateEmptyTarget(),
+            rule: [new ozpIwc.policyAuth.Rule({
+                ruleId: "urn:ozp:iwc:xacml:rule:sendAs:"+this.address,
+                effect: "Permit",
+                target: new ozpIwc.policyAuth.Target({
+                    anyOf: [
+                        // subject, additional attributes can be added to the allOf array
+                        new ozpIwc.policyAuth.AnyOf({
+                            allOf: [new ozpIwc.policyAuth.util.generateAttributeSubject(config.subject)]
+                        }),
+                        // resource, additional attributes can be added to the allOf array
+                        new ozpIwc.policyAuth.AnyOf({
+                            allOf: [new ozpIwc.policyAuth.util.generateAttributeResource(config.resource)]
+                        }),
+                        // action, additional attributes can be added to the allOf array
+                        new ozpIwc.policyAuth.AnyOf({
+                            allOf: [new ozpIwc.policyAuth.util.generateAttributeAction(config.action)]
+                        })
+                    ]
+                })
+            })]
+        }));
+    }
+
+    return policyId;
+};
+
+ozpIwc.policyAuth.PDP.prototype.removePolicy = function(id){
+    for(var i in this.policies){
+        if(this.policies[i].policyId === id){
+            this.policies.splice(i,1);
+        }
     }
 };
 
@@ -8248,6 +8327,85 @@ ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-alg
     = function(){
 
 };
+ozpIwc = ozpIwc || {};
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+ozpIwc.policyAuth.util = ozpIwc.policyAuth.util || {};
+
+ozpIwc.policyAuth.util.generateEmptyTarget = function(){
+    return new ozpIwc.policyAuth.Target({
+        anyOf: [new ozpIwc.policyAuth.AnyOf({
+            allOf: [new ozpIwc.policyAuth.AllOf()]
+        })]
+    });
+};
+
+ozpIwc.policyAuth.util.generateAttribute = function(config){
+    config = config || {};
+
+    return  new ozpIwc.policyAuth.AllOf({
+        match: [new ozpIwc.policyAuth.Match({
+            matchId: config.matchId,
+            attributeDesignator: new ozpIwc.policyAuth.AttributeDesignator({
+                attributeId: config.attributeId,
+                category: config.category,
+                dataType: config.dataType,
+                mustBePresent: "false"
+            }),
+            attributeValue: new ozpIwc.policyAuth.AttributeValue({
+                dataType: config.dataType,
+                value: config.value
+            })
+        })]
+    });
+};
+
+ozpIwc.policyAuth.util.generateAttributeSubject = function(config){
+    config = config || {};
+
+    config.matchId = config.matchId || "urn:oasis:names:tc:xacml:1.0:function:string-equal";
+    config.dataType = config.dataType || "http://www.w3.org/2001/XMLSchema#string";
+
+    return ozpIwc.policyAuth.util.generateAttribute({
+        matchId: config.matchId,
+        attributeId: "urn:oasis:names:tc:xacml:1.0:subject:subject-id",
+        category: "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject",
+        dataType: config.dataType,
+        value: config.value
+    });
+};
+
+ozpIwc.policyAuth.util.generateAttributeResource = function(config){
+    config = config || {};
+
+    config.matchId = config.matchId || "urn:oasis:names:tc:xacml:1.0:function:string-equal";
+    config.dataType = config.dataType || "http://www.w3.org/2001/XMLSchema#string";
+
+    return ozpIwc.policyAuth.util.generateAttribute({
+        matchId: config.matchId,
+        attributeId: "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
+        category: "urn:oasis:names:tc:xacml:3.0:attribute-category:resource",
+        dataType: config.dataType,
+        value: config.value
+    });
+};
+
+ozpIwc.policyAuth.util.generateAttributeAction = function(config){
+    config = config || {};
+
+    config.matchId = config.matchId || "urn:oasis:names:tc:xacml:1.0:function:string-equal";
+    config.dataType = config.dataType || "http://www.w3.org/2001/XMLSchema#string";
+
+    return ozpIwc.policyAuth.util.generateAttribute({
+        matchId: config.matchId,
+        attributeId: "urn:oasis:names:tc:xacml:1.0:action:action-id",
+        category: "urn:oasis:names:tc:xacml:3.0:attribute-category:action",
+        dataType: config.dataType,
+        value: config.value
+    });
+};
+
+
+
 ///** @namespace **/
 //var ozpIwc = ozpIwc || {};
 //
@@ -9824,6 +9982,9 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.heartBeatStatus.address=this.address;
     this.heartBeatStatus.name=this.name;
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
+
+    this.addSendAsPolicy();
+    this.addReceiveAsPolicy();
     this.joinEventChannel();
     this.events.trigger("connectedToRouter");
 };
@@ -9939,6 +10100,42 @@ ozpIwc.Participant.prototype.leaveEventChannel = function() {
         return false;
     }
 
+};
+
+ozpIwc.Participant.prototype.addSendAsPolicy = function() {
+    this.sendAsPolicyId = this.policyEnforcer.PDP.addPolicy({
+        'subject': {
+            'value': this.address
+        },
+        'resource': {
+            'value': this.address
+        },
+        'action': {
+            'value': 'sendAs'
+        }
+    });
+};
+
+ozpIwc.Participant.prototype.removeSendAsPolicy = function() {
+    this.policyEnforcer.PDP.removePolicy(this.sendAsPolicyId);
+};
+
+ozpIwc.Participant.prototype.addReceiveAsPolicy = function() {
+    this.sendAsPolicyId = this.policyEnforcer.PDP.addPolicy({
+        'subject': {
+            'value': this.address
+        },
+        'resource': {
+            'value': this.address
+        },
+        'action': {
+            'value': 'receiveAs'
+        }
+    });
+};
+
+ozpIwc.Participant.prototype.removeReceiveAsPolicy = function() {
+    this.policyEnforcer.PDP.removePolicy(this.receiveAsPolicyId);
 };
 /**
  * Classes related to transport aspects of the IWC.
@@ -10377,6 +10574,7 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
         'participant': participant
     });
     this.events.trigger("preRegisterParticipant",registerEvent);
+
 
     if(registerEvent.canceled){
         // someone vetoed this participant
@@ -11414,18 +11612,28 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
     var self = this;
-//    return this.policyEnforcer.request({
-//        'subject': this.securityAttributes,
-//        'object':  {
-//            receiveAs: packetContext.packet.dst
-//        }
-//    })
-//        .success(function(){
-            self.sendToRecipient(packetContext.packet);
-//        })
-//        .failure(function(){
-//            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-//        });
+    var request = new ozpIwc.policyAuth.Request();
+
+    request.addSubject({
+        dataType: "http://www.w3.org/2001/XMLSchema#string",
+        value: this.address
+    });
+
+    request.addAction({
+        dataType: "http://www.w3.org/2001/XMLSchema#string",
+        value: "receiveAs"
+    });
+
+    request.addResource({
+        dataType: "http://www.w3.org/2001/XMLSchema#string",
+        value: this.address
+    });
+    return this.policyEnforcer.request(request).then(function() {
+        self.sendToRecipient(packetContext.packet);
+    })['catch'](function(){
+            console.error("FAILED TO RECEIVE");
+            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+    });
 };
 
 /**
@@ -11501,18 +11709,27 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
     var self = this;
-//    return this.policyEnforcer.request({
-//        'subject': this.securityAttributes,
-//        'object': {
-//            sendAs: packet.src
-//        }
-//    })
-//        .success(function(){
-            self.router.send(packet,this);
-//        })
-//        .failure(function(){
-//            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-//        });
+    var request = new ozpIwc.policyAuth.Request();
+    request.addSubject({
+        dataType: "http://www.w3.org/2001/XMLSchema#string",
+        value: this.address
+    });
+
+    request.addAction({
+        dataType: "http://www.w3.org/2001/XMLSchema#string",
+        value: "sendAs"
+    });
+
+    request.addResource({
+        dataType: "http://www.w3.org/2001/XMLSchema#string",
+        value: this.address
+    });
+    this.policyEnforcer.request(request).then(function(){
+        self.router.send(packet,this);
+    })['catch'](function(){
+        ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+        console.error("FAILED TO SEND.");
+    });
 };
 
 
@@ -11636,10 +11853,13 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
                     'sourceWindow': event.source,
                     'credentials': packet.entity
                 });
-                self.router.registerParticipant(participant,packet);
+
+
+
+                self.router.registerParticipant(participant,packet,true);
                 self.participants.push(participant);
                 isPacket(packet);
-        })['catch'](function(){
+        })['catch'](function(e){
             console.error("COULD NOT CONNECT");
         });
 

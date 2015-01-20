@@ -33,7 +33,7 @@ ozpIwc.policyAuth.Obligations = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement
  * @constructor
  */
 ozpIwc.policyAuth.AttributeValue = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
+    config = config || {};
     /**
      * The data-type of the attribute value.
      * @property dataType
@@ -41,7 +41,7 @@ ozpIwc.policyAuth.AttributeValue = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElem
      * @default null
      */
     this.dataType = config.dataType;
-
+    this.value = config.value;
     if(config.element){
         this.construct(config.element);
         //@TODO this is stringed, parse?

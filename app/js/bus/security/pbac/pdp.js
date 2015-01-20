@@ -81,27 +81,97 @@ ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
  * @returns {Promise}
  */
 ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request) {
-    var process = function() {
-        return new Promise(function (resolve, reject) {
-            var result = self.policies.some(function (policy) {
-                return policy.evaluate(request) === "Permit";
-            }, self);
 
-            if (result) {
-                resolve();
-            } else {
-                reject();
-            }
-        })
-    };
-
+    var self = this;
     if(!this.hasInitialized){
-        var self = this;
         return self.gatherPolicies(this.loadPolicies).then(function() {
             self.hasInitialized = true;
-            return process();
+            return new Promise(function (resolve, reject) {
+                var result = self.policies.some(function (policy) {
+                    return policy.evaluate(request) === "Permit";
+                }, self);
+
+                if (result) {
+                    resolve();
+                } else {
+                    reject();
+                }
+            });
         });
     } else {
-        return process();
+            return new Promise(function (resolve, reject) {
+                var result = self.policies.some(function (policy) {
+                    return policy.evaluate(request) === "Permit";
+                }, self);
+
+                if (result) {
+                    resolve();
+                } else {
+                    reject();
+                }
+            });
+    }
+};
+
+
+/**
+ * Creates a policy for the given participant to be able to send with its given address
+ * @method addSendAsPolicy
+ * @param {object} config
+ * @param {object} config.subject
+ * @param {*} config.subject.value
+ * @param [String] config.subject.matchId
+ * @param [String] config.subject.dataType
+ * @param {object} config.resource
+ * @param {*} config.resource.value
+ * @param [String] config.resource.matchId
+ * @param [String] config.resource.dataType
+ * @param {object} config.action
+ * @param {*} config.action.value
+ * @param [String] config.action.matchId
+ * @param [String] config.action.dataType
+ */
+ozpIwc.policyAuth.PDP.prototype.addPolicy = function(config){
+    config = config || {};
+    var policyId;
+
+    if(config.subject && config.resource && config.action){
+        policyId = 'urn:ozp:iwc:xacml:policy:'+config.subject.value+':'+config.action.value + ":" + config.resource.value;
+        this.policies.push(new ozpIwc.policyAuth.Policy({
+            policyId : policyId,
+            version: '0.1',
+            ruleCombiningAlgId: 'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides',
+            target: ozpIwc.policyAuth.util.generateEmptyTarget(),
+            rule: [new ozpIwc.policyAuth.Rule({
+                ruleId: "urn:ozp:iwc:xacml:rule:sendAs:"+this.address,
+                effect: "Permit",
+                target: new ozpIwc.policyAuth.Target({
+                    anyOf: [
+                        // subject, additional attributes can be added to the allOf array
+                        new ozpIwc.policyAuth.AnyOf({
+                            allOf: [new ozpIwc.policyAuth.util.generateAttributeSubject(config.subject)]
+                        }),
+                        // resource, additional attributes can be added to the allOf array
+                        new ozpIwc.policyAuth.AnyOf({
+                            allOf: [new ozpIwc.policyAuth.util.generateAttributeResource(config.resource)]
+                        }),
+                        // action, additional attributes can be added to the allOf array
+                        new ozpIwc.policyAuth.AnyOf({
+                            allOf: [new ozpIwc.policyAuth.util.generateAttributeAction(config.action)]
+                        })
+                    ]
+                })
+            })]
+        }));
+    }
+
+    return policyId;
+};
+
+ozpIwc.policyAuth.PDP.prototype.removePolicy = function(id){
+    for(var i in this.policies){
+        if(this.policies[i].policyId === id){
+            this.policies.splice(i,1);
+        }
     }
 };

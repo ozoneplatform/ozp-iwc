@@ -53,3 +53,12 @@ ozpIwc.policyAuth.Target.prototype.isTargeted = function(request){
 };
 
 ozpIwc.policyAuth.Target.prototype.optionalNodes = ['AnyOf'];
+
+
+ozpIwc.policyAuth.Target.prototype.generateEmptyTarget = function(){
+    return new ozpIwc.policyAuth.Target({
+        anyOf: [new ozpIwc.policyAuth.AnyOf({
+            allOf: [new ozpIwc.policyAuth.AllOf()]
+        })]
+    });
+};

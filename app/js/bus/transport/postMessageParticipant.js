@@ -80,18 +80,28 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
     var self = this;
-//    return this.policyEnforcer.request({
-//        'subject': this.securityAttributes,
-//        'object':  {
-//            receiveAs: packetContext.packet.dst
-//        }
-//    })
-//        .success(function(){
-            self.sendToRecipient(packetContext.packet);
-//        })
-//        .failure(function(){
-//            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-//        });
+    var request = new ozpIwc.policyAuth.Request();
+
+    request.addSubject({
+        dataType: "http://www.w3.org/2001/XMLSchema#string",
+        value: this.address
+    });
+
+    request.addAction({
+        dataType: "http://www.w3.org/2001/XMLSchema#string",
+        value: "receiveAs"
+    });
+
+    request.addResource({
+        dataType: "http://www.w3.org/2001/XMLSchema#string",
+        value: this.address
+    });
+    return this.policyEnforcer.request(request).then(function() {
+        self.sendToRecipient(packetContext.packet);
+    })['catch'](function(){
+            console.error("FAILED TO RECEIVE");
+            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+    });
 };
 
 /**
@@ -167,18 +177,27 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
     var self = this;
-//    return this.policyEnforcer.request({
-//        'subject': this.securityAttributes,
-//        'object': {
-//            sendAs: packet.src
-//        }
-//    })
-//        .success(function(){
-            self.router.send(packet,this);
-//        })
-//        .failure(function(){
-//            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-//        });
+    var request = new ozpIwc.policyAuth.Request();
+    request.addSubject({
+        dataType: "http://www.w3.org/2001/XMLSchema#string",
+        value: this.address
+    });
+
+    request.addAction({
+        dataType: "http://www.w3.org/2001/XMLSchema#string",
+        value: "sendAs"
+    });
+
+    request.addResource({
+        dataType: "http://www.w3.org/2001/XMLSchema#string",
+        value: this.address
+    });
+    this.policyEnforcer.request(request).then(function(){
+        self.router.send(packet,this);
+    })['catch'](function(){
+        ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+        console.error("FAILED TO SEND.");
+    });
 };
 
 
@@ -302,10 +321,13 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
                     'sourceWindow': event.source,
                     'credentials': packet.entity
                 });
-                self.router.registerParticipant(participant,packet);
+
+
+
+                self.router.registerParticipant(participant,packet,true);
                 self.participants.push(participant);
                 isPacket(packet);
-        })['catch'](function(){
+        })['catch'](function(e){
             console.error("COULD NOT CONNECT");
         });
 
