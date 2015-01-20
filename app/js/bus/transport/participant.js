@@ -100,6 +100,7 @@ ozpIwc.Participant=function() {
 
             return packet;
         };
+        self.
         self.leaveEventChannel();
     });
 
@@ -175,8 +176,20 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.heartBeatStatus.name=this.name;
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
 
-    this.addSendAsPolicy();
-    this.addReceiveAsPolicy();
+    this.addSRPolicy();
+
+    var sendRequest = new ozpIwc.policyAuth.Request();
+    sendRequest.addSubject({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
+    sendRequest.addAction({dataType: "http://www.w3.org/2001/XMLSchema#string",value: "sendAs"});
+    sendRequest.addResource({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
+
+    var receiveRequest = new ozpIwc.policyAuth.Request();
+    receiveRequest.addSubject({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
+    receiveRequest.addAction({dataType: "http://www.w3.org/2001/XMLSchema#string",value: "receiveAs"});
+    receiveRequest.addResource({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
+
+    this.securityAttributes.sendAs= sendRequest;
+    this.securityAttributes.receiveAs= receiveRequest;
     this.joinEventChannel();
     this.events.trigger("connectedToRouter");
 };
@@ -294,38 +307,25 @@ ozpIwc.Participant.prototype.leaveEventChannel = function() {
 
 };
 
-ozpIwc.Participant.prototype.addSendAsPolicy = function() {
-    this.sendAsPolicyId = this.policyEnforcer.PDP.addPolicy({
+ozpIwc.Participant.prototype.addSRPolicy = function() {
+    this.srPolicyId = this.policyEnforcer.PDP.addPolicy({
         'subject': {
             'value': this.address
         },
         'resource': {
             'value': this.address
         },
-        'action': {
-            'value': 'sendAs'
-        }
+        'action': [
+            {
+                'value': 'sendAs'
+            },
+            {
+                'value': 'receiveAs'
+            }
+        ]
     });
 };
 
-ozpIwc.Participant.prototype.removeSendAsPolicy = function() {
-    this.policyEnforcer.PDP.removePolicy(this.sendAsPolicyId);
-};
-
-ozpIwc.Participant.prototype.addReceiveAsPolicy = function() {
-    this.sendAsPolicyId = this.policyEnforcer.PDP.addPolicy({
-        'subject': {
-            'value': this.address
-        },
-        'resource': {
-            'value': this.address
-        },
-        'action': {
-            'value': 'receiveAs'
-        }
-    });
-};
-
-ozpIwc.Participant.prototype.removeReceiveAsPolicy = function() {
-    this.policyEnforcer.PDP.removePolicy(this.receiveAsPolicyId);
+ozpIwc.Participant.prototype.removeSRPolicy = function() {
+    this.policyEnforcer.PDP.removePolicy(this.srPolicyId);
 };

@@ -133,31 +133,35 @@ ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request) {
  */
 ozpIwc.policyAuth.PDP.prototype.addPolicy = function(config){
     config = config || {};
+    config.subject = Array.isArray(config.subject) ? config.subject : [config.subject];
+    config.resource = Array.isArray(config.resource) ? config.resource : [config.resource];
+    config.action = Array.isArray(config.action) ? config.action : [config.action];
+
     var policyId;
 
     if(config.subject && config.resource && config.action){
-        policyId = 'urn:ozp:iwc:xacml:policy:'+config.subject.value+':'+config.action.value + ":" + config.resource.value;
+        policyId = 'urn:ozp:iwc:xacml:policy:run-time:'+ ozpIwc.util.generateId();
         this.policies.push(new ozpIwc.policyAuth.Policy({
             policyId : policyId,
             version: '0.1',
             ruleCombiningAlgId: 'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides',
             target: ozpIwc.policyAuth.util.generateEmptyTarget(),
             rule: [new ozpIwc.policyAuth.Rule({
-                ruleId: "urn:ozp:iwc:xacml:rule:sendAs:"+this.address,
+                ruleId: 'urn:ozp:iwc:xacml:rule:run-time:' + ozpIwc.util.generateId(),
                 effect: "Permit",
                 target: new ozpIwc.policyAuth.Target({
                     anyOf: [
-                        // subject, additional attributes can be added to the allOf array
+                        // subjects
                         new ozpIwc.policyAuth.AnyOf({
-                            allOf: [new ozpIwc.policyAuth.util.generateAttributeSubject(config.subject)]
+                            allOf: ozpIwc.policyAuth.util.generateAttributeSubjects(config.subject)
                         }),
-                        // resource, additional attributes can be added to the allOf array
+                        // resources
                         new ozpIwc.policyAuth.AnyOf({
-                            allOf: [new ozpIwc.policyAuth.util.generateAttributeResource(config.resource)]
+                            allOf: ozpIwc.policyAuth.util.generateAttributeResources(config.resource)
                         }),
-                        // action, additional attributes can be added to the allOf array
+                        // actions
                         new ozpIwc.policyAuth.AnyOf({
-                            allOf: [new ozpIwc.policyAuth.util.generateAttributeAction(config.action)]
+                            allOf: ozpIwc.policyAuth.util.generateAttributeActions(config.action)
                         })
                     ]
                 })

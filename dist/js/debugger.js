@@ -8076,31 +8076,35 @@ ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request) {
  */
 ozpIwc.policyAuth.PDP.prototype.addPolicy = function(config){
     config = config || {};
+    config.subject = Array.isArray(config.subject) ? config.subject : [config.subject];
+    config.resource = Array.isArray(config.resource) ? config.resource : [config.resource];
+    config.action = Array.isArray(config.action) ? config.action : [config.action];
+
     var policyId;
 
     if(config.subject && config.resource && config.action){
-        policyId = 'urn:ozp:iwc:xacml:policy:'+config.subject.value+':'+config.action.value + ":" + config.resource.value;
+        policyId = 'urn:ozp:iwc:xacml:policy:run-time:'+ ozpIwc.util.generateId();
         this.policies.push(new ozpIwc.policyAuth.Policy({
             policyId : policyId,
             version: '0.1',
             ruleCombiningAlgId: 'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides',
             target: ozpIwc.policyAuth.util.generateEmptyTarget(),
             rule: [new ozpIwc.policyAuth.Rule({
-                ruleId: "urn:ozp:iwc:xacml:rule:sendAs:"+this.address,
+                ruleId: 'urn:ozp:iwc:xacml:rule:run-time:' + ozpIwc.util.generateId(),
                 effect: "Permit",
                 target: new ozpIwc.policyAuth.Target({
                     anyOf: [
-                        // subject, additional attributes can be added to the allOf array
+                        // subjects
                         new ozpIwc.policyAuth.AnyOf({
-                            allOf: [new ozpIwc.policyAuth.util.generateAttributeSubject(config.subject)]
+                            allOf: ozpIwc.policyAuth.util.generateAttributeSubjects(config.subject)
                         }),
-                        // resource, additional attributes can be added to the allOf array
+                        // resources
                         new ozpIwc.policyAuth.AnyOf({
-                            allOf: [new ozpIwc.policyAuth.util.generateAttributeResource(config.resource)]
+                            allOf: ozpIwc.policyAuth.util.generateAttributeResources(config.resource)
                         }),
-                        // action, additional attributes can be added to the allOf array
+                        // actions
                         new ozpIwc.policyAuth.AnyOf({
-                            allOf: [new ozpIwc.policyAuth.util.generateAttributeAction(config.action)]
+                            allOf: ozpIwc.policyAuth.util.generateAttributeActions(config.action)
                         })
                     ]
                 })
@@ -8359,49 +8363,68 @@ ozpIwc.policyAuth.util.generateAttribute = function(config){
     });
 };
 
-ozpIwc.policyAuth.util.generateAttributeSubject = function(config){
-    config = config || {};
+ozpIwc.policyAuth.util.generateAttributeSubjects = function(config){
+    config = config || [];
+    config = Array.isArray(config) ? config : [config];
 
-    config.matchId = config.matchId || "urn:oasis:names:tc:xacml:1.0:function:string-equal";
-    config.dataType = config.dataType || "http://www.w3.org/2001/XMLSchema#string";
+    var attributes = [];
+    for (var i in config) {
+        config[i].matchId = config[i].matchId || "urn:oasis:names:tc:xacml:1.0:function:string-equal";
+        config[i].dataType = config[i].dataType || "http://www.w3.org/2001/XMLSchema#string";
 
-    return ozpIwc.policyAuth.util.generateAttribute({
-        matchId: config.matchId,
-        attributeId: "urn:oasis:names:tc:xacml:1.0:subject:subject-id",
-        category: "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject",
-        dataType: config.dataType,
-        value: config.value
-    });
+        var attr = ozpIwc.policyAuth.util.generateAttribute({
+            matchId: config[i].matchId,
+            attributeId: "urn:oasis:names:tc:xacml:1.0:subject:subject-id",
+            category: "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject",
+            dataType: config[i].dataType,
+            value: config[i].value
+        });
+        attributes.push(attr);
+    }
+    return attributes;
 };
 
-ozpIwc.policyAuth.util.generateAttributeResource = function(config){
-    config = config || {};
+ozpIwc.policyAuth.util.generateAttributeResources = function(config){
+    config = config || [];
+    config = Array.isArray(config) ? config : [config];
 
-    config.matchId = config.matchId || "urn:oasis:names:tc:xacml:1.0:function:string-equal";
-    config.dataType = config.dataType || "http://www.w3.org/2001/XMLSchema#string";
+    var attributes = [];
+    for (var i in config){
+        config[i].matchId = config[i].matchId || "urn:oasis:names:tc:xacml:1.0:function:string-equal";
+        config[i].dataType = config[i].dataType || "http://www.w3.org/2001/XMLSchema#string";
 
-    return ozpIwc.policyAuth.util.generateAttribute({
-        matchId: config.matchId,
-        attributeId: "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
-        category: "urn:oasis:names:tc:xacml:3.0:attribute-category:resource",
-        dataType: config.dataType,
-        value: config.value
-    });
+        var attr = ozpIwc.policyAuth.util.generateAttribute({
+            matchId: config[i].matchId,
+            attributeId: "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
+            category: "urn:oasis:names:tc:xacml:3.0:attribute-category:resource",
+            dataType: config[i].dataType,
+            value: config[i].value
+        });
+        attributes.push(attr);
+    }
+    return attributes;
+
 };
 
-ozpIwc.policyAuth.util.generateAttributeAction = function(config){
-    config = config || {};
+ozpIwc.policyAuth.util.generateAttributeActions = function(config){
+    config = config || [];
+    config = Array.isArray(config) ? config : [config];
 
-    config.matchId = config.matchId || "urn:oasis:names:tc:xacml:1.0:function:string-equal";
-    config.dataType = config.dataType || "http://www.w3.org/2001/XMLSchema#string";
+    var attributes = [];
+    for (var i in config) {
+        config[i].matchId = config[i].matchId || "urn:oasis:names:tc:xacml:1.0:function:string-equal";
+        config[i].dataType = config[i].dataType || "http://www.w3.org/2001/XMLSchema#string";
 
-    return ozpIwc.policyAuth.util.generateAttribute({
-        matchId: config.matchId,
-        attributeId: "urn:oasis:names:tc:xacml:1.0:action:action-id",
-        category: "urn:oasis:names:tc:xacml:3.0:attribute-category:action",
-        dataType: config.dataType,
-        value: config.value
-    });
+        var attr = ozpIwc.policyAuth.util.generateAttribute({
+            matchId: config[i].matchId,
+            attributeId: "urn:oasis:names:tc:xacml:1.0:action:action-id",
+            category: "urn:oasis:names:tc:xacml:3.0:attribute-category:action",
+            dataType: config[i].dataType,
+            value: config[i].value
+        });
+        attributes.push(attr);
+    }
+    return attributes;
 };
 
 
@@ -9908,6 +9931,7 @@ ozpIwc.Participant=function() {
 
             return packet;
         };
+        self.
         self.leaveEventChannel();
     });
 
@@ -9983,8 +10007,20 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.heartBeatStatus.name=this.name;
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
 
-    this.addSendAsPolicy();
-    this.addReceiveAsPolicy();
+    this.addSRPolicy();
+
+    var sendRequest = new ozpIwc.policyAuth.Request();
+    sendRequest.addSubject({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
+    sendRequest.addAction({dataType: "http://www.w3.org/2001/XMLSchema#string",value: "sendAs"});
+    sendRequest.addResource({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
+
+    var receiveRequest = new ozpIwc.policyAuth.Request();
+    receiveRequest.addSubject({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
+    receiveRequest.addAction({dataType: "http://www.w3.org/2001/XMLSchema#string",value: "receiveAs"});
+    receiveRequest.addResource({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
+
+    this.securityAttributes.sendAs= sendRequest;
+    this.securityAttributes.receiveAs= receiveRequest;
     this.joinEventChannel();
     this.events.trigger("connectedToRouter");
 };
@@ -10102,41 +10138,29 @@ ozpIwc.Participant.prototype.leaveEventChannel = function() {
 
 };
 
-ozpIwc.Participant.prototype.addSendAsPolicy = function() {
-    this.sendAsPolicyId = this.policyEnforcer.PDP.addPolicy({
+ozpIwc.Participant.prototype.addSRPolicy = function() {
+    this.srPolicyId = this.policyEnforcer.PDP.addPolicy({
         'subject': {
             'value': this.address
         },
         'resource': {
             'value': this.address
         },
-        'action': {
-            'value': 'sendAs'
-        }
+        'action': [
+            {
+                'value': 'sendAs'
+            },
+            {
+                'value': 'receiveAs'
+            }
+        ]
     });
 };
 
-ozpIwc.Participant.prototype.removeSendAsPolicy = function() {
-    this.policyEnforcer.PDP.removePolicy(this.sendAsPolicyId);
+ozpIwc.Participant.prototype.removeSRPolicy = function() {
+    this.policyEnforcer.PDP.removePolicy(this.srPolicyId);
 };
 
-ozpIwc.Participant.prototype.addReceiveAsPolicy = function() {
-    this.sendAsPolicyId = this.policyEnforcer.PDP.addPolicy({
-        'subject': {
-            'value': this.address
-        },
-        'resource': {
-            'value': this.address
-        },
-        'action': {
-            'value': 'receiveAs'
-        }
-    });
-};
-
-ozpIwc.Participant.prototype.removeReceiveAsPolicy = function() {
-    this.policyEnforcer.PDP.removePolicy(this.receiveAsPolicyId);
-};
 /**
  * Classes related to transport aspects of the IWC.
  * @module bus
@@ -11593,8 +11617,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
      * @event #connectedToRouter
      */
     this.on("connectedToRouter",function() {
-        this.securityAttributes.sendAs=this.address;
-        this.securityAttributes.receiveAs=this.address;
+
     },this);
 
     /**
@@ -11612,23 +11635,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
     var self = this;
-    var request = new ozpIwc.policyAuth.Request();
-
-    request.addSubject({
-        dataType: "http://www.w3.org/2001/XMLSchema#string",
-        value: this.address
-    });
-
-    request.addAction({
-        dataType: "http://www.w3.org/2001/XMLSchema#string",
-        value: "receiveAs"
-    });
-
-    request.addResource({
-        dataType: "http://www.w3.org/2001/XMLSchema#string",
-        value: this.address
-    });
-    return this.policyEnforcer.request(request).then(function() {
+    return this.policyEnforcer.request(this.securityAttributes.receiveAs).then(function() {
         self.sendToRecipient(packetContext.packet);
     })['catch'](function(){
             console.error("FAILED TO RECEIVE");
@@ -11709,22 +11716,8 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
     var self = this;
-    var request = new ozpIwc.policyAuth.Request();
-    request.addSubject({
-        dataType: "http://www.w3.org/2001/XMLSchema#string",
-        value: this.address
-    });
 
-    request.addAction({
-        dataType: "http://www.w3.org/2001/XMLSchema#string",
-        value: "sendAs"
-    });
-
-    request.addResource({
-        dataType: "http://www.w3.org/2001/XMLSchema#string",
-        value: this.address
-    });
-    this.policyEnforcer.request(request).then(function(){
+    this.policyEnforcer.request(this.securityAttributes.sendAs).then(function(){
         self.router.send(packet,this);
     })['catch'](function(){
         ozpIwc.metrics.counter("transport.packets.forbidden").inc();
@@ -11834,18 +11827,10 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
         var request = new ozpIwc.policyAuth.Request();
-        request.addSubject({
-            'dataType': 'http://www.w3.org/2001/XMLSchema#anyURI',
-            'value': event.origin
-        });
-        request.addResource({
-            'dataType': 'http://www.w3.org/2001/XMLSchema#string',
-            'value': '$bus.multicast'
-        });
-        request.addAction({
-            'dataType': 'http://www.w3.org/2001/XMLSchema#string',
-            'value': 'connect'
-        });
+        request.addSubject({'dataType': 'http://www.w3.org/2001/XMLSchema#anyURI','value': event.origin});
+        request.addResource({'dataType': 'http://www.w3.org/2001/XMLSchema#string','value': '$bus.multicast'});
+        request.addAction({'dataType': 'http://www.w3.org/2001/XMLSchema#string','value': 'connect'});
+
         var self = this;
         this.router.policyEnforcer.request(request).then(function(){
                 participant=new ozpIwc.PostMessageParticipant({
@@ -11853,8 +11838,7 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
                     'sourceWindow': event.source,
                     'credentials': packet.entity
                 });
-
-
+                participant.securityAttributes.connect = request;
 
                 self.router.registerParticipant(participant,packet,true);
                 self.participants.push(participant);
@@ -12803,12 +12787,8 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
     var subject=packetContext.srcSubject || {
         'rawAddress':packetContext.packet.src
     };
+    //@TODO use PEP for auth
     return new ozpIwc.AsyncAction().resolve('success');
-//    return this.participant.policyEnforcer.request({
-//        'subject': subject,
-//        'object': node.permissions,
-//        'action': {'action':packetContext.action}
-//    });
 };
 
 

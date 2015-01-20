@@ -61,8 +61,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
      * @event #connectedToRouter
      */
     this.on("connectedToRouter",function() {
-        this.securityAttributes.sendAs=this.address;
-        this.securityAttributes.receiveAs=this.address;
+
     },this);
 
     /**
@@ -80,23 +79,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
     var self = this;
-    var request = new ozpIwc.policyAuth.Request();
-
-    request.addSubject({
-        dataType: "http://www.w3.org/2001/XMLSchema#string",
-        value: this.address
-    });
-
-    request.addAction({
-        dataType: "http://www.w3.org/2001/XMLSchema#string",
-        value: "receiveAs"
-    });
-
-    request.addResource({
-        dataType: "http://www.w3.org/2001/XMLSchema#string",
-        value: this.address
-    });
-    return this.policyEnforcer.request(request).then(function() {
+    return this.policyEnforcer.request(this.securityAttributes.receiveAs).then(function() {
         self.sendToRecipient(packetContext.packet);
     })['catch'](function(){
             console.error("FAILED TO RECEIVE");
@@ -177,22 +160,8 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
     var self = this;
-    var request = new ozpIwc.policyAuth.Request();
-    request.addSubject({
-        dataType: "http://www.w3.org/2001/XMLSchema#string",
-        value: this.address
-    });
 
-    request.addAction({
-        dataType: "http://www.w3.org/2001/XMLSchema#string",
-        value: "sendAs"
-    });
-
-    request.addResource({
-        dataType: "http://www.w3.org/2001/XMLSchema#string",
-        value: this.address
-    });
-    this.policyEnforcer.request(request).then(function(){
+    this.policyEnforcer.request(this.securityAttributes.sendAs).then(function(){
         self.router.send(packet,this);
     })['catch'](function(){
         ozpIwc.metrics.counter("transport.packets.forbidden").inc();
@@ -302,18 +271,10 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
         var request = new ozpIwc.policyAuth.Request();
-        request.addSubject({
-            'dataType': 'http://www.w3.org/2001/XMLSchema#anyURI',
-            'value': event.origin
-        });
-        request.addResource({
-            'dataType': 'http://www.w3.org/2001/XMLSchema#string',
-            'value': '$bus.multicast'
-        });
-        request.addAction({
-            'dataType': 'http://www.w3.org/2001/XMLSchema#string',
-            'value': 'connect'
-        });
+        request.addSubject({'dataType': 'http://www.w3.org/2001/XMLSchema#anyURI','value': event.origin});
+        request.addResource({'dataType': 'http://www.w3.org/2001/XMLSchema#string','value': '$bus.multicast'});
+        request.addAction({'dataType': 'http://www.w3.org/2001/XMLSchema#string','value': 'connect'});
+
         var self = this;
         this.router.policyEnforcer.request(request).then(function(){
                 participant=new ozpIwc.PostMessageParticipant({
@@ -321,8 +282,7 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
                     'sourceWindow': event.source,
                     'credentials': packet.entity
                 });
-
-
+                participant.securityAttributes.connect = request;
 
                 self.router.registerParticipant(participant,packet,true);
                 self.participants.push(participant);
