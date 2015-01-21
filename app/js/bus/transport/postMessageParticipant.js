@@ -79,7 +79,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
     var self = this;
-    return this.policyEnforcer.request(this.securityAttributes.receiveAs).then(function() {
+    return this.policyEnforcer.request(this.securityAttributes.receiveAs(packetContext.packet.dst)).then(function() {
         self.sendToRecipient(packetContext.packet);
     })['catch'](function(){
             console.error("FAILED TO RECEIVE");
@@ -161,7 +161,7 @@ ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
     var self = this;
 
-    this.policyEnforcer.request(this.securityAttributes.sendAs).then(function(){
+    return this.policyEnforcer.request(this.securityAttributes.sendAs(packet.src)).then(function(){
         self.router.send(packet,this);
     })['catch'](function(){
         ozpIwc.metrics.counter("transport.packets.forbidden").inc();

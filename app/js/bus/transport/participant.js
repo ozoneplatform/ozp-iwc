@@ -178,18 +178,23 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
 
     this.addSRPolicy();
 
-    var sendRequest = new ozpIwc.policyAuth.Request();
-    sendRequest.addSubject({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
-    sendRequest.addAction({dataType: "http://www.w3.org/2001/XMLSchema#string",value: "sendAs"});
-    sendRequest.addResource({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
+    var self = this;
+    this.securityAttributes.sendAs = function(src){
+        var req = new ozpIwc.policyAuth.Request();
+        req.addSubject({dataType: "http://www.w3.org/2001/XMLSchema#string",value: self.address});
+        req.addAction({dataType: "http://www.w3.org/2001/XMLSchema#string",value: "sendAs"});
+        req.addResource({dataType: "http://www.w3.org/2001/XMLSchema#string",value: src});
+        return req;
+    };
 
-    var receiveRequest = new ozpIwc.policyAuth.Request();
-    receiveRequest.addSubject({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
-    receiveRequest.addAction({dataType: "http://www.w3.org/2001/XMLSchema#string",value: "receiveAs"});
-    receiveRequest.addResource({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
+    this.securityAttributes.receiveAs = function(dst) {
+        var req = new ozpIwc.policyAuth.Request();
+        req.addSubject({dataType: "http://www.w3.org/2001/XMLSchema#string", value: self.address});
+        req.addAction({dataType: "http://www.w3.org/2001/XMLSchema#string", value: "receiveAs"});
+        req.addResource({dataType: "http://www.w3.org/2001/XMLSchema#string", value: dst});
+        return req;
+    };
 
-    this.securityAttributes.sendAs= sendRequest;
-    this.securityAttributes.receiveAs= receiveRequest;
     this.joinEventChannel();
     this.events.trigger("connectedToRouter");
 };
