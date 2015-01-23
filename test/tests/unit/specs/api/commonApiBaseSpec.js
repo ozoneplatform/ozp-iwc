@@ -160,7 +160,7 @@ describe("Common API Base class",function() {
             apiBase.data['/node']=simpleNode;
         });
         
-        it("routes packets to invokeHandler based upon the action",function() {
+        it("routes packets to invokeHandler based upon the action",function(done) {
             spyOn(apiBase,"handleGet");
             var context=new TestPacketContext({
                 'leaderState': "leader",
@@ -172,11 +172,14 @@ describe("Common API Base class",function() {
                 }
             });
 
-            apiBase.routePacket(context);
-            expect(apiBase.handleGet).toHaveBeenCalled();
+            apiBase.routePacket(context).then(function(){
+                expect(apiBase.handleGet).toHaveBeenCalled();
+                done();
+            });
+
         });
 
-        it("routes packets without an action to the rootHandleAction",function() {
+        it("routes packets without an action to the rootHandleAction",function(done) {
             apiBase.rootHandleGet=jasmine.createSpy('rootHandleGet');
             var context=new TestPacketContext({
                 'leaderState': "leader",
@@ -187,11 +190,13 @@ describe("Common API Base class",function() {
                 }
             });
 
-            apiBase.routePacket(context);
-            expect(apiBase.rootHandleGet).toHaveBeenCalled();
+            apiBase.routePacket(context).then(function() {
+                expect(apiBase.rootHandleGet).toHaveBeenCalled();
+                done();
+            });
         });
         
-        it("finds the right node to send to invokeHandler",function() {
+        it("finds the right node to send to invokeHandler",function(done) {
             var context=new TestPacketContext({
                 'leaderState': "leader",
                 'packet': {
@@ -202,19 +207,21 @@ describe("Common API Base class",function() {
                 }
             });
 
-            apiBase.routePacket(context);
-            expect(context.responses[0]).toEqual(jasmine.objectContaining({
-                'dst': "srcParticipant",
-                'resource': "/node",
-                'response': "ok",
-                'replyTo' : "1234",
-                'entity' : { 'foo':1}
-            }));
+            apiBase.routePacket(context).then(function(){
+                expect(context.responses[0]).toEqual(jasmine.objectContaining({
+                    'dst': "srcParticipant",
+                    'resource': "/node",
+                    'response': "ok",
+                    'replyTo': "1234",
+                    'entity': {'foo': 1}
+                }));
+                done();
+            });
         });
         
 
         
-        it("returns a badAction packet for unsupported actions",function() {
+        it("returns a badAction packet for unsupported actions",function(done) {
             var context=new TestPacketContext({
                 'leaderState': "leader",
                 'packet': {
@@ -225,15 +232,17 @@ describe("Common API Base class",function() {
                 }
             });
 
-            apiBase.routePacket(context);
-            expect(context.responses[0]).toEqual(jasmine.objectContaining({
-                'dst': "srcParticipant",
-                'response': "badAction"
-            }));
+            apiBase.routePacket(context).then(function(){
+                expect(context.responses[0]).toEqual(jasmine.objectContaining({
+                    'dst': "srcParticipant",
+                    'response': "badAction"
+                }));
+                done();
+            });
             
         });
         
-        it("returns a noPerm response if the action is not permitted",function() {
+        it("returns a noPerm response if the action is not permitted",function(done) {
             apiBase.data['/node'].permissions=['haxed'];
             var context=new TestPacketContext({
                 'leaderState': "leader",
@@ -245,13 +254,15 @@ describe("Common API Base class",function() {
                 }
             });
 
-            apiBase.routePacket(context);
-            expect(context.responses[0]).toEqual(jasmine.objectContaining({
-                'dst': "srcParticipant",
-                'response': "noPerm"
-            }));
+            apiBase.routePacket(context).then(function(){
+                expect(context.responses[0]).toEqual(jasmine.objectContaining({
+                    'dst': "srcParticipant",
+                    'response': "noPerm"
+                }));
+                done();
+            });
         });
-        it("returns noMatch response if the validatePreconditions returns false",function() {
+        it("returns noMatch response if the validatePreconditions returns false",function(done) {
            var context=new TestPacketContext({
                 'leaderState': "leader",
                 'packet': {
@@ -263,13 +274,15 @@ describe("Common API Base class",function() {
                 }
             });
 
-            apiBase.routePacket(context);
-            expect(context.responses[0]).toEqual(jasmine.objectContaining({
-                'dst': "srcParticipant",
-                'response': "noMatch"
-            }));
+            apiBase.routePacket(context).then(function(){
+                expect(context.responses[0]).toEqual(jasmine.objectContaining({
+                    'dst': "srcParticipant",
+                    'response': "noMatch"
+                }));
+                done();
+            });
         });
-        it("returns badResource if an invalid resource is used",function() {
+        it("returns badResource if an invalid resource is used",function(done) {
             spyOn(apiBase,'validateResource').and.throwError(new ozpIwc.ApiError("noMatch","blah"));
             var context=new TestPacketContext({
                 'leaderState': "leader",
@@ -281,14 +294,16 @@ describe("Common API Base class",function() {
                 }
             });
 
-            apiBase.routePacket(context);
-            expect(context.responses[0]).toEqual(jasmine.objectContaining({
-                'dst': "srcParticipant",
-                'response': "noMatch"
-            }));
+            apiBase.routePacket(context).then(function(){
+                expect(context.responses[0]).toEqual(jasmine.objectContaining({
+                    'dst': "srcParticipant",
+                    'response': "noMatch"
+                }));
+                done();
+            });
         });
 
-        it("notifies watchers if the node changed",function() {
+        it("notifies watchers if the node changed",function(done) {
             simpleNode.watch({'src': "watcher",'msgId': 5678});
             var context=new TestPacketContext({
                 'leaderState': "leader",
@@ -301,16 +316,18 @@ describe("Common API Base class",function() {
                 }
             });
 
-            apiBase.routePacket(context);            
-            
-            expect(apiBase.participant.sentPackets.length).toEqual(1);
-            var changePacket=apiBase.participant.sentPackets[0];
-            expect(changePacket).toBeDefined();
-            expect(changePacket.response).toEqual("changed");
-            expect(changePacket.entity.newValue).toEqual({'bar':2});
-            expect(changePacket.entity.oldValue).toEqual({'foo':1});
+            apiBase.routePacket(context).then(function(){
+                expect(apiBase.participant.sentPackets.length).toEqual(1);
+                var changePacket = apiBase.participant.sentPackets[0];
+                expect(changePacket).toBeDefined();
+                expect(changePacket.response).toEqual("changed");
+                expect(changePacket.entity.newValue).toEqual({'bar': 2});
+                expect(changePacket.entity.oldValue).toEqual({'foo': 1});
+                done();
+            });
         });
-        it("does not notify watchers on a get",function() {
+
+        it("does not notify watchers on a get",function(done) {
                         simpleNode.watch({'src': "watcher",'msgId': 5678});
             var context=new TestPacketContext({
                 'leaderState': "leader",
@@ -322,12 +339,14 @@ describe("Common API Base class",function() {
                 }
             });
 
-            apiBase.routePacket(context);            
-            
-            expect(apiBase.participant.sentPackets.length).toEqual(0);
-            expect(apiBase.participant.sentPackets[0]).toBeUndefined();
+            apiBase.routePacket(context).then(function() {
+                expect(apiBase.participant.sentPackets.length).toEqual(0);
+                expect(apiBase.participant.sentPackets[0]).toBeUndefined();
+                done();
+            });
         });
-        it("responds to a root level list action", function() {
+
+        it("responds to a root level list action", function(done) {
             // possibly brittle, if CommonApiBase changes how it stores the
             // keys and values
             apiBase.data["/node"]=simpleNode;
@@ -342,15 +361,17 @@ describe("Common API Base class",function() {
                 }
             });
 
-            apiBase.routePacket(context);            
-            
-            expect(context.responses.length).toEqual(1);
-            
-            var packet=context.responses[0];
-            expect(packet.response).toEqual("ok");
-            expect(packet.entity).toEqual(["/node"]);
+            apiBase.routePacket(context).then(function() {
+                expect(context.responses.length).toEqual(1);
+
+                var packet = context.responses[0];
+                expect(packet.response).toEqual("ok");
+                expect(packet.entity).toEqual(["/node"]);
+                done();
+            });
         });
     });
+
     describe("Collection values",function() {
         var collectionNode=new ozpIwc.CommonApiCollectionValue({
                 resource: "/foo",
@@ -378,7 +399,7 @@ describe("Common API Base class",function() {
             apiBase.addDynamicNode(collectionNode);
         });
     
-        it("get on collection nodes list their contents",function() {
+        it("get on collection nodes list their contents",function(done) {
             var context=new TestPacketContext({
                 'leaderState': "leader",
                 'packet': {
@@ -389,17 +410,18 @@ describe("Common API Base class",function() {
                 }
             });
 
-            apiBase.routePacket(context);
-            
-            expect(context.responses[0]).toEqual(jasmine.objectContaining({
-                'dst': "srcParticipant",
-                'response': "ok",
-                'resource': "/foo",
-                'entity': ["/foo/1","/foo/2","/foo/3"]
-            }));
+            apiBase.routePacket(context).then(function(){
+                expect(context.responses[0]).toEqual(jasmine.objectContaining({
+                    'dst': "srcParticipant",
+                    'response': "ok",
+                    'resource': "/foo",
+                    'entity': ["/foo/1","/foo/2","/foo/3"]
+                }));
+                done();
+            });
         });     
        
-        it("set on collection nodes update their contents",function() {
+        it("set on collection nodes update their contents",function(done) {
 
             apiBase.routePacket(new TestPacketContext({
                 'leaderState': "leader",
@@ -420,16 +442,18 @@ describe("Common API Base class",function() {
                     'src' : "srcParticipant"
                 }
             });
-            apiBase.routePacket(context);            
-            expect(context.responses[0]).toEqual(jasmine.objectContaining({
-                'dst': "srcParticipant",
-                'response': "ok",
-                'entity': ["/foo/1","/foo/2","/foo/3","/foo/4"]
-            }));
+            apiBase.routePacket(context).then(function() {
+                expect(context.responses[0]).toEqual(jasmine.objectContaining({
+                    'dst': "srcParticipant",
+                    'response': "ok",
+                    'entity': ["/foo/1", "/foo/2", "/foo/3", "/foo/4"]
+                }));
+                done();
+            });
             
         });     
         
-        it("notifies watchers if the collection node changed",function() {
+        it("notifies watchers if the collection node changed",function(done) {
             collectionNode.watch({'src': "watcher",'msgId': 5678});
             apiBase.routePacket(new TestPacketContext({
                 'leaderState': "leader",
@@ -440,13 +464,14 @@ describe("Common API Base class",function() {
                     'src' : "srcParticipant",
                     'entity': {'foo': 4}
                 }
-            }));
-            
-            expect(apiBase.participant.sentPackets.length).toEqual(1);
-            var changePacket=apiBase.participant.sentPackets[0];
-            expect(changePacket.response).toEqual("changed");
-            expect(changePacket.entity.newValue).toEqual([ "/foo/1", "/foo/2", "/foo/3", "/foo/4" ]);
-            expect(changePacket.entity.oldValue).toEqual([ "/foo/1", "/foo/2", "/foo/3"]);
+            })).then(function(){
+                expect(apiBase.participant.sentPackets.length).toEqual(1);
+                var changePacket=apiBase.participant.sentPackets[0];
+                expect(changePacket.response).toEqual("changed");
+                expect(changePacket.entity.newValue).toEqual([ "/foo/1", "/foo/2", "/foo/3", "/foo/4" ]);
+                expect(changePacket.entity.oldValue).toEqual([ "/foo/1", "/foo/2", "/foo/3"]);
+                done();
+            });
         });
         
     });

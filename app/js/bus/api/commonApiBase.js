@@ -375,8 +375,7 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
     var subject=packetContext.srcSubject || {
         'rawAddress':packetContext.packet.src
     };
-    //@TODO use PEP for auth
-    return new ozpIwc.AsyncAction().resolve('success');
+    return ozpIwc.authorization.isPermitted();
 };
 
 
@@ -487,20 +486,14 @@ ozpIwc.CommonApiBase.prototype.createKey=function(prefix) {
 ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
     var packet=packetContext.packet;
     this.events.trigger("receive",packetContext);
-    var self=this;
-    var errorWrap=function(f) {
-        try {
-            f.apply(self);
-        } catch(e) {
-            if(!e.errorAction) {
-                ozpIwc.log.log("Unexpected error:",e);
-            }
-            packetContext.replyTo({
-                'response': e.errorAction || "unknownError",
-                'entity': e.message
-            });
-            return;
+    var errorHandler = function(e){
+        if(!e.errorAction) {
+            ozpIwc.log.log("Unexpected error:",e);
         }
+        packetContext.replyTo({
+            'response': e.errorAction || "unknownError",
+            'entity': e.message
+        });
     };
     if(packetContext.leaderState !== 'leader' && packetContext.leaderState !== 'actingLeader'  )	{
         // if not leader, just drop it.
@@ -513,31 +506,42 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         // if it's a response packet that didn't wire an explicit handler, drop the sucker
         return;
     }
-    var node;
+    var self = this;
+    try{
+        var node;
 
-    errorWrap(function() {
-        var handler=this.findHandler(packetContext);
-        this.validateResource(node,packetContext);
-        node=this.findOrMakeValue(packetContext.packet);
+        var handler=self.findHandler(packetContext);
+        self.validateResource(node,packetContext);
+        node=self.findOrMakeValue(packetContext.packet);
 
-        this.isPermitted(node,packetContext)
-            .success(function() {
-                errorWrap(function() {
-                    this.validatePreconditions(node,packetContext);
-                    var snapshot=node.snapshot();
-                    handler.call(this,node,packetContext);
-                    this.notifyWatchers(node, node.changesSince(snapshot));
+        return self.isPermitted(node,packetContext).then(function() {
+            try{
+                self.validatePreconditions(node,packetContext);
+                var snapshot=node.snapshot();
+                handler.call(self,node,packetContext);
+                self.notifyWatchers(node, node.changesSince(snapshot));
 
-                    // update all the collection values
-                    this.dynamicNodes.forEach(function(resource) {
-                        this.updateDynamicNode(this.data[resource]);
-                    },this);
+                // update all the collection values
+                self.dynamicNodes.forEach(function(resource) {
+                    self.updateDynamicNode(self.data[resource]);
                 });
-            },this)
-            .failure(function() {
-                packetContext.replyTo({'response':'noPerm'});
-            });
-    });
+                return;
+            }catch(e){
+                errorHandler(e);
+                return;
+            }
+
+        })['catch'](function() {
+            packetContext.replyTo({'response':'noPerm'});
+            return;
+        });
+
+    }catch(e){
+        errorHandler(e);
+        return new Promise(function(res,rej){
+            res();
+        });
+    }
 };
 
 /**
