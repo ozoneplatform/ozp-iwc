@@ -15,7 +15,7 @@ ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining
         atLeastOneErrorDP,
         atLeastOnePermit = false;
 
-    for(var i in rules){
+    for(var i in policies){
         var decision = policies[i].evaluate(request);
         switch(decision){
             case "Deny":

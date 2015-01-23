@@ -78,6 +78,13 @@ describe("Policy Repository Point",function() {
             );
         });
 
+        it('handles no policies in the check',function(done){
+            prp.getPolicy([]).then(function(resolve){
+                expect(resolve()).toEqual("Permit");
+                done();
+            });
+        });
+
         it('always applies persistent policies to any policy request',function(done){
 
             prp = new ozpIwc.policyAuth.PRP({
@@ -96,17 +103,6 @@ describe("Policy Repository Point",function() {
         });
 
 
-        it("applies a default combining algorithm if one is not provided",function(done){
-            // override the function, just testing that the default is called
-            ozpIwc.policyAuth.PolicyCombining[prp.defaultCombiningAlgorithm]
-                = function(policies,request){
-                done();
-            };
-
-            prp.getPolicy().then(function(eval){
-                eval();
-            });
-        });
     });
 
     describe("policy acquisition success",function(){
@@ -115,7 +111,9 @@ describe("Policy Repository Point",function() {
             // make all policy requests reject to test the denyAll functionality
             spyOn(ozpIwc.util,"ajax").and.callFake(function(){
                 return new Promise(function(resolve,reject){
-                    resolve(mockPolicy);
+                    resolve({
+                        'response': mockPolicy
+                    });
                 });
             });
 
@@ -127,7 +125,7 @@ describe("Policy Repository Point",function() {
                 expect(policy.policyId).toEqual(mockPolicy.policyId);
                 expect(policy.version).toEqual(mockPolicy.version);
                 expect(policy.description).toEqual(mockPolicy.description);
-                expect(policy.rule).toEqual(mockPolicy.rule);
+                expect(policy.rule.category).toEqual(mockPolicy.rule.category);
                 expect(policy.ruleCombiningAlgId).toEqual(mockPolicy.ruleCombiningAlgId);
                 expect(policy.evaluate).not.toBeUndefined();
                 done();
@@ -139,6 +137,17 @@ describe("Policy Repository Point",function() {
             prp.getPolicy("connectionPolicy.json").then(function(evaluate){
                 expect(typeof evaluate).toEqual("function");
                 done();
+            });
+        });
+        it("applies a default combining algorithm if one is not provided",function(done){
+            // override the function, just testing that the default is called
+            ozpIwc.policyAuth.PolicyCombining[prp.defaultCombiningAlgorithm]
+                = function(policies,request){
+                done();
+            };
+
+            prp.getPolicy("connectionPolicy.json").then(function(eval){
+                eval();
             });
         });
 

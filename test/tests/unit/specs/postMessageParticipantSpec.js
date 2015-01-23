@@ -16,40 +16,62 @@ describe("Post Message Participant",function() {
         fakeRouter= new FakeRouter();
     });
 
-    it("permits receiving packets that have a destination matching the receiveAs Attribute", function() {
+    it("permits receiving packets that have a destination matching the receiveAs Attribute", function(done) {
         var participant = makeParticipant();
-        var res = participant.receiveFromRouterImpl(new TestPacketContext({
+        var packet =  new TestPacketContext({
             'packet': {
                 'dst': participant.address
             }
-        }));
-        expect(res.resolution).toEqual("success");
+        });
+        participant.receiveFromRouterImpl(packet).then(function(resolution){
+            expect(resolution).toEqual("Permit");
+            done();
+        })['catch'](function(){
+            expect(false).toEqual(true);
+            done();
+        });
     });
 
-    it("denies receiving packets that don't have a destination matching the receiveAs Attribute", function() {
+    it("denies receiving packets that don't have a destination matching the receiveAs Attribute", function(done) {
         var participant = makeParticipant();
-        var res = participant.receiveFromRouterImpl(new TestPacketContext({
+        var packet =  new TestPacketContext({
             'packet': {
                 'dst': participant.address+1
             }
-        }));
-        expect(res.resolution).toEqual("failure");
-    });
-
-    it("permits sending packets that have a source matching the sendAs Attribute", function() {
-        var participant = makeParticipant();
-        var res = participant.send({
-                'src': participant.address
-            });
-        expect(res.resolution).toEqual("success");
-    });
-
-    it("denies sending packets that don't have a source matching the sendAs Attribute", function() {
-        var participant = makeParticipant();
-
-        var res = participant.send({
-            'src': participant.address+1
         });
-        expect(res.resolution).toEqual("failure");
+        participant.receiveFromRouterImpl(packet).then(function(resolution){
+            expect(false).toEqual(true);
+            done();
+        })['catch'](function(){
+            expect(resolution).toEqual("Deny");
+            done();
+        });
+    });
+
+    it("permits sending packets that have a source matching the sendAs Attribute", function(done) {
+        var participant = makeParticipant();
+        participant.send({
+            'src': participant.address
+        }).then(function(resolution){
+            expect(resolution).toEqual("Permit");
+            done();
+        })['catch'](function(){
+            expect(false).toEqual(true);
+            done();
+        });
+
+    });
+
+    it("denies sending packets that don't have a source matching the sendAs Attribute", function(done) {
+        var participant = makeParticipant();
+        participant.send({
+            'src': participant.address+1
+        }).then(function(resolution){
+            expect(false).toEqual(true);
+            done();
+        })['catch'](function(){
+            expect(resolution).toEqual("Deny");
+            done();
+        });
     });
 });

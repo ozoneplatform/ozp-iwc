@@ -23,9 +23,9 @@ ozpIwc.abacPolicies={};
  */
 ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes=function(request) {
     if(request.object && Object.keys(request.object).length===0) {
-        return "permit";
+        return "Permit";
     }
-    return "undetermined";
+    return "Undetermined";
 };
 /**
  * Returns `permit` when the request's subject contains all of the request's object.
@@ -39,13 +39,13 @@ ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes=function(request) {
 ozpIwc.abacPolicies.subjectHasAllObjectAttributes=function(request) {
     // if no object permissions, then it's trivially true
     if(!request.object) {
-        return "permit";
+        return "Permit";
     }
     var subject = request.subject || {};
     if(ozpIwc.util.objectContainsAll(subject,request.object,this.implies)) {
-        return "permit";
+        return "Permit";
     }
-    return "deny";
+    return "Deny";
 };
 
 /**
@@ -56,7 +56,7 @@ ozpIwc.abacPolicies.subjectHasAllObjectAttributes=function(request) {
  * @returns {String}
  */
 ozpIwc.abacPolicies.permitAll=function() {
-    return "permit";
+    return "Permit";
 };
 
 

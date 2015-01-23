@@ -28,8 +28,10 @@ ozpIwc.policyAuth.PRP = function(config){
  *                   chained "then".
  */
 ozpIwc.policyAuth.PRP.prototype.getPolicy = function(policyURIs,combiningAlgorithm){
-
+    policyURIs = policyURIs || [];
+    Array.isArray(policyURIs)? policyURIs : [policyURIs];
     var policies = [];
+
     var combiningFunction = ozpIwc.policyAuth.PolicyCombining[combiningAlgorithm] ||
         ozpIwc.policyAuth.PolicyCombining[this.defaultCombiningAlgorithm];
 
@@ -43,6 +45,13 @@ ozpIwc.policyAuth.PRP.prototype.getPolicy = function(policyURIs,combiningAlgorit
             //Push the policy fetch to the array, when it resolves its value (policy) will be part of the array
             policies.push(promise);
         }
+    }
+
+    // If there are no policies to check against, assume trivial and permit
+    if(policies.length === 0){
+        return new Promise(function(resolve,reject){
+            resolve(ozpIwc.abacPolicies.permitAll);
+        });
     }
 
     return Promise.all(policies).then(function(policies){
@@ -66,9 +75,9 @@ ozpIwc.policyAuth.PRP.prototype.fetchPolicy = function(policyURI){
         'method': "GET",
         'href': policyURI
     }).then(function(data){
-        self.policyCache[policyURI] = self.formatPolicy(data);
+        self.policyCache[policyURI] = self.formatPolicy(data.response);
         return self.policyCache[policyURI];
-    })['catch'](function(){
+    })['catch'](function(e){
         self.policyCache[policyURI] = ozpIwc.abacPolicies.denyAll;
         return self.policyCache[policyURI];
     });

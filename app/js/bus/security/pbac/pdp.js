@@ -55,7 +55,7 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
        return self.prp.getPolicy(formattedRequest.policies, formattedRequest.combiningAlgorithm).then(function(eval){
 
            /*@TODO policy evaluation not yet complete*/
-           var result = eval(formattedRequest.category);
+           var result = eval(formattedRequest);
            var response = {
                'result':result,
                'request': request,
@@ -71,22 +71,52 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
 };
 
 ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request){
+    request = request || {};
     var promises = [];
     var subject = request.subject;
-    var resource = request.resouce;
+    var resource = request.resource;
     var action = request.action;
 
+    // If its a string, use it as a key and fetch its attrs from PIP
     if(typeof request.subject === "string"){
         subject = this.pip.getAttributes(request.subject);
+    }else if(request.subject && request.subject.dataType && request.subject.attributeValue){
+        //Else check if the subject wasn't given a key (we support multiple subjects). Wrap it in a generated Key
+        subject = {
+            'attr:1' : request.subject
+        }
     }
+
     if(typeof request.resource === "string"){
         resource = this.pip.getAttributes(request.resource);
+    } else if( request.resource && request.resource.dataType && request.resource.attributeValue){
+        resource = {
+            'attr:1' : request.resource
+        }
     }
+
+    // If its a string, its a single action. Wrap it as needed.
     if(typeof request.action === "string"){
         action = {
-            'dataType': "http://www.w3.org/2001/XMLSchema#string",
-            'attributeValue': request.action
+            'attr:1': {
+                'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                'attributeValue': request.action
+            }
         };
+    } else if(Array.isArray(request.action)){
+        // If its an array, its multiple actions. Wrap as needed
+        action = {};
+        for(var i in request.action){
+            action['attr:'+i] = {
+                'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                'attributeValue': request.action[i]
+            };
+        };
+    } else if(request.action && request.action.dataType && request.action.attributeValue){
+        // If its an action but not wrapped with a key. Wrap as needed.
+        action = {
+            'attr:1' : request.action
+        }
     }
     promises.push(subject,resource,action);
 

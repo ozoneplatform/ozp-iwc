@@ -5,8 +5,10 @@ describe("Policy Decision Point",function() {
         'getAttributes': function(id){
             return {
                 'ozp:attribute:1': {
-                    'dataType':"http://www.w3.org/2001/XMLSchema#string",
-                    'attributeValue': "fakeVal"
+                    'attr:1': {
+                        'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                        'attributeValue': "fakeVal"
+                    }
                 }
             }
         }
@@ -31,8 +33,10 @@ describe("Policy Decision Point",function() {
             }).then(function(formattedRequest){
                 expect(formattedRequest.category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]).toEqual({
                     'ozp:attribute:1': {
-                        'dataType':"http://www.w3.org/2001/XMLSchema#string",
-                        'attributeValue': "fakeVal"
+                        'attr:1': {
+                            'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                            'attributeValue': "fakeVal"
+                        }
                     }
                 });
                 done();
@@ -45,8 +49,10 @@ describe("Policy Decision Point",function() {
             }).then(function(formattedRequest){
                 expect(formattedRequest.category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]).toEqual({
                     'ozp:attribute:1': {
-                        'dataType':"http://www.w3.org/2001/XMLSchema#string",
-                        'attributeValue': "fakeVal"
+                        'attr:1': {
+                            'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                            'attributeValue': "fakeVal"
+                        }
                     }
                 });
                 done();
@@ -58,8 +64,10 @@ describe("Policy Decision Point",function() {
                 'action': 'write'
             }).then(function(formattedRequest){
                 expect(formattedRequest.category["urn:oasis:names:tc:xacml:3.0:attribute-category:action"]).toEqual({
-                        'dataType':"http://www.w3.org/2001/XMLSchema#string",
-                        'attributeValue': "write"
+                    'attr:1': {
+                        'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                            'attributeValue': "write"
+                    }
                 });
                 done();
             });
@@ -76,19 +84,25 @@ describe("Policy Decision Point",function() {
                 expect(formattedRequest.category).toEqual({
                         "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": {
                             'ozp:attribute:1': {
-                                'dataType':"http://www.w3.org/2001/XMLSchema#string",
-                                'attributeValue': "fakeVal"
+                                'attr:1': {
+                                    'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                                    'attributeValue': "fakeVal"
+                                }
                             }
                         },
                         "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": {
                             'ozp:attribute:1': {
-                                'dataType':"http://www.w3.org/2001/XMLSchema#string",
-                                'attributeValue': "fakeVal"
+                                'attr:1': {
+                                    'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                                    'attributeValue': "fakeVal"
+                                }
                             }
                         },
                         "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
-                            'dataType':"http://www.w3.org/2001/XMLSchema#string",
-                            'attributeValue': "write"
+                            'attr:1' : {
+                                'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                                'attributeValue': "write"
+                            }
                         }
                 });
                 expect(formattedRequest.combiningAlgorithm)

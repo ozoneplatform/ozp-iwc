@@ -177,22 +177,6 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
 
 
-    var self = this;
-    this.securityAttributes.sendAs = function(src){
-        var req = new ozpIwc.policyAuth.Request();
-        req.addSubject({dataType: "http://www.w3.org/2001/XMLSchema#string",value: self.address});
-        req.addAction({dataType: "http://www.w3.org/2001/XMLSchema#string",value: "sendAs"});
-        req.addResource({dataType: "http://www.w3.org/2001/XMLSchema#string",value: src});
-        return req;
-    };
-
-    this.securityAttributes.receiveAs = function(dst) {
-        var req = new ozpIwc.policyAuth.Request();
-        req.addSubject({dataType: "http://www.w3.org/2001/XMLSchema#string", value: self.address});
-        req.addAction({dataType: "http://www.w3.org/2001/XMLSchema#string", value: "receiveAs"});
-        req.addResource({dataType: "http://www.w3.org/2001/XMLSchema#string", value: dst});
-        return req;
-    };
 
     this.joinEventChannel();
     this.events.trigger("connectedToRouter");

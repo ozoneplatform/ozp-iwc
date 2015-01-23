@@ -13,7 +13,8 @@ if(typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
     });
 
     ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
-        loadPolicies: ['/policy/connectPolicy.xml','/policy/policy.xml']
+        'pip': new ozpIwc.policyAuth.PIP(),
+        'prp': new ozpIwc.policyAuth.PRP()
     });
     ozpIwc.heartBeatFrequency = 10000; // 10 seconds
     ozpIwc.defaultRouter = new ozpIwc.Router({
