@@ -9,7 +9,49 @@ ozpIwc.policyAuth.PolicyCombining = ozpIwc.policyAuth.PolicyCombining || {};
  * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides
  */
 ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides']
-    = function(){
+    = function(policies,request){
+    var atLeastOneErrorD,
+        atLeastOneErrorP,
+        atLeastOneErrorDP,
+        atLeastOnePermit = false;
+
+    for(var i in rules){
+        var decision = policies[i].evaluate(request);
+        switch(decision){
+            case "Deny":
+                return "Deny";
+            case "Permit":
+                atLeastOnePermit = true;
+                break;
+            case "NotApplicable":
+                continue;
+            case "Indeterminate{D}":
+                atLeastOneErrorD = true;
+                break;
+            case "Indeterminate{P}":
+                atLeastOneErrorP = true;
+                break;
+            case "Indeterminate{DP}":
+                atLeastOneErrorDP = true;
+                break;
+            default:
+                continue;
+        }
+    }
+
+    if(atLeastOneErrorDP){
+        return "Indeterminate{DP}";
+    } else if(atLeastOneErrorD && (atLeastOneErrorP || atLeastOnePermit)){
+        return "Indeterminate{DP}";
+    } else if(atLeastOneErrorD){
+        return "Indeterminate{D}";
+    } else if(atLeastOnePermit) {
+        return "Permit";
+    } else if(atLeastOneErrorP){
+        return "Indeterminate{P}";
+    }
+
+    return "NotApplicable";
 
 };
 
