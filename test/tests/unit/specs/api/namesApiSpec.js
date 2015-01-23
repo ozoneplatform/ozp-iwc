@@ -12,7 +12,7 @@ describe("Names API",function() {
 		namesApi=null;
 	});
 
-    it("responds with badResource for arbitrary resources",function() {
+    it("responds with badResource for arbitrary resources",function(done) {
         var context=new TestPacketContext({
             'leaderState': "leader",
             'packet': {
@@ -22,8 +22,10 @@ describe("Names API",function() {
                 'src' : "srcParticipant"
             }
         });
-        namesApi.routePacket(context);            
-        expect(context.responses[0].response).toEqual("badResource");
+        namesApi.routePacket(context).then(function(){
+            expect(context.responses[0].response).toEqual("badResource");
+            done();
+        });
     });
     [ {
             'resource': "/address",
@@ -36,7 +38,7 @@ describe("Names API",function() {
             'contentType' : "application/vnd.ozp-iwc-router-list-v1+json"
       }   
     ].forEach(function(r) {
-            describe("Resource tree root " + r.resource, function () {
+            describe("Resource tree root " + r.resource, function (done) {
                 it("exists", function () {
                     var context = new TestPacketContext({
                         'leaderState': "leader",
@@ -47,10 +49,12 @@ describe("Names API",function() {
                             'src': "srcParticipant"
                         }
                     });
-                    namesApi.routePacket(context);
-                    expect(context.responses[0].response).toEqual("ok");
-                    expect(context.responses[0].entity).toEqual([]);
-                    expect(context.responses[0].contentType).toEqual(r.contentType);
+                    namesApi.routePacket(context).then(function(){
+                        expect(context.responses[0].response).toEqual("ok");
+                        expect(context.responses[0].entity).toEqual([]);
+                        expect(context.responses[0].contentType).toEqual(r.contentType);
+                        done();
+                    });
                 });
             });
         });
@@ -65,15 +69,17 @@ describe("Names API",function() {
                         'src': "srcParticipant"
                     }
                 });
-                namesApi.routePacket(context);
-                expect(context.responses[0].response).toEqual("ok");
-                expect(context.responses[0].entity).toEqual([
-                    "/api/data.api",
-                    "/api/intents.api",
-                    "/api/names.api",
-                    "/api/system.api"
-                ]);
-                expect(context.responses[0].contentType).toEqual("application/vnd.ozp-iwc-api-list-v1+json");
+                namesApi.routePacket(context).then(function(done){
+                    expect(context.responses[0].response).toEqual("ok");
+                    expect(context.responses[0].entity).toEqual([
+                        "/api/data.api",
+                        "/api/intents.api",
+                        "/api/names.api",
+                        "/api/system.api"
+                    ]);
+                    expect(context.responses[0].contentType).toEqual("application/vnd.ozp-iwc-api-list-v1+json");
+                    done();
+                });
             })
         });
         [ {
@@ -94,7 +100,7 @@ describe("Names API",function() {
             'listContentType' : "application/vnd.ozp-iwc-router-list-v1+json"
         }
         ].forEach(function(r) {
-        describe("Resource tree " + r.resource, function () {
+        describe("Resource tree " + r.resource, function (done) {
             it("responds with noPermission when attempting to set",function() {
                 var context=new TestPacketContext({
                     'leaderState': "leader",
@@ -106,10 +112,12 @@ describe("Names API",function() {
                         'entity' : { 'foo' : 1 }
                     }
                 });
-                namesApi.routePacket(context);            
-                expect(context.responses[0].response).toEqual("noPermission");
+                namesApi.routePacket(context).then(function(){
+                    expect(context.responses[0].response).toEqual("noPermission");
+                    done();
+                });
             });
-            it("allows  " + r.contentType + " when setting a value in the tree",function() {
+            it("allows  " + r.contentType + " when setting a value in the tree",function(done) {
                 var context=new TestPacketContext({
                     'leaderState': "leader",
                     'packet': {
@@ -121,11 +129,13 @@ describe("Names API",function() {
                         'entity' : { 'foo' : 1 }
                     }
                 });
-                namesApi.routePacket(context);            
-                expect(context.responses[0].response).toEqual("ok");
+                namesApi.routePacket(context).then(function(){
+                    expect(context.responses[0].response).toEqual("ok");
+                    done();
+                });
             });
-            it("updates the collection  when setting a value in the tree",function() {
-                namesApi.routePacket(new TestPacketContext({
+            it("updates the collection  when setting a value in the tree",function(done) {
+                var contextA = new TestPacketContext({
                     'leaderState': "leader",
                     'packet': {
                         'resource': r.resource + "/testValue",
@@ -135,8 +145,8 @@ describe("Names API",function() {
                         'src' : "srcParticipant",
                         'entity' : { 'foo' : 1 }
                     }
-                }));
-                var context=new TestPacketContext({
+                });
+                var contextB = new TestPacketContext({
                     'leaderState': "leader",
                     'packet': {
                         'resource': r.resource,
@@ -145,13 +155,17 @@ describe("Names API",function() {
                         'src' : "srcParticipant"
                     }
                 });
-                namesApi.routePacket(context);            
-                expect(context.responses[0].response).toEqual("ok");
-                expect(context.responses[0].entity).toContain(r.resource + "/testValue");
-                expect(context.responses[0].contentType).toEqual(r.listContentType);
+                namesApi.routePacket(contextA)
+                    .then(namesApi.routePacket(contextB))
+                    .then(function() {
+                        expect(contextB.responses[0].response).toEqual("ok");
+                        expect(contextB.responses[0].entity).toContain(r.resource + "/testValue");
+                        expect(contextB.responses[0].contentType).toEqual(r.listContentType);
+                        done();
+                    });
                 
             });
-            it("responds with badContent when missing the contentType",function() {
+            it("responds with badContent when missing the contentType",function(done) {
                 var context=new TestPacketContext({
                     'leaderState': "leader",
                     'packet': {
@@ -162,11 +176,13 @@ describe("Names API",function() {
                         'entity' : { 'foo' : 1 }
                     }
                 });
-                namesApi.routePacket(context);            
-                expect(context.responses[0].response).toEqual("badContent");
+                namesApi.routePacket(context).then(function(){
+                    expect(context.responses[0].response).toEqual("badContent");
+                    done();
+                });
             });
 
-            it("responds with badContent with invalid contentType",function() {
+            it("responds with badContent with invalid contentType",function(done) {
                 var context=new TestPacketContext({
                     'leaderState': "leader",
                     'packet': {
@@ -178,8 +194,10 @@ describe("Names API",function() {
                         'entity' : { 'foo' : 1 }
                     }
                 });
-                namesApi.routePacket(context);            
-                expect(context.responses[0].response).toEqual("badContent");
+                namesApi.routePacket(context).then(function(){
+                    expect(context.responses[0].response).toEqual("badContent");
+                    done();
+                });
             });
 
         });
