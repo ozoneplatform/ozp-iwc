@@ -64,9 +64,48 @@ describe("Policy Decision Point",function() {
                 done();
             });
         });
+
+        it("formats an entire request", function(done){
+            pdp.formatRequest({
+                'subject': "urn:subjectId:1",
+                'resource': "urn:resourceId:1",
+                'action': "write",
+                'combiningAlgorithm' : "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides",
+                'policies': ['urn:policyId:1','urn:policyId:2']
+            }).then(function(formattedRequest){
+                expect(formattedRequest.category).toEqual({
+                        "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": {
+                            'ozp:attribute:1': {
+                                'dataType':"http://www.w3.org/2001/XMLSchema#string",
+                                'attributeValue': "fakeVal"
+                            }
+                        },
+                        "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": {
+                            'ozp:attribute:1': {
+                                'dataType':"http://www.w3.org/2001/XMLSchema#string",
+                                'attributeValue': "fakeVal"
+                            }
+                        },
+                        "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
+                            'dataType':"http://www.w3.org/2001/XMLSchema#string",
+                            'attributeValue': "write"
+                        }
+                });
+                expect(formattedRequest.combiningAlgorithm)
+                    .toEqual("urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides");
+                expect(formattedRequest.policies)
+                    .toEqual(['urn:policyId:1','urn:policyId:2']);
+                done();
+            });
+        });
     });
 
     describe("Permission", function(){
+        var request = {
+            subject: "urn:subjectId:fake",
+            resource: "urn:resourceId:fake",
+            action: "write"
+        };
         it("permits via a promises then",function(done){
             pdp.prp.getPolicy = function(){
                 return new Promise(function(resolve,reject){
@@ -80,7 +119,9 @@ describe("Policy Decision Point",function() {
                 resource: "urn:resourceId:fake",
                 action: "write"
             }).then(function(response){
-                expect(response).toEqual("Permit");
+                expect(response.result).toEqual("Permit");
+                expect(response.request).toEqual(request);
+                expect(response.formattedRequest).not.toBeUndefined();
                 done();
             })['catch'](function(response){
                 expect(false).toEqual(true);
@@ -96,15 +137,13 @@ describe("Policy Decision Point",function() {
                     });
                 });
             };
-            pdp.isPermitted({
-                subject: "urn:subjectId:fake",
-                resource: "urn:resourceId:fake",
-                action: "write"
-            }).then(function(response){
+            pdp.isPermitted(request).then(function(response){
                 expect(false).toEqual(true);
                 done();
             })['catch'](function(response){
-                expect(response).toEqual("Deny");
+                expect(response.result).toEqual("Deny");
+                expect(response.request).toEqual(request);
+                expect(response.formattedRequest).not.toBeUndefined();
                 done();
             });
         });

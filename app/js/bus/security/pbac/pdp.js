@@ -40,19 +40,31 @@ ozpIwc.policyAuth.PDP = function(config){
  *                                                  value of the “action-id” attribute.
  * @param {Array<String>} [request.policies]        A list of URIs applicable to this decision.
  * @param {String} [request. combiningAlgorithm]    Only supports “deny-overrides”
- * @returns {Promise}
+ * @returns {Promise} will resolve if the policy gives a "Permit", or rejects if else wise. the promise chain will
+ *                    receive:
+ *                    {
+ *                      'result': <String>,
+ *                      'request': <Object> // a copy of the request passed in,
+ *                      'formattedRequest': <Object> // a copy of the formatted request (for PDP user caching)
+ *                    }
  */
 ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
+    var requestClone = ozpIwc.util.clone(request);
     var self = this;
    return this.formatRequest(request).then(function(formattedRequest){
        return self.prp.getPolicy(formattedRequest.policies, formattedRequest.combiningAlgorithm).then(function(eval){
 
            /*@TODO policy evaluation not yet complete*/
            var result = eval(formattedRequest.category);
+           var response = {
+               'result':result,
+               'request': request,
+               'formattedRequest': formattedRequest
+           };
            if(result === "Permit"){
-               return result;
+               return response;
            } else {
-               throw result;
+               throw response;
            }
        });
    });
