@@ -44,13 +44,17 @@ ozpIwc.policyAuth.PDP = function(config){
  */
 ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
     var self = this;
-   this.formatRequest(request).then(function(formattedRequest){
-       self.prp.getPolicy(formattedRequest.policies, formattedRequest.combiningAlgorithm).then(function(eval){
+   return this.formatRequest(request).then(function(formattedRequest){
+       return self.prp.getPolicy(formattedRequest.policies, formattedRequest.combiningAlgorithm).then(function(eval){
 
            /*@TODO policy evaluation not yet complete*/
-           eval(formattedRequest.category);
+           var result = eval(formattedRequest.category);
+           if(result === "Permit"){
+               return result;
+           } else {
+               throw result;
+           }
        });
-
    });
 };
 
@@ -61,10 +65,10 @@ ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request){
     var action = request.action;
 
     if(typeof request.subject === "string"){
-        subject = pip.getAttributes(request.subject);
+        subject = this.pip.getAttributes(request.subject);
     }
     if(typeof request.resource === "string"){
-        resource = pip.getAttributes(request.resource);
+        resource = this.pip.getAttributes(request.resource);
     }
     if(typeof request.action === "string"){
         action = {
@@ -72,7 +76,7 @@ ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request){
             'attributeValue': request.action
         };
     }
-    promies.push(subject,resource,action);
+    promises.push(subject,resource,action);
 
     return Promise.all(promises).then(function(gatheredAttributes){
         var sub = gatheredAttributes[0];
