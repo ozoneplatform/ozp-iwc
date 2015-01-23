@@ -59,3 +59,15 @@ ozpIwc.abacPolicies.permitAll=function() {
     return "permit";
 };
 
+
+/**
+ * Returns `Deny` for any scenario.
+ *
+ * @static
+ * @method denyAll
+ * @returns {String}
+ */
+ozpIwc.abacPolicies.denyAll=function() {
+    return "Deny";
+};
+

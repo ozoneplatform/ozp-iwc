@@ -38,28 +38,18 @@ ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
     this.version = config.version;
 
     /**
+     * @property description
+     * @type String
+     * @default null
+     */
+    this.description = config.description;
+
+    /**
      * @property ruleCombiningAlgId
      * @type String
      * @default null
      */
     this.ruleCombiningAlgId = config.ruleCombiningAlgId;
-
-    /**
-     * @property target
-     * @type Object
-     * @default {}
-     */
-    this.target = config.target || {};
-
-    /**
-     * Specifies the procedure by which the results of evaluating the component rules are combined when
-     * evaluating the policy
-     *
-     * @property ruleCombining
-     * @type Function
-     * @default null
-     */
-    this.ruleCombining = config.ruleCombining || null;
 
     /**
      * An array of {{#crossLink "ozpIwc.policyAuth.Rule"}}{{/crossLink}}
@@ -69,45 +59,21 @@ ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
      */
     this.rule = config.rule || [];
 
-    /**
-     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
-     *
-     * @property obligations
-     * @type Array<Function>
-     * @default []
-     */
-    this.obligations = config.obligations || [];
-
-    /**
-     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
-     * ignored by the PEP.
-     *
-     * @property advices
-     * @type Array<Function>
-     * @default []
-     */
-    this.advices = config.advices || [];
-
-    if(config.element){
-        this.construct(config.element);
-    }
-
 });
 
 /**
- * @property evaluate
- * @param request
+ * @method isPermitted(request)
+ * @param {Object | String} [request.subject] The subject attributes or id performing the action.
+ * @param {Object | String} [request.resource] The resource attributes or id that is being acted upon.
+ * @param {Object | String} [request.action]  The action attributes.  A string should be interpreted as the
+ *                                            value of the “action-id” attribute.
+ * @param {Array<String>} [request.policies]  A list of URIs applicable to this decision.
+ * @param {String} [request. combiningAlgorithm]  Only supports “deny-overrides”
+ * @returns {Promise}
  */
 ozpIwc.policyAuth.Policy.prototype.evaluate = function(request){
-    if(this.target.isTargeted(request)){
-        return ozpIwc.policyAuth.RuleCombining[this.ruleCombiningAlgId](this.rule,request);
-    } else {
-        return "Deny";
+
+    for (var i in this.rule) {
+
     }
 };
-
-
-ozpIwc.policyAuth.Policy.prototype.requiredAttributes = ['PolicyId', 'Version', 'RuleCombiningAlgId'];
-ozpIwc.policyAuth.Policy.prototype.requiredNodes = ['Target'];
-ozpIwc.policyAuth.Policy.prototype.optionalNodes = ['Description','PolicyIssuer','PolicyDefaults','CombinerParameters','RuleCombinerParameters',
-    'VariableDefinition','Rule','ObligationExpressions','AdviceExpressions'];

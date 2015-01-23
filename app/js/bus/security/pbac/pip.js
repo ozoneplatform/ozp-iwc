@@ -7,7 +7,7 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * Policy Information Point
  *
  * @param config
- * @param {Object} config.attributeCache
+ * @param {Object} config.informationCache
  * @constructor
  */
 ozpIwc.policyAuth.PIP = function(config){

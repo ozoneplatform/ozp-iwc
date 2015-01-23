@@ -176,7 +176,6 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.heartBeatStatus.name=this.name;
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
 
-    this.addSRPolicy();
 
     var self = this;
     this.securityAttributes.sendAs = function(src){
@@ -310,27 +309,4 @@ ozpIwc.Participant.prototype.leaveEventChannel = function() {
         return false;
     }
 
-};
-
-ozpIwc.Participant.prototype.addSRPolicy = function() {
-    this.srPolicyId = this.policyEnforcer.PDP.addPolicy({
-        'subject': {
-            'value': this.address
-        },
-        'resource': {
-            'value': this.address
-        },
-        'action': [
-            {
-                'value': 'sendAs'
-            },
-            {
-                'value': 'receiveAs'
-            }
-        ]
-    });
-};
-
-ozpIwc.Participant.prototype.removeSRPolicy = function() {
-    this.policyEnforcer.PDP.removePolicy(this.srPolicyId);
 };
