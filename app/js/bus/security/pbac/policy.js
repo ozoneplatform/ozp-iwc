@@ -62,8 +62,11 @@ ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
 });
 
 /**
- * @method isPermitted(request)
- * @param {Object | String} [request.subject] The subject attributes or id performing the action.
+ *
+ * @TODO request is formatted by urn. see a request.category.
+ *
+ * @method evaluate(request)
+ * @param {Object | String} [request.subject]  The subject attributes or id performing the action.
  * @param {Object | String} [request.resource] The resource attributes or id that is being acted upon.
  * @param {Object | String} [request.action]  The action attributes.  A string should be interpreted as the
  *                                            value of the “action-id” attribute.
@@ -73,7 +76,6 @@ ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
  */
 ozpIwc.policyAuth.Policy.prototype.evaluate = function(request){
 
-    for (var i in this.rule) {
-
-    }
+    //@TODO implement a rule constructor.
+    return "Permit";
 };
