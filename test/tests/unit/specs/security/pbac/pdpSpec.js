@@ -2,15 +2,15 @@ describe("Policy Decision Point",function() {
 
     var pdp;
     var mockPIP = {
-        'getAttributes': function(id){
-            return {
-                'ozp:attribute:1': {
+        'getAttributes': function (id) {
+            return new Promise(function (resolve, reject) {
+                resolve({
                     'attr:1': {
                         'dataType': "http://www.w3.org/2001/XMLSchema#string",
                         'attributeValue': "fakeVal"
                     }
-                }
-            }
+                });
+            });
         }
     };
 
@@ -112,6 +112,63 @@ describe("Policy Decision Point",function() {
                 done();
             });
         });
+    });
+
+    describe("category formatting",function(){
+        it("gathers a categories attributes from the PIP if given as a string",function(done){
+            pdp.formatCategory('ozp:fake:attribute',
+                "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject").then(function(category){
+                    expect(category.attributeValue).toEqual(["fakeVal"]);
+                    expect(category.attributeDesignator.attributeId).toEqual("urn:oasis:names:tc:xacml:1.0:subject:subject-id");
+                    expect(category.attributeDesignator.dataType).toEqual("http://www.w3.org/2001/XMLSchema#string");
+                    done();
+                });
+        });
+
+        it("gathers a categories attributes from the PIP if given as an array",function(done){
+            pdp.formatCategory(['ozp:fake:attribute','ozp:fake:attribute'],
+                "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject").then(function(category){
+                    expect(category.attributeValue).toEqual(["fakeVal","fakeVal"]);
+                    expect(category.attributeDesignator.attributeId).toEqual("urn:oasis:names:tc:xacml:1.0:subject:subject-id");
+                    expect(category.attributeDesignator.dataType).toEqual("http://www.w3.org/2001/XMLSchema#string");
+                    done();
+                });
+        });
+
+        it("gathers multiple categories in an object with a URI given as a string",function(done){
+            pdp.formatCategories({
+                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" : 'ozp:fake:attribute',
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource" : 'ozp:fake:attribute'
+                }).then(function(categories){
+                    expect(categories["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"].attributeValue).toEqual(["fakeVal"]);
+                    expect(categories["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"].attributeValue).toEqual(["fakeVal"]);
+                    done();
+                });
+        });
+
+
+        it("gathers multiple categories in an object with  URIs given as an Array",function(done){
+            pdp.formatCategories({
+                "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" : ['ozp:fake:attribute','ozp:fake:attribute'],
+                "urn:oasis:names:tc:xacml:3.0:attribute-category:resource" : ['ozp:fake:attribute','ozp:fake:attribute','ozp:fake:attribute']
+            }).then(function(categories){
+                expect(categories["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"].attributeValue)
+                    .toEqual(["fakeVal","fakeVal"]);
+                expect(categories["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"].attributeValue)
+                    .toEqual(["fakeVal","fakeVal","fakeVal"]);
+                done();
+            });
+        });
+    });
+
+    describe("rule formatting",function() {
+        xit("converts any JSON rule into a Rule object and gathers any needed attribute",function(){});
+        xit("converts any array of JSON rules into an array of Rule objects and gathers any needed attribute",function(){});
+    });
+
+    describe("Policy formatting", function(){
+        xit("converts any JSON policy into a Policy object and gathers any needed attributes",function(){});
+        xit("converts any array of JSON policies into an array of Policy objects and gathers any needed attribute",function(){});
     });
 
     describe("Permission", function(){

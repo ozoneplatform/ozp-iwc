@@ -81,7 +81,8 @@ ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetCon
     var self = this;
     return ozpIwc.authorization.isPermitted().then(function(response){
         self.sendToRecipient(packetContext.packet);
-        return response.result;
+        return "Permit";
+        //return response.result;
     })['catch'](function(response){
         console.error("FAILED TO RECEIVE");
         ozpIwc.metrics.counter("transport.packets.forbidden").inc();
@@ -162,11 +163,26 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
     var self = this;
-    return ozpIwc.authorization.isPermitted().then(function(response){
+
+    ozpIwc.authorization.pip.grantAttributes('ozp:iwc:participant:address', {
+        'attr:1': {
+            'dataType': 'http://www.w3.org/2001/XMLSchema#string',
+            'attributeValue': packet.src
+        }
+    });
+    var request = {
+        'subject':'ozp:iwc:participant:address',
+        'resource':{
+            'attr:1': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packet.src}
+        },
+        'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'sendAs'},
+        'policies': ['/policy/postMessagePolicy.json']
+    };
+    return ozpIwc.authorization.isPermitted(request).then(function(response){
         self.router.send(packet,this);
-        return response.result;
+        return response;
     })['catch'](function(response){
-        console.error("FAILED TO SEND");
+        console.error("Failed to send. Could not authorize:",response);
         ozpIwc.metrics.counter("transport.packets.forbidden").inc();
         throw response.result;
     });
@@ -275,7 +291,7 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 	if(!participant) {
         var request = {
             'subject':{
-                "attr:1" : {'dataType': 'http://www.w3.org/2001/XMLSchema#anyURI','attributeValue': event.origin}
+                "attr:1" : {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': event.origin}
             },
             'resource':{
                 'attr:1': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': '$bus.multicast'}
@@ -297,7 +313,7 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
                 self.participants.push(participant);
                 isPacket(packet);
         })['catch'](function(e){
-            console.error("COULD NOT CONNECT");
+            console.error("Failed to connect. Could not authorize:",e);
         });
 
 	} else{

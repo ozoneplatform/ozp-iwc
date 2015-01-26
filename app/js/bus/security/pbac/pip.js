@@ -27,13 +27,19 @@ ozpIwc.policyAuth.PIP = function(config){
  */
 ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
     var self = this;
-    return ozpIwc.util.ajax({
-        href: id,
-        method: "GET"
-    }).then(function(data){
-        self.informationCache[id] = data;
-        return data;
-    });
+    if(this.informationCache[id]){
+        return new Promise(function(resolve,reject){
+            resolve(self.informationCache[id]);
+        });
+    } else {
+        return ozpIwc.util.ajax({
+            href: id,
+            method: "GET"
+        }).then(function (data) {
+            self.informationCache[id] = data;
+            return data;
+        });
+    }
 
 };
 /**

@@ -375,7 +375,11 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
     var subject=packetContext.srcSubject || {
         'rawAddress':packetContext.packet.src
     };
-    return ozpIwc.authorization.isPermitted();
+    //@TODO Implement ozpIwc.authorization.isPermitted(...);
+    return new Promise(function(resolve,reject){
+        resolve("Permit")
+    });
+    //return ozpIwc.authorization.isPermitted();
 };
 
 

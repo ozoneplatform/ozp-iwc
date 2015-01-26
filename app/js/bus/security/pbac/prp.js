@@ -21,19 +21,17 @@ ozpIwc.policyAuth.PRP = function(config){
 
 
 /**
- * @method getPolicy(policyURIs,combiningAlgorithm)
+ * @method getPolicy(policyURIs)
  * @param {String | Array<String> } [policyURIs] The subject attributes or id performing the action.
  * @param {String} [combiningAlgorithm] Defaults to “deny-overrides”.
- * @return {Promise} promise chain, A function that evaluates the policies and returns a decision will be passed to the
+ * @return {Promise} promise chain, An array of policy data will be passed to the
  *                   chained "then".
  */
-ozpIwc.policyAuth.PRP.prototype.getPolicy = function(policyURIs,combiningAlgorithm){
+ozpIwc.policyAuth.PRP.prototype.getPolicies = function(policyURIs){
     policyURIs = policyURIs || [];
-    Array.isArray(policyURIs)? policyURIs : [policyURIs];
+    policyURIs = Array.isArray(policyURIs)? policyURIs : [policyURIs];
     var policies = [];
 
-    var combiningFunction = ozpIwc.policyAuth.PolicyCombining[combiningAlgorithm] ||
-        ozpIwc.policyAuth.PolicyCombining[this.defaultCombiningAlgorithm];
 
     var policiesToGather = this.persistentPolicies.concat(policyURIs);
     for(var i in policiesToGather){
@@ -49,17 +47,55 @@ ozpIwc.policyAuth.PRP.prototype.getPolicy = function(policyURIs,combiningAlgorit
 
     // If there are no policies to check against, assume trivial and permit
     if(policies.length === 0){
+        var self = this;
         return new Promise(function(resolve,reject){
-            resolve(ozpIwc.abacPolicies.permitAll);
+            resolve([self.getPermitAll()]);
         });
     }
 
-    return Promise.all(policies).then(function(policies){
-        return function(request){
-            return combiningFunction(policies,request);
-        };
-    });
+    return Promise.all(policies);
 };
+
+/**
+ * @method getPolicy(policyURIs,combiningAlgorithm)
+ * @param {String | Array<String> } [policyURIs] The subject attributes or id performing the action.
+ * @param {String} [combiningAlgorithm] Defaults to “deny-overrides”.
+ * @return {Promise} promise chain, A function that evaluates the policies and returns a decision will be passed to the
+ *                   chained "then".
+ */
+//ozpIwc.policyAuth.PRP.prototype.getPolicy = function(policyURIs,combiningAlgorithm){
+//    policyURIs = policyURIs || [];
+//    Array.isArray(policyURIs)? policyURIs : [policyURIs];
+//    var policies = [];
+//
+//    var combiningFunction = ozpIwc.policyAuth.PolicyCombining[combiningAlgorithm] ||
+//        ozpIwc.policyAuth.PolicyCombining[this.defaultCombiningAlgorithm];
+//
+//    var policiesToGather = this.persistentPolicies.concat(policyURIs);
+//    for(var i in policiesToGather){
+//        if(this.policyCache[policiesToGather[i]]){
+//            policies.push(this.policyCache[policiesToGather[i]]);
+//        } else {
+//            var promise = this.fetchPolicy(policiesToGather [i]);
+//
+//            //Push the policy fetch to the array, when it resolves its value (policy) will be part of the array
+//            policies.push(promise);
+//        }
+//    }
+//
+//    // If there are no policies to check against, assume trivial and permit
+//    if(policies.length === 0){
+//        return new Promise(function(resolve,reject){
+//            resolve(ozpIwc.abacPolicies.permitAll);
+//        });
+//    }
+//
+//    return Promise.all(policies).then(function(policies){
+//        return function(request){
+//            return combiningFunction(policies,request);
+//        };
+//    });
+//};
 
 ozpIwc.policyAuth.PRP.prototype.defaultCombiningAlgorithm =
     "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides";
@@ -78,11 +114,36 @@ ozpIwc.policyAuth.PRP.prototype.fetchPolicy = function(policyURI){
         self.policyCache[policyURI] = self.formatPolicy(data.response);
         return self.policyCache[policyURI];
     })['catch'](function(e){
-        self.policyCache[policyURI] = ozpIwc.abacPolicies.denyAll;
-        return self.policyCache[policyURI];
+        return self.getDenyall(policyURI);
     });
 };
 
 ozpIwc.policyAuth.PRP.prototype.formatPolicy = function(data){
     return new ozpIwc.policyAuth.Policy(data);
+};
+
+ozpIwc.policyAuth.PRP.prototype.getDenyall = function(uri){
+    if(this.policyCache[uri]){
+        return this.policyCache[uri];
+    } else {
+        var policy = new ozpIwc.policyAuth.Rule({
+            ruleId: uri
+        });
+        policy.evaluate = ozpIwc.abacPolicies.denyAll;
+        this.policyCache[uri] = policy;
+        return policy;
+    }
+};
+
+ozpIwc.policyAuth.PRP.prototype.getPermitAll = function(){
+    if(this.policyCache['ozp:iwc:policy:none']){
+        return this.policyCache['ozp:iwc:policy:none'];
+    } else {
+        var policy = new ozpIwc.policyAuth.Rule({
+            ruleId: 'ozp:iwc:policy:none'
+        });
+        policy.evaluate = ozpIwc.abacPolicies.permitAll;
+        this.policyCache['ozp:iwc:policy:none'] = policy;
+        return policy;
+    }
 };

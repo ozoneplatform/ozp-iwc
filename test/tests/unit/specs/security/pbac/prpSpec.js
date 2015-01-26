@@ -64,23 +64,18 @@ describe("Policy Repository Point",function() {
 
         it('sets any policy that cannot be acquired to denyAll',function(done){
 
-            ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides']
-                = function(policies,request){
-                expect(policies.length).toEqual(1);
-                expect(policies[0]).toEqual(ozpIwc.abacPolicies.denyAll);
-                done();
-            };
 
-            prp.getPolicy("SOMEFAKEPOLICY",'urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides').then(
-                function(eval){
-                    eval();
+
+            prp.getPolicies("SOMEFAKEPOLICY").then(function(policies){
+                    expect(policies[0].evaluate()).toEqual("Deny");
+                    done();
                 }
             );
         });
 
         it('handles no policies in the check',function(done){
-            prp.getPolicy([]).then(function(resolve){
-                expect(resolve()).toEqual("Permit");
+            prp.getPolicies([]).then(function(policies){
+                expect(policies[0].evaluate()).toEqual("Permit");
                 done();
             });
         });
@@ -91,14 +86,11 @@ describe("Policy Repository Point",function() {
                 'persistentPolicies': ['somePolicy']
             });
 
-            ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides']
-                = function(policies,request){
-                expect(policies.length).toEqual(1);
-                done();
-            };
 
-            prp.getPolicy([],'urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides').then(function(eval){
-                eval();
+            prp.getPolicies([],'urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides').then(function(policies){
+                expect(policies.length).toEqual(1);
+                expect(policies[0].evaluate()).toEqual("Deny");
+                done();
             });
         });
 
@@ -134,22 +126,12 @@ describe("Policy Repository Point",function() {
 
 
         it("returns a promise chain with policy evaluation call for the PDP",function(done){
-            prp.getPolicy("connectionPolicy.json").then(function(evaluate){
-                expect(typeof evaluate).toEqual("function");
+            prp.getPolicies("connectionPolicy.json").then(function(policies){
+                expect(Array.isArray(policies)).toEqual(true);
+                expect(policies.length).toEqual(1);
+                expect(typeof policies[0].evaluate).toEqual("function");
                 done();
             });
         });
-        it("applies a default combining algorithm if one is not provided",function(done){
-            // override the function, just testing that the default is called
-            ozpIwc.policyAuth.PolicyCombining[prp.defaultCombiningAlgorithm]
-                = function(policies,request){
-                done();
-            };
-
-            prp.getPolicy("connectionPolicy.json").then(function(eval){
-                eval();
-            });
-        });
-
     });
 });
