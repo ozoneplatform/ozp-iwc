@@ -42,11 +42,11 @@ ozpIwc.policyAuth.PDP = function(config){
  * @param {String} [request. combiningAlgorithm]    Only supports “deny-overrides”
  * @returns {Promise} will resolve if the policy gives a "Permit", or rejects if else wise. the promise chain will
  *                    receive:
- *                    {
+ *                    ```{
  *                      'result': <String>,
  *                      'request': <Object> // a copy of the request passed in,
  *                      'formattedRequest': <Object> // a copy of the formatted request (for PDP user caching)
- *                    }
+ *                    }```
  */
 ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
     var self = this;
@@ -54,7 +54,7 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
     //Format the request
     return this.formatRequest(request).then(function(formattedRequest){
         // Get the policies from the PRP
-       return self.prp.getPol(formattedRequest.policies).then(function(policies){
+       return self.prp.getPolicies(formattedRequest.policies).then(function(policies){
            //Format the policies
            return self.formatPolicies(policies);
        }).then(function(policies){
@@ -78,10 +78,26 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
 };
 
 /**
+ * Takes a request object and applies any context needed from the PIP.
  *
  * @method formatRequest
- * @param request
- * @returns {*}
+ * @param {Object}          request
+ * @param {String}          request.subject
+ * @param {String}          request.resource
+ * @param {String}          request.action
+ * @param {String}          request.combiningAlgorithm
+ * @param {Array<String>}   request.policies
+ * @returns {Promise}   will resolve when all attribute formatting completes. The resolution will pass a formatted
+ *                      structured as so:
+ *                    ```{
+ *                      'category':{
+ *                          "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": {Object},
+ *                          "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": {Object},
+ *                          "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {Object}
+*                       },
+ *                      'combiningAlgorithm': request.combiningAlgorithm,
+ *                      'policies': request.policies
+ *                     }```
  */
 ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request){
     request = request || {};
@@ -157,10 +173,20 @@ ozpIwc.policyAuth.PDP.prototype.defaultCombiningAlgorithm =
     "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides";
 
 /**
+ * A factory function to create a function for evaluating formatted policies against a given combining algorithm
+ * in the ozpIwc.policyAuth.PolicyCombining namespace.
  *
  * @method generateEvaluation
- * @param policies
- * @param combiningAlgorithm
+ * @param {String|Array<String>}        policies none, one, or many policies to evaluate with the given combining algorithm
+ * @param {String} combiningAlgorithm   the name of the combining algorithm to obtain from the
+ *                                      ozpIwc.policyAuth.PolicyCombining namespace.
+ * @returns {Function}                  returns a function call expecting a formatted request to be passed to for
+ *                                      evaluation. Ex:
+ *                                      ```
+ *                                      var pdp = new ozpIwc.policyAuth.PDP(...);
+ *                                      var evalFunc = pdp.generateEvaluation(somePolicies, someCombiningAlgorithm);
+ *                                      var result = evalFunc(someRequest);
+ *                                      ```
  */
 ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combiningAlgorithm){
     policies = policies || [];
@@ -178,6 +204,8 @@ ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combining
             return combiningFunction(policies,request);
     };
 };
+
+
 /**
  * Formats a category object. If needed the attribute data is gathered from the PIP.
  *
@@ -185,15 +213,17 @@ ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combining
  * @param {String|Array<String>|Object} category the category (subject,resource,action) to format
  * @param {String} categoryId the category name used to map to its corresponding attributeId (see PDP.mappedID)
  * @returns {Promise} Returns a promise that will resolve with a category object formatted as so:
- * {
- *    'category': {String},
- *    'attributeDesignator': {
- *        'attributeId': {String},
- *        'dataType': {String},
- *        'mustBePresent': false
- *     },
- *     'attributeValue': {Array<String>}
- * }
+ *      ```
+ *      {
+ *          'category': {String},
+ *          'attributeDesignator': {
+ *              'attributeId': {String},
+ *              'dataType': {String},
+ *              'mustBePresent': false
+ *          },
+ *          'attributeValue': {Array<String>}
+ *      }
+ *      ```
  *
  */
 ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,categoryId){
@@ -252,12 +282,21 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,categoryId){
 
 /**
  *
- * This is a outlier function. It takes and returns an object key-indexed categories (unlike other multi-format functions).
- * and returns an object key-indexed listing of formatted
+ * Category context handling for policy objects.
+ * Takes object key-indexed categories for a policy
+ * and returns an object key-indexed listing of formatted. Each category is keyed by its XACML URN. currently only
+ * subject,resource, and action categories are supported.
  *
  * @method formatCategories
- * @param {Object}categoryObj
+ * @param {Object} categoryObj
+ * @param {Object|String|Array<String>} [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
+ *                                          Formats xacml subject category attributes
+ * @param {Object|String|Array<String>} [categoryObj["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]]
+ *                                          Formats xacml resource category attributes
+ * @param {Object|String|Array<String>} [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
+ *                                          Formats xacml action category attributes
  * @returns {Promise} return will be structured as so:
+ * ```
  * {
  *   'urn:category:id:123' : {
  *      'category': {String},
@@ -270,7 +309,8 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,categoryId){
  *   },
  *   'urn:category:id:abc': {...},
  *   'urn:category:id:000': {...},
- *
+ * }
+ * ```
  */
 ozpIwc.policyAuth.PDP.prototype.formatCategories = function(categoryObj){
     var categoryPromises = [];
@@ -291,25 +331,16 @@ ozpIwc.policyAuth.PDP.prototype.formatCategories = function(categoryObj){
 
 
 /**
+ * Context handler for a policy rule object.
  *
+ * Formats the rules categories,
  * @method formatRule
- * @param rule
- * @returns {*}
+ * @param {Object} rule
+ * @returns {Promise} returns a promise that will resolve to a formatted rule.
  */
 ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule) {
     return this.formatCategories(rule.category).then(function (categories) {
-        var categoryObj = {};
-
-        for (var i in categories) {
-            var currentCat = categories[i].category;
-            categoryObj[currentCat] = {
-                attributeDesignator: categories[i].attributeDesignator,
-                attributeValue: []
-            };
-            categoryObj[currentCat].attributeValue = categoryObj[currentCat].attributeValue.concat(categories[i].attributeValue);
-
-            rule.category = categoryObj;
-        }
+        rule.category = categories;
         return rule;
     })['catch'](function(e){
         console.error(e);
@@ -317,10 +348,11 @@ ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule) {
 };
 
 /**
+ * Context handler for policy rule objects.
  *
  * @method formatRules
- * @param rules
- * @returns {*}
+ * @param {Array<Object>} rules
+ * @returns {Promise} returns a promise that will resolve to a matching-order of formatted rules array.
  */
 ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules){
     var rulePromises = [];
@@ -332,9 +364,11 @@ ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules){
 
 
 /**
+ * Context handler for a policy object.
  *
- * @param policy
- * @returns {*}
+ * @method formatPolicy
+ * @param {Object} policy
+ * @returns {Promise} calls and returns a formatRules promise
  */
 ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy){
     policy = policy || {};
@@ -345,10 +379,13 @@ ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy){
     });
 };
 
+
 /**
+ * Context handler for multiple policy objects.
  *
- * @param policies
- * @returns {*}
+ * @method formatPolicies
+ * @param {Array<Object>} policies
+ * @returns {Promise} calls and returns a formatRules promise
  */
 ozpIwc.policyAuth.PDP.prototype.formatPolicies = function(policies){
     var policyPromises = [];
@@ -365,9 +402,11 @@ ozpIwc.policyAuth.PDP.prototype.formatPolicies = function(policies){
 };
 
 /**
- * Simple mapping function for assigning attributeId's to category types
- * @param string
- * @returns {string}
+ * Simple mapping function for assigning attributeId's to category types.
+ *
+ * @method mappedId
+ * @param {String} string
+ * @returns {String|undefined} returns undefined if a matching Id is not found (likely because not supported).
  */
 ozpIwc.policyAuth.PDP.prototype.mappedId = function(string){
     switch(string){
@@ -378,6 +417,6 @@ ozpIwc.policyAuth.PDP.prototype.mappedId = function(string){
         case "urn:oasis:names:tc:xacml:3.0:attribute-category:action":
             return "urn:oasis:names:tc:xacml:1.0:action:action-id";
         default:
-            return string;
+            return undefined;
     }
 };
