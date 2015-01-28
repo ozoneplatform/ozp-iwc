@@ -10,7 +10,10 @@ describe("Router", function() {
             fakePeer.packets.push(packet);
         };
 
-        router = new ozpIwc.Router({peer: fakePeer});
+        router = new ozpIwc.Router({
+            peer: fakePeer,
+            authorization: new FakeAuthorization()
+        });
     });
 
     afterEach(function() {
@@ -84,12 +87,14 @@ describe("Router", function() {
             expect(fakePeer.packets[0]).toEqual(msg);
         });
 
-        it("routes locally", function() {
+        it("routes locally", function(done) {
             var msg = participant.send({dst: participant2.address});
-            router.send(msg, participant);
-            expect(participant2.packets[0].packet).toEqual(msg);
-            expect(participant2.packets[0].srcParticipant).toBe(participant);
-            expect(participant2.packets[0].dstParticipant).toBe(participant2);
+            router.send(msg, participant).then(function(){
+                expect(participant2.packets[0].packet).toEqual(msg);
+                expect(participant2.packets[0].srcParticipant).toBe(participant);
+                expect(participant2.packets[0].dstParticipant).toBe(participant2);
+                done();
+            });
         });
     });
 

@@ -17,12 +17,18 @@ var ozpIwc=ozpIwc || {};
 ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name) {
 
     /**
+     * The address of the participant.
+     * @property address
+     * @type String
+     */
+	this.address = name;
+
+    /**
      * The name of the participant.
      * @property name
      * @type String
-     * @default ""
      */
-	this.name=name;
+    this.name=name;
 
     /**
      * The type of the participant
@@ -73,6 +79,14 @@ ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name)
     this.on("connectedToRouter",function() {
         this.namesResource="/multicast/" + this.name;
     },this);
+
+    //At creation the multicast participant knows what it can sendAs/receiveAs
+    this.securityAttributes.pushIfNotExist('ozp:iwc:participant:address',
+        {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': name});
+    this.securityAttributes.pushIfNotExist('ozp:iwc:participant:sendAs',
+        {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': name});
+    this.securityAttributes.pushIfNotExist('ozp:iwc:participant:receiveAs',
+        {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': name});
 });
 
 /**

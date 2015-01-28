@@ -126,6 +126,34 @@ ozpIwc.util.clone=function(value) {
 	}
 };
 
+/**
+ * Non serializable cloning. Used to include prototype functions in the cloned object by creating a new instance
+ * and copying over any attributes.
+ * @method protoClone
+ * @param {Object|Array} obj
+ * @returns {*|Array.<T>|string|Blob}
+ */
+ozpIwc.util.protoClone = function(obj) {
+
+    if (obj instanceof Array) {
+        return obj.slice();
+    }
+
+    // Handle Object
+    if (obj instanceof Object) {
+        var clone = new obj.constructor();
+        for(var i in obj){
+
+            if(obj.hasOwnProperty(i)){
+                //recurse if needed
+                clone[i] = ozpIwc.util.protoClone(obj[i]);
+            } else{
+                clone[i] = obj[i];
+            }
+        }
+        return clone;
+    }
+};
 
 /**
  * A regex method to parse query parameters.

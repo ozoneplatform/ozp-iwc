@@ -40,6 +40,8 @@ ozpIwc.policyAuth.PDP = function(config){
  *                                                  value of the “action-id” attribute.
  * @param {Array<String>} [request.policies]        A list of URIs applicable to this decision.
  * @param {String} [request. combiningAlgorithm]    Only supports “deny-overrides”
+ * @param {ozpIwc.policyAuth.PIP} [pip]             A policy information point to gather attributes for the request/policy
+ *                                                  The default ozpIwc.authorizaiton.pip is used if one is not provided.
  * @returns {Promise} will resolve if the policy gives a "Permit", or rejects if else wise. the promise chain will
  *                    receive:
  *                    ```{
@@ -48,15 +50,27 @@ ozpIwc.policyAuth.PDP = function(config){
  *                      'formattedRequest': <Object> // a copy of the formatted request (for PDP user caching)
  *                    }```
  */
-ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
+ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,pip){
+    // Allow a custom pip to be used for the check.
+    // We use this so that we can assign attributes to the PIP (for policies to reference), take a snapshot, and
+    // move on with the async nature of the IWC and not worry about attributes being overridden.
+    pip = pip || this.pip;
     var self = this;
+    //If there is no request information, its a trivial "Permit"
+    if(!request){
+        return new Promise(function(resolve,reject){
+            resolve({
+                'result':"Permit"
+            });
+        });
+    }
 
     //Format the request
-    return this.formatRequest(request).then(function(formattedRequest){
+    return this.formatRequest(request,pip).then(function(formattedRequest){
         // Get the policies from the PRP
        return self.prp.getPolicies(formattedRequest.policies).then(function(policies){
            //Format the policies
-           return self.formatPolicies(policies);
+           return self.formatPolicies(policies,pip);
        }).then(function(policies){
                 //Generate the evaluation function
                return self.generateEvaluation(policies,formattedRequest.combiningAlgorithm);
@@ -78,6 +92,84 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
 };
 
 /**
+ * Takes a URN, array of urns, object, array of objects, or array of any combination and fetches/formats to the
+ * necessary structure to be used by a request of policy's category object.
+ *
+ * @method formatAttribute
+ * @param {String|Object|Array<String|Object>}attribute The attribute to format
+ * @param {ozpIwc.policyAuth.PIP} [pip] Policy information point, uses ozpIwc.authorization.pip by default.
+ * @returns {Promise} returns a promise that will resolve with an array of the formatted attributes.
+ */
+ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
+    pip = pip || this.pip;
+    var promises = [];
+    if(!attribute){
+        //do nothing and return an empty promise.all
+    }else if(typeof attribute === "string"){
+        // If its a string, use it as a key and fetch its attrs from PIP
+
+        var promise = pip.getAttributes(attribute);
+        promises.push(promise);
+    }else if(attribute.dataType && attribute.attributeValue){
+        //If its formatted return it;
+
+        promises.push(attribute);
+    } else if(Array.isArray(attribute)){
+        // If its an array, its multiple actions. Wrap as needed
+
+        for(var i in attribute){
+            if(typeof attribute[i] === "string"){
+                var promise = pip.getAttributes(attribute[i]);
+                promises.push(promise);
+            } else if(attribute[i].dataType && attribute[i].attributeValue){
+                promises.push(attribute[i]);
+            }
+        }
+    }
+    return Promise.all(promises);
+};
+
+/**
+ * Formats an action to be used by a request or policy.
+ *
+ * @method formatAction
+ * @param {String|Object|Array<String|Object>} action
+ * @returns {Array} An array of formatted actions
+ */
+ozpIwc.policyAuth.PDP.prototype.formatAction = function(action){
+    var formatted = [];
+    if(!action){
+        //do nothing and return an empty array
+    }else if(typeof action === "string"){
+        // If its a string, its a single action. Wrap it as needed.
+
+        formatted.push({
+            'dataType': "http://www.w3.org/2001/XMLSchema#string",
+            'attributeValue': action
+        });
+    } else if(Array.isArray(action)){
+        // If its an array, its multiple actions. Wrap as needed
+
+        for(var i in action){
+            if(typeof action[i] === "string"){
+                formatted.push({
+                    'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                    'attributeValue': action[i]
+                });
+            } else if(action[i].dataType && action[i].attributeValue){
+                formatted.push(action[i]);
+            }
+        }
+    } else if(action.dataType && action.attributeValue){
+        // If its an action but not wrapped with a key. Wrap as needed.
+
+        formatted.push(action);
+    }
+
+    return formatted;
+};
+
+/**
  * Takes a request object and applies any context needed from the PIP.
  *
  * @method formatRequest
@@ -87,6 +179,7 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
  * @param {String}          request.action
  * @param {String}          request.combiningAlgorithm
  * @param {Array<String>}   request.policies
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {Promise}   will resolve when all attribute formatting completes. The resolution will pass a formatted
  *                      structured as so:
  *                    ```{
@@ -99,55 +192,16 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
  *                      'policies': request.policies
  *                     }```
  */
-ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request){
+ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request,pip){
+    pip = pip || this.pip;
     request = request || {};
     var promises = [];
-    var subject = request.subject;
-    var resource = request.resource;
-    var action = request.action;
 
-    // If its a string, use it as a key and fetch its attrs from PIP
-    if(typeof request.subject === "string"){
-        subject = this.pip.getAttributes(request.subject);
-    }else if(request.subject && request.subject.dataType && request.subject.attributeValue){
-        //Else check if the subject wasn't given a key (we support multiple subjects). Wrap it in a generated Key
-        subject = {
-            'attr:1' : request.subject
-        };
-    }
+    var subjectPromises = this.formatAttribute(request.subject,pip);
+    var resourcePromises = this.formatAttribute(request.resource,pip);
+    var actions = this.formatAction(request.action);
 
-    if(typeof request.resource === "string"){
-        resource = this.pip.getAttributes(request.resource);
-    } else if( request.resource && request.resource.dataType && request.resource.attributeValue){
-        resource = {
-            'attr:1' : request.resource
-        };
-    }
-
-    // If its a string, its a single action. Wrap it as needed.
-    if(typeof request.action === "string"){
-        action = {
-            'attr:1': {
-                'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                'attributeValue': request.action
-            }
-        };
-    } else if(Array.isArray(request.action)){
-        // If its an array, its multiple actions. Wrap as needed
-        action = {};
-        for(var i in request.action){
-            action['attr:'+i] = {
-                'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                'attributeValue': request.action[i]
-            };
-        }
-    } else if(request.action && request.action.dataType && request.action.attributeValue){
-        // If its an action but not wrapped with a key. Wrap as needed.
-        action = {
-            'attr:1' : request.action
-        };
-    }
-    promises.push(subject,resource,action);
+    promises.push(subjectPromises,resourcePromises,actions);
 
     return Promise.all(promises).then(function(gatheredAttributes){
         var sub = gatheredAttributes[0];
@@ -212,6 +266,7 @@ ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combining
  * @method formatCategory
  * @param {String|Array<String>|Object} category the category (subject,resource,action) to format
  * @param {String} categoryId the category name used to map to its corresponding attributeId (see PDP.mappedID)
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {Promise} Returns a promise that will resolve with a category object formatted as so:
  *      ```
  *      {
@@ -226,7 +281,8 @@ ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combining
  *      ```
  *
  */
-ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,categoryId){
+ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,categoryId,pip){
+    pip = pip || this.pip;
     var attributePromises = [];
 
     // If it's a string its to be gathered (expected value will be an object with dataType and attributeValue)
@@ -238,11 +294,16 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,categoryId){
     if (Array.isArray(category)) {
         for (var j in category) {
             if (typeof category[j] === "string") {
-                var attrPromise = this.pip.getAttributes(category[j]).then(function(data){
+                var attrPromise = pip.getAttributes(category[j]).then(function(data){
                     var attributeValue = [];
-                    for(var attr in data){
-                        attributeValue = attributeValue.concat(data[attr].attributeValue);
-                        //@TODO: this only takes the last dataType, do we need this at all?
+                    if(Array.isArray(data)){
+                        for (var i in data) {
+                            attributeValue = attributeValue.concat(data[i].attributeValue);
+                        }
+                    } else {
+                        if(data && data.attributeValue){
+                            attributeValue.push(data.attributeValue);
+                        }
                     }
                     return {
                         attributeValue: attributeValue
@@ -295,6 +356,7 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,categoryId){
  *                                          Formats xacml resource category attributes
  * @param {Object|String|Array<String>} [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
  *                                          Formats xacml action category attributes
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {Promise} return will be structured as so:
  * ```
  * {
@@ -312,10 +374,11 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,categoryId){
  * }
  * ```
  */
-ozpIwc.policyAuth.PDP.prototype.formatCategories = function(categoryObj){
+ozpIwc.policyAuth.PDP.prototype.formatCategories = function(categoryObj,pip){
+    pip = pip || this.pip;
     var categoryPromises = [];
     for(var i in categoryObj){
-        categoryPromises.push(this.formatCategory(categoryObj[i],i));
+        categoryPromises.push(this.formatCategory(categoryObj[i],i,pip));
     }
     return Promise.all(categoryPromises).then(function(categories){
         var map = {};
@@ -336,10 +399,12 @@ ozpIwc.policyAuth.PDP.prototype.formatCategories = function(categoryObj){
  * Formats the rules categories,
  * @method formatRule
  * @param {Object} rule
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {Promise} returns a promise that will resolve to a formatted rule.
  */
-ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule) {
-    return this.formatCategories(rule.category).then(function (categories) {
+ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule,pip) {
+    pip = pip || this.pip;
+    return this.formatCategories(rule.category,pip).then(function (categories) {
         rule.category = categories;
         return rule;
     })['catch'](function(e){
@@ -352,12 +417,14 @@ ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule) {
  *
  * @method formatRules
  * @param {Array<Object>} rules
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {Promise} returns a promise that will resolve to a matching-order of formatted rules array.
  */
-ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules){
+ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules,pip){
+    pip = pip || this.pip;
     var rulePromises = [];
     for(var i in rules){
-        rulePromises.push(this.formatRule(rules[i]));
+        rulePromises.push(this.formatRule(rules[i],pip));
     }
     return Promise.all(rulePromises);
 };
@@ -368,14 +435,16 @@ ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules){
  *
  * @method formatPolicy
  * @param {Object} policy
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {Promise} calls and returns a formatRules promise
  */
-ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy){
+ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy,pip){
+    pip = pip || this.pip;
     policy = policy || {};
 
-    return this.formatRules(policy.rule).then(function(rules){
+    return this.formatRules(policy.rule,pip).then(function(rules){
         policy.rule = rules;
-        return policy;
+        return new ozpIwc.policyAuth.Policy(policy);
     });
 };
 
@@ -385,12 +454,14 @@ ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy){
  *
  * @method formatPolicies
  * @param {Array<Object>} policies
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {Promise} calls and returns a formatRules promise
  */
-ozpIwc.policyAuth.PDP.prototype.formatPolicies = function(policies){
+ozpIwc.policyAuth.PDP.prototype.formatPolicies = function(policies,pip){
+    pip = pip || this.pip;
     var policyPromises = [];
     for(var i in policies){
-        policyPromises.push(this.formatPolicy(policies[i]));
+        policyPromises.push(this.formatPolicy(policies[i],pip));
     }
     return Promise.all(policyPromises).then(function(policies){
         var formattedPolicies = [];

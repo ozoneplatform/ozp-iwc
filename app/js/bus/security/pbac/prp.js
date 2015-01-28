@@ -36,9 +36,9 @@ ozpIwc.policyAuth.PRP.prototype.getPolicies = function(policyURIs){
     var policiesToGather = this.persistentPolicies.concat(policyURIs);
     for(var i in policiesToGather){
         if(this.policyCache[policiesToGather[i]]){
-            policies.push(this.policyCache[policiesToGather[i]]);
+            policies.push(ozpIwc.util.clone(this.policyCache[policiesToGather[i]]));
         } else {
-            var promise = this.fetchPolicy(policiesToGather [i]);
+            var promise = this.fetchPolicy(policiesToGather[i]);
 
             //Push the policy fetch to the array, when it resolves its value (policy) will be part of the array
             policies.push(promise);
@@ -101,6 +101,7 @@ ozpIwc.policyAuth.PRP.prototype.defaultCombiningAlgorithm =
     "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides";
 
 /**
+ * Fetches the requested policy and stores a copy of it in the cache. Returns a denyAll if policy is unobtainable.
  * @method fetchPolicy
  * @param {String} policyURI the uri to gather the policy from
  * @returns {Promise} promise chain, the policy will be passed to the chained "then".
@@ -112,7 +113,7 @@ ozpIwc.policyAuth.PRP.prototype.fetchPolicy = function(policyURI){
         'href': policyURI
     }).then(function(data){
         self.policyCache[policyURI] = self.formatPolicy(data.response);
-        return self.policyCache[policyURI];
+        return ozpIwc.util.clone(self.policyCache[policyURI]);
     })['catch'](function(e){
         return self.getDenyall(policyURI);
     });

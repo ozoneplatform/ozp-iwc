@@ -140,3 +140,15 @@ var FakeRouter = function() {
     this.registerMulticast = function() {
     };
 };
+
+var FakeAuthorization = function(){
+    this.isPermitted = function(){
+        return new Promise(function(resolve,reject){
+            resolve({
+                result : "Permit"
+            });
+        });
+    };
+    this.pip = {};
+    this.pip.grantAttributes = function(){};
+};

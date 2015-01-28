@@ -39,6 +39,15 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
 
     var self = this;
     this.on("connectedToRouter",function() {
+        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:address',
+            {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address});
+
+        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:sendAs',
+            {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address});
+
+        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:receiveAs',
+            {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address});
+
         ozpIwc.metrics.gauge(self.metricRoot,"registeredCallbacks").set(function() {
             return self.getCallbackCount();
         });

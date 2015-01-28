@@ -7,26 +7,24 @@ describe("Policy Information Point",function() {
         spyOn(ozpIwc.util,"ajax").and.callFake(function(){
             return new Promise(function(resolve,reject){
                resolve({
-                    "ozp:attribute:1" : {
-                       'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                       'attributeValue': "serverLoadedVal"
-                    }
+                   'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                   'attributeValue': "serverLoadedVal"
                 });
             });
         });
 
         pip = new ozpIwc.policyAuth.PIP({
             informationCache : {
-                'ozp:attributeCollection:fake': {
-                    'ozp:attribute:1': {
+                'ozp:attributeCollection:fake': [
+                    {
                         'dataType':"http://www.w3.org/2001/XMLSchema#string",
                         'attributeValue': "fakeVal"
                     },
-                    'ozp:attribute:2': {
+                    {
                         'dataType':"http://www.w3.org/2001/XMLSchema#string",
                         'attributeValue': "otherFakeVal"
                     }
-                }
+                ]
             }
         });
     });
@@ -41,121 +39,120 @@ describe("Policy Information Point",function() {
     it('sends a request to the attributes URI/URN to gather attributes not in the cache',function(done){
         pip.getAttributes('ozp:attributeCollection:NOTINCACHE').then(function(attr){
             expect(attr).toEqual({
-            'ozp:attribute:1' : {
                 'dataType': "http://www.w3.org/2001/XMLSchema#string",
                 'attributeValue': "serverLoadedVal"
-                }
             });
             done();
         });
     });
 
-    it('grants Attributes an existing attributeId',function(){
-        pip.grantAttributes('ozp:attributeCollection:fake',{
-            'ozp:attribute:1': {
+    it('grants Attributes to an existing attributeId',function(){
+        pip.grantAttributes('ozp:attributeCollection:fake',[
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal'
+                'attributeValue' : 'newVal'
             },
-            'ozp:attribute:3' : {
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal2'
+                'attributeValue' : 'newVal2'
             }
-        });
-        expect(pip.informationCache['ozp:attributeCollection:fake']).toEqual({
-            'ozp:attribute:1': {
+        ]);
+        expect(pip.informationCache['ozp:attributeCollection:fake']).toEqual([
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal'
+                'attributeValue' : 'newVal'
             },
-            'ozp:attribute:2': {
-                'dataType':"http://www.w3.org/2001/XMLSchema#string",
-                'attributeValue': "otherFakeVal"
-            },
-            'ozp:attribute:3' : {
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal2'
+                'attributeValue' : 'newVal2'
             }
-        });
+        ]);
     });
 
-    it('grants Attributes a non existing attributeId ',function(){
-        pip.grantAttributes('ozp:attributeCollection:fake2',{
-            'ozp:attribute:1': {
+    it('grants Attributes to a non existing attributeId ',function(){
+        pip.grantAttributes('ozp:attributeCollection:fake2',[
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal'
+                'attributeValue' : 'newVal'
             },
-            'ozp:attribute:3' : {
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal2'
+                'attributeValue' : 'newVal2'
             }
-        });
-        expect(pip.informationCache['ozp:attributeCollection:fake2']).toEqual({
-            'ozp:attribute:1': {
+        ]);
+        expect(pip.informationCache['ozp:attributeCollection:fake2']).toEqual([
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal'
+                'attributeValue' : 'newVal'
             },
-            'ozp:attribute:3' : {
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal2'
+                'attributeValue' : 'newVal2'
             }
-        });
+        ]);
     });
 
     it('grants Attributes from a parent to an existing attributeId',function(done){
-        pip.informationCache['ozp:attributeCollection:parent'] = {
-            'ozp:attribute:1': {
+        pip.informationCache['ozp:attributeCollection:parent'] = [
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal'
+                'attributeValue' : 'newVal'
             },
-            'ozp:attribute:3' : {
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal2'
+                'attributeValue' : 'newVal2'
             }
-        };
+        ];
 
         pip.grantParent('ozp:attributeCollection:fake','ozp:attributeCollection:parent').then(function(){
-            expect(pip.informationCache['ozp:attributeCollection:fake']).toEqual({
-                'ozp:attribute:1': {
-                    'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                    'attributevalue' : 'newVal'
+            expect(pip.informationCache['ozp:attributeCollection:fake']).toEqual([
+
+                {
+                    'dataType':"http://www.w3.org/2001/XMLSchema#string",
+                    'attributeValue': "fakeVal"
                 },
-                'ozp:attribute:2': {
+                {
                     'dataType':"http://www.w3.org/2001/XMLSchema#string",
                     'attributeValue': "otherFakeVal"
                 },
-                'ozp:attribute:3' : {
+                {
                     'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                    'attributevalue' : 'newVal2'
+                    'attributeValue' : 'newVal'
+                },
+                {
+                    'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
+                    'attributeValue' : 'newVal2'
                 }
-            });
+            ]);
             done();
         });
     });
 
     it('grants Attributes from a parent to a non existing attributeId',function(){
-        pip.informationCache['ozp:attributeCollection:parent'] = {
-            'ozp:attribute:1': {
+        pip.informationCache['ozp:attributeCollection:parent'] = [
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal'
+                'attributeValue' : 'newVal'
             },
-            'ozp:attribute:3' : {
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal2'
+                'attributeValue' : 'newVal2'
             }
-        };
+        ];
 
         pip.grantParent('ozp:attributeCollection:fake2','ozp:attributeCollection:parent');
 
 
-        expect(pip.informationCache['ozp:attributeCollection:fake2']).toEqual({
-            'ozp:attribute:1': {
+        expect(pip.informationCache['ozp:attributeCollection:fake2']).toEqual([
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal'
+                'attributeValue' : 'newVal'
             },
-            'ozp:attribute:3' : {
+            {
                 'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
-                'attributevalue' : 'newVal2'
+                'attributeValue' : 'newVal2'
             }
-        });
+        ]);
     });
 
 });

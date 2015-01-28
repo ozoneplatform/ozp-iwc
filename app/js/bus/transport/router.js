@@ -181,6 +181,9 @@ ozpIwc.Router=function(config) {
      */
     this.peer=config.peer || ozpIwc.defaultPeer;
 
+
+    this.authorization = config.authorization || ozpIwc.authorization;
+
 //	this.nobodyAddress="$nobody";
 //	this.routerControlAddress='$transport';
 	var self=this;
@@ -235,6 +238,9 @@ ozpIwc.Router=function(config) {
 	};
 	this.events.on("preSend",checkFormat);
 
+    if(!config.disableBus){
+        this.participants["$bus.multicast"]=new ozpIwc.MulticastParticipant("$bus.multicast");
+    }
     /**
      * @property watchdog
      * @type ozpIwc.RouterWatchdog
@@ -243,14 +249,6 @@ ozpIwc.Router=function(config) {
         router: this,
         heartbeatFrequency: config.heartbeatFrequency
     });
-
-    /**
-     * Policy Enforcer module for the router.
-     * @property policyEnforcer
-     * @type {ozpIwc.policyAuth.PEP}
-     * @default new ozpIwc.policyAuth.PEP()
-     */
-    this.policyEnforcer = new ozpIwc.policyAuth.PEP();
 
 	this.registerParticipant(this.watchdog);
 
@@ -316,6 +314,7 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
     }
 
     this.participants[address] = participant;
+
     participant.connectToRouter(this,address);
     var registeredEvent=new ozpIwc.CancelableEvent({
         'packet': packet,
@@ -361,19 +360,27 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
         return;
     }
 
-//    this.policyEnforcer.request({
-//        'subject':localParticipant.securityAttributes,
-//        'object': packet.permissions,
-//        'action': {'action': 'receive'}
-//    })
-//        .success(function() {
-            ozpIwc.metrics.counter("transport.packets.delivered").inc();
-            localParticipant.receiveFromRouter(packetContext);
-//        })
-//        .failure(function() {
-//            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-//            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-//        });
+    for(var i in localParticipant.securityAttributes.attributes) {
+        this.authorization.pip.grantAttributes(i, localParticipant.securityAttributes.attributes[i]);
+    }
+
+    //Take a snapshot of the pip to use for the permission check (due to async nature)
+    var pipClone = ozpIwc.util.protoClone(this.authorization.pip);
+
+    var request = {
+        'subject': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': localParticipant.address},
+        'resource': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packetContext.packet.dst},
+        'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'receiveAs'},
+        'policies': ['policy/receiveAsPolicy.json']
+    };
+    return this.authorization.isPermitted(request,pipClone).then(function(){
+        ozpIwc.metrics.counter("transport.packets.delivered").inc();
+        localParticipant.receiveFromRouter(packetContext);
+    })['catch'](function(e){
+        /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
+        ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+        console.error(e);
+    });
 
 };
 
@@ -400,6 +407,11 @@ ozpIwc.Router.prototype.registerMulticast=function(participant,multicastGroups) 
             var registeredEvent = new ozpIwc.CancelableEvent({
                 'entity': {'group': groupName, 'address': participant.address}
             });
+            participant.securityAttributes.pushIfNotExist('ozp:iwc:participant:sendAs',
+                {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': groupName});
+            participant.securityAttributes.pushIfNotExist('ozp:iwc:participant:receiveAs',
+                {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': groupName});
+
             self.events.trigger("registeredMulticast", registeredEvent);
         } else {
             ozpIwc.log.log("no address for " +  participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
@@ -420,6 +432,8 @@ ozpIwc.Router.prototype.registerMulticast=function(participant,multicastGroups) 
  * @param {ozpIwc.TransportPacket} packet The packet to route.
  * @param {ozpIwc.Participant} sendingParticipant Information about the participant that is attempting to send
  * the packet.
+ * @returns {Promise} a promise that will resolve when delivering locally and sending through peer has completed.
+ *                    this is promise chained because both operations require authorization checks.
  */
 ozpIwc.Router.prototype.send=function(packet,sendingParticipant) {
 
@@ -434,9 +448,12 @@ ozpIwc.Router.prototype.send=function(packet,sendingParticipant) {
         return;
     }
     ozpIwc.metrics.counter("transport.packets.sent").inc();
-    this.deliverLocal(packet,sendingParticipant);
+    var promises = [];
+    promises.push(this.deliverLocal(packet,sendingParticipant));
     this.events.trigger("send",{'packet': packet});
-    this.peer.send(packet);
+    promises.push(this.peer.send(packet));
+
+    return Promise.all(promises);
 };
 
 /**

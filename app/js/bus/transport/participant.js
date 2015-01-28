@@ -29,7 +29,27 @@ ozpIwc.Participant=function() {
      * @type Object
      * @default {}
      */
-	this.securityAttributes={};
+	this.securityAttributes= {
+        'attributes': {},
+        'pushIfNotExist': function (id, val, comp) {
+            comp = comp || this.comparator;
+            if (!this.attributes[id]) {
+                this.attributes[id] = [];
+                this.attributes[id] = this.attributes[id].concat(val);
+            } else {
+                for (var i in this.attributes[id]) {
+                    if (comp(this.attributes[id][i], val)) {
+                        return;
+                    }
+                }
+                this.attributes[id].push(val);
+            }
+
+        },
+        'comparator': function (a, b) {
+            return a.dataType === b.dataType && a.attributeValue === b.attributeValue;
+        }
+    };
 
     /**
      * The message id assigned to the next packet if a packet msgId is not specified.
@@ -104,13 +124,7 @@ ozpIwc.Participant=function() {
         self.leaveEventChannel();
     });
 
-    /**
-     * Policy Enforcement module for the participant.
-     * @property policyEnforcer
-     * @type {ozpIwc.policyAuth.PEP}
-     * @default new ozpIwc.policyAuth.PEP()
-     */
-    this.policyEnforcer = new ozpIwc.policyAuth.PEP();
+
 };
 
 /**
@@ -164,7 +178,7 @@ ozpIwc.Participant.prototype.receiveFromRouterImpl = function (packetContext) {
 ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.address=address;
     this.router=router;
-    this.securityAttributes.rawAddress=address;
+    //this.securityAttributes.rawAddress=address;
     this.msgId=0;
     this.metricRoot="participants."+ this.address.split(".").reverse().join(".");
     this.sentPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"sentPackets").unit("packets");
@@ -176,10 +190,8 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.heartBeatStatus.name=this.name;
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
 
-
-
-    this.joinEventChannel();
     this.events.trigger("connectedToRouter");
+    this.joinEventChannel();
 };
 
 /**

@@ -119,7 +119,6 @@ describe("Policy Repository Point",function() {
                 expect(policy.description).toEqual(mockPolicy.description);
                 expect(policy.rule.category).toEqual(mockPolicy.rule.category);
                 expect(policy.ruleCombiningAlgId).toEqual(mockPolicy.ruleCombiningAlgId);
-                expect(policy.evaluate).not.toBeUndefined();
                 done();
             })
         });
@@ -129,7 +128,6 @@ describe("Policy Repository Point",function() {
             prp.getPolicies("connectionPolicy.json").then(function(policies){
                 expect(Array.isArray(policies)).toEqual(true);
                 expect(policies.length).toEqual(1);
-                expect(typeof policies[0].evaluate).toEqual("function");
                 done();
             });
         });

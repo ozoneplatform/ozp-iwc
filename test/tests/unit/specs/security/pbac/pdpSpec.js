@@ -46,10 +46,8 @@ describe("Policy Decision Point",function() {
         'getAttributes': function (id) {
             return new Promise(function (resolve, reject) {
                 resolve({
-                    'attr:1': {
-                        'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                        'attributeValue': "fakeVal"
-                    }
+                    'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                    'attributeValue': "fakeVal"
                 });
             });
         }
@@ -74,12 +72,10 @@ describe("Policy Decision Point",function() {
             pdp.formatRequest({
                 'subject': 'urn:subjectId:1'
             }).then(function(formattedRequest){
-                expect(formattedRequest.category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]).toEqual({
-                    'attr:1': {
-                        'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                        'attributeValue': "fakeVal"
-                    }
-                });
+                expect(formattedRequest.category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]).toEqual([{
+                    'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                    'attributeValue': "fakeVal"
+                }]);
                 done();
             });
         });
@@ -88,12 +84,10 @@ describe("Policy Decision Point",function() {
             pdp.formatRequest({
                 'resource': 'urn:resourceId:1'
             }).then(function(formattedRequest){
-                expect(formattedRequest.category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]).toEqual({
-                    'attr:1': {
-                        'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                        'attributeValue': "fakeVal"
-                    }
-                });
+                expect(formattedRequest.category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]).toEqual([{
+                    'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                    'attributeValue': "fakeVal"
+                }]);
                 done();
             });
         });
@@ -102,12 +96,10 @@ describe("Policy Decision Point",function() {
             pdp.formatRequest({
                 'action': 'write'
             }).then(function(formattedRequest){
-                expect(formattedRequest.category["urn:oasis:names:tc:xacml:3.0:attribute-category:action"]).toEqual({
-                    'attr:1': {
-                        'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                            'attributeValue': "write"
-                    }
-                });
+                expect(formattedRequest.category["urn:oasis:names:tc:xacml:3.0:attribute-category:action"]).toEqual([{
+                    'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                    'attributeValue': "write"
+                }]);
                 done();
             });
         });
@@ -121,24 +113,12 @@ describe("Policy Decision Point",function() {
                 'policies': ['urn:policyId:1','urn:policyId:2']
             }).then(function(formattedRequest){
                 expect(formattedRequest.category).toEqual({
-                        "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": {
-                            'attr:1': {
-                                'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                                'attributeValue': "fakeVal"
-                            }
-                        },
-                        "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": {
-                            'attr:1': {
-                                'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                                'attributeValue': "fakeVal"
-                            }
-                        },
-                        "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
-                            'attr:1' : {
-                                'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                                'attributeValue': "write"
-                            }
-                        }
+                        "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":
+                            [{'dataType': "http://www.w3.org/2001/XMLSchema#string",'attributeValue': "fakeVal"}],
+                        "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":
+                            [{'dataType': "http://www.w3.org/2001/XMLSchema#string",'attributeValue': "fakeVal"}],
+                        "urn:oasis:names:tc:xacml:3.0:attribute-category:action":
+                            [{'dataType': "http://www.w3.org/2001/XMLSchema#string",'attributeValue': "write"}]
                 });
                 expect(formattedRequest.combiningAlgorithm)
                     .toEqual("urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides");
@@ -153,6 +133,7 @@ describe("Policy Decision Point",function() {
         it("gathers a categories attributes from the PIP if given as a string",function(done){
             pdp.formatCategory('ozp:fake:attribute',
                 "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject").then(function(category){
+                    expect(category.attributeValue.length).toEqual(1);
                     expect(category.attributeValue).toEqual(["fakeVal"]);
                     expect(category.attributeDesignator.attributeId).toEqual("urn:oasis:names:tc:xacml:1.0:subject:subject-id");
                     expect(category.attributeDesignator.dataType).toEqual("http://www.w3.org/2001/XMLSchema#string");
@@ -224,7 +205,6 @@ describe("Policy Decision Point",function() {
                 expect(rules[1].category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"].attributeValue)
                     .toEqual(["fakeVal","fakeVal"]);
                 expect(rules[1].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"].attributeValue)
-                    .toEqual(["fakeVal","fakeVal","fakeVal"]);
                 done();
             });
         });
@@ -273,6 +253,9 @@ describe("Policy Decision Point",function() {
                     .toEqual(["fakeVal","fakeVal"]);
                 expect(policy.rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"].attributeValue)
                     .toEqual(["fakeVal","fakeVal","fakeVal"]);
+                expect(policy.rule[0].evaluate).not.toBeUndefined();
+                expect(policy.evaluate).not.toBeUndefined();
+
                 done();
             });
         });
@@ -285,10 +268,14 @@ describe("Policy Decision Point",function() {
                     .toEqual(["fakeVal","fakeVal"]);
                 expect(policies[0].rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"].attributeValue)
                     .toEqual(["fakeVal","fakeVal","fakeVal"]);
+                expect(policies[0].rule[0].evaluate).not.toBeUndefined();
+                expect(policies[0].evaluate).not.toBeUndefined();
                 expect(policies[1].rule[0].category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"].attributeValue)
                     .toEqual(["fakeVal","fakeVal"]);
+                expect(policies[1].rule[0].evaluate).not.toBeUndefined();
                 expect(policies[1].rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"].attributeValue)
                     .toEqual(["fakeVal","fakeVal","fakeVal"]);
+                expect(policies[1].evaluate).not.toBeUndefined();
                 done();
             });
         });

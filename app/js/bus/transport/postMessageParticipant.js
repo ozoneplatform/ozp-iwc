@@ -53,17 +53,23 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
      * @property securityAttributes.origin
      * @type String
      */
-    this.securityAttributes.origin=this.origin;
+    //this.securityAttributes.origin=this.origin;
 
-
-    /**
-     * Fires when the participant has connected to its router.
-     * @event #connectedToRouter
-     */
+    var self = this;
     this.on("connectedToRouter",function() {
+        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:address',
+            {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address});
 
-    },this);
+        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:sendAs',
+            {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address});
 
+        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:receiveAs',
+            {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address});
+
+        ozpIwc.metrics.gauge(self.metricRoot,"registeredCallbacks").set(function() {
+            return self.getCallbackCount();
+        });
+    });
     /**
      * @property heartBeatStatus.origin
      * @type String
@@ -78,16 +84,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
-    var self = this;
-    return ozpIwc.authorization.isPermitted().then(function(response){
-        self.sendToRecipient(packetContext.packet);
-        return "Permit";
-        //return response.result;
-    })['catch'](function(response){
-        console.error("FAILED TO RECEIVE");
-        ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-        throw response.result;
-    });
+    this.sendToRecipient(packetContext.packet);
 };
 
 /**
@@ -164,28 +161,7 @@ ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
     var self = this;
 
-    ozpIwc.authorization.pip.grantAttributes('ozp:iwc:participant:address', {
-        'attr:1': {
-            'dataType': 'http://www.w3.org/2001/XMLSchema#string',
-            'attributeValue': packet.src
-        }
-    });
-    var request = {
-        'subject':'ozp:iwc:participant:address',
-        'resource':{
-            'attr:1': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packet.src}
-        },
-        'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'sendAs'},
-        'policies': ['/policy/postMessagePolicy.json']
-    };
-    return ozpIwc.authorization.isPermitted(request).then(function(response){
-        self.router.send(packet,this);
-        return response;
-    })['catch'](function(response){
-        console.error("Failed to send. Could not authorize:",response);
-        ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-        throw response.result;
-    });
+    return self.router.send(packet,this);
 };
 
 
@@ -307,8 +283,6 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
                     'sourceWindow': event.source,
                     'credentials': packet.entity
                 });
-                participant.securityAttributes.connect = request;
-
                 self.router.registerParticipant(participant,packet,true);
                 self.participants.push(participant);
                 isPacket(packet);

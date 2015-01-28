@@ -35,8 +35,9 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
         return ozpIwc.util.ajax({
             href: id,
             method: "GET"
-        }).then(function (data) {
-            self.informationCache[id] = data;
+        }).then(function(data){
+            self.informationCache[id] =
+                Array.isArray(data)? data : [data];
             return data;
         });
     }
@@ -48,10 +49,13 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
  * @param {object} [attributes] – The attributes to grant (replacing previous values, if applicable)
  */
 ozpIwc.policyAuth.PIP.prototype.grantAttributes = function(subjectId,attributes){
-    this.informationCache[subjectId] = this.informationCache[subjectId] || {};
-    for(var i in attributes){
-        this.informationCache[subjectId][i] = attributes[i];
-    }
+    attributes = Array.isArray(attributes) ? attributes : [attributes];
+    this.informationCache[subjectId] = attributes;
+    //this.informationCache[subjectId] = this.informationCache[subjectId] || [];
+    //for(var i in attributes) {
+    //    if (this.informationCache[subjectId].indexOf(attributes[i]) < 0)
+    //        this.informationCache[subjectId].push(attributes[i]);
+    //}
 };
 
 /**
@@ -60,19 +64,23 @@ ozpIwc.policyAuth.PIP.prototype.grantAttributes = function(subjectId,attributes)
  * @param {String} [parentSubjectId] – The subject to inherit attributes from.
  */
 ozpIwc.policyAuth.PIP.prototype.grantParent = function (subjectId,parentId){
-    this.informationCache[subjectId] = this.informationCache[subjectId] || {};
+    this.informationCache[subjectId] = this.informationCache[subjectId] || [];
     var self = this;
     return new Promise(function(resolve,reject){
 
         if(self.informationCache[parentId]){
             for(var i in self.informationCache[parentId]){
-                self.informationCache[subjectId][i] = self.informationCache[parentId][i];
+                if(self.informationCache[subjectId].indexOf(self.informationCache[parentId]) < 0){
+                    self.informationCache[subjectId].push(self.informationCache[parentId][i]);
+                }
             }
             resolve(self.informationCache[subjectId]);
         } else {
             return self.getAttributes(parentId).then(function(attributes){
                 for(var i in attributes){
-                    self.informationCache[subjectId][i] = attributes[i];
+                    if(self.informationCache[subjectId].indexOf(attributes[i]) < 0) {
+                        self.informationCache[subjectId].push(attributes[i]);
+                    }
                 }
                 return attributes;
             });
