@@ -368,7 +368,7 @@ ozpIwc.LeaderGroupParticipant.prototype.sendElectionMessage=function(type, confi
         state = {};
     }
 
-    this.send({
+    return this.send({
 		'src': this.address,
 		'dst': this.electionAddress,
 		'action': type,
@@ -446,7 +446,9 @@ ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
     var opponent = config.opponent || "";
 	// don't start a new election if we are in one
 	if(this.inElection()) {
-		return;
+		return new Promise(function(resolve,reject){
+            resolve();
+        });
 	}
     this.events.trigger("startElection");
 
@@ -457,7 +459,7 @@ ozpIwc.LeaderGroupParticipant.prototype.startElection=function(config) {
         self.events.trigger("becameLeaderEvent");
 	},this.electionTimeout);
 
-	this.sendElectionMessage("election", {state: state, previousLeader: this.leader, opponent: opponent});
+	return this.sendElectionMessage("election", {state: state, previousLeader: this.leader, opponent: opponent});
 };
 
 

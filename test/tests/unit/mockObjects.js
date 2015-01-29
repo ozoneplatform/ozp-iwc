@@ -125,22 +125,32 @@ var FakeRouter = function() {
         p.connectToRouter(this, (this.participants.length + 1) + ".fake");
         this.participants.push(p);
     };
+    var self = this;
     this.pump = function() {
         var processed = 0;
         var recvFn = function(participants,packet) {
+            var promises = [];
             participants.forEach(function(l){
                 if (l.address !== packet.src) {
-                    l.receiveFromRouter(new TestPacketContext({'packet': packet}));
+                    promises.push(l.receiveFromRouter(new TestPacketContext({'packet': packet})));
                 }
             });
+            return Promise.all(promises);
         };
-        while (this.packetQueue.length) {
-            processed++;
-            var packet = this.packetQueue.shift();
+        var pumpIt = function(){
+            if(self.packetQueue.length) {
+                this.processed++;
+                var packet = self.packetQueue.shift();
 //				console.log("PACKET(" + packet.src + "): ",packet);
-            recvFn(this.participants,packet);
-        }
-        return processed;
+                return recvFn(self.participants, packet).then(pumpIt);
+            } else {
+                return new Promise(function(resolve,reject){
+                    resolve();
+                });
+            }
+        };
+
+        return pumpIt();
     };
     this.createMessage = function(m) {
         return m;
