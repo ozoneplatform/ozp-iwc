@@ -181,9 +181,6 @@ ozpIwc.Router=function(config) {
      */
     this.peer=config.peer || ozpIwc.defaultPeer;
 
-
-    this.authorization = config.authorization || ozpIwc.authorization;
-
 //	this.nobodyAddress="$nobody";
 //	this.routerControlAddress='$transport';
 	var self=this;
@@ -240,6 +237,7 @@ ozpIwc.Router=function(config) {
 
     if(!config.disableBus){
         this.participants["$bus.multicast"]=new ozpIwc.MulticastParticipant("$bus.multicast");
+        this.participants["$bus.multicast"].authorization = config.authorization || ozpIwc.authorization;
     }
     /**
      * @property watchdog
@@ -247,7 +245,8 @@ ozpIwc.Router=function(config) {
      */
 	this.watchdog=new ozpIwc.RouterWatchdog({
         router: this,
-        heartbeatFrequency: config.heartbeatFrequency
+        heartbeatFrequency: config.heartbeatFrequency,
+        authorization: config.authorization || ozpIwc.authorization
     });
 
 	this.registerParticipant(this.watchdog);
@@ -359,29 +358,8 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
         ozpIwc.metrics.counter("transport.packets.rejected").inc();
         return;
     }
-
-    for(var i in localParticipant.securityAttributes.attributes) {
-        this.authorization.pip.grantAttributes(i, localParticipant.securityAttributes.attributes[i]);
-    }
-
-    //Take a snapshot of the pip to use for the permission check (due to async nature)
-    var pipClone = ozpIwc.util.protoClone(this.authorization.pip);
-
-    var request = {
-        'subject': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': localParticipant.address},
-        'resource': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packetContext.packet.dst},
-        'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'receiveAs'},
-        'policies': ['policy/receiveAsPolicy.json']
-    };
-    return this.authorization.isPermitted(request,pipClone).then(function(){
-        ozpIwc.metrics.counter("transport.packets.delivered").inc();
-        localParticipant.receiveFromRouter(packetContext);
-    })['catch'](function(e){
-        /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-        ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-        console.error(e);
-    });
-
+    ozpIwc.metrics.counter("transport.packets.delivered").inc();
+    localParticipant.receiveFromRouter(packetContext);
 };
 
 

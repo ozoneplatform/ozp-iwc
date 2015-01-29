@@ -38,7 +38,8 @@ describe("Leader Group Participant",function() {
 		var l=new ozpIwc.LeaderGroupParticipant({
 			electionAddress:"ea",
 			name: "foo"+fakeRouter.participants.length,
-			'priority': priority
+			'priority': priority,
+            authorization: new  MockAuthorization()
 		});
 		fakeRouter.registerParticipant(l);
 		l.on("startElection", function() {

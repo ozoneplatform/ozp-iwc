@@ -12,9 +12,10 @@ var ozpIwc=ozpIwc || {};
  * @property {String} address The assigned address to this address.
  * @property {ozpIwc.security.Subject} securityAttributes The security attributes for this participant.
  */
-ozpIwc.Participant=function() {
+ozpIwc.Participant=function(config) {
+    config = config || {};
 
-
+    this.authorization = config.authorization || ozpIwc.authorization;
     /**
      * An events module for the participant.
      * @property events
@@ -120,7 +121,6 @@ ozpIwc.Participant=function() {
 
             return packet;
         };
-        self.
         self.leaveEventChannel();
     });
 
@@ -137,19 +137,22 @@ ozpIwc.Participant=function() {
  */
 ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     var self = this;
-//    this.policyEnforcer.request({
-//        'subject': this.securityAttributes,
-//        'object': packetContext.packet.permissions
-//    })
-//        .success(function(){
-            self.receivedPacketsMeter.mark();
 
-            self.receiveFromRouterImpl(packetContext);
-//        })
-//        .failure(function() {
-//            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-//            self.forbiddenPacketsMeter.mark();
-//        });
+    var request = {
+        'subject': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': this.address},
+        'resource': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packetContext.packet.dst},
+        'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'receiveAs'},
+        'policies': ['policy/receiveAsPolicy.json']
+    };
+
+    return this.authorization.isPermitted(request,this).then(function(){
+        self.receivedPacketsMeter.mark();
+        self.receiveFromRouterImpl(packetContext);
+    })['catch'](function(e){
+        /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
+        ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+        console.error(e);
+    });
 };
 
 /**
@@ -226,10 +229,21 @@ ozpIwc.Participant.prototype.fixPacket=function(packet) {
  * @returns {ozpIwc.TransportPacket}
  */
 ozpIwc.Participant.prototype.send=function(packet) {
-    packet=this.fixPacket(packet);
-    this.sentPacketsMeter.mark();
-    this.router.send(packet,this);
-    return packet;
+    var request = {
+        'subject': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': this.address},
+        'resource': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packet.src},
+        'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'sendAs'},
+        'policies': ['policy/sendAsPolicy.json']
+    };
+    var self = this;
+    return this.authorization.isPermitted(request,this).then(function() {
+        packet = self.fixPacket(packet);
+        self.sentPacketsMeter.mark();
+        self.router.send(packet, self);
+        return packet;
+    })['catch'](function(e){
+        console.error(e);
+    });
 };
 
 /**

@@ -151,21 +151,6 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 };
 
 /**
- * Sends a packet to this participants router.  Calls fixPacket before doing so.
- *
- * @method send
- * @param {ozpIwc.TransportPacket} packet
- * @returns {ozpIwc.TransportPacket}
-*/
-ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
-    packet=this.fixPacket(packet);
-    var self = this;
-
-    return self.router.send(packet,this);
-};
-
-
-/**
  * @TODO (DOC)
  * Listens for PostMessage messages and forwards them to the respected Participant.
  *
@@ -266,12 +251,8 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
         var request = {
-            'subject':{
-                "attr:1" : {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': event.origin}
-            },
-            'resource':{
-                'attr:1': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': '$bus.multicast'}
-            },
+            'subject':{'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': event.origin},
+            'resource':{'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': '$bus.multicast'},
             'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'connect'},
             'policies': ['policy/connectPolicy.json']
         };

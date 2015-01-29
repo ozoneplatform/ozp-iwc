@@ -40,8 +40,8 @@ ozpIwc.policyAuth.PDP = function(config){
  *                                                  value of the “action-id” attribute.
  * @param {Array<String>} [request.policies]        A list of URIs applicable to this decision.
  * @param {String} [request. combiningAlgorithm]    Only supports “deny-overrides”
- * @param {ozpIwc.policyAuth.PIP} [pip]             A policy information point to gather attributes for the request/policy
- *                                                  The default ozpIwc.authorizaiton.pip is used if one is not provided.
+ * @param {Object} [contextHolder]                  An object that holds 'securityAttribute' attributes to populate the
+ *                                                  PIP cache with for request/policy use.
  * @returns {Promise} will resolve if the policy gives a "Permit", or rejects if else wise. the promise chain will
  *                    receive:
  *                    ```{
@@ -50,11 +50,17 @@ ozpIwc.policyAuth.PDP = function(config){
  *                      'formattedRequest': <Object> // a copy of the formatted request (for PDP user caching)
  *                    }```
  */
-ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,pip){
+ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,contextHolder){
     // Allow a custom pip to be used for the check.
     // We use this so that we can assign attributes to the PIP (for policies to reference), take a snapshot, and
     // move on with the async nature of the IWC and not worry about attributes being overridden.
-    pip = pip || this.pip;
+    var pip;
+    if(contextHolder){
+        pip = this.gatherContext(contextHolder);
+    } else {
+        pip = this.pip;
+    }
+
     var self = this;
     //If there is no request information, its a trivial "Permit"
     if(!request){
@@ -490,4 +496,14 @@ ozpIwc.policyAuth.PDP.prototype.mappedId = function(string){
         default:
             return undefined;
     }
+};
+
+ozpIwc.policyAuth.PDP.prototype.gatherContext = function(contextHolder){
+
+    for(var i in contextHolder.securityAttributes.attributes) {
+        this.pip.grantAttributes(i, contextHolder.securityAttributes.attributes[i]);
+    }
+
+    //Take a snapshot of the pip to use for the permission check (due to async nature)
+    return ozpIwc.util.protoClone(this.pip);
 };

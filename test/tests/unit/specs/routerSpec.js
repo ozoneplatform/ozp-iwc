@@ -7,12 +7,12 @@ describe("Router", function() {
         fakePeer = new ozpIwc.Event();
         fakePeer.packets = [];
         fakePeer.send = function(packet) {
-            fakePeer.packets.push(packet);
+            this.packets.push(packet);
         };
 
         router = new ozpIwc.Router({
             peer: fakePeer,
-            authorization: new FakeAuthorization()
+            authorization: new MockAuthorization()
         });
     });
 

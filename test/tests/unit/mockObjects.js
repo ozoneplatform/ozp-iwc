@@ -15,6 +15,14 @@ var FakePeer = function() {
     };
 };
 
+var MockAuthorization = function(){
+     this.isPermitted = function(){
+            return new Promise(function(resolve,reject){
+                resolve({result:"Permit"});
+            });
+    };
+};
+
 //========================================================
 // TestParticipant for connecting to a router
 //========================================================
@@ -29,7 +37,7 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
     this.sentPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "sentPackets");
     this.receivedPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "receivedPackets");
     this.forbiddenPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "forbiddenPackets");
-
+    this.authorization = new MockAuthorization();
 
     this.router = {
         'send': function() {
@@ -139,16 +147,4 @@ var FakeRouter = function() {
     };
     this.registerMulticast = function() {
     };
-};
-
-var FakeAuthorization = function(){
-    this.isPermitted = function(){
-        return new Promise(function(resolve,reject){
-            resolve({
-                result : "Permit"
-            });
-        });
-    };
-    this.pip = {};
-    this.pip.grantAttributes = function(){};
 };
