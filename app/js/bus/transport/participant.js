@@ -12,10 +12,8 @@ var ozpIwc=ozpIwc || {};
  * @property {String} address The assigned address to this address.
  * @property {ozpIwc.security.Subject} securityAttributes The security attributes for this participant.
  */
-ozpIwc.Participant=function(config) {
-    config = config || {};
+ozpIwc.Participant=function() {
 
-    this.authorization = config.authorization || ozpIwc.authorization;
     /**
      * An events module for the participant.
      * @property events
@@ -145,9 +143,22 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
         'policies': ['policy/receiveAsPolicy.json']
     };
 
-    return this.authorization.isPermitted(request,this).then(function(){
+    return ozpIwc.authorization.isPermitted(request,this).then(function(){
         self.receivedPacketsMeter.mark();
-        self.receiveFromRouterImpl(packetContext);
+
+        var request = {
+            'subject': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address},
+            'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'read'},
+            'policies': ['policy/readPolicy.json']
+        };
+        //If the packet has 1 or more permissions add them as the resource
+        if(packetContext.packet.permissions && packetContext.packet.permissions.length){
+            request.resource = {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packetContext.packet.permissions};
+        }
+        return ozpIwc.authorization.isPermitted(request,self).then(function(){
+            self.receiveFromRouterImpl(packetContext);
+        });
+
     })['catch'](function(e){
         /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
         ozpIwc.metrics.counter("transport.packets.forbidden").inc();
@@ -236,7 +247,7 @@ ozpIwc.Participant.prototype.send=function(packet) {
         'policies': ['policy/sendAsPolicy.json']
     };
     var self = this;
-    return this.authorization.isPermitted(request,this).then(function() {
+    return ozpIwc.authorization.isPermitted(request,this).then(function() {
         packet = self.fixPacket(packet);
         self.sentPacketsMeter.mark();
         self.router.send(packet, self);

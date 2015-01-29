@@ -22,6 +22,7 @@ var MockAuthorization = function(){
             });
     };
 };
+ozpIwc.authorization = new MockAuthorization();
 
 //========================================================
 // TestParticipant for connecting to a router
@@ -37,7 +38,6 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
     this.sentPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "sentPackets");
     this.receivedPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "receivedPackets");
     this.forbiddenPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "forbiddenPackets");
-    this.authorization = new MockAuthorization();
 
     this.router = {
         'send': function() {

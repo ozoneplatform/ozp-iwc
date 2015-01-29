@@ -67,6 +67,7 @@ ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,func
             this.rule.push(new ozpIwc.policyAuth.Rule(config.rule[i]));
         }
     }
+    this.evaluate = config.evaluate || this.evaluateDefault;
 
 });
 
@@ -91,7 +92,7 @@ ozpIwc.policyAuth.Policy.prototype.ruleCombiningAlgId = 'urn:oasis:names:tc:xacm
  * @param {String} [request. combiningAlgorithm]  Only supports “deny-overrides”
  * @returns {Promise}
  */
-ozpIwc.policyAuth.Policy.prototype.evaluate = function(request){
+ozpIwc.policyAuth.Policy.prototype.evaluateDefault = function(request){
     return ozpIwc.policyAuth.RuleCombining[this.ruleCombiningAlgId](this.rule,request);
 
 };

@@ -9,7 +9,7 @@ describe("Leader Group Participant",function() {
      */
     
 	var oldSetImmediate=ozpIwc.util.setImmediate;
-    
+
 	var tick=function(t) {
 		fakeRouter.pump();
 		jasmine.clock().tick(t);
@@ -38,8 +38,7 @@ describe("Leader Group Participant",function() {
 		var l=new ozpIwc.LeaderGroupParticipant({
 			electionAddress:"ea",
 			name: "foo"+fakeRouter.participants.length,
-			'priority': priority,
-            authorization: new  MockAuthorization()
+			'priority': priority
 		});
 		fakeRouter.registerParticipant(l);
 		l.on("startElection", function() {
@@ -132,7 +131,7 @@ describe("Leader Group Participant",function() {
 		expect(leader.isLeader()).toEqual(true);
 	});
 
-	it("two members elect one leader",function() {
+	it("two members elect one leader",function(done) {
         var member=makeLeader(1);
 		var leader=makeLeader(2);
 
@@ -142,7 +141,7 @@ describe("Leader Group Participant",function() {
 
 		expect(leader.isLeader()).toEqual(true);
 		expect(member.isLeader()).toEqual(false);
-	});	
+	});
 	
 	it("higher priority will take over",function() {
 		var member=makeLeader(1);
