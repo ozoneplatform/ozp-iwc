@@ -50,7 +50,7 @@ ozpIwc.CommonApiValue = function(config) {
      * @type Object
      * @default {}
      */
-	this.permissions=config.permissions || {};
+	this.permissions=config.permissions || [];
 
     /**
      * @property version

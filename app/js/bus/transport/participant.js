@@ -56,28 +56,27 @@ ozpIwc.Participant=function() {
      * @type {Number}
      */
     this.msgId=0;
-    var fakeMeter=new ozpIwc.metricTypes.Meter();
 
     /**
      * A Metrics meter for packets sent from the participant.
      * @property sentPacketsmeter
      * @type ozpIwc.metricTypes.Meter
      */
-    this.sentPacketsMeter=fakeMeter;
+    this.sentPacketsMeter=new ozpIwc.metricTypes.Meter();
 
     /**
      * A Metrics meter for packets received by the participant.
      * @property receivedPacketMeter
      * @type ozpIwc.metricTypes.Meter
      */
-    this.receivedPacketsMeter=fakeMeter;
+    this.receivedPacketsMeter=new ozpIwc.metricTypes.Meter();
 
     /**
      * A Metrics meter for packets sent to the participant that did not pass authorization.
      * @property forbiddenPacketMeter
      * @type ozpIwc.metricTypes.Meter
      */
-    this.forbiddenPacketsMeter=fakeMeter;
+    this.forbiddenPacketsMeter=new ozpIwc.metricTypes.Meter();
 
     /**
      * The type of the participant.
@@ -113,9 +112,9 @@ ozpIwc.Participant=function() {
         self.send = function(originalPacket,callback) {
             var packet=this.fixPacket(originalPacket);
             if(callback) {
-                this.replyCallbacks[packet.msgId]=callback;
+                self.replyCallbacks[packet.msgId]=callback;
             }
-            ozpIwc.Participant.prototype.send.call(this,packet);
+            ozpIwc.Participant.prototype.send.call(self,packet);
 
             return packet;
         };
@@ -144,25 +143,27 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     };
 
     return ozpIwc.authorization.isPermitted(request,this).then(function(){
-        self.receivedPacketsMeter.mark();
-
         var request = {
             'subject': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address},
             'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'read'},
+            'resource': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packetContext.packet.permissions || []},
             'policies': ['policy/readPolicy.json']
         };
-        //If the packet has 1 or more permissions add them as the resource
-        if(packetContext.packet.permissions && packetContext.packet.permissions.length){
-            request.resource = {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packetContext.packet.permissions};
-        }
+
         return ozpIwc.authorization.isPermitted(request,self).then(function(){
             self.receiveFromRouterImpl(packetContext);
+        })['catch'](function(e){
+            //bubble up
+            throw e;
         });
 
     })['catch'](function(e){
+        self.forbiddenPacketsMeter.mark();
         /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
         ozpIwc.metrics.counter("transport.packets.forbidden").inc();
         console.error(e);
+        //bubble up
+        throw e;
     });
 };
 
@@ -192,6 +193,17 @@ ozpIwc.Participant.prototype.receiveFromRouterImpl = function (packetContext) {
 ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.address=address;
     this.router=router;
+    //var self = this;
+    ////Whenever this participant is registered to a multicast group, add it to the sendAs/receiveAs attributes
+    //this.router.on("registeredMulticast",function(event){
+    //    var entity = event.entity;
+    //    if(entity && entity.address === self.address && entity.group) {
+    //        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:sendAs',
+    //            {'dataType': 'http://www.w3.org/2001/XMLSchema#string', 'attributeValue': entity.group});
+    //        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:receiveAs',
+    //            {'dataType': 'http://www.w3.org/2001/XMLSchema#string', 'attributeValue': entity.group});
+    //    }
+    //});
     //this.securityAttributes.rawAddress=address;
     this.msgId=0;
     this.metricRoot="participants."+ this.address.split(".").reverse().join(".");
@@ -205,7 +217,7 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
 
     this.events.trigger("connectedToRouter");
-    this.joinEventChannel();
+    return this.joinEventChannel();
 };
 
 /**
@@ -254,6 +266,8 @@ ozpIwc.Participant.prototype.send=function(packet) {
         return packet;
     })['catch'](function(e){
         console.error(e);
+        //bubble up
+        throw e;
     });
 };
 
@@ -293,7 +307,7 @@ ozpIwc.Participant.prototype.heartbeat=function() {
 ozpIwc.Participant.prototype.joinEventChannel = function() {
     if(this.router) {
         this.router.registerMulticast(this, ["$bus.multicast"]);
-        this.send({
+        return this.send({
             dst: "$bus.multicast",
             action: "connect",
             entity: {
@@ -301,9 +315,14 @@ ozpIwc.Participant.prototype.joinEventChannel = function() {
                 participantType: this.participantType
             }
         });
-        return true;
+        return new Promise(function(resolve,reject){
+            resolve();
+        });
     } else {
-        return false;
+
+        return new Promise(function(resolve,reject){
+            reject();
+        });
     }
 };
 

@@ -87,6 +87,8 @@ ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name)
         {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': name});
     this.securityAttributes.pushIfNotExist('ozp:iwc:participant:receiveAs',
         {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': name});
+    this.securityAttributes.pushIfNotExist('ozp:iwc:participant:permissions',
+        {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': []});
 });
 
 /**
@@ -98,6 +100,8 @@ ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name)
  * @returns {Boolean} always false.
  */
 ozpIwc.MulticastParticipant.prototype.receiveFromRouterImpl=function(packet) {
+
+    this.receivedPacketsMeter.mark();
 	this.members.forEach(function(m) {
         // as we send to each member, update the context to make it believe that it's the only recipient
         packet.dstParticipant=m;

@@ -1,46 +1,4 @@
 describe("Policy Repository Point",function() {
-    var mockPolicy = {
-        "policyId": "connectPolicy.json",
-        "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
-        "version": "1.0",
-        "description": "Policy for Connection Allowances (testing)",
-        "rule": [
-            {
-                "ruleId": "urn:ozp:iwc:xacml:rule:connect1",
-                "description": "The following domains are white-listed to connect to the IWC bus.",
-                "category": {
-                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":{
-                        "attributeDesignator": {
-                            "attributeId" : "urn:oasis:names:tc:xacml:1.0:subject:subject-id",
-                            "dataType" : "http://www.w3.org/2001/XMLSchema#anyURI",
-                            "mustBePresent": false
-                        },
-                        "attributeValue" : [
-                            "http://localhost:13000",
-                            "http://localhost:15001",
-                            "http://ozone-development.github.io"
-                        ]
-                    },
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":{
-                        "attributeDesignator": {
-                            "attributeId" : "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
-                            "dataType" : "http://www.w3.org/2001/XMLSchema#string",
-                            "mustBePresent": false
-                        },
-                        "attributeValue" : ["$bus.multicast"]
-                    },
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
-                        "attributeDesignator": {
-                            "attributeId" : "urn:oasis:names:tc:xacml:1.0:action:action-id",
-                            "dataType" : "http://www.w3.org/2001/XMLSchema#string",
-                            "mustBePresent": false
-                        },
-                        "attributeValue" : ["connect"]
-                    }
-                }
-            }
-        ]
-    };
 
     var prp;
     describe("default behavior and policy acquisition failure.",function(){
@@ -58,7 +16,7 @@ describe("Policy Repository Point",function() {
         });
 
         it("formats server loaded policies as Policy Elements",function(){
-            var policy = prp.formatPolicy(mockPolicy);
+            var policy = prp.formatPolicy(mockPolicies['policy/connectPolicy.json']);
             expect(policy.evaluate).not.toBeUndefined();
         });
 
@@ -104,7 +62,7 @@ describe("Policy Repository Point",function() {
             spyOn(ozpIwc.util,"ajax").and.callFake(function(){
                 return new Promise(function(resolve,reject){
                     resolve({
-                        'response': mockPolicy
+                        'response': mockPolicies['policy/connectPolicy.json']
                     });
                 });
             });
@@ -114,11 +72,11 @@ describe("Policy Repository Point",function() {
 
         it("fetches desired policies.",function(done){
             prp.fetchPolicy("connectionPolicy.json").then(function(policy){
-                expect(policy.policyId).toEqual(mockPolicy.policyId);
-                expect(policy.version).toEqual(mockPolicy.version);
-                expect(policy.description).toEqual(mockPolicy.description);
-                expect(policy.rule.category).toEqual(mockPolicy.rule.category);
-                expect(policy.ruleCombiningAlgId).toEqual(mockPolicy.ruleCombiningAlgId);
+                expect(policy.policyId).toEqual(mockPolicies['policy/connectPolicy.json'].policyId);
+                expect(policy.version).toEqual(mockPolicies['policy/connectPolicy.json'].version);
+                expect(policy.description).toEqual(mockPolicies['policy/connectPolicy.json'].description);
+                expect(policy.rule.category).toEqual(mockPolicies['policy/connectPolicy.json'].rule.category);
+                expect(policy.ruleCombiningAlgId).toEqual(mockPolicies['policy/connectPolicy.json'].ruleCombiningAlgId);
                 done();
             })
         });

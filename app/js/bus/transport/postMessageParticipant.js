@@ -66,6 +66,9 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
         self.securityAttributes.pushIfNotExist('ozp:iwc:participant:receiveAs',
             {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address});
 
+        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:permissions',
+            {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': []});
+        
         ozpIwc.metrics.gauge(self.metricRoot,"registeredCallbacks").set(function() {
             return self.getCallbackCount();
         });
@@ -84,7 +87,20 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
-    this.sendToRecipient(packetContext.packet);
+    var request = {
+        'subject':"",
+        'resource': "",
+        'action': "",
+        'policies': ['policy/readWritePolicy.json']
+    };
+    var self = this;
+    return ozpIwc.authorization.isPermitted().then(function(resolution){
+        self.receivedPacketsMeter.mark();
+        self.sendToRecipient(packetContext.packet);
+        return resolution;
+    })['catch'](function(e){
+        console.error(e);
+    });
 };
 
 /**

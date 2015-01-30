@@ -108,6 +108,8 @@ var TestPacketContext = ozpIwc.util.extend(ozpIwc.TransportPacketContext, functi
 
 var FakeRouter = function() {
     this.jitter = 0;
+    this.events = new ozpIwc.Event();
+    this.events.mixinOnOff(this);
     this.packetQueue=[];
     this.participants=[];
     this.send = function(packet) {
@@ -122,12 +124,14 @@ var FakeRouter = function() {
 
     };
     this.registerParticipant = function(p) {
-        p.connectToRouter(this, (this.participants.length + 1) + ".fake");
-        this.participants.push(p);
+        var self = this;
+        return p.connectToRouter(this, (this.participants.length + 1) + ".fake").then(function(){
+            self.participants.push(p);
+        });
     };
     var self = this;
+    self.processed = 0;
     this.pump = function() {
-        var processed = 0;
         var recvFn = function(participants,packet) {
             var promises = [];
             participants.forEach(function(l){
@@ -137,24 +141,142 @@ var FakeRouter = function() {
             });
             return Promise.all(promises);
         };
-        var pumpIt = function(){
-            if(self.packetQueue.length) {
-                this.processed++;
+        var pumpIt = function() {
+            if (self.packetQueue.length) {
+                self.processed++;
                 var packet = self.packetQueue.shift();
 //				console.log("PACKET(" + packet.src + "): ",packet);
                 return recvFn(self.participants, packet).then(pumpIt);
             } else {
-                return new Promise(function(resolve,reject){
+                return new Promise(function (resolve, reject) {
                     resolve();
                 });
             }
         };
-
         return pumpIt();
+
     };
     this.createMessage = function(m) {
         return m;
     };
     this.registerMulticast = function() {
     };
+};
+
+// Assorted mock policies for PBAC testing. Fill the PRP Cache with this and ajax calls wont be needed!
+var mockPolicies = {
+    'policy/connectPolicy.json': {
+        "policyId": "connectPolicy.json",
+        "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
+        "version": "1.0",
+        "description": "Policy for Connection Allowances (testing)",
+        "rule": [
+            {
+                "ruleId": "urn:ozp:iwc:xacml:rule:connect1",
+                "description": "The following domains are white-listed to connect to the IWC bus.",
+                "category": {
+                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": {
+                        "attributeDesignator": {
+                            "attributeId": "urn:oasis:names:tc:xacml:1.0:subject:subject-id",
+                            "dataType": "http://www.w3.org/2001/XMLSchema#anyURI",
+                            "mustBePresent": false
+                        },
+                        "attributeValue": [
+                            "http://localhost:13000",
+                            "http://localhost:15001",
+                            "http://ozone-development.github.io"
+                        ]
+                    },
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": {
+                        "attributeDesignator": {
+                            "attributeId": "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
+                            "dataType": "http://www.w3.org/2001/XMLSchema#string",
+                            "mustBePresent": false
+                        },
+                        "attributeValue": ["$bus.multicast"]
+                    },
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
+                        "attributeDesignator": {
+                            "attributeId": "urn:oasis:names:tc:xacml:1.0:action:action-id",
+                            "dataType": "http://www.w3.org/2001/XMLSchema#string",
+                            "mustBePresent": false
+                        },
+                        "attributeValue": ["connect"]
+                    }
+                }
+            }
+        ]
+    },
+    'policy/receiveAsPolicy.json': {
+        "policyId": "urn:ozp:iwc:xacml:policy:connect1",
+        "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
+        "version": "1.0",
+        "description": "Policy for SendingAs (testing)",
+        "rule": [
+            {
+                "ruleId": "urn:ozp:iwc:xacml:rule:sendAs",
+                "description": "The following domains are white-listed to connect to the IWC bus.",
+                "category": {
+                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:participant:address",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:participant:receiveAs",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
+                        "attributeDesignator": {
+                            "attributeId" : "urn:oasis:names:tc:xacml:1.0:action:action-id",
+                            "dataType" : "http://www.w3.org/2001/XMLSchema#string",
+                            "mustBePresent": false
+                        },
+                        "attributeValue" : ["receiveAs"]
+                    }
+                }
+            }
+        ]
+    },
+    'policy/sendAsPolicy.json': {
+        "policyId": "urn:ozp:iwc:xacml:policy:connect1",
+        "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
+        "version": "1.0",
+        "description": "Policy for SendingAs (testing)",
+        "rule": [
+            {
+                "ruleId": "urn:ozp:iwc:xacml:rule:sendAs",
+                "description": "The following domains are white-listed to connect to the IWC bus.",
+                "category": {
+                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:participant:address",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:participant:sendAs",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
+                        "attributeDesignator": {
+                            "attributeId" : "urn:oasis:names:tc:xacml:1.0:action:action-id",
+                            "dataType" : "http://www.w3.org/2001/XMLSchema#string",
+                            "mustBePresent": false
+                        },
+                        "attributeValue" : ["sendAs"]
+                    }
+                }
+            }
+        ]
+    },
+    'policy/readPolicy.json': {
+        "policyId": "urn:ozp:iwc:xacml:policy:read1",
+        "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
+        "version": "1.0",
+        "description": "Policy for reading (testing)",
+        "rule": [
+            {
+                "ruleId": "urn:ozp:iwc:xacml:rule:read",
+                "description": "The following address can read if it has all of the security requirements.",
+                "category": {
+                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:participant:address",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:participant:permissions",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
+                        "attributeDesignator": {
+                            "attributeId" : "urn:oasis:names:tc:xacml:1.0:action:action-id",
+                            "dataType" : "http://www.w3.org/2001/XMLSchema#string",
+                            "mustBePresent": false
+                        },
+                        "attributeValue" : ["read","write"]
+                    }
+                }
+            }
+        ]
+    }
 };

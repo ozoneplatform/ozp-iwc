@@ -70,7 +70,7 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,contextHolder){
             });
         });
     }
-
+    var formattedPolicies = [];
     //Format the request
     return this.formatRequest(request,pip).then(function(formattedRequest){
         // Get the policies from the PRP
@@ -78,15 +78,17 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,contextHolder){
            //Format the policies
            return self.formatPolicies(policies,pip);
        }).then(function(policies){
-                //Generate the evaluation function
-               return self.generateEvaluation(policies,formattedRequest.combiningAlgorithm);
+           formattedPolicies = policies;
+            //Generate the evaluation function
+            return self.generateEvaluation(policies,formattedRequest.combiningAlgorithm);
        }).then(function(evaluate){
            //Evaluate the function
            var result = evaluate(formattedRequest);
            var response = {
                'result':result,
                'request': request,
-               'formattedRequest': formattedRequest
+               'formattedRequest': formattedRequest,
+               'formattedPolicies': formattedPolicies
            };
            if(result === "Permit"){
                return response;

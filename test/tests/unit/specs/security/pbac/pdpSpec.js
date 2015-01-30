@@ -1,46 +1,5 @@
 describe("Policy Decision Point",function() {
-    var mockPolicy = {
-        "policyId": "connectPolicy.json",
-        "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
-        "version": "1.0",
-        "description": "Policy for Connection Allowances (testing)",
-        "rule": [
-            {
-                "ruleId": "urn:ozp:iwc:xacml:rule:connect1",
-                "description": "The following domains are white-listed to connect to the IWC bus.",
-                "category": {
-                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":{
-                        "attributeDesignator": {
-                            "attributeId" : "urn:oasis:names:tc:xacml:1.0:subject:subject-id",
-                            "dataType" : "http://www.w3.org/2001/XMLSchema#anyURI",
-                            "mustBePresent": false
-                        },
-                        "attributeValue" : [
-                            "http://localhost:13000",
-                            "http://localhost:15001",
-                            "http://ozone-development.github.io"
-                        ]
-                    },
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":{
-                        "attributeDesignator": {
-                            "attributeId" : "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
-                            "dataType" : "http://www.w3.org/2001/XMLSchema#string",
-                            "mustBePresent": false
-                        },
-                        "attributeValue" : ["$bus.multicast"]
-                    },
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
-                        "attributeDesignator": {
-                            "attributeId" : "urn:oasis:names:tc:xacml:1.0:action:action-id",
-                            "dataType" : "http://www.w3.org/2001/XMLSchema#string",
-                            "mustBePresent": false
-                        },
-                        "attributeValue" : ["connect"]
-                    }
-                }
-            }
-        ]
-    };
+
     var pdp;
     var mockPIP = {
         'getAttributes': function (id) {
@@ -56,7 +15,7 @@ describe("Policy Decision Point",function() {
     var mockPRP = {
         'getPolicies': function(policyURIs){
             return new Promise(function(resolve,reject){
-               resolve([mockPolicy]);
+               resolve([mockPolicies['policy/connectPolicy.json']]);
             });
         }
     };

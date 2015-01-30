@@ -39,6 +39,8 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
             self.informationCache[id] =
                 Array.isArray(data)? data : [data];
             return data;
+        })['catch'](function(e){
+            return [];
         });
     }
 
