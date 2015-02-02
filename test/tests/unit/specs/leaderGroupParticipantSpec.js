@@ -11,9 +11,8 @@ describe("Leader Group Participant",function() {
 	var oldSetImmediate=ozpIwc.util.setImmediate;
 
 	var tick=function(t) {
-		return fakeRouter.pump().then(function(){
-		    jasmine.clock().tick(t);
-            return fakeRouter.pump();
+		return fakeRouter.pump().then(function() {
+            jasmine.clock().tick(t);
         }).then(function(){
             return fakeRouter.pump();
         });

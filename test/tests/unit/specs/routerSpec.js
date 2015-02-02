@@ -11,8 +11,13 @@ describe("Router", function() {
         };
 
         router = new ozpIwc.Router({
-            peer: fakePeer,
-            authorization: new MockAuthorization()
+            peer: fakePeer
+        });
+        ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
+            pip: new ozpIwc.policyAuth.PIP(),
+            prp: new ozpIwc.policyAuth.PRP({
+                policyCache: mockPolicies
+            })
         });
     });
 
@@ -20,27 +25,34 @@ describe("Router", function() {
         router.shutdown();
         router = null;
         fakePeer = null;
+        //ozpIwc.authorization = new MockAuthorization();
     });
 
     describe("Participant registration", function() {
         var participant;
+        var participantId;
         beforeEach(function() {
             participant = new TestParticipant({origin: "foo.com"});
         });
 
-        it("returns and assigns a participant id", function() {
-            var participantId = router.registerParticipant(participant, {});
-            expect(participantId).toBeDefined();
-            expect(participant.address).toEqual(participantId);
+        it("returns and assigns a participant id", function(done) {
+            router.registerParticipant(participant, {}).then(function(id){
+                participantId = id;
+                expect(participantId).toBeDefined();
+                expect(participant.address).toEqual(participantId);
+                done();
+            });
         });
 
-        it("assigns a participant id derived from the router id", function() {
-            var participantId = router.registerParticipant(participant, {});
-
-            expect(participantId).toMatch(new RegExp("(.*)\\." + router.selfId));
+        it("assigns a participant id derived from the router id", function(done) {
+            router.registerParticipant(participant, {}).then(function(id){
+                participantId = id;
+                expect(participantId).toMatch(new RegExp("(.*)\\." + router.selfId));
+                done();
+            });
         });
 
-        it("calls registration handlers", function() {
+        it("calls registration handlers", function(done) {
             var called = false;
 
             router.on("preRegisterParticipant", function(event) {
@@ -48,11 +60,14 @@ describe("Router", function() {
                 called = true;
             });
 
-            router.registerParticipant(participant, {});
-            expect(called).toEqual(true);
+            router.registerParticipant(participant, {}).then(function(){
+                expect(called).toEqual(true);
+                done();
+            });
+
         });
 
-        it("blocks a participant if the handler cancels", function() {
+        it("blocks a participant if the handler cancels", function(done) {
             router.on("preRegisterParticipant", function(event) {
                 if (event.participant.origin === "badguy.com") {
                     event.cancel("badguy");
@@ -61,17 +76,21 @@ describe("Router", function() {
 
             var badParticipant = new TestParticipant({origin: "badguy.com"});
 
-            router.registerParticipant(participant, {});
-            router.registerParticipant(badParticipant, {});
+            router.registerParticipant(participant, {}).then(function(){
+                expect(participant.address).not.toBeNull();
+                return router.registerParticipant(badParticipant, {});
+            })['catch'](function(reason){
+                expect(badParticipant.address).toBeUndefined();
+                done();
+            });
 
-            expect(participant.address).not.toBeNull();
-            expect(badParticipant.address).toBeUndefined();
         });
     });
 
     describe("Sending packets", function() {
         var participant;
         var participant2;
+        var msg;
 
         beforeEach(function() {
             participant = new TestParticipant({origin: "foo.com"});
@@ -81,18 +100,30 @@ describe("Router", function() {
             router.registerParticipant(participant2);
         });
 
-        it("forwards to peer", function() {
-            var msg = participant.send({dst: "fakeName"});
-            router.send(msg, participant);
-            expect(fakePeer.packets[0]).toEqual(msg);
+        it("forwards to peer", function(done) {
+            participant.send({dst: "fakeName"}).then(function(response){
+                msg = response.packet;
+                return router.send(msg,participant);
+            }).then(function(){
+                expect(fakePeer.packets.indexOf(msg)).toBeGreaterThan(-1);
+                done();
+            })['catch'](function(e){
+                expect(false).toEqual(true);
+                done();
+            });
         });
 
         it("routes locally", function(done) {
-            var msg = participant.send({dst: participant2.address});
-            router.send(msg, participant).then(function(){
+            participant.send({dst: participant2.address}).then(function(response) {
+                msg = response.packet;
+                return router.send(msg, participant);
+            }).then(function(){
                 expect(participant2.packets[0].packet).toEqual(msg);
                 expect(participant2.packets[0].srcParticipant).toBe(participant);
                 expect(participant2.packets[0].dstParticipant).toBe(participant2);
+                done();
+            })['catch'](function(e){
+                expect(false).toEqual(true);
                 done();
             });
         });
@@ -102,18 +133,20 @@ describe("Router", function() {
         var participant;
         var participant2;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             participant = new TestParticipant({origin: "foo.com"});
             participant2 = new TestParticipant({origin: "bar.com"});
 
-            router.registerParticipant(participant);
-            router.registerParticipant(participant2);
+            router.registerParticipant(participant).then(function(){
+                return router.registerParticipant(participant2);
+            }).then(function(){
+                participant.securityAttributes.perm = 'shared';
+                participant2.securityAttributes.perm = 'shared';
 
-            participant.securityAttributes.perm = 'shared';
-            participant2.securityAttributes.perm = 'shared';
-
-            participant.securityAttributes.color = 'blue';
-            participant2.securityAttributes.color = 'red';
+                participant.securityAttributes.color = 'blue';
+                participant2.securityAttributes.color = 'red';
+                done();
+            });
         });
 
         it("allows receipt of shared permissions", function(done) {
@@ -125,14 +158,20 @@ describe("Router", function() {
                 dst: participant2.address,
                 permissions: {'perm': "shared"},
                 entity: {foo: "bar"}
+            })['catch'](function(e){
+                expect(false).toEqual(true);
+                done();
             });
         });
 
-        it("denies receipt of unshared permissions", function() {
+        it("denies receipt of unshared permissions", function(done) {
             participant.send({
                 dst: participant2.address,
                 permissions: {'color': "blue"},
                 entity: {foo: "bar"}
+            })['catch'](function(){
+                expect(false).toEqual(true);
+                done();
             });
 
             expect(participant2.packets.length).toEqual(0);

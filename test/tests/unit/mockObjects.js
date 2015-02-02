@@ -141,19 +141,22 @@ var FakeRouter = function() {
             });
             return Promise.all(promises);
         };
-        var pumpIt = function() {
-            if (self.packetQueue.length) {
-                self.processed++;
+
+        var promises = [];
+        if(self.packetQueue.length) {
+            self.processed++;
+            for (var i in self.packetQueue) {
                 var packet = self.packetQueue.shift();
 //				console.log("PACKET(" + packet.src + "): ",packet);
-                return recvFn(self.participants, packet).then(pumpIt);
-            } else {
-                return new Promise(function (resolve, reject) {
-                    resolve();
-                });
+                promises.push(recvFn(self.participants, packet));
             }
-        };
-        return pumpIt();
+        }
+        return Promise.all(promises).then(function(){
+            // if more got written during this async run again
+            if(self.packetQueue.length){
+                return self.pump();
+            }
+        });
 
     };
     this.createMessage = function(m) {
@@ -266,7 +269,7 @@ var mockPolicies = {
                 "description": "The following address can read if it has all of the security requirements.",
                 "category": {
                     "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:participant:address",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:participant:permissions",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:context:permissions",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
                         "attributeDesignator": {
                             "attributeId" : "urn:oasis:names:tc:xacml:1.0:action:action-id",

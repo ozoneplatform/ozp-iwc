@@ -28,7 +28,6 @@
 
       <script type="text/javascript">
         var client=new ozpIwc.InternalParticipant({'name':"intentsChooser"});
-        ozpIwc.defaultRouter.registerParticipant(client);
 
         function failure(msg) {
             document.getElementById("handlerList").textContent=msg;
@@ -105,17 +104,18 @@
         }
         var loc=ozpIwc.util.parseOzpUrl(m[1]);
 
-        client.send(loc,function(reply,done) {
-            if(reply.response!=="ok") {
-                failure();
+        ozpIwc.defaultRouter.registerParticipant(client).then(function(){
+            client.send(loc,function(reply,done) {
+                if(reply.response!=="ok") {
+                    failure();
+                    done();
+                    return;
+                }
+                showHandlers(reply.entity.handlerChoices,reply);
+                showCancel(reply);
                 done();
-                return;
-            }
-            showHandlers(reply.entity.handlerChoices,reply);
-            showCancel(reply);
-            done();
+            });
         });
-        
     </script>
   </body>
 </html>

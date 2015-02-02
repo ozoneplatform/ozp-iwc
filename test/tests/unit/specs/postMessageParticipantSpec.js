@@ -32,10 +32,10 @@ describe("Post Message Participant",function() {
                     'dst': participant.address
                 }
             });
-            participant.receiveFromRouterImpl(packet).then(function(resolution){
+            participant.receiveFromRouter(packet).then(function(resolution){
                 expect(resolution.result).toEqual("Permit");
                 done();
-            })['catch'](function(){
+            })['catch'](function(e){
                 expect(false).toEqual(true);
                 done();
             });
@@ -48,10 +48,10 @@ describe("Post Message Participant",function() {
                     'dst': participant.address+1
                 }
             });
-            participant.receiveFromRouterImpl(packet).then(function(resolution){
+            participant.receiveFromRouter(packet).then(function(resolution){
                 expect(false).toEqual(true);
                 done();
-            })['catch'](function(){
+            })['catch'](function(resolution){
                 expect(resolution.result).toEqual("Deny");
                 done();
             });
@@ -64,7 +64,7 @@ describe("Post Message Participant",function() {
             }).then(function(resolution){
                 expect(resolution.result).toEqual("Permit");
                 done();
-            })['catch'](function(){
+            })['catch'](function(e){
                 expect(false).toEqual(true);
                 done();
             });
@@ -78,7 +78,7 @@ describe("Post Message Participant",function() {
             }).then(function(resolution){
                 expect(false).toEqual(true);
                 done();
-            })['catch'](function(){
+            })['catch'](function(resolution){
                 expect(resolution.result).toEqual("Deny");
                 done();
             });

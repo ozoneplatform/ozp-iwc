@@ -309,20 +309,22 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
         // someone vetoed this participant
         ozpIwc.log.log("registeredParticipant[DENIED] origin:"+participant.origin+
             " because " + registerEvent.cancelReason);
-        return null;
+        return ozpIwc.rejectWith(registerEvent.cancelReason);
     }
 
     this.participants[address] = participant;
 
-    participant.connectToRouter(this,address);
-    var registeredEvent=new ozpIwc.CancelableEvent({
-        'packet': packet,
-        'participant': participant
+    var self = this;
+    return participant.connectToRouter(this,address).then(function(){
+        var registeredEvent=new ozpIwc.CancelableEvent({
+            'packet': packet,
+            'participant': participant
+        });
+        self.events.trigger("registeredParticipant",registeredEvent);
+    //	ozpIwc.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
+        return address;
     });
-    this.events.trigger("registeredParticipant",registeredEvent);
 
-//	ozpIwc.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
-    return address;
 };
 
 /**
@@ -423,7 +425,9 @@ ozpIwc.Router.prototype.send=function(packet,sendingParticipant) {
 
     if(preSendEvent.canceled) {
         ozpIwc.metrics.counter("transport.packets.sendCanceled");
-        return;
+        return new Promise(function(resolve,reject){
+            reject(preSendEvent.cancelReason);
+        });
     }
     ozpIwc.metrics.counter("transport.packets.sent").inc();
     var promises = [];

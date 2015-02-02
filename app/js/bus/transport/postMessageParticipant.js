@@ -68,7 +68,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 
         self.securityAttributes.pushIfNotExist('ozp:iwc:participant:permissions',
             {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': []});
-        
+
         ozpIwc.metrics.gauge(self.metricRoot,"registeredCallbacks").set(function() {
             return self.getCallbackCount();
         });
@@ -87,20 +87,8 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
-    var request = {
-        'subject':"",
-        'resource': "",
-        'action': "",
-        'policies': ['policy/readWritePolicy.json']
-    };
-    var self = this;
-    return ozpIwc.authorization.isPermitted().then(function(resolution){
-        self.receivedPacketsMeter.mark();
-        self.sendToRecipient(packetContext.packet);
-        return resolution;
-    })['catch'](function(e){
-        console.error(e);
-    });
+    this.receivedPacketsMeter.mark();
+    this.sendToRecipient(packetContext.packet);
 };
 
 /**
@@ -280,9 +268,10 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
                     'sourceWindow': event.source,
                     'credentials': packet.entity
                 });
-                self.router.registerParticipant(participant,packet,true);
-                self.participants.push(participant);
-                isPacket(packet);
+                self.router.registerParticipant(participant,packet,true).then(function(){
+                    self.participants.push(participant);
+                    isPacket(packet);
+                });
         })['catch'](function(e){
             console.error("Failed to connect. Could not authorize:",e);
         });

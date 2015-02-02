@@ -322,3 +322,24 @@ ozpIwc.util.elementParser = function(config){
 ozpIwc.util.camelCased = function(string){
     return string.charAt(0).toLowerCase() + string.substring(1);
 };
+
+/**
+ * Shortened call for returning a resolving promise (cleans up promise chaining)
+ * @param {*} obj any valid javascript to resolve with.
+ * @returns {Promise}
+ */
+ozpIwc.util.resolveWith = function(obj){
+    return new Promise(function(resolve,reject){
+        resolve(obj);
+    });
+};
+/**
+ * Shortened call for returning a rejecting promise (cleans up promise chaining)
+ * @param {*} obj any valid javascript to reject with.
+ * @returns {Promise}
+ */
+ozpIwc.util.rejectWith = function(obj){
+    return new Promise(function(resolve,reject){
+        reject(obj);
+    });
+};

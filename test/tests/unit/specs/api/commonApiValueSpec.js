@@ -19,7 +19,7 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         expect(value.resource).toBeUndefined();
         expect(value.entity).toBeUndefined();
         expect(value.contentType).toBeUndefined();
-        expect(value.permissions).toEqual({});
+        expect(value.permissions).toEqual([]);
         expect(value.version).toEqual(0);
     });
 

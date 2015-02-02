@@ -150,8 +150,9 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
             'policies': ['policy/readPolicy.json']
         };
 
-        return ozpIwc.authorization.isPermitted(request,self).then(function(){
+        return ozpIwc.authorization.isPermitted(request,self).then(function(resolution){
             self.receiveFromRouterImpl(packetContext);
+            return resolution;
         })['catch'](function(e){
             //bubble up
             throw e;
@@ -259,11 +260,12 @@ ozpIwc.Participant.prototype.send=function(packet) {
         'policies': ['policy/sendAsPolicy.json']
     };
     var self = this;
-    return ozpIwc.authorization.isPermitted(request,this).then(function() {
+    return ozpIwc.authorization.isPermitted(request,this).then(function(resolution) {
         packet = self.fixPacket(packet);
         self.sentPacketsMeter.mark();
         self.router.send(packet, self);
-        return packet;
+        resolution.packet = packet;
+        return resolution;
     })['catch'](function(e){
         console.error(e);
         //bubble up

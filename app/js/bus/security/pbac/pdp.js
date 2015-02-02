@@ -506,6 +506,8 @@ ozpIwc.policyAuth.PDP.prototype.gatherContext = function(contextHolder){
         this.pip.grantAttributes(i, contextHolder.securityAttributes.attributes[i]);
     }
 
+    //Wraps all security attributes in one object for simplified permission checks.
+    this.pip.grantAttributes('ozp:iwc:context:permissions',[]);
     //Take a snapshot of the pip to use for the permission check (due to async nature)
     return ozpIwc.util.protoClone(this.pip);
 };
