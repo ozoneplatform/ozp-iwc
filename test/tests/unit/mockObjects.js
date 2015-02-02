@@ -179,32 +179,26 @@ var mockPolicies = {
                 "description": "The following domains are white-listed to connect to the IWC bus.",
                 "category": {
                     "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": {
-                        "attributeDesignator": {
-                            "attributeId": "urn:oasis:names:tc:xacml:1.0:subject:subject-id",
+                        "ozp:iwc:origin": {
                             "dataType": "http://www.w3.org/2001/XMLSchema#anyURI",
-                            "mustBePresent": false
-                        },
-                        "attributeValue": [
-                            "http://localhost:13000",
-                            "http://localhost:15001",
-                            "http://ozone-development.github.io"
-                        ]
+                            "attributeValue": [
+                                "http://localhost:13000",
+                                "http://localhost:15001",
+                                "http://ozone-development.github.io"
+                            ]
+                        }
                     },
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": {
-                        "attributeDesignator": {
-                            "attributeId": "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
+                        "ozp:iwc:bus": {
                             "dataType": "http://www.w3.org/2001/XMLSchema#string",
-                            "mustBePresent": false
-                        },
-                        "attributeValue": ["$bus.multicast"]
+                            "attributeValue": ["$bus.multicast"]
+                        }
                     },
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
-                        "attributeDesignator": {
-                            "attributeId": "urn:oasis:names:tc:xacml:1.0:action:action-id",
+                        "ozp:iwc:action": {
                             "dataType": "http://www.w3.org/2001/XMLSchema#string",
-                            "mustBePresent": false
-                        },
-                        "attributeValue": ["connect"]
+                            "attributeValue": ["connect"]
+                        }
                     }
                 }
             }
@@ -217,18 +211,16 @@ var mockPolicies = {
         "description": "Policy for SendingAs (testing)",
         "rule": [
             {
-                "ruleId": "urn:ozp:iwc:xacml:rule:sendAs",
+                "ruleId": "urn:ozp:iwc:xacml:rule:receiveAs",
                 "description": "The following domains are white-listed to connect to the IWC bus.",
                 "category": {
-                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:participant:address",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:participant:receiveAs",
+                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:address",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:receiveAs",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
-                        "attributeDesignator": {
-                            "attributeId" : "urn:oasis:names:tc:xacml:1.0:action:action-id",
-                            "dataType" : "http://www.w3.org/2001/XMLSchema#string",
-                            "mustBePresent": false
-                        },
-                        "attributeValue" : ["receiveAs"]
+                        "ozp:iwc:action": {
+                            "dataType": "http://www.w3.org/2001/XMLSchema#string",
+                            "attributeValue": ["receiveAs"]
+                        }
                     }
                 }
             }
@@ -244,15 +236,13 @@ var mockPolicies = {
                 "ruleId": "urn:ozp:iwc:xacml:rule:sendAs",
                 "description": "The following domains are white-listed to connect to the IWC bus.",
                 "category": {
-                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:participant:address",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:participant:sendAs",
+                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:address",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:sendAs",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
-                        "attributeDesignator": {
-                            "attributeId" : "urn:oasis:names:tc:xacml:1.0:action:action-id",
-                            "dataType" : "http://www.w3.org/2001/XMLSchema#string",
-                            "mustBePresent": false
-                        },
-                        "attributeValue" : ["sendAs"]
+                        "ozp:iwc:action": {
+                            "dataType": "http://www.w3.org/2001/XMLSchema#string",
+                            "attributeValue": ["sendAs"]
+                        }
                     }
                 }
             }
@@ -268,15 +258,13 @@ var mockPolicies = {
                 "ruleId": "urn:ozp:iwc:xacml:rule:read",
                 "description": "The following address can read if it has all of the security requirements.",
                 "category": {
-                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:participant:address",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:context:permissions",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
-                        "attributeDesignator": {
-                            "attributeId" : "urn:oasis:names:tc:xacml:1.0:action:action-id",
-                            "dataType" : "http://www.w3.org/2001/XMLSchema#string",
-                            "mustBePresent": false
-                        },
-                        "attributeValue" : ["read","write"]
+                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:address",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:permissions",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
+                        "ozp:iwc:action": {
+                            "dataType": "http://www.w3.org/2001/XMLSchema#string",
+                            "attributeValue": ["read", "write"]
+                        }
                     }
                 }
             }

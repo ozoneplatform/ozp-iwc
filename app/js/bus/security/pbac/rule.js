@@ -91,16 +91,18 @@ ozpIwc.policyAuth.Rule.prototype.evaluate = function(request){
             //@TODO
             return this.getNegativeEffect();
         } else {
-
-            var attributeDesignator = this.category[i].attributeDesignator;
-            var attributeValues = this.category[i].attributeValue;
-
             // iterate over each attribute in the request
             for(var j in reqCategory[i]){
+                if(!this.category[i][j]){
+                    return this.getNegativeEffect();
+                }
+                var dataType = this.category[i][j].dataType;
+                var attributeValues = this.category[i][j].attributeValue;
+
                 var matchFound = false;
                 var currentReqAttribute = reqCategory[i][j];
 
-                if(currentReqAttribute.dataType === attributeDesignator.dataType){
+                if(currentReqAttribute.dataType === dataType){
 
                     //Make sure the attributes are arrays
                     var attrArray = Array.isArray(currentReqAttribute.attributeValue) ?

@@ -111,31 +111,62 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,contextHolder){
 ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
     pip = pip || this.pip;
     var promises = [];
-    if(!attribute){
-        //do nothing and return an empty promise.all
-    }else if(typeof attribute === "string"){
-        // If its a string, use it as a key and fetch its attrs from PIP
 
-        var promise = pip.getAttributes(attribute);
-        promises.push(promise);
-    }else if(attribute.dataType && attribute.attributeValue){
-        //If its formatted return it;
-
-        promises.push(attribute);
-    } else if(Array.isArray(attribute)){
-        // If its an array, its multiple actions. Wrap as needed
-
-        for(var i in attribute){
-            if(typeof attribute[i] === "string"){
-                var promise = pip.getAttributes(attribute[i]);
-                promises.push(promise);
-            } else if(attribute[i].dataType && attribute[i].attributeValue){
-                promises.push(attribute[i]);
+    // If its an object, it contains already formatted attributes, push them individually to the promise array
+    var objectHandler = function(object,promiseArray){
+        var keys = Object.keys(object);
+        for(var i in keys){
+            if(object[keys[i]].dataType && object[keys[i]].attributeValue){
+                var obj = {};
+                obj[keys[i]] = object[keys[i]];
+                obj[keys[i]].attributeValue = Array.isArray(object[keys[i]].attributeValue) ?
+                    obj[keys[i]].attributeValue : [obj[keys[i]].attributeValue];
+                promiseArray.push(obj);
+            } else {
+                //@TODO if an attribute doesn't format, do we ignore it?
             }
         }
+    };
+
+    // If its an array, its multiple actions. Wrap as needed
+    var arrayHandler = function(array,promiseArray){
+        for(var i in array){
+            if(typeof array[i] === "string") {
+                var promise = pip.getAttributes(array[i]);
+                promiseArray.push(promise);
+            } else if(Array.isArray(array[i])){
+                arrayHandler(array[i],promiseArray);
+            } else if(typeof array[i] === "object"){
+                objectHandler(array[i],promiseArray);
+            }
+        }
+    };
+
+    if(!attribute){
+        //do nothing and return an empty promise.all
+    }else if(typeof attribute === "string") {
+        // If its a string, use it as a key and fetch its attrs from PIP
+        var promise = pip.getAttributes(attribute);
+        promises.push(promise);
+    } else if(Array.isArray(attribute)){
+        // If its an array, its multiple actions. Wrap as needed
+        arrayHandler(attribute,promises);
+    } else if(typeof attribute === "object"){
+        objectHandler(attribute,promises);
     }
-    return Promise.all(promises);
+    return Promise.all(promises).then(function(formattedAttributes){
+        var returnObject = {};
+        for(var i in formattedAttributes){
+            var keys = Object.keys(formattedAttributes[i]);
+            for(var j in keys){
+                returnObject[keys[j]] = formattedAttributes[i][keys[j]];
+            }
+        }
+        return returnObject;
+    });
 };
+
+
 
 /**
  * Formats an action to be used by a request or policy.
@@ -145,36 +176,56 @@ ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
  * @returns {Array} An array of formatted actions
  */
 ozpIwc.policyAuth.PDP.prototype.formatAction = function(action){
-    var formatted = [];
+
+    var formatted = {
+        'dataType' : "http://www.w3.org/2001/XMLSchema#string",
+        'attributeValue' : []
+    };
+
+    var objectHandler = function(object,formatted){
+        var values;
+        // We only care about attributeValues
+        if(object['ozp:iwc:action'] && object['ozp:iwc:action'].attributeValue){
+            values = object['ozp:iwc:action'].attributeValue;
+        }else if(object.attributeValue){
+            values = object.attributeValue;
+        }
+        if(Array.isArray(values)) {
+                return arrayHandler(values,formatted);
+        } else if(typeof values === 'string'){
+            if(formatted.attributeValue.indexOf(values) < 0){
+                formatted.attributeValue.push(values);
+            }
+        }
+    };
+    var arrayHandler = function(array,formatted){
+        for(var i in array){
+            if(typeof array[i] === 'string') {
+                if (formatted.attributeValue.indexOf(array[i]) < 0) {
+                    formatted.attributeValue.push(array[i]);
+                }
+            } else if(Array.isArray(array[i])){
+                arrayHandler(array[i],formatted);
+            } else if(typeof array[i] === 'object') {
+                objectHandler(array[i],formatted);
+            }
+        }
+    };
+
     if(!action){
         //do nothing and return an empty array
     }else if(typeof action === "string"){
-        // If its a string, its a single action. Wrap it as needed.
-
-        formatted.push({
-            'dataType': "http://www.w3.org/2001/XMLSchema#string",
-            'attributeValue': action
-        });
-    } else if(Array.isArray(action)){
-        // If its an array, its multiple actions. Wrap as needed
-
-        for(var i in action){
-            if(typeof action[i] === "string"){
-                formatted.push({
-                    'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                    'attributeValue': action[i]
-                });
-            } else if(action[i].dataType && action[i].attributeValue){
-                formatted.push(action[i]);
-            }
+        // If its a string, its a single action.
+        if(formatted.attributeValue.indexOf(action) < 0){
+            formatted.attributeValue.push(action);
         }
-    } else if(action.dataType && action.attributeValue){
-        // If its an action but not wrapped with a key. Wrap as needed.
-
-        formatted.push(action);
+    } else if(Array.isArray(action)){
+        arrayHandler(action,formatted);
+    } else if(typeof action === 'object'){
+        objectHandler(action,formatted);
     }
 
-    return formatted;
+    return {'ozp:iwc:action': formatted};
 };
 
 /**
@@ -289,61 +340,10 @@ ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combining
  *      ```
  *
  */
-ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,categoryId,pip){
+ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,pip){
     pip = pip || this.pip;
-    var attributePromises = [];
-
-    // If it's a string its to be gathered (expected value will be an object with dataType and attributeValue)
-    if (typeof category === "string") {
-        category = [category];
-    }
-
-    // If its an array, it can have attributes to be gathered, or objects
-    if (Array.isArray(category)) {
-        for (var j in category) {
-            if (typeof category[j] === "string") {
-                var attrPromise = pip.getAttributes(category[j]).then(function(data){
-                    var attributeValue = [];
-                    if(Array.isArray(data)){
-                        for (var i in data) {
-                            attributeValue = attributeValue.concat(data[i].attributeValue);
-                        }
-                    } else {
-                        if(data && data.attributeValue){
-                            attributeValue.push(data.attributeValue);
-                        }
-                    }
-                    return {
-                        attributeValue: attributeValue
-                    };
-                })['catch'](function(e){console.error(e);});
-                attributePromises.push(attrPromise);
-            } else {
-                attributePromises.push(category[j]);
-            }
-        }
-    } else {
-        attributePromises.push(category);
-    }
-    var self = this;
-    return Promise.all(attributePromises).then(function(attributes){
-        var attributeValue = [];
-
-
-        // For each resource gathered
-        for(var i in attributes){
-            // concat the found attributes
-            attributeValue = attributeValue.concat(attributes[i].attributeValue);
-        }
-        return {
-            category: categoryId,
-            attributeDesignator: {
-                "attributeId": self.mappedId(categoryId),
-                "dataType": "http://www.w3.org/2001/XMLSchema#string",
-                "mustBePresent": false
-            },
-            attributeValue: attributeValue
-        };
+    return this.formatAttribute(category,pip).then(function(attributes){
+        return attributes;
     })['catch'](function(e){
         console.error(e);
     });
@@ -385,16 +385,16 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,categoryId,pi
 ozpIwc.policyAuth.PDP.prototype.formatCategories = function(categoryObj,pip){
     pip = pip || this.pip;
     var categoryPromises = [];
+    var categoryIndexing = {};
     for(var i in categoryObj){
-        categoryPromises.push(this.formatCategory(categoryObj[i],i,pip));
+        categoryPromises.push(this.formatCategory(categoryObj[i],pip));
+        categoryIndexing[i] = categoryPromises.length - 1;
     }
     return Promise.all(categoryPromises).then(function(categories){
         var map = {};
-        for(var i in categories){
-            map[categories[i].category] = {
-                "attributeDesignator": categories[i].attributeDesignator,
-                "attributeValue": categories[i].attributeValue
-            };
+        var keys = Object.keys(categoryIndexing);
+        for(var i in keys){
+            map[keys[i]] = categories[categoryIndexing[keys[i]]] || {};
         }
         return map;
     });
@@ -506,8 +506,6 @@ ozpIwc.policyAuth.PDP.prototype.gatherContext = function(contextHolder){
         this.pip.grantAttributes(i, contextHolder.securityAttributes.attributes[i]);
     }
 
-    //Wraps all security attributes in one object for simplified permission checks.
-    this.pip.grantAttributes('ozp:iwc:context:permissions',[]);
     //Take a snapshot of the pip to use for the permission check (due to async nature)
     return ozpIwc.util.protoClone(this.pip);
 };

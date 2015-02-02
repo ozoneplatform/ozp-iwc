@@ -39,17 +39,13 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
 
     var self = this;
     this.on("connectedToRouter",function() {
-        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:address',
-            {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address});
+        self.securityAttributes.pushIfNotExist('ozp:iwc:address', self.address);
 
-        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:sendAs',
-            {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address});
+        self.securityAttributes.pushIfNotExist('ozp:iwc:sendAs',self.address);
 
-        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:receiveAs',
-            {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address});
+        self.securityAttributes.pushIfNotExist('ozp:iwc:receiveAs', self.address);
 
-        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:permissions',
-            {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': []});
+        self.securityAttributes.pushIfNotExist('ozp:iwc:permissions', []);
 
         ozpIwc.metrics.gauge(self.metricRoot,"registeredcallbacks").set(function() {
             return self.getCallbackCount();

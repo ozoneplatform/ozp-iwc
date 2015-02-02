@@ -387,10 +387,8 @@ ozpIwc.Router.prototype.registerMulticast=function(participant,multicastGroups) 
             var registeredEvent = new ozpIwc.CancelableEvent({
                 'entity': {'group': groupName, 'address': participant.address}
             });
-            participant.securityAttributes.pushIfNotExist('ozp:iwc:participant:sendAs',
-                {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': groupName});
-            participant.securityAttributes.pushIfNotExist('ozp:iwc:participant:receiveAs',
-                {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': groupName});
+            participant.securityAttributes.pushIfNotExist('ozp:iwc:sendAs', groupName);
+            participant.securityAttributes.pushIfNotExist('ozp:iwc:receiveAs', groupName);
 
             self.events.trigger("registeredMulticast", registeredEvent);
         } else {

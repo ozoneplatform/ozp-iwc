@@ -33,20 +33,23 @@ ozpIwc.Participant=function() {
         'pushIfNotExist': function (id, val, comp) {
             comp = comp || this.comparator;
             if (!this.attributes[id]) {
-                this.attributes[id] = [];
-                this.attributes[id] = this.attributes[id].concat(val);
+                this.attributes[id] = {
+                    'dataType': 'http://www.w3.org/2001/XMLSchema#string',
+                    attributeValue: []
+                };
+                this.attributes[id].attributeValue = this.attributes[id].attributeValue.concat(val);
             } else {
-                for (var i in this.attributes[id]) {
-                    if (comp(this.attributes[id][i], val)) {
+                for (var i in this.attributes[id].attributeValue) {
+                    if (comp(this.attributes[id].attributeValue[i], val)) {
                         return;
                     }
                 }
-                this.attributes[id].push(val);
+                this.attributes[id].attributeValue.push(val);
             }
 
         },
         'comparator': function (a, b) {
-            return a.dataType === b.dataType && a.attributeValue === b.attributeValue;
+            return false;
         }
     };
 
@@ -136,17 +139,28 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     var self = this;
 
     var request = {
-        'subject': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': this.address},
-        'resource': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packetContext.packet.dst},
-        'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'receiveAs'},
+        'subject': {
+            'ozp:iwc:address': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': this.address}
+        },
+        'resource': {
+            'ozp:iwc:receiveAs': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packetContext.packet.dst}},
+        'action': {
+            'ozp:iwc:action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string', 'attributeValue': 'receiveAs'}
+        },
         'policies': ['policy/receiveAsPolicy.json']
     };
 
     return ozpIwc.authorization.isPermitted(request,this).then(function(){
         var request = {
-            'subject': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address},
-            'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'read'},
-            'resource': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packetContext.packet.permissions || []},
+            'subject': {
+                'ozp:iwc:address': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address}
+            },
+            'resource': {
+                'ozp:iwc:permissions': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packetContext.packet.permissions || []}
+            },
+            'action': {
+                'ozp:iwc:action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string', 'attributeValue': 'read'}
+            },
             'policies': ['policy/readPolicy.json']
         };
 
@@ -253,10 +267,17 @@ ozpIwc.Participant.prototype.fixPacket=function(packet) {
  * @returns {ozpIwc.TransportPacket}
  */
 ozpIwc.Participant.prototype.send=function(packet) {
+
     var request = {
-        'subject': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': this.address},
-        'resource': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packet.src},
-        'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'sendAs'},
+        'subject': {
+            'ozp:iwc:address': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': this.address}
+        },
+        'resource': {
+            'ozp:iwc:sendAs': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue':  packet.src}
+        },
+        'action': {
+            'ozp:iwc:action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string', 'attributeValue': 'sendAs'}
+        },
         'policies': ['policy/sendAsPolicy.json']
     };
     var self = this;

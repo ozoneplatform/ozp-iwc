@@ -28,9 +28,9 @@ ozpIwc.policyAuth.PIP = function(config){
 ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
     var self = this;
     if(this.informationCache[id]){
-        return new Promise(function(resolve,reject){
-            resolve(self.informationCache[id]);
-        });
+        var returnObj = {};
+        returnObj[id] = self.informationCache[id];
+        return ozpIwc.util.resolveWith(returnObj);
     } else {
         return ozpIwc.util.ajax({
             href: id,
@@ -38,9 +38,12 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
         }).then(function(data){
             self.informationCache[id] =
                 Array.isArray(data)? data : [data];
-            return data;
+
+            var returnObj = {};
+            returnObj[id] = self.informationCache[id];
+            return returnObj;
         })['catch'](function(e){
-            return [];
+            return {};
         });
     }
 
@@ -51,13 +54,7 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
  * @param {object} [attributes] – The attributes to grant (replacing previous values, if applicable)
  */
 ozpIwc.policyAuth.PIP.prototype.grantAttributes = function(subjectId,attributes){
-    attributes = Array.isArray(attributes) ? attributes : [attributes];
     this.informationCache[subjectId] = attributes;
-    //this.informationCache[subjectId] = this.informationCache[subjectId] || [];
-    //for(var i in attributes) {
-    //    if (this.informationCache[subjectId].indexOf(attributes[i]) < 0)
-    //        this.informationCache[subjectId].push(attributes[i]);
-    //}
 };
 
 /**

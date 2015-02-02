@@ -153,6 +153,7 @@ ozpIwc.util.protoClone = function(obj) {
         }
         return clone;
     }
+    return obj;
 };
 
 /**
