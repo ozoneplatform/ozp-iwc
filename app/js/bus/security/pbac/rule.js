@@ -100,16 +100,17 @@ ozpIwc.policyAuth.Rule.prototype.evaluate = function(request){
                 var attributeValues = this.category[i][j].attributeValue;
 
                 var matchFound = false;
-                var currentReqAttribute = reqCategory[i][j];
+                var reqAttributeValue = reqCategory[i][j].attributeValue;
+                var reqDataType = reqCategory[i][j].dataType;
 
-                if(currentReqAttribute.dataType === dataType){
+                if(reqDataType === dataType){
 
                     //Make sure the attributes are arrays
-                    var attrArray = Array.isArray(currentReqAttribute.attributeValue) ?
-                        currentReqAttribute.attributeValue : [currentReqAttribute.attributeValue];
+                    reqAttributeValue = Array.isArray(reqAttributeValue) ?
+                        reqAttributeValue : [reqAttributeValue];
 
                     // If no attribute values in the request
-                    if(attrArray.length === 0){
+                    if(reqAttributeValue.length === 0){
                         // and none in the policy, it passes
                         if (attributeValues.length === 0) {
                             matchFound = true;
@@ -120,8 +121,8 @@ ozpIwc.policyAuth.Rule.prototype.evaluate = function(request){
                     } else {
                         matchFound = true;
                         // Else iterate over each req attribute value, if one doesn't show in the policy, it fails.
-                        for (var k in attrArray) {
-                            if(attributeValues.indexOf(attrArray[k]) < 0){
+                        for (var k in reqAttributeValue) {
+                            if(attributeValues.indexOf(reqAttributeValue[k]) < 0){
                                 matchFound = false;
                             }
                         }

@@ -150,36 +150,37 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
         'policies': ['policy/receiveAsPolicy.json']
     };
 
-    return ozpIwc.authorization.isPermitted(request,this).then(function(){
-        var request = {
-            'subject': {
-                'ozp:iwc:address': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': self.address}
-            },
-            'resource': {
-                'ozp:iwc:permissions': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packetContext.packet.permissions || []}
-            },
-            'action': {
-                'ozp:iwc:action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string', 'attributeValue': 'read'}
-            },
-            'policies': ['policy/readPolicy.json']
-        };
+    return ozpIwc.authorization.isPermitted(request,this)
+        .then(function() {
+            return ozpIwc.authorization.formatCategory(packetContext.packet.permissions);
+        }).then(function(permissions) {
 
-        return ozpIwc.authorization.isPermitted(request,self).then(function(resolution){
+            var request = {
+                'subject': {
+                    'ozp:iwc:address': {
+                        'dataType': 'http://www.w3.org/2001/XMLSchema#string',
+                        'attributeValue': self.address
+                    }
+                },
+                'resource': permissions,
+                'action': {
+                    'ozp:iwc:action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string', 'attributeValue': 'read'}
+                },
+                'policies': ['policy/readPolicy.json']
+            };
+
+            return ozpIwc.authorization.isPermitted(request, self);
+        }).then(function(resolution){
             self.receiveFromRouterImpl(packetContext);
             return resolution;
         })['catch'](function(e){
+            self.forbiddenPacketsMeter.mark();
+            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
+            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+            console.error(e);
             //bubble up
             throw e;
         });
-
-    })['catch'](function(e){
-        self.forbiddenPacketsMeter.mark();
-        /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-        ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-        console.error(e);
-        //bubble up
-        throw e;
-    });
 };
 
 /**

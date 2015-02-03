@@ -21,6 +21,7 @@ var MockAuthorization = function(){
                 resolve({result:"Permit"});
             });
     };
+    this.formatCategory = ozpIwc.util.resolveWith;
 };
 ozpIwc.authorization = new MockAuthorization();
 

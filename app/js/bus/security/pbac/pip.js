@@ -36,12 +36,18 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
             href: id,
             method: "GET"
         }).then(function(data){
-            self.informationCache[id] =
-                Array.isArray(data)? data : [data];
+            if(data.dataType && data.attributeValue) {
+                self.informationCache[id] = {};
+                self.informationCache[id].dataType = data.dataType;
+                self.informationCache[id].attributeValue = Array.isArray(data.attributeValue ) ?
+                    data.attributeValue  : [data.attributeValue ];
 
-            var returnObj = {};
-            returnObj[id] = self.informationCache[id];
-            return returnObj;
+                var returnObj = {};
+                returnObj[id] = self.informationCache[id];
+                return returnObj;
+            } else {
+                throw "Invalid data loaded from the remote PIP";
+            }
         })['catch'](function(e){
             return {};
         });

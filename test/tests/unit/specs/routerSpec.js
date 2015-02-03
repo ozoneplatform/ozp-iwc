@@ -140,23 +140,27 @@ describe("Router", function() {
             router.registerParticipant(participant).then(function(){
                 return router.registerParticipant(participant2);
             }).then(function(){
-                participant.securityAttributes.perm = 'shared';
-                participant2.securityAttributes.perm = 'shared';
+                participant.securityAttributes.pushIfNotExist("ozp:iwc:perm",'shared');
+                participant2.securityAttributes.pushIfNotExist("ozp:iwc:perm",'shared');
 
-                participant.securityAttributes.color = 'blue';
-                participant2.securityAttributes.color = 'red';
+                participant.securityAttributes.pushIfNotExist("ozp:iwc:color",'blue');
+                participant2.securityAttributes.pushIfNotExist("ozp:iwc:color",'red');
                 done();
             });
         });
 
         it("allows receipt of shared permissions", function(done) {
-            participant2.on("receive", function() {
-                expect(participant2.packets[participant2.packets.length - 1].packet.entity).toEqual({foo: "bar"});
+            participant2.on("receive", function(packetContext) {
+                expect(packetContext.packet.entity).toEqual({foo: "bar"});
                 done();
             });
             participant.send({
                 dst: participant2.address,
-                permissions: {'perm': "shared"},
+                permissions: {
+                    'ozp:iwc:perm': {
+                        'dataType':"http://www.w3.org/2001/XMLSchema#string", attributeValue: ["shared"]
+                    }
+                },
                 entity: {foo: "bar"}
             })['catch'](function(e){
                 expect(false).toEqual(true);
@@ -164,7 +168,7 @@ describe("Router", function() {
             });
         });
 
-        it("denies receipt of unshared permissions", function(done) {
+        xit("denies receipt of unshared permissions", function(done) {
             participant.send({
                 dst: participant2.address,
                 permissions: {'color': "blue"},
@@ -174,7 +178,6 @@ describe("Router", function() {
                 done();
             });
 
-            expect(participant2.packets.length).toEqual(0);
         });
 
         it("denies if the recipient doesn't have all permissions", function() {

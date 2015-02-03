@@ -84,7 +84,6 @@ ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name)
     this.securityAttributes.pushIfNotExist('ozp:iwc:address', name);
     this.securityAttributes.pushIfNotExist('ozp:iwc:sendAs', name);
     this.securityAttributes.pushIfNotExist('ozp:iwc:receiveAs', name);
-    this.securityAttributes.pushIfNotExist('ozp:iwc:permissions', []);
 });
 
 /**

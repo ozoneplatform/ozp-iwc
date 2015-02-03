@@ -343,6 +343,11 @@ ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combining
 ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,pip){
     pip = pip || this.pip;
     return this.formatAttribute(category,pip).then(function(attributes){
+
+        for(var i in attributes['ozp:iwc:permissions']){
+            attributes[i] = attributes['ozp:iwc:permissions'][i];
+        }
+        delete attributes['ozp:iwc:permissions'];
         return attributes;
     })['catch'](function(e){
         console.error(e);
@@ -502,9 +507,12 @@ ozpIwc.policyAuth.PDP.prototype.mappedId = function(string){
 
 ozpIwc.policyAuth.PDP.prototype.gatherContext = function(contextHolder){
 
+    var permissions = {};
     for(var i in contextHolder.securityAttributes.attributes) {
+        permissions[i] = contextHolder.securityAttributes.attributes[i];
         this.pip.grantAttributes(i, contextHolder.securityAttributes.attributes[i]);
     }
+    this.pip.grantAttributes("ozp:iwc:permissions", permissions);
 
     //Take a snapshot of the pip to use for the permission check (due to async nature)
     return ozpIwc.util.protoClone(this.pip);

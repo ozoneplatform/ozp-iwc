@@ -31,7 +31,9 @@ describe("Policy Information Point",function() {
 
     it("returns an attribute from the cache if possible",function(done){
         pip.getAttributes('ozp:attributeCollection:fake').then(function(attr){
-            expect(attr).toEqual(pip.informationCache['ozp:attributeCollection:fake']);
+            expect(attr).toEqual({
+                'ozp:attributeCollection:fake': pip.informationCache['ozp:attributeCollection:fake']
+            });
             done();
         });
     });
@@ -39,8 +41,10 @@ describe("Policy Information Point",function() {
     it('sends a request to the attributes URI/URN to gather attributes not in the cache',function(done){
         pip.getAttributes('ozp:attributeCollection:NOTINCACHE').then(function(attr){
             expect(attr).toEqual({
-                'dataType': "http://www.w3.org/2001/XMLSchema#string",
-                'attributeValue': "serverLoadedVal"
+                'ozp:attributeCollection:NOTINCACHE': {
+                    'dataType': "http://www.w3.org/2001/XMLSchema#string",
+                    'attributeValue': ["serverLoadedVal"]
+                }
             });
             done();
         });

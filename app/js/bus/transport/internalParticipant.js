@@ -45,8 +45,6 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
 
         self.securityAttributes.pushIfNotExist('ozp:iwc:receiveAs', self.address);
 
-        self.securityAttributes.pushIfNotExist('ozp:iwc:permissions', []);
-
         ozpIwc.metrics.gauge(self.metricRoot,"registeredcallbacks").set(function() {
             return self.getCallbackCount();
         });
