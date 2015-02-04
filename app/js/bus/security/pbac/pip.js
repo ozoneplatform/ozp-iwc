@@ -36,9 +36,8 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
             href: id,
             method: "GET"
         }).then(function(data){
-            if(data.dataType && data.attributeValue) {
+            if(data.attributeValue) {
                 self.informationCache[id] = {};
-                self.informationCache[id].dataType = data.dataType;
                 self.informationCache[id].attributeValue = Array.isArray(data.attributeValue ) ?
                     data.attributeValue  : [data.attributeValue ];
 

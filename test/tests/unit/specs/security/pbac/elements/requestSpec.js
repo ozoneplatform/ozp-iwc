@@ -7,13 +7,11 @@ describe("PBAC Request Element",function() {
     it("Adds attributes to the request",function(){
         request.addAttribute("a",{
             'attributeId': 'b',
-            'dataType': 'c',
             'value': 'd'
         });
         expect(request.attributes[0].category).toEqual("a");
         expect(request.attributes[0].attribute.length).toEqual(1);
         expect(request.attributes[0].attribute[0].attributeId).toEqual('b');
-        expect(request.attributes[0].attribute[0].dataType).toEqual('c');
         expect(request.attributes[0].attribute[0].value).toEqual('d');
     });
 

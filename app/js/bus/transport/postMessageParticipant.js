@@ -249,9 +249,15 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
         var request = {
-            'subject':{'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': event.origin},
-            'resource':{'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': '$bus.multicast'},
-            'action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': 'connect'},
+            'subject':{
+                'ozp:iwc:origin':{'attributeValue': event.origin}
+            },
+            'resource': {
+                'ozp:iwc:bus': {'attributeValue': '$bus.multicast'}
+            },
+            'action': {
+                'ozp:iwc:action': {'attributeValue': 'connect'}
+            },
             'policies': ['policy/connectPolicy.json']
         };
 

@@ -50,7 +50,11 @@ ozpIwc.CommonApiValue = function(config) {
      * @type Object
      * @default {}
      */
-	this.permissions=config.permissions || [];
+	this.permissions=new ozpIwc.policyAuth.SecurityAttribute();
+    this.permissions.pushIfNotExist('ozp:iwc:node', this.resource);
+    for(var i in config.permissions){
+        this.permissions.pushIfNotExist(i, config.permissions[i]);
+    }
 
     /**
      * @property version
@@ -84,7 +88,14 @@ ozpIwc.CommonApiValue = function(config) {
  */
 ozpIwc.CommonApiValue.prototype.set=function(packet) {
 	if(this.isValidContentType(packet.contentType)) {
-		this.permissions=packet.permissions || this.permissions;
+
+        if(!Array.isArray(packet.permissions)){
+            for(var i in packet.permissions) {
+                //If a permission was passed, wipe its value and set it to the new value;
+                this.permissions.clear(i);
+                this.permissions.pushIfNotExist(i,packet.permissions[i]);
+            }
+        }
 		this.contentType=packet.contentType;
 		this.entity=packet.entity;
 		this.version++;

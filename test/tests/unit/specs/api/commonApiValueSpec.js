@@ -8,7 +8,7 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         config.resource= "testResource";
         config.entity= {'foo': 1};
         config.contentType= "test/testType+json";
-        config.permissions= {'perms':"yes"};
+        config.permissions={'perms': 'yes'};
         config.version= 1;
         
         value = new ClassUnderTest(config);
@@ -19,7 +19,7 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         expect(value.resource).toBeUndefined();
         expect(value.entity).toBeUndefined();
         expect(value.contentType).toBeUndefined();
-        expect(value.permissions).toEqual([]);
+        expect(value.permissions).toEqual(new ozpIwc.policyAuth.SecurityAttribute());
         expect(value.version).toEqual(0);
     });
 
@@ -27,7 +27,7 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         expect(value.resource).toEqual(config.resource);
         expect(value.entity).toEqual(config.entity);
         expect(value.contentType).toEqual(config.contentType);
-        expect(value.permissions).toEqual(config.permissions);
+        expect(value.permissions.attributes.perms).toEqual({attributeValue: ['yes']});
         expect(value.version).toEqual(1);
     });
 
@@ -40,7 +40,8 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         expect(value.resource).toEqual("testResource");
         expect(value.entity).toEqual({'bar': 2});
         expect(value.contentType).toEqual("test/testType+json");
-        expect(value.permissions).toEqual({'perms':"maybe"});
+        expect(value.permissions.attributes.perms.attributeValue.length).toEqual(1);
+        expect(value.permissions.attributes.perms.attributeValue[0]).toEqual("maybe");
         expect(value.version).toEqual(2);
     });
 
@@ -53,7 +54,10 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         expect(value.resource).toEqual("testResource");
         expect(value.entity).toEqual({'bar': 2});
         expect(value.contentType).toEqual("test/testType+json");
-        expect(value.permissions).toEqual(config.permissions);
+        expect(value.permissions.attributes.perms.attributeValue.length).toEqual(1);
+        expect(value.permissions.attributes.perms.attributeValue[0]).toEqual("yes");
+        expect(value.permissions.attributes['ozp:iwc:node'].attributeValue.length).toEqual(1);
+        expect(value.permissions.attributes['ozp:iwc:node'].attributeValue[0]).toEqual("testResource");
         expect(value.version).toEqual(2);
     });
 
@@ -72,7 +76,9 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         expect(p.resource).toEqual(config.resource);
         expect(p.entity).toEqual(config.entity);
         expect(p.contentType).toEqual(config.contentType);
-        expect(p.permissions).toEqual(config.permissions);
+        expect(Object.keys(p.permissions.attributes)).toEqual(["ozp:iwc:node","perms"]);
+        expect(p.permissions.attributes.perms.attributeValue.length).toEqual(1);
+        expect(p.permissions.attributes.perms.attributeValue[0]).toEqual("yes");
         expect(p.eTag).toEqual(1);
     });
 
@@ -81,12 +87,13 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         value.set({
             'entity': {'bar': 2},
             'contentType': "test/testType+json",
-            'permissions': ['morePerms']
+            'permissions': {'perms': ['morePerms']}
         });
         expect(p.resource).toEqual(config.resource);
         expect(p.entity).toEqual(config.entity);
-        expect(p.contentType).toEqual(config.contentType);
-        expect(p.permissions).toEqual(config.permissions);
+        expect(Object.keys(p.permissions.attributes)).toEqual(["ozp:iwc:node","perms"]);
+        expect(p.permissions.attributes.perms.attributeValue.length).toEqual(1);
+        expect(p.permissions.attributes.perms.attributeValue[0]).toEqual("yes");
         expect(p.eTag).toEqual(1);
     });
 

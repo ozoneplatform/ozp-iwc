@@ -372,14 +372,23 @@ ozpIwc.CommonApiBase.prototype.makeValue=function(/*packet*/) {
  * ```
  */
 ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
-    var subject=packetContext.srcSubject || {
-        'rawAddress':packetContext.packet.src
-    };
-    //@TODO Implement ozpIwc.authorization.isPermitted(...);
-    return new Promise(function(resolve,reject){
-        resolve("Permit")
+
+    return ozpIwc.authorization.formatCategory(packetContext.packet.permissions).then(function(permissions) {
+        var request = {
+            'subject': {
+                'ozp:iwc:node': {'attributeValue': packetContext.packet.resource}
+            },
+            'resource': permissions,
+            'action': {
+                'ozp:iwc:action': {'attributeValue': 'access'}
+            },
+            'policies': ['policy/apiNodePolicy.json']
+        };
+        var context = {
+            securityAttributes: node.permissions
+        };
+        return ozpIwc.authorization.isPermitted(request, context);
     });
-    //return ozpIwc.authorization.isPermitted();
 };
 
 
@@ -394,6 +403,7 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
     if(!changes) {
         return;
     }
+    var promises = [];
     this.events.trigger("changedNode",node,changes);
     node.eachWatcher(function(watcher) {
         // @TODO check that the recipient has permission to both the new and old values
@@ -407,8 +417,9 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
             'entity': changes
         };
 
-        this.participant.send(reply);
+        promises.push(this.participant.send(reply));
     },this);
+    return Promise.all(promises);
 };
 
 /**
@@ -486,6 +497,8 @@ ozpIwc.CommonApiBase.prototype.createKey=function(prefix) {
  * @method routePacket
  * @param {ozpIwc.TransportPacketContext} packetContext The packet to route.
  *
+ * @return {Promise} Returns a promise that resolves when the packet has been routed.
+ *
  */
 ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
     var packet=packetContext.packet;
@@ -519,32 +532,31 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         node=self.findOrMakeValue(packetContext.packet);
 
         return self.isPermitted(node,packetContext).then(function() {
+            var promises = [];
             try{
                 self.validatePreconditions(node,packetContext);
                 var snapshot=node.snapshot();
-                handler.call(self,node,packetContext);
-                self.notifyWatchers(node, node.changesSince(snapshot));
+                promises.push(handler.call(self,node,packetContext));
+                promises.push(self.notifyWatchers(node, node.changesSince(snapshot)));
 
                 // update all the collection values
                 self.dynamicNodes.forEach(function(resource) {
-                    self.updateDynamicNode(self.data[resource]);
+                    promises.push(self.updateDynamicNode(self.data[resource]));
                 });
-                return;
             }catch(e){
                 errorHandler(e);
-                return;
+            }finally {
+                return Promise.all(promises);
             }
 
-        })['catch'](function() {
+        })['catch'](function(e) {
             packetContext.replyTo({'response':'noPerm'});
             return;
         });
 
     }catch(e){
         errorHandler(e);
-        return new Promise(function(res,rej){
-            res();
-        });
+        return ozpIwc.util.resolveWith();
     }
 };
 
@@ -703,6 +715,7 @@ ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
         return;
     }
     var ofInterest=[];
+    var promises = [];
 
     for(var k in this.data) {
         if(node.isUpdateNeeded(this.data[k])){
@@ -713,8 +726,9 @@ ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
     if(ofInterest) {
         var snapshot=node.snapshot();
         node.updateContent(ofInterest);
-        this.notifyWatchers(node,node.changesSince(snapshot));
+        promises.push(this.notifyWatchers(node,node.changesSince(snapshot)));
     }
+    return Promise.all(promises);
 };
 
 /**

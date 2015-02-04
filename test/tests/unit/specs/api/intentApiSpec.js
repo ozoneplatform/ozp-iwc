@@ -150,6 +150,8 @@ describe("Intent API Class", function () {
                 expect(invocation.entity.intent.action).toEqual(registerPacket.packet.entity.action);
                 expect(invocation.entity.entity).toEqual(testPacket.packet.entity);
                 done();
+            })['catch'](function(e){
+                console.log(e);
             });
         });
 

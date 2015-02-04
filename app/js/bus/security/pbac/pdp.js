@@ -116,7 +116,13 @@ ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
     var objectHandler = function(object,promiseArray){
         var keys = Object.keys(object);
         for(var i in keys){
-            if(object[keys[i]].dataType && object[keys[i]].attributeValue){
+            if(['string','number','boolean'].indexOf(typeof object[keys[i]]) >= 0){
+                var tmp = object[keys[i]];
+                object[keys[i]] = {
+                    attributeValue: [tmp]
+                }
+            }
+            if(object[keys[i]].attributeValue){
                 var obj = {};
                 obj[keys[i]] = object[keys[i]];
                 obj[keys[i]].attributeValue = Array.isArray(object[keys[i]].attributeValue) ?
@@ -178,7 +184,6 @@ ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
 ozpIwc.policyAuth.PDP.prototype.formatAction = function(action){
 
     var formatted = {
-        'dataType' : "http://www.w3.org/2001/XMLSchema#string",
         'attributeValue' : []
     };
 
@@ -332,7 +337,6 @@ ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combining
  *          'category': {String},
  *          'attributeDesignator': {
  *              'attributeId': {String},
- *              'dataType': {String},
  *              'mustBePresent': false
  *          },
  *          'attributeValue': {Array<String>}
@@ -374,13 +378,9 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,pip){
  * ```
  * {
  *   'urn:category:id:123' : {
- *      'category': {String},
- *      'attributeDesignator': {
- *          'attributeId': {String},
- *          'dataType': {String},
- *          'mustBePresent': false
- *       },
- *       'attributeValue': {Array<String>}
+ *      'urn:attribute:id':{
+ *          'attributeValue' : Array<String>
+ *      }
  *   },
  *   'urn:category:id:abc': {...},
  *   'urn:category:id:000': {...},

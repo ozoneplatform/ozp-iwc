@@ -17,11 +17,18 @@ describe("Common API Base class",function() {
             'contentType' : "application/json",
             'version' : 1
         });
+        ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
+            pip: new ozpIwc.policyAuth.PIP(),
+            prp: new ozpIwc.policyAuth.PRP({
+                policyCache: mockPolicies
+            })
+        });
         
 	});
 	
 	afterEach(function() {
 		apiBase=null;
+        ozpIwc.authorization = new MockAuthorization();
 	});
 
     it("responds to a root level list action", function() {
@@ -243,14 +250,17 @@ describe("Common API Base class",function() {
         });
         
         it("returns a noPerm response if the action is not permitted",function(done) {
-            apiBase.data['/node'].permissions=['haxed'];
+            apiBase.data['/node'].permissions.pushIfNotExist('ozp:iwc:haxed','totally');
             var context=new TestPacketContext({
                 'leaderState': "leader",
                 'packet': {
                     'resource': "/node",
                     'action': "get",
                     'msgId' : "1234",
-                    'src' : "srcParticipant"
+                    'src' : "srcParticipant",
+                    'permissions': {
+                        'ozp:iwc:haxed' : {attributeValue: ['no']}
+                    }
                 }
             });
 

@@ -28,30 +28,7 @@ ozpIwc.Participant=function() {
      * @type Object
      * @default {}
      */
-	this.securityAttributes= {
-        'attributes': {},
-        'pushIfNotExist': function (id, val, comp) {
-            comp = comp || this.comparator;
-            if (!this.attributes[id]) {
-                this.attributes[id] = {
-                    'dataType': 'http://www.w3.org/2001/XMLSchema#string',
-                    attributeValue: []
-                };
-                this.attributes[id].attributeValue = this.attributes[id].attributeValue.concat(val);
-            } else {
-                for (var i in this.attributes[id].attributeValue) {
-                    if (comp(this.attributes[id].attributeValue[i], val)) {
-                        return;
-                    }
-                }
-                this.attributes[id].attributeValue.push(val);
-            }
-
-        },
-        'comparator': function (a, b) {
-            return false;
-        }
-    };
+	this.securityAttributes= new ozpIwc.policyAuth.SecurityAttribute();
 
     /**
      * The message id assigned to the next packet if a packet msgId is not specified.
@@ -140,12 +117,12 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
 
     var request = {
         'subject': {
-            'ozp:iwc:address': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': this.address}
+            'ozp:iwc:address': {'attributeValue': this.address}
         },
         'resource': {
-            'ozp:iwc:receiveAs': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': packetContext.packet.dst}},
+            'ozp:iwc:receiveAs': {'attributeValue': packetContext.packet.dst}},
         'action': {
-            'ozp:iwc:action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string', 'attributeValue': 'receiveAs'}
+            'ozp:iwc:action': {'attributeValue': 'receiveAs'}
         },
         'policies': ['policy/receiveAsPolicy.json']
     };
@@ -158,13 +135,12 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
             var request = {
                 'subject': {
                     'ozp:iwc:address': {
-                        'dataType': 'http://www.w3.org/2001/XMLSchema#string',
                         'attributeValue': self.address
                     }
                 },
                 'resource': permissions,
                 'action': {
-                    'ozp:iwc:action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string', 'attributeValue': 'read'}
+                    'ozp:iwc:action': {'attributeValue': 'read'}
                 },
                 'policies': ['policy/readPolicy.json']
             };
@@ -271,23 +247,26 @@ ozpIwc.Participant.prototype.send=function(packet) {
 
     var request = {
         'subject': {
-            'ozp:iwc:address': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue': this.address}
+            'ozp:iwc:address': {'attributeValue': this.address}
         },
         'resource': {
-            'ozp:iwc:sendAs': {'dataType': 'http://www.w3.org/2001/XMLSchema#string','attributeValue':  packet.src}
+            'ozp:iwc:sendAs': {'attributeValue':  packet.src}
         },
         'action': {
-            'ozp:iwc:action': {'dataType': 'http://www.w3.org/2001/XMLSchema#string', 'attributeValue': 'sendAs'}
+            'ozp:iwc:action': {'attributeValue': 'sendAs'}
         },
         'policies': ['policy/sendAsPolicy.json']
     };
     var self = this;
+    var retVal;
     return ozpIwc.authorization.isPermitted(request,this).then(function(resolution) {
         packet = self.fixPacket(packet);
         self.sentPacketsMeter.mark();
-        self.router.send(packet, self);
-        resolution.packet = packet;
-        return resolution;
+        retVal = resolution;
+        return self.router.send(packet, self);
+    }).then(function(){
+        retVal.packet = packet;
+        return retVal;
     })['catch'](function(e){
         console.error(e);
         //bubble up

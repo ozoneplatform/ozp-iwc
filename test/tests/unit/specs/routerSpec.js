@@ -158,7 +158,7 @@ describe("Router", function() {
                 dst: participant2.address,
                 permissions: {
                     'ozp:iwc:perm': {
-                        'dataType':"http://www.w3.org/2001/XMLSchema#string", attributeValue: ["shared"]
+                        attributeValue: ["shared"]
                     }
                 },
                 entity: {foo: "bar"}
@@ -168,22 +168,26 @@ describe("Router", function() {
             });
         });
 
-        xit("denies receipt of unshared permissions", function(done) {
-            participant.send({
-                dst: participant2.address,
-                permissions: {'color': "blue"},
-                entity: {foo: "bar"}
-            })['catch'](function(){
-                expect(false).toEqual(true);
+        it("denies receipt of unshared permissions", function(done) {
+            participant2.receiveFromRouter({
+                packet: {
+                    dst: participant2.address,
+                    permissions: {'ozp:iwc:color': "blue"},
+                    entity: {foo: "bar"}
+                }
+            }).then(function(a){
+                console.log(a);
+            })['catch'](function(e){
+
                 done();
-            });
+            })
 
         });
 
         it("denies if the recipient doesn't have all permissions", function() {
             participant.send({
                 dst: participant2.address,
-                permissions: {'perm': "shared", 'color': "blue"},
+                permissions: {'ozp:iwc:perm': "shared", 'ozp:iwc:color': "blue"},
                 entity: {foo: "bar"}
             });
 
@@ -197,8 +201,10 @@ describe("Router", function() {
             });
             participant.send({
                 dst: participant2.address,
-                permissions: {'color': "red"},
+                permissions: {'ozp:iwc:color': "red"},
                 entity: {'foo': "bar"}
+            }).then(function(resolution){
+                expect(resolution.result).toEqual("Permit");
             });
 
         });

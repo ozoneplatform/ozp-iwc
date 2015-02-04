@@ -6,7 +6,6 @@ describe("Policy Decision Point",function() {
             return new Promise(function (resolve, reject) {
                 var obj = {};
                 obj[id] = {
-                    'dataType': "http://www.w3.org/2001/XMLSchema#string",
                     'attributeValue': ["fakeVal"]
                 };
                 resolve(obj);
@@ -35,7 +34,6 @@ describe("Policy Decision Point",function() {
             }).then(function(formattedRequest){
                 expect(formattedRequest.category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]).toEqual({
                     'urn:subjectId:1' : {
-                        'dataType': "http://www.w3.org/2001/XMLSchema#string",
                         'attributeValue': ["fakeVal"]
                     }
                 });
@@ -49,7 +47,6 @@ describe("Policy Decision Point",function() {
             }).then(function(formattedRequest){
                 expect(formattedRequest.category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]).toEqual({
                     'urn:resourceId:1' : {
-                        'dataType': "http://www.w3.org/2001/XMLSchema#string",
                         'attributeValue': ["fakeVal"]
                     }
                 });
@@ -63,10 +60,7 @@ describe("Policy Decision Point",function() {
             }).then(function(formattedRequest){
                 expect(formattedRequest.category["urn:oasis:names:tc:xacml:3.0:attribute-category:action"]).toEqual({
                     "ozp:iwc:action": {
-                        "dataType": "http://www.w3.org/2001/XMLSchema#string",
-                        "attributeValue": [
-                            "write"
-                        ]
+                        "attributeValue": ["write"]
                     }
                 });
                 done();
@@ -84,22 +78,17 @@ describe("Policy Decision Point",function() {
                 expect(formattedRequest.category).toEqual({
                         "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":{
                             'urn:subjectId:1': {
-                                'dataType': "http://www.w3.org/2001/XMLSchema#string",
                                 'attributeValue': ["fakeVal"]
                             }
                         },
                         "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":{
                             'urn:resourceId:1': {
-                                'dataType': "http://www.w3.org/2001/XMLSchema#string",
                                 'attributeValue': ["fakeVal"]
                             }
                         },
                         "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
                             "ozp:iwc:action": {
-                                "dataType": "http://www.w3.org/2001/XMLSchema#string",
-                                "attributeValue": [
-                                    "write"
-                                ]
+                                "attributeValue": ["write"]
                             }
                         }
                 });
@@ -117,7 +106,6 @@ describe("Policy Decision Point",function() {
             pdp.formatCategory('ozp:fake:attribute').then(function(category){
                     expect(category['ozp:fake:attribute'].attributeValue.length).toEqual(1);
                     expect(category['ozp:fake:attribute'].attributeValue).toEqual(["fakeVal"]);
-                    expect(category['ozp:fake:attribute'].dataType).toEqual("http://www.w3.org/2001/XMLSchema#string");
                     done();
                 });
         });
@@ -125,9 +113,7 @@ describe("Policy Decision Point",function() {
         it("gathers a categories attributes from the PIP if given as an array",function(done){
             pdp.formatCategory(['ozp:fake:attribute','ozp:fake:attribute2']).then(function(category){
                     expect(category['ozp:fake:attribute'].attributeValue).toEqual(["fakeVal"]);
-                    expect(category['ozp:fake:attribute'].dataType).toEqual("http://www.w3.org/2001/XMLSchema#string");
                     expect(category['ozp:fake:attribute2'].attributeValue).toEqual(["fakeVal"]);
-                    expect(category['ozp:fake:attribute2'].dataType).toEqual("http://www.w3.org/2001/XMLSchema#string");
                     done();
                 });
         });

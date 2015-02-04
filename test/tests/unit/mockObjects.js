@@ -52,10 +52,13 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
 
     this.send = function(packet, callback) {
         packet = ozpIwc.InternalParticipant.prototype.send.call(this, packet, callback);
-        this.sentPackets.push(packet);
+        var self = this;
         // tick to trigger the async send
         tick(0);
-        return packet;
+        return packet.then(function(resolution){
+            self.sentPackets.push(resolution.packet);
+            return resolution;
+        });
     };
 
     this.reply = function(originalPacket, packet, callback) {
@@ -181,7 +184,6 @@ var mockPolicies = {
                 "category": {
                     "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": {
                         "ozp:iwc:origin": {
-                            "dataType": "http://www.w3.org/2001/XMLSchema#anyURI",
                             "attributeValue": [
                                 "http://localhost:13000",
                                 "http://localhost:15001",
@@ -191,13 +193,11 @@ var mockPolicies = {
                     },
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": {
                         "ozp:iwc:bus": {
-                            "dataType": "http://www.w3.org/2001/XMLSchema#string",
                             "attributeValue": ["$bus.multicast"]
                         }
                     },
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
                         "ozp:iwc:action": {
-                            "dataType": "http://www.w3.org/2001/XMLSchema#string",
                             "attributeValue": ["connect"]
                         }
                     }
@@ -219,7 +219,6 @@ var mockPolicies = {
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:receiveAs",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
                         "ozp:iwc:action": {
-                            "dataType": "http://www.w3.org/2001/XMLSchema#string",
                             "attributeValue": ["receiveAs"]
                         }
                     }
@@ -241,7 +240,6 @@ var mockPolicies = {
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:sendAs",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
                         "ozp:iwc:action": {
-                            "dataType": "http://www.w3.org/2001/XMLSchema#string",
                             "attributeValue": ["sendAs"]
                         }
                     }
@@ -263,8 +261,29 @@ var mockPolicies = {
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:permissions",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
                         "ozp:iwc:action": {
-                            "dataType": "http://www.w3.org/2001/XMLSchema#string",
                             "attributeValue": ["read", "write"]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    'policy/apiNodePolicy.json': {
+        "policyId": "urn:ozp:iwc:xacml:policy:apiNode1",
+        "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
+        "version": "1.0",
+        "description": "Policy for API node access",
+        "rule": [
+            {
+                "ruleId": "urn:ozp:iwc:xacml:rule:apiNode",
+                "description": "The following node can be accessed if  all of the security requirements are met.",
+                "category": {
+                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:node",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:permissions",
+                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
+                        "ozp:iwc:action": {
+                            "dataType": "http://www.w3.org/2001/XMLSchema#string",
+                            "attributeValue": ["access"]
                         }
                     }
                 }

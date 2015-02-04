@@ -7,7 +7,6 @@ describe("Policy Information Point",function() {
         spyOn(ozpIwc.util,"ajax").and.callFake(function(){
             return new Promise(function(resolve,reject){
                resolve({
-                   'dataType': "http://www.w3.org/2001/XMLSchema#string",
                    'attributeValue': "serverLoadedVal"
                 });
             });
@@ -17,11 +16,9 @@ describe("Policy Information Point",function() {
             informationCache : {
                 'ozp:attributeCollection:fake': [
                     {
-                        'dataType':"http://www.w3.org/2001/XMLSchema#string",
                         'attributeValue': "fakeVal"
                     },
                     {
-                        'dataType':"http://www.w3.org/2001/XMLSchema#string",
                         'attributeValue': "otherFakeVal"
                     }
                 ]
@@ -42,7 +39,6 @@ describe("Policy Information Point",function() {
         pip.getAttributes('ozp:attributeCollection:NOTINCACHE').then(function(attr){
             expect(attr).toEqual({
                 'ozp:attributeCollection:NOTINCACHE': {
-                    'dataType': "http://www.w3.org/2001/XMLSchema#string",
                     'attributeValue': ["serverLoadedVal"]
                 }
             });
@@ -53,21 +49,17 @@ describe("Policy Information Point",function() {
     it('grants Attributes to an existing attributeId',function(){
         pip.grantAttributes('ozp:attributeCollection:fake',[
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal'
             },
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal2'
             }
         ]);
         expect(pip.informationCache['ozp:attributeCollection:fake']).toEqual([
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal'
             },
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal2'
             }
         ]);
@@ -76,21 +68,17 @@ describe("Policy Information Point",function() {
     it('grants Attributes to a non existing attributeId ',function(){
         pip.grantAttributes('ozp:attributeCollection:fake2',[
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal'
             },
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal2'
             }
         ]);
         expect(pip.informationCache['ozp:attributeCollection:fake2']).toEqual([
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal'
             },
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal2'
             }
         ]);
@@ -99,11 +87,9 @@ describe("Policy Information Point",function() {
     it('grants Attributes from a parent to an existing attributeId',function(done){
         pip.informationCache['ozp:attributeCollection:parent'] = [
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal'
             },
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal2'
             }
         ];
@@ -112,19 +98,15 @@ describe("Policy Information Point",function() {
             expect(pip.informationCache['ozp:attributeCollection:fake']).toEqual([
 
                 {
-                    'dataType':"http://www.w3.org/2001/XMLSchema#string",
                     'attributeValue': "fakeVal"
                 },
                 {
-                    'dataType':"http://www.w3.org/2001/XMLSchema#string",
                     'attributeValue': "otherFakeVal"
                 },
                 {
-                    'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                     'attributeValue' : 'newVal'
                 },
                 {
-                    'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                     'attributeValue' : 'newVal2'
                 }
             ]);
@@ -135,11 +117,9 @@ describe("Policy Information Point",function() {
     it('grants Attributes from a parent to a non existing attributeId',function(){
         pip.informationCache['ozp:attributeCollection:parent'] = [
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal'
             },
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal2'
             }
         ];
@@ -149,11 +129,9 @@ describe("Policy Information Point",function() {
 
         expect(pip.informationCache['ozp:attributeCollection:fake2']).toEqual([
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal'
             },
             {
-                'dataType' : 'http://www.w3.org/2001/XMLSchema#string',
                 'attributeValue' : 'newVal2'
             }
         ]);
