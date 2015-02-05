@@ -150,6 +150,12 @@ module.exports = function(grunt) {
                         expand: true,
                         nonull:true
                     },{
+                        src: ['**/*'],
+                        dest: './dist/js/app/js',
+                        cwd: 'app/js',
+                        expand: true,
+                        nonull:true
+                    },{
                         src: ['*'],
                         dest: './dist/fonts',
                         cwd: 'bower_components/bootstrap/dist/fonts',

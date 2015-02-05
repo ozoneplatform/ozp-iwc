@@ -61,17 +61,17 @@
                         <td class="contentType">Content Type</td>
                     </tr></thead><tbody>
                     <tr ng-repeat-start="packet in packets | filter:viewFilter | limitTo:-maxShown" ng-click="isExpanded = !isExpanded">
-                        <td class="dateString">{{packet.data.time | date:'yyyy-MM-dd HH:mm:ss.sss'}}</td>
-                        <td class="srcPeer">{{packet.srcPeer}}</td>
-                        <td class="sequence">{{packet.sequence}}</td>
-                        <td class="dst">{{packet.data.dst}}</td>
-                        <td class="src">{{packet.data.src}}</td>
-                        <td class="msgId">{{packet.data.msgId}}</td>
-                        <td class="replyTo">{{packet.data.replyTo}}</td>
-                        <td class="action">{{packet.data.action}}</td>
-                        <td class="response">{{packet.data.response}}</td>
-                        <td class="resource">{{packet.data.resource}}</td>
-                        <td class="contentType">{{packet.data.contentType}}</td>
+                        <td class="dateString">{{::packet.data.time | date:'yyyy-MM-dd HH:mm:ss.sss'}}</td>
+                        <td class="srcPeer">{{::packet.srcPeer}}</td>
+                        <td class="sequence">{{::packet.sequence}}</td>
+                        <td class="dst">{{::packet.data.dst}}</td>
+                        <td class="src">{{::packet.data.src}}</td>
+                        <td class="msgId">{{::packet.data.msgId}}</td>
+                        <td class="replyTo">{{::packet.data.replyTo}}</td>
+                        <td class="action">{{::packet.data.action}}</td>
+                        <td class="response">{{::packet.data.response}}</td>
+                        <td class="resource">{{::packet.data.resource}}</td>
+                        <td class="contentType">{{::packet.data.contentType}}</td>
                     </tr>
                     <tr ng-repeat-end >
                         <td colspan="10" ><pre collapse="!isExpanded">{{ packet | json }} </pre></td>
@@ -109,14 +109,14 @@
                 </thead>
                 <tbody>
                     <tr ng-repeat="metric in metrics | orderBy:'name' | filter:viewFilter">
-                        <td>{{metric.name}}</td>
-                        <td>{{metric.unit}}</td>
+                        <td>{{::metric.name}}</td>
+                        <td>{{::metric.unit}}</td>
                         <td><pre>{{metric.value | json}}</pre></td>
                     </tr>
                 </tbody>
             </table>
         </tab>
-        <tab heading="{{api.address}}" ng-repeat="api in apis" ng-controller="apiDisplayController">
+        <tab heading="{{::api.address}}" ng-repeat="api in apis" ng-controller="apiDisplayController">
             <div class="btn-group">
                 <button class="btn btn-primary" ng-click="query()">Query</button>
                 <button class="btn btn-primary" ng-click="refresh()">Refresh</button>
@@ -149,7 +149,7 @@
 
 
                             </div>
-                            {{key.resource}}
+                            {{::key.resource}}
 
                         </td>
                         <td>{{key.contentType}}</td>
