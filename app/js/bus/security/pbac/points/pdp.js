@@ -8,6 +8,8 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * @namespace ozpIwc.policyAuth
  *
  * @param {Object} config
+ * @param {ozpIwc.policyAuth.PRP} config.prp Policy Repository Point for the PDP to gather policies from.
+ * @param {ozpIwc.policyAuth.PIP} config.pip Policy Information Point for the PDP to gather attributes from.
  * @constructor
  */
 ozpIwc.policyAuth.PDP = function(config){
@@ -17,7 +19,7 @@ ozpIwc.policyAuth.PDP = function(config){
      * Policy Repository Point
      * @property prp
      * @type {ozpIwc.policyAuth.PRP}
-     * @default {}
+     * @default new ozpIwc.policyAuth.PRP()
      */
     this.prp = config.prp ||  new ozpIwc.policyAuth.PRP();
 
@@ -26,7 +28,7 @@ ozpIwc.policyAuth.PDP = function(config){
      * Policy Information Point
      * @property pip
      * @type {ozpIwc.policyAuth.PIP}
-     * @default {}
+     * @default new ozpIwc.policyAuth.PIP()
      */
     this.pip = config.pip || new ozpIwc.policyAuth.PIP();
 };
@@ -42,13 +44,14 @@ ozpIwc.policyAuth.PDP = function(config){
  * @param {String} [request. combiningAlgorithm]    Only supports “deny-overrides”
  * @param {Object} [contextHolder]                  An object that holds 'securityAttribute' attributes to populate the
  *                                                  PIP cache with for request/policy use.
- * @returns {Promise} will resolve if the policy gives a "Permit", or rejects if else wise. the promise chain will
- *                    receive:
- *                    ```{
- *                      'result': <String>,
- *                      'request': <Object> // a copy of the request passed in,
- *                      'formattedRequest': <Object> // a copy of the formatted request (for PDP user caching)
- *                    }```
+ * @returns {ozpIwc.AsyncAction} will resolve with 'success' if the policy gives a "Permit".
+ *                                    rejects else wise. the async success will receive:
+ * ```{
+ *      'result': <String>,
+ *      'request': <Object> // a copy of the request passed in,
+ *      'formattedRequest': <Object> // a copy of the formatted request (for PDP user caching)
+ *      'formattedPolicies': <Object> // a copy of the formatted policies (for PDP user caching)
+ *    }```
  */
 ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,contextHolder){
     var asyncAction = new ozpIwc.AsyncAction();
@@ -120,6 +123,16 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,contextHolder){
  * @param {String|Object|Array<String|Object>}attribute The attribute to format
  * @param {ozpIwc.policyAuth.PIP} [pip] Policy information point, uses ozpIwc.authorization.pip by default.
  * @returns {ozpIwc.AsyncAction} returns an async action that will resolve with an object of the formatted attributes.
+ *                               each attribute is ID indexed in the object, such that the formatting of id
+ *                               `ozp:iwc:node` which has attributes `a` and `b`would resolve as follows:
+ *                  ```
+ *                  {
+ *                      'ozp:iwc:node': {
+ *                          'attributeValues': ['a','b']
+ *                       }
+ *                  }
+ *                  ```
+ *
  */
 ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
     var asyncAction = new ozpIwc.AsyncAction();
@@ -140,7 +153,7 @@ ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
                     var tmp = object[keys[i]];
                     object[keys[i]] = {
                         attributeValue: [tmp]
-                    }
+                    };
                 }
                 object[keys[i]].attributeValue = object[keys[i]].attributeValue || [];
 
@@ -207,11 +220,22 @@ ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
 
 
 /**
- * Formats an action to be used by a request or policy.
+ * Formats an action to be used by a request or policy. Actions are not gathered from the Policy Information Point.
+ * Rather they are string values explaining the operation to be permitted. To comply with XACML, these strings are
+ * wrapped in objects for easier comparison
  *
  * @method formatAction
  * @param {String|Object|Array<String|Object>} action
- * @returns {Array} An array of formatted actions
+ * @returns {Object} An object of formatted actions indexed by the ozp action id `ozp:action:id`.
+ *                   An example output for actions ['read','write'] is as follows:
+ *      ```
+ *      {
+ *          'ozp:iwc:action': {
+ *              'attributeValue': ['read', 'write']
+ *          }
+ *      }
+ *      ```
+ *
  */
 ozpIwc.policyAuth.PDP.prototype.formatAction = function(action){
 
@@ -270,20 +294,33 @@ ozpIwc.policyAuth.PDP.prototype.formatAction = function(action){
  *
  * @method formatRequest
  * @param {Object}          request
- * @param {String}          request.subject
- * @param {String}          request.resource
- * @param {String}          request.action
- * @param {String}          request.combiningAlgorithm
- * @param {Array<String>}   request.policies
+ * @param {String|Array<String>|Object}    request.subject URN(s) of attribute to gather, or formatted subject object
+ * @param {String|Array<String>Object}     request.resource URN(s) of attribute to gather, or formatted resource object
+ * @param {String|Array<String>Object}     request.action URN(s) of attribute to gather, or formatted action object
+ * @param {String}                         request.combiningAlgorithm URN of combining algorithm
+ * @param {Array<String|ozpIwc.policyAuth.Policy>}   request.policies either a URN or a formatted policy
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {Promise}   will resolve when all attribute formatting completes. The resolution will pass a formatted
+ * @returns {ozpIwc.AsyncAction}  will resolve when all attribute formatting completes.
+ *                    The resolution will pass a formatted
  *                      structured as so:
  *                    ```{
  *                      'category':{
- *                          "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": {Object},
- *                          "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": {Object},
- *                          "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {Object}
-*                       },
+ *                          "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": {
+ *                              <AttributeId>: {
+ *                                  "attributeValues": Array<Primitive>
+ *                              }
+ *                          },
+ *                          "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": {
+ *                              <AttributeId>: {
+ *                                  "attributeValues": Array<Primitive>
+ *                              }
+ *                          },
+ *                          "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
+ *                              "ozp:iwc:action": {
+ *                                  "attributeValues": Array<String>
+ *                              }
+ *                          }
+ *                       },
  *                      'combiningAlgorithm': request.combiningAlgorithm,
  *                      'policies': request.policies
  *                     }```
@@ -321,8 +358,10 @@ ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request,pip){
 };
 
 /**
+ * The URN of the default combining algorithm to use when basing a decision on multiple policies.
  * @property defaultCombiningAlgorithm
- * @type {string}
+ * @type {String}
+ * @default "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides"
  */
 ozpIwc.policyAuth.PDP.prototype.defaultCombiningAlgorithm =
     "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides";
@@ -368,15 +407,12 @@ ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combining
  * @param {String|Array<String>|Object} category the category (subject,resource,action) to format
  * @param {String} categoryId the category name used to map to its corresponding attributeId (see PDP.mappedID)
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {Promise} Returns a promise that will resolve with a category object formatted as so:
+ * @returns {ozpIwc.AsyncAction}  will resolve with a category object formatted as so:
  *      ```
  *      {
- *          'category': {String},
- *          'attributeDesignator': {
- *              'attributeId': {String},
- *              'mustBePresent': false
- *          },
- *          'attributeValue': {Array<String>}
+ *          <AttributeId>: {
+ *              'attributeValue': {Array<Primative>}
+ *          }
  *      }
  *      ```
  *
@@ -409,23 +445,29 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,pip){
  *
  * @method formatCategories
  * @param {Object} categoryObj
- * @param {Object|String|Array<String>} [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
+ * @param {Object|String|Array<String|Object>}
+ *          [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
  *                                          Formats xacml subject category attributes
- * @param {Object|String|Array<String>} [categoryObj["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]]
+ * @param {Object|String|Array<String|Object>}
+ *          [categoryObj["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]]
  *                                          Formats xacml resource category attributes
- * @param {Object|String|Array<String>} [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
+ * @param {Object|String|Array<String|Object>}
+ *          [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
  *                                          Formats xacml action category attributes
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {Promise} return will be structured as so:
+ * @returns {ozpIwc.AsyncAction} will resolve an object of categories be structured as so:
  * ```
  * {
- *   'urn:category:id:123' : {
- *      'urn:attribute:id':{
- *          'attributeValue' : Array<String>
+ *   'urn:oasis:names:tc:xacml:1.0:subject-category:access-subject' : {
+ *      <AttributeId>:{
+ *          'attributeValue' : Array<Primitive>
+ *      },
+ *      <AttributeId>:{
+ *          'attributeValue' : Array<Primitive>
  *      }
  *   },
- *   'urn:category:id:abc': {...},
- *   'urn:category:id:000': {...},
+ *   'urn:oasis:names:tc:xacml:3.0:attribute-category:resource': {...},
+ *   'urn:oasis:names:tc:xacml:1.0:subject-category:access-subject': {...},
  * }
  * ```
  */
@@ -460,7 +502,7 @@ ozpIwc.policyAuth.PDP.prototype.formatCategories = function(categoryObj,pip){
  * @method formatRule
  * @param {Object} rule
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {Promise} returns a promise that will resolve to a formatted rule.
+ * @returns {ozpIwc.AsyncAction} will resolve with a formatted rule.
  */
 ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule,pip) {
     var asyncAction = new ozpIwc.AsyncAction();
@@ -481,7 +523,7 @@ ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule,pip) {
  * @method formatRules
  * @param {Array<Object>} rules
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {Promise} returns a promise that will resolve to a matching-order of formatted rules array.
+ * @returns {ozpIwc.AsyncAction} will resolve with a matching-order of formatted rules array.
  */
 ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules,pip){
     pip = pip || this.pip;
@@ -500,7 +542,7 @@ ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules,pip){
  * @method formatPolicy
  * @param {Object} policy
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {Promise} calls and returns a formatRules promise
+ * @returns {ozpIwc.AsyncAction} calls and returns a formatRules AsyncAction
  */
 ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy,pip){
     var asyncAction = new ozpIwc.AsyncAction();
@@ -524,7 +566,7 @@ ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy,pip){
  * @method formatPolicies
  * @param {Array<Object>} policies
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {Promise} calls and returns a formatRules promise
+ * @returns {ozpIwc.AsyncAction} will resolve with an array of formatted policies
  */
 ozpIwc.policyAuth.PDP.prototype.formatPolicies = function(policies,pip){
     var asyncAction = new ozpIwc.AsyncAction();

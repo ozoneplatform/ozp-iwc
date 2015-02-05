@@ -262,7 +262,6 @@ var mockPolicies = {
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:permissions",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
                         "ozp:iwc:action": {
-                            "dataType": "http://www.w3.org/2001/XMLSchema#string",
                             "attributeValue": ["access"]
                         }
                     }

@@ -21,11 +21,15 @@ ozpIwc.policyAuth.PRP = function(config){
 
 
 /**
+ * Gathers policies by their URN. These policies may need formatting by the formatPolicies function to gather any
+ * attribute data needed for the policy evaluation.
+ * If a policy cannot be found, it is labeled as a "denyAll" policy and placed in the cache. Thus, making any permission
+ * check using said policy always deny.
+ *
  * @method getPolicy(policyURIs)
  * @param {String | Array<String> } [policyURIs] The subject attributes or id performing the action.
  * @param {String} [combiningAlgorithm] Defaults to “deny-overrides”.
- * @return {Promise} promise chain, An array of policy data will be passed to the
- *                   chained "then".
+ * @return {ozpIwc.AsyncAction} will resolve with an array of policy data.
  */
 ozpIwc.policyAuth.PRP.prototype.getPolicies = function(policyURIs){
     var asyncAction = new ozpIwc.AsyncAction();
@@ -55,14 +59,21 @@ ozpIwc.policyAuth.PRP.prototype.getPolicies = function(policyURIs){
 
 
 
+/**
+ * The URN of the default combining algorithm to use when basing a decision on multiple rules in a policy.
+ * @TODO not used.
+ * @property defaultCombiningAlgorithm
+ * @type {String}
+ * @default 'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides'
+ */
 ozpIwc.policyAuth.PRP.prototype.defaultCombiningAlgorithm =
-    "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides";
+    'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides';
 
 /**
  * Fetches the requested policy and stores a copy of it in the cache. Returns a denyAll if policy is unobtainable.
  * @method fetchPolicy
  * @param {String} policyURI the uri to gather the policy from
- * @returns {AsyncAction} promise chain, the policy will be passed to the chained "then".
+ * @returns {AsyncAction} will resolve with the gathered policy constructed as an ozpIwc.policyAuth.Policy.
  */
 ozpIwc.policyAuth.PRP.prototype.fetchPolicy = function(policyURI){
     var asyncAction = new ozpIwc.AsyncAction();
@@ -80,23 +91,38 @@ ozpIwc.policyAuth.PRP.prototype.fetchPolicy = function(policyURI){
     return asyncAction;
 };
 
+/**
+ * Turns JSON data in to ozpIwc.policyAuth.Policy
+ * @method formatPolicy
+ * @param data
+ * @returns {ozpIwc.policyAuth.Policy}
+ */
 ozpIwc.policyAuth.PRP.prototype.formatPolicy = function(data){
     return new ozpIwc.policyAuth.Policy(data);
 };
 
-ozpIwc.policyAuth.PRP.prototype.getDenyall = function(uri){
-    if(this.policyCache[uri]){
-        return this.policyCache[uri];
+/**
+ * Returns a policy that will always deny any request. Said policy is stored in the cache under the given URN
+ * @param urn
+ * @returns {ozpIwc.policyAuth.Policy} a denyAll policy
+ */
+ozpIwc.policyAuth.PRP.prototype.getDenyall = function(urn){
+    if(this.policyCache[urn]){
+        return this.policyCache[urn];
     } else {
         var policy = new ozpIwc.policyAuth.Policy({
-            policyId: uri
+            policyId: urn
         });
         policy.evaluate = ozpIwc.abacPolicies.denyAll;
-        this.policyCache[uri] = policy;
+        this.policyCache[urn] = policy;
         return policy;
     }
 };
 
+/**
+ * Returns a policy that will always permit any request. Said policy is cached with the id 'ozp:iwc:policy:none'
+ * @returns {ozpIwc.policyAuth.Policy} a permitAll policy
+ */
 ozpIwc.policyAuth.PRP.prototype.getPermitAll = function(){
     if(this.policyCache['ozp:iwc:policy:none']){
         return this.policyCache['ozp:iwc:policy:none'];

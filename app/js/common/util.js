@@ -239,14 +239,14 @@ ozpIwc.util.isIWCPacket=function(packet) {
 };
 
 /**
- * Returns true if the the given node is a direct descendant of the parent node.
+ * Returns true if the the given document node is a direct descendant of the parent node.
  * @method isDirectDescendant
  * @param parent
  * @param child
  * @returns {boolean}
  */
 ozpIwc.util.isDirectDescendant = function(child,parent){
-    if (child.parentNode == parent) {
+    if (child.parentNode === parent) {
         return true;
     }
     return false;

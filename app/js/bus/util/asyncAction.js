@@ -114,13 +114,17 @@ ozpIwc.AsyncAction.all = function(asyncActions) {
         // If its not an asyncAction, pass it through as a result.
         if(!self.isAnAction(action)){
             results[index] = action;
-            if(--count === 0) returnAction.resolve('success',results);
+            if(--count === 0) {
+                returnAction.resolve('success',results);
+            }
         }else {
             action
                 .success(function (result) {
                     results[index] = result;
                     //once all actions resolved, intermediateAction resolve
-                    if (--count === 0) returnAction.resolve('success', results);
+                    if (--count === 0) {
+                        returnAction.resolve('success', results);
+                    }
                 }, self)
                 .failure(function (err) {
                     //fail the returnAction if any fail.

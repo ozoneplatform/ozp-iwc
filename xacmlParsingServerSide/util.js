@@ -10,26 +10,6 @@ ozpIwc.policyAuth.util.generateEmptyTarget = function(){
     });
 };
 
-ozpIwc.policyAuth.util.generateAttribute = function(config){
-    config = config || {};
-
-    return  new ozpIwc.policyAuth.AllOf({
-        match: [new ozpIwc.policyAuth.Match({
-            matchId: config.matchId,
-            attributeDesignator: new ozpIwc.policyAuth.AttributeDesignator({
-                attributeId: config.attributeId,
-                category: config.category,
-                dataType: config.dataType,
-                mustBePresent: "false"
-            }),
-            attributeValue: new ozpIwc.policyAuth.AttributeValue({
-                dataType: config.dataType,
-                value: config.value
-            })
-        })]
-    });
-};
-
 ozpIwc.policyAuth.util.generateAttributeSubjects = function(config){
     config = config || [];
     config = Array.isArray(config) ? config : [config];

@@ -78,7 +78,7 @@ ozpIwc.policyAuth.Rule.prototype.getNegativeEffect = function(){
             return "Permit";
         default:
             return "Deny";
-    };
+    }
 };
 
 ozpIwc.policyAuth.Rule.prototype.evaluate = function(request){
@@ -127,7 +127,7 @@ ozpIwc.policyAuth.Rule.prototype.evaluate = function(request){
                 }
 
                 if(!matchFound){
-                    return this.getNegativeEffect()
+                    return this.getNegativeEffect();
                 }
             }
         }

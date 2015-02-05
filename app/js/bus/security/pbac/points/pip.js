@@ -21,9 +21,23 @@ ozpIwc.policyAuth.PIP = function(config){
 
 
 /**
+ * Returns an asyncAction that will resolve with the attributes stored at the given URN.
+ *
  * @method getAttributes(id)
  * @param {String} [subjectId] – The authenticated identity to get attributes for.
- * @returns {Promise} – Returns the attributes of the subject merged with any parent subjects.
+ * @returns {ozpIwc.AsyncAction} – Resolves an object of the attributes of the subject.
+ * @example URN "ozp:storage:myAttrs" may contain "ozp:iwc:loginTime" and "ozp:iwc:name".
+ * getAttributes("ozp:storage:myAttrs") would resolve with the following:
+ * ```
+ * {
+ *      'ozp:iwc:loginTime' : {
+ *         'attributeValue': Array<Primative>
+ *     },
+ *      'ozp:iwc:name' : {
+ *         'attributeValue': Array<Primative>
+ *     }
+ * }
+ * ```
  */
 ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
     var asyncAction = new ozpIwc.AsyncAction();
@@ -56,6 +70,8 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
 
 };
 /**
+ * Sets the desired attributes in the cache at the specified URN.
+ *
  * @method grantAttributes(subjectId,attributes)
  * @param {String} [subjectId] – The recipient of attributes.
  * @param {object} [attributes] – The attributes to grant (replacing previous values, if applicable)
@@ -65,9 +81,13 @@ ozpIwc.policyAuth.PIP.prototype.grantAttributes = function(subjectId,attributes)
 };
 
 /**
+ * Merges the attributes stored at the parentId urn into the given subject. All merge conflicts take the parent
+ * attribute. Will resolve with the subject when completed.
+ *
  * @method grantParent(subjectId,parentSubjectId)
  * @param {String} [subjectId] – The recipient of attributes.
  * @param {String} [parentSubjectId] – The subject to inherit attributes from.
+ * @returns {ozpIwc.AsyncAction} resolves with the subject and its granted attributes merged in.
  */
 ozpIwc.policyAuth.PIP.prototype.grantParent = function (subjectId,parentId){
     var asyncAction = new ozpIwc.AsyncAction();
