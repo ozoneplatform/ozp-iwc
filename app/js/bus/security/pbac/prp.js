@@ -47,7 +47,7 @@ ozpIwc.policyAuth.PRP.prototype.getPolicies = function(policyURIs){
 
     // If there are no policies to check against, assume trivial and permit
     if(policies.length === 0){
-        asyncAction.resolve('success',[this.getPermitAll()]);
+        return asyncAction.resolve('success',[this.getPermitAll()]);
     }
 
     return ozpIwc.AsyncAction.all(policies);
@@ -75,7 +75,7 @@ ozpIwc.policyAuth.PRP.prototype.fetchPolicy = function(policyURI){
         asyncAction.resolve('success',ozpIwc.util.clone(self.policyCache[policyURI]));
     })['catch'](function(e){
         //Note: failure resolves success because we force a denyAll policy.
-        asnyAction.resolve('success',self.getDenyall(policyURI));
+        asyncAction.resolve('success',self.getDenyall(policyURI));
     });
     return asyncAction;
 };

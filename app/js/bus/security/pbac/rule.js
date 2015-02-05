@@ -93,8 +93,9 @@ ozpIwc.policyAuth.Rule.prototype.evaluate = function(request){
         } else {
             // iterate over each attribute in the request
             for(var j in reqCategory[i]){
+                //If the attribute in the request does not exist in the policy, keep moving.
                 if(!this.category[i][j]){
-                    return this.getNegativeEffect();
+                    continue;
                 }
                 var attributeValues = this.category[i][j].attributeValue;
 
@@ -106,10 +107,10 @@ ozpIwc.policyAuth.Rule.prototype.evaluate = function(request){
                 reqAttributeValue = Array.isArray(reqAttributeValue) ?
                     reqAttributeValue : [reqAttributeValue];
 
-                // If no attribute values in the request
-                if(reqAttributeValue.length === 0){
-                    // and none in the policy, it passes
-                    if (attributeValues.length === 0) {
+                // If no attribute values in the policy
+                if(attributeValues.length === 0){
+                    // and none in the request, it passes
+                    if (reqAttributeValue.length === 0) {
                         matchFound = true;
                     } else {
                         // it fails

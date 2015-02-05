@@ -19,7 +19,7 @@ ozpIwc.policyAuth.PDP = function(config){
      * @type {ozpIwc.policyAuth.PRP}
      * @default {}
      */
-    this.prp = config.prp || {};
+    this.prp = config.prp ||  new ozpIwc.policyAuth.PRP();
 
 
     /**
@@ -28,7 +28,7 @@ ozpIwc.policyAuth.PDP = function(config){
      * @type {ozpIwc.policyAuth.PIP}
      * @default {}
      */
-    this.pip = config.pip || {};
+    this.pip = config.pip || new ozpIwc.policyAuth.PIP();
 };
 
 

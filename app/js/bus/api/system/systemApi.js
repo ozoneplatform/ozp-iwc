@@ -182,7 +182,7 @@ ozpIwc.SystemApi.prototype.handleDelete = function(node,packetContext) {
  */
 ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
 
-    return this.participant.send({
+    this.participant.send({
         dst: "intents.api",
         contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
         action: "invoke",

@@ -67,7 +67,7 @@ describe("Data API Class",function() {
 
     });
 
-    it("generates changes for added children",function(done) {
+    it("generates changes for added children",function() {
         dataApi.data['/node']=node;
         node.watch({'src': "watcher",'msgId': 1234});
         
@@ -83,15 +83,14 @@ describe("Data API Class",function() {
             'leaderState': "leader"
         });
 		
-        dataApi.routePacket(packetContext).then(function(){
+        dataApi.routePacket(packetContext);
+
             expect(dataApi.participant.sentPackets.length).toEqual(1);
             var changePacket=dataApi.participant.sentPackets[0];
             expect(changePacket.response).toEqual("changed");
             expect(changePacket.entity.addedChildren[0]).toMatch(/\/node\/[0-9a-f]+/);
-            done();
-        });
     });
-    it("generates changes for removed children",function(done) {
+    it("generates changes for removed children",function() {
         dataApi.data['/node']=node;
         node.addChild("child1");
         node.watch({'src': "watcher",'msgId': 1234});
@@ -108,13 +107,12 @@ describe("Data API Class",function() {
             'leaderState': "leader"
         });
 		
-        dataApi.routePacket(packetContext).then(function(){
+        dataApi.routePacket(packetContext);
+
             expect(dataApi.participant.sentPackets.length).toEqual(1);
             var changePacket=dataApi.participant.sentPackets[0];
             expect(changePacket.response).toEqual("changed");
             expect(changePacket.entity.removedChildren[0]).toEqual("child1");
-            done();
-        });
     });
     it("writes dirty nodes to server",function() {
         var nodeVerifier=[(new ozpIwc.DataApiValue({

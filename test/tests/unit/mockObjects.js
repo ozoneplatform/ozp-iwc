@@ -15,16 +15,6 @@ var FakePeer = function() {
     };
 };
 
-var MockAuthorization = function(){
-     this.isPermitted = function(){
-            return new Promise(function(resolve,reject){
-                resolve({result:"Permit"});
-            });
-    };
-    this.formatCategory = ozpIwc.util.resolveWith;
-};
-ozpIwc.authorization = new MockAuthorization();
-
 //========================================================
 // TestParticipant for connecting to a router
 //========================================================
@@ -39,6 +29,9 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
     this.sentPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "sentPackets");
     this.receivedPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "receivedPackets");
     this.forbiddenPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "forbiddenPackets");
+
+    // mock common permission attributes (that would be assigned on router/multicast connections)
+    this.events.trigger('connectedToRouter');
 
 
     this.router = {
@@ -126,45 +119,34 @@ var FakeRouter = function() {
 
     };
     this.registerParticipant = function(p) {
-        var self = this;
-        return p.connectToRouter(this, (this.participants.length + 1) + ".fake").then(function(){
-            self.participants.push(p);
-        });
+        p.connectToRouter(this, (this.participants.length + 1) + ".fake");
+        this.participants.push(p);
     };
-    var self = this;
-    self.processed = 0;
     this.pump = function() {
+        var processed = 0;
         var recvFn = function(participants,packet) {
-            var promises = [];
             participants.forEach(function(l){
                 if (l.address !== packet.src) {
-                    promises.push(l.receiveFromRouter(new TestPacketContext({'packet': packet})));
+                    l.receiveFromRouter(new TestPacketContext({'packet': packet}));
                 }
             });
-            return Promise.all(promises);
         };
-
-        var promises = [];
-        if(self.packetQueue.length) {
-            self.processed++;
-            for (var i in self.packetQueue) {
-                var packet = self.packetQueue.shift();
+        while (this.packetQueue.length) {
+            processed++;
+            var packet = this.packetQueue.shift();
 //				console.log("PACKET(" + packet.src + "): ",packet);
-                promises.push(recvFn(self.participants, packet));
+            recvFn(this.participants,packet);
             }
-        }
-        return Promise.all(promises).then(function(){
-            // if more got written during this async run again
-            if(self.packetQueue.length){
-                return self.pump();
-            }
-        });
-
+        return processed;
     };
     this.createMessage = function(m) {
         return m;
     };
-    this.registerMulticast = function() {
+    this.registerMulticast = function(participant,groups) {
+        groups.forEach(function(groupName){
+            participant.securityAttributes.pushIfNotExist('ozp:iwc:sendAs', groupName);
+            participant.securityAttributes.pushIfNotExist('ozp:iwc:receiveAs', groupName);
+        });
     };
 };
 

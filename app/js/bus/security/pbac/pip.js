@@ -29,10 +29,11 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
     var asyncAction = new ozpIwc.AsyncAction();
     var self = this;
 
-    if(this.informationCache[id]){
+    if(this.informationCache[id]) {
         var returnObj = {};
         returnObj[id] = self.informationCache[id];
-        return asyncAction.resolve('success',returnObj);
+        return asyncAction.resolve('success', returnObj);
+    } else {
         ozpIwc.util.ajax({
             href: id,
             method: "GET"

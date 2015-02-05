@@ -5,9 +5,9 @@ describe("Policy Information Point",function() {
     beforeEach(function(){
 
         spyOn(ozpIwc.util,"ajax").and.callFake(function(){
-            return new Promise(function(resolve,reject){
-               resolve({
-                   'attributeValue': "serverLoadedVal"
+            return new Promise(function(resolve,reject) {
+                resolve({
+                    'attributeValue': "serverLoadedVal"
                 });
             });
         });
@@ -26,23 +26,24 @@ describe("Policy Information Point",function() {
         });
     });
 
-    it("returns an attribute from the cache if possible",function(done){
-        pip.getAttributes('ozp:attributeCollection:fake').then(function(attr){
-            expect(attr).toEqual({
-                'ozp:attributeCollection:fake': pip.informationCache['ozp:attributeCollection:fake']
+    it("returns an attribute from the cache if possible",function(){
+        pip.getAttributes('ozp:attributeCollection:fake')
+            .success(function(attr){
+                expect(attr).toEqual({
+                    'ozp:attributeCollection:fake': pip.informationCache['ozp:attributeCollection:fake']
+                });
             });
-            done();
-        });
     });
 
     it('sends a request to the attributes URI/URN to gather attributes not in the cache',function(done){
-        pip.getAttributes('ozp:attributeCollection:NOTINCACHE').then(function(attr){
-            expect(attr).toEqual({
-                'ozp:attributeCollection:NOTINCACHE': {
-                    'attributeValue': ["serverLoadedVal"]
-                }
-            });
-            done();
+        pip.getAttributes('ozp:attributeCollection:NOTINCACHE')
+            .success(function(attr){
+                expect(attr).toEqual({
+                    'ozp:attributeCollection:NOTINCACHE': {
+                        'attributeValue': ["serverLoadedVal"]
+                    }
+                });
+                done();
         });
     });
 
@@ -84,7 +85,7 @@ describe("Policy Information Point",function() {
         ]);
     });
 
-    it('grants Attributes from a parent to an existing attributeId',function(done){
+    it('grants Attributes from a parent to an existing attributeId',function(){
         pip.informationCache['ozp:attributeCollection:parent'] = [
             {
                 'attributeValue' : 'newVal'
@@ -94,24 +95,24 @@ describe("Policy Information Point",function() {
             }
         ];
 
-        pip.grantParent('ozp:attributeCollection:fake','ozp:attributeCollection:parent').then(function(){
-            expect(pip.informationCache['ozp:attributeCollection:fake']).toEqual([
+        pip.grantParent('ozp:attributeCollection:fake','ozp:attributeCollection:parent')
+            .success(function(){
+                expect(pip.informationCache['ozp:attributeCollection:fake']).toEqual([
 
-                {
-                    'attributeValue': "fakeVal"
-                },
-                {
-                    'attributeValue': "otherFakeVal"
-                },
-                {
-                    'attributeValue' : 'newVal'
-                },
-                {
-                    'attributeValue' : 'newVal2'
-                }
-            ]);
-            done();
-        });
+                    {
+                        'attributeValue': "fakeVal"
+                    },
+                    {
+                        'attributeValue': "otherFakeVal"
+                    },
+                    {
+                        'attributeValue' : 'newVal'
+                    },
+                    {
+                        'attributeValue' : 'newVal2'
+                    }
+                ]);
+            });
     });
 
     it('grants Attributes from a parent to a non existing attributeId',function(){

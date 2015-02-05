@@ -387,7 +387,7 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
                 'policies': ['policy/apiNodePolicy.json']
             };
             var context = {
-                securityAttributes: node.permissions
+                securityAttributes: node.permissions || {}
             };
 
             ozpIwc.authorization.isPermitted(request, context)
@@ -399,7 +399,7 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
                 });
         }).failure(function(err){
             console.error("Api could not format permission check on packet", err);
-            action.resolve("failure",err);
+            asyncAction.resolve("failure",err);
         });
     return asyncAction;
 };
@@ -559,7 +559,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
                     },this);
                 });
             },this)
-            .failure(function() {
+            .failure(function(err) {
                 packetContext.replyTo({'response':'noPerm'});
             });
     });

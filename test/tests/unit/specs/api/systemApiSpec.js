@@ -127,15 +127,15 @@ describe("System API",function() {
             },
             action: 'launch'
         });
-        systemApi.handleLaunch(applicationNode,packetContext).then(function() {
-            var reply = packetContext.responses[0];
-            expect(reply.response).toEqual("ok");
+        systemApi.handleLaunch(applicationNode,packetContext);
 
-            var sent = systemApi.participant.sentPackets[0];
-            expect(sent.action).toEqual("invoke");
-            expect(sent.dst).toEqual("intents.api");
-            expect(sent.entity).toEqual(packetContext.packet.entity);
-        });
+        var reply=packetContext.responses[0];
+        expect(reply.response).toEqual("ok");
+
+        var sent = systemApi.participant.sentPackets[0];
+        expect(sent.action).toEqual("invoke");
+        expect(sent.dst).toEqual("intents.api");
+        expect(sent.entity).toEqual(packetContext.packet.entity);
     });
 
     it('handles invoke actions by launching applications', function(){

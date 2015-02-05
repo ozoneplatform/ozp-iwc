@@ -11,11 +11,9 @@ describe("Leader Group Participant",function() {
 	var oldSetImmediate=ozpIwc.util.setImmediate;
 
 	var tick=function(t) {
-		return fakeRouter.pump().then(function() {
-            jasmine.clock().tick(t);
-        }).then(function(){
-            return fakeRouter.pump();
-        });
+		fakeRouter.pump();
+		jasmine.clock().tick(t);
+		fakeRouter.pump();
 	};
 
 	var moveTime=function(step) {
@@ -24,22 +22,14 @@ describe("Leader Group Participant",function() {
         var leaderStatus = function(l) {
             return l.isLeader();
         };
-        var self = this;
-        var runTillElected = function(){
+		while(!elected) {
 //			console.log("============= Round " + round + " ===================");
-            self.round++;
-            jasmine.clock().tick(step);
-            return fakeRouter.pump().then(function(){
+			round++;
+			jasmine.clock().tick(step);
+			fakeRouter.pump();
 
-                elected=fakeRouter.participants.some(leaderStatus);
-                if(!elected){
-                    return runTillElected();
-                } else {
-                    return;
-                }
-            });
-        };
-        return runTillElected();
+			elected=fakeRouter.participants.some(leaderStatus);
+		}
 	};
 
     var log=function(){}; // console.log
@@ -50,71 +40,63 @@ describe("Leader Group Participant",function() {
 			name: "foo"+fakeRouter.participants.length,
 			'priority': priority
 		});
-		return fakeRouter.registerParticipant(l).then(function(){
-            l.on("startElection", function() {
-                l.changeState("election");
-                log("startElection[" + l.address + "]");
-            });
-            l.on("endElection",function() {
-                log("endElection[" + l.address + "]");
-            });
-            l.on("newLeader",function() {
-                log("newLeader[" + l.address + "]");
-            });
-            l.on("becameLeader",function() {
-                log("becameLeader[" + l.address + "]");
-            });
-            l.on("becameLeaderEvent",function(){
-                l.sendVictoryMessage();
-                l.changeState("leader");
-                l.events.trigger("becameLeader");
-            });
-            l.on("newLeaderEvent",function(){
-                l.changeState("member");
-                l.events.trigger("newLeader");
-            });
-
-            l.nonElectionTestPackets=[];
-            l.on("receive",function(packet) {
-                l.nonElectionTestPackets.push(packet);
-                return [];
-            });
-            return l;
+		fakeRouter.registerParticipant(l);
+		l.on("startElection", function() {
+            l.changeState("election");
+			log("startElection[" + l.address + "]");
+		});
+		l.on("endElection",function() {
+			log("endElection[" + l.address + "]");
+		});
+		l.on("newLeader",function() {
+			log("newLeader[" + l.address + "]");
+		});
+		l.on("becameLeader",function() {
+			log("becameLeader[" + l.address + "]");
+		});
+        l.on("becameLeaderEvent",function(){
+            l.sendVictoryMessage();
+            l.changeState("leader");
+            l.events.trigger("becameLeader");
         });
+        l.on("newLeaderEvent",function(){
+            l.changeState("member");
+            l.events.trigger("newLeader");
+        });
+
+		l.nonElectionTestPackets=[];
+		l.on("receive",function(packet) {
+			l.nonElectionTestPackets.push(packet);
+			return [];
+		});
+
+		return l;
 	};
 
-    var jitter = function(done) {
+    var jitter = function() {
         fakeRouter.jitter=0.5;
 
-        var lowbie,leader;
-        makeLeader(1).then(function(leader){
-            lowbie = leader;
-            var leaders = [];
-            var i;
-            for(i=10; i< 20; ++i) {
-                leaders.push(makeLeader(i));
-            }
-            return Promise.all(leaders);
+        var lowbie=makeLeader(1);
+        var i;
+        for(i=10; i< 20; ++i) {
+            makeLeader(i);
+        }
+        var leader=makeLeader(100);
 
-        }).then(function(){
-            return makeLeader(100);
-        }).then(function(anotherLeader){
-            leader = anotherLeader;
-            return lowbie.startElection();
-        }).then(function(){
-            // step forward time by 50ms at a shot until the chatter stops
-            return moveTime(50);
-        }).then(function(){
-            for(i=0; i< fakeRouter.participants.length-1; ++i) {
-                if(fakeRouter.participants[i].isLeader()) {
-    //					console.log("Leader " + i + " thinks he is the bully");
-                }
-                expect(fakeRouter.participants[i].isLeader()).toEqual(false);
-            }
+        lowbie.startElection();
 
-            expect(leader.isLeader()).toEqual(true);
-            done();
-        });
+        // step forward time by 50ms at a shot until the chatter stops
+        moveTime(10);
+
+        for(i=0; i< fakeRouter.participants.length-1; ++i) {
+            if(fakeRouter.participants[i].isLeader()) {
+//					console.log("Leader " + i + " thinks he is the bully");
+            }
+            expect(fakeRouter.participants[i].isLeader()).toEqual(false);
+        }
+
+        expect(leader.isLeader()).toEqual(true);
+
 	};
 
     beforeEach(function() {
@@ -127,136 +109,92 @@ describe("Leader Group Participant",function() {
     afterEach(function() {
        ozpIwc.util.setImmediate=oldSetImmediate;
      });
-	it("is not leader when created",function(done) {
-		makeLeader(1).then(function(leader){
-		    expect(leader.isLeader()).toEqual(false);
-            done();
-        });
+	it("is not leader when created",function() {
+		var leader=makeLeader(1);
+		expect(leader.isLeader()).toEqual(false);
 	});
 
 	
-	it("is leader after one member election",function(done) {
-        var leader;
-		makeLeader(1).then(function(lead) {
-            leader = lead;
-            return leader.startElection();
-        }).then(function () {
-            return tick(ozpIwc.ELECTION_TIMEOUT * 2);
-        }).then(function () {
-            expect(leader.isLeader()).toEqual(true);
-            done();
-        });
-
+	it("is leader after one member election",function() {
+		var leader=makeLeader(1);
+		leader.startElection();
+        tick(ozpIwc.ELECTION_TIMEOUT * 2);
+		expect(leader.isLeader()).toEqual(true);
 	});
 
-	it("changes state on startElection packet",function(done) {
-		var leader;
-        makeLeader(1).then(function(lead) {
-            leader = lead;
-            var calls = 0;
-            leader.on("startElection", function () {
-                calls = true;
-            });
-            return leader.startElection();
-        }).then(function () {
-                return tick(ozpIwc.ELECTION_TIMEOUT * 2);
-        }).then(function () {
-            expect(leader.isLeader()).toEqual(true);
-            done();
-        });
+	it("changes state on startElection packet",function() {
+		var leader=makeLeader(1);
+		var calls=0;
+		leader.on("startElection",function() { calls=true;});
+		leader.startElection();
+        tick(ozpIwc.ELECTION_TIMEOUT * 2);
+		expect(leader.isLeader()).toEqual(true);
 	});
 
-	it("two members elect one leader",function(done) {
-        var member,leader;
-        makeLeader(1).then(function(mem) {
-            member = mem;
-            return makeLeader(2);
-        }).then(function(lead) {
-            leader = lead;
-            return leader.startElection();
-        }).then(function(){
-            return tick(ozpIwc.ELECTION_TIMEOUT * 2);
-        }).then(function(){
-            expect(leader.isLeader()).toEqual(true);
-            expect(member.isLeader()).toEqual(false);
-            done();
-        })['catch'](function(e){console.error(e);});
+	it("two members elect one leader",function() {
+        var member=makeLeader(1);
+		var leader=makeLeader(2);
+
+		leader.startElection();
+
+        tick(ozpIwc.ELECTION_TIMEOUT * 2);
+
+		expect(leader.isLeader()).toEqual(true);
+		expect(member.isLeader()).toEqual(false);
 	});
 	
-	it("higher priority will take over",function(done) {
-		var member,leader;
-        makeLeader(1).then(function(mem) {
-            member = mem;
-            return member.startElection();
-        }).then(function() {
-            return tick(ozpIwc.ELECTION_TIMEOUT * 2);
-        }).then(function(){
-            expect(member.isLeader()).toEqual(true);
-            return makeLeader(2);
-        }).then(function(lead){
-            leader = lead;
-            return leader.startElection();
-        }).then(function() {
-            return tick(ozpIwc.ELECTION_TIMEOUT * 2);
-        }).then(function(){
-            expect(leader.isLeader()).toEqual(true);
-            expect(member.isLeader()).toEqual(false);
-            done();
-        });
-	});
-	it("twelve members will elect the correct leader with the lowest one starting the election",function(done) {
-		var lowbie,leader;
-        makeLeader(1).then(function(lead) {
-            lowbie = lead;
-            var leaderPromises = [];
-            var i;
-            for (i = 10; i < 20; ++i) {
-                leaderPromises.push(makeLeader(i));
-            }
-            return Promise.all(leaderPromises);
-        }).then(function(){
-            return makeLeader(100);
-        }).then(function(lead) {
-            leader = lead;
-            return lowbie.startElection();
-        }).then(function() {
-            return tick(ozpIwc.ELECTION_TIMEOUT * 2);
-        }).then(function(){
-            for(i=0; i< fakeRouter.participants.length-1; ++i) {
-                expect(fakeRouter.participants[i].isLeader()).toEqual(false);
-            }
+	it("higher priority will take over",function() {
+		var member=makeLeader(1);
+		member.startElection();
+        tick(ozpIwc.ELECTION_TIMEOUT * 2);
 
-            expect(leader.isLeader()).toEqual(true);
-            done();
-        });
+		expect(member.isLeader()).toEqual(true);
+
+
+		var leader=makeLeader(2);
+		leader.startElection();
+        tick(ozpIwc.ELECTION_TIMEOUT * 2);
+
+		expect(leader.isLeader()).toEqual(true);
+		expect(member.isLeader()).toEqual(false);
+	});
+	it("twelve members will elect the correct leader with the lowest one starting the election",function() {
+		var lowbie=makeLeader(1);
+        var i;
+		for(i=10; i< 20; ++i) {
+			makeLeader(i);
+		}
+		var leader=makeLeader(100);
+
+		lowbie.startElection();
+
+        tick(ozpIwc.ELECTION_TIMEOUT * 2);
+
+		for(i=0; i< fakeRouter.participants.length-1; ++i) {
+			expect(fakeRouter.participants[i].isLeader()).toEqual(false);
+		}
+
+		expect(leader.isLeader()).toEqual(true);
+
 	});
 
 
 	// since the jitter is random, run several rounds of it
 	for(var j=0;j<1;++j) {
-		it("member election works with jitter, round " + j, function(done){
-            jitter(done);
-        });
+		it("member election works with jitter, round " + j, jitter);
 	}
 	describe("dispatch to the target",function() {
-		it("sends event on non-election packet", function(done) {
-                var leader;
-				makeLeader(1).then(function(lead) {
-                    leader = lead;
-                    leader.leaderState = "leader";
-                    return leader.receiveFromRouter({
-                        packet: {
-                            src: "foo",
-                            dst: "bar",
-                            msgId: 1,
-                            ver: 1,
-                            entity: {foo: "bar"}
-                        }
-                    });
-                }).then(function(){
-				    expect(leader.nonElectionTestPackets.length).toBe(1);
-                    done();
-                });
+		it("sends event on non-election packet", function() {
+				var leader=makeLeader(1);
+				leader.leaderState="leader";
+				leader.receiveFromRouter({ packet:{
+					src: "foo",
+					dst: "1.fake",
+					msgId: 1,
+					ver: 1,
+					entity: { foo: "bar" }
+				}});
+				expect(leader.nonElectionTestPackets.length).toBe(1);
 		});
 	});
 	

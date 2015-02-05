@@ -1,5 +1,5 @@
 describe("Internal Participant",function() {
-    var fakeRouter;
+    var fakeRouter,participant,sentPackets;
 
     var makeParticipant = function() {
         var l = new ozpIwc.InternalParticipant({
@@ -7,91 +7,55 @@ describe("Internal Participant",function() {
             sourceWindow : this.window,
             credentials : []
         });
-        return fakeRouter.registerParticipant(l).then(function(){
-            return l;
-        });
+        fakeRouter.registerParticipant(l);
+        return l;
 
     };
 
     beforeEach(function () {
         ozpIwc.metrics=new ozpIwc.MetricsRegistry();
         fakeRouter= new FakeRouter();
-        ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
-            pip: new ozpIwc.policyAuth.PIP(),
-            prp: new ozpIwc.policyAuth.PRP({
-                policyCache: mockPolicies
-            })
-        });
+        participant = makeParticipant();
+        ozpIwc.util.setImmediate = function(fn){
+            fn.apply(arguments);
+        };
+        sentPackets = participant.sentPacketsMeter.get().count;
     });
 
-    afterEach(function(){
-        ozpIwc.authorization = new MockAuthorization();
-    });
 
     describe("Security",function(){
-        it("permits receiving packets that have a destination matching the receiveAs Attribute", function(done) {
-            makeParticipant().then(function(participant){
-                var packet =  new TestPacketContext({
-                    'packet': {
-                        'dst': participant.address
-                    }
-                });
-                participant.receiveFromRouter(packet).then(function(){
-                    expect(participant.receivedPacketsMeter.get().count).toEqual(1);
-                    done();
-                })['catch'](function(e){
-                    expect(false).toEqual(true);
-                    done();
-                });
+        it("permits receiving packets that have a destination matching the receiveAs Attribute", function() {
+            var packet =  new TestPacketContext({
+                'packet': {
+                    'dst': participant.address
+                }
             });
+            participant.receiveFromRouter(packet);
+            expect(participant.receivedPacketsMeter.get().count).toEqual(1);
         });
 
-        it("denies receiving packets that don't have a destination matching the receiveAs Attribute", function(done) {
-            makeParticipant().then(function(participant){
-                var packet =  new TestPacketContext({
-                    'packet': {
-                        'dst': participant.address+1
-                    }
-                });
-                participant.receiveFromRouter(packet).then(function(){
-                    expect(false).toEqual(true);
-                    done();
-                })['catch'](function(e){
-                    expect(participant.forbiddenPacketsMeter.get().count).toEqual(1);
-                    done();
-                });
+        it("denies receiving packets that don't have a destination matching the receiveAs Attribute", function() {
+            var packet =  new TestPacketContext({
+                'packet': {
+                    'dst': participant.address+1
+                }
             });
+            participant.receiveFromRouter(packet);
+            expect(participant.forbiddenPacketsMeter.get().count).toEqual(1);
         });
 
-        it("permits sending packets that have a source matching the sendAs Attribute", function(done) {
-            makeParticipant().then(function(participant){
-                var sentPackets = participant.sentPacketsMeter.get().count;
-
-                participant.send({
-                    'src': participant.address
-                }).then(function(){
-                    expect(participant.sentPacketsMeter.get().count).toEqual(sentPackets + 1);
-                    done();
-                })['catch'](function(e){
-                    expect(false).toEqual(true);
-                    done();
-                });
+        it("permits sending packets that have a source matching the sendAs Attribute", function() {
+            participant.send({
+                'src': participant.address
             });
+            expect(participant.sentPacketsMeter.get().count).toEqual(sentPackets + 1);
         });
 
-        it("denies sending packets that don't have a source matching the sendAs Attribute", function(done) {
-            makeParticipant().then(function(participant){
-                var sentPackets = participant.sentPacketsMeter.get().count;
-                participant.send({
-                    'src': participant.address+1
-                }).then(function(resolution){
-                    expect(false).toEqual(true);
-                    done();
-                })['catch'](function(e){
-                    expect(participant.sentPacketsMeter.get().count).toEqual(sentPackets);
-                    done();
-                });
+        it("denies sending packets that don't have a source matching the sendAs Attribute", function() {
+            participant.send({
+                'src': participant.address+1
             });
+            expect(participant.sentPacketsMeter.get().count).toEqual(sentPackets);
         });
     });
 });

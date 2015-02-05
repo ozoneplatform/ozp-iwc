@@ -142,7 +142,7 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
                                 'attributeValue': self.address
                             }
                         },
-                        'resource': permissions,
+                        'resource': permissions || {},
                         'action': {
                             'ozp:iwc:action': {'attributeValue': 'read'}
                         },

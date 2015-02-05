@@ -19,7 +19,7 @@ describe("Intent API Class", function () {
         apiBase = null;
     });
 
-    it("Sets data types",function(done) {
+    it("Sets data types",function() {
         var testPacket=new TestPacketContext({
             'packet': {
                 'resource': "/text/plain",
@@ -31,13 +31,11 @@ describe("Intent API Class", function () {
             },
             'leaderState': "leader"
         });
-        apiBase.routePacket(testPacket).then(function(){
-            expect(testPacket.responses[0].response).toEqual("ok");
-            done();
-        });
+        apiBase.routePacket(testPacket);
+        expect(testPacket.responses[0].response).toEqual("ok");
     });
 
-    it("Sets intent definitions",function(done) {
+    it("Sets intent definitions",function() {
         var testPacket=new TestPacketContext({
             'packet': {
                 'resource': "/text/plain/view",
@@ -49,13 +47,11 @@ describe("Intent API Class", function () {
             },
             'leaderState': "leader"
         });
-        apiBase.routePacket(testPacket).then(function(){
-            expect(testPacket.responses[0].response).toEqual("ok");
-            done();
-        });
+        apiBase.routePacket(testPacket);
+        expect(testPacket.responses[0].response).toEqual("ok");
     });
 
-    it("Creating an intent definitions shows up in the content type",function(done) {
+    it("Creating an intent definitions shows up in the content type",function() {
         apiBase.routePacket(new TestPacketContext({
             'packet': {
                 'resource': "/text/plain/view",
@@ -74,44 +70,40 @@ describe("Intent API Class", function () {
             },
             'leaderState': "leader"
         });
-        apiBase.routePacket(testPacket).then(function(){
-            expect(testPacket.responses[0].response).toEqual("ok");
-            expect(testPacket.responses[0].entity.actions).toContain("/text/plain/view");
-            done();
-        });
+        apiBase.routePacket(testPacket);
+        expect(testPacket.responses[0].response).toEqual("ok");
+        expect(testPacket.responses[0].entity.actions).toContain("/text/plain/view");
     });
 
-    it("Registers handlers",function(done) {
-        var testPacket = new TestPacketContext({
+    it("Registers handlers",function() {
+        var testPacket=new TestPacketContext({
             'packet': {
                 'resource': "/text/plain/view",
                 'action': "register",
-                'contentType': "application/vnd.ozp-iwc-intent-handler-v1+json",
+                'contentType' : "application/vnd.ozp-iwc-intent-handler-v1+json",
                 'entity': {
-                    'bar': 2
+                    'bar':2
                 }
             },
             'leaderState': "leader"
         });
-        apiBase.routePacket(testPacket).then(function () {
-            expect(testPacket.responses[0].response).toEqual("ok");
-            expect(testPacket.responses[0].entity.resource).toMatch(/text\/plain\/view\/.*/);
-            done();
-        });
+        apiBase.routePacket(testPacket);
+        expect(testPacket.responses[0].response).toEqual("ok");
+        expect(testPacket.responses[0].entity.resource).toMatch(/text\/plain\/view\/.*/);
     });
-    
+
     describe("Invoking handlers",function() {
         var handlerResource;
         var registerPacket;
-        beforeEach(function (done) {
-            registerPacket = new TestPacketContext({
+        beforeEach(function() {
+            registerPacket=new TestPacketContext({
                 'packet': {
                     'resource': "/text/plain/view",
                     'action': "register",
-                    'contentType': "application/vnd.ozp-iwc-intent-handler-v1+json",
+                    'contentType' : "application/vnd.ozp-iwc-intent-handler-v1+json",
                     'entity': {
                         'type': "text/plain",
-                        'action': "view",
+                        'action' : "view",
                         'invokeIntent': {
                             dst: "system.api",
                             resource: "/intentHandler",
@@ -123,67 +115,61 @@ describe("Intent API Class", function () {
                 'leaderState': "leader"
             });
 
-            apiBase.routePacket(registerPacket).then(function () {
-                handlerResource = registerPacket.responses[0].entity.resource;
-                expect(handlerResource).toBeDefined();
-                done();
-            });
+            apiBase.routePacket(registerPacket);
+            handlerResource=registerPacket.responses[0].entity.resource;
+            expect(handlerResource).toBeDefined();
         });
-
-        it("Invokes handlers directly", function (done) {
-            var testPacket = new TestPacketContext({
+        it("Invokes handlers directly",function() {
+            var testPacket=new TestPacketContext({
                 'packet': {
                     'resource': handlerResource,
                     'action': "invoke",
-                    'contentType': "text/plain",
+                    'contentType' : "text/plain",
                     'entity': "Some Text"
                 },
                 'leaderState': "leader"
             });
-            apiBase.routePacket(testPacket).then(function () {
-                var invocations = apiBase.data['/ozpIntents/invocations'];
-                var invocationResource = invocations.entity[0];
-                var invocation = apiBase.data[invocationResource];
-                expect(apiBase.participant.sentPackets[0].dst).toEqual(registerPacket.packet.entity.invokeIntent.dst);
-                expect(apiBase.participant.sentPackets[0].entity.inFlightIntent).toEqual(invocationResource);
-                expect(invocation.entity.intent.type).toEqual(registerPacket.packet.entity.type);
-                expect(invocation.entity.intent.action).toEqual(registerPacket.packet.entity.action);
-                expect(invocation.entity.entity).toEqual(testPacket.packet.entity);
-                done();
-            })['catch'](function(e){
-                console.log(e);
-            });
+            apiBase.routePacket(testPacket);
+
+            var invocations = apiBase.data['/ozpIntents/invocations'];
+            var invocationResource = invocations.entity[0];
+            var invocation = apiBase.data[invocationResource];
+            expect(apiBase.participant.sentPackets[0].dst).toEqual(registerPacket.packet.entity.invokeIntent.dst);
+            expect(apiBase.participant.sentPackets[0].entity.inFlightIntent).toEqual(invocationResource);
+            expect(invocation.entity.intent.type).toEqual(registerPacket.packet.entity.type);
+            expect(invocation.entity.intent.action).toEqual(registerPacket.packet.entity.action);
+            expect(invocation.entity.entity).toEqual(testPacket.packet.entity);
         });
 
-        it("Handler's return value is forwarded to the invoker", function (done) {
+        it("Handler's return value is forwarded to the invoker",function() {
 
-            var testPacket = new TestPacketContext({
+            var testPacket=new TestPacketContext({
                 'packet': {
                     'resource': handlerResource,
                     'action': "invoke",
-                    'contentType': "text/plain",
+                    'contentType' : "text/plain",
                     'entity': "Some Text"
                 },
                 'leaderState': "leader"
             });
-            apiBase.routePacket(testPacket).then(function () {
-                var invokePacket = apiBase.participant.sentPackets[0];
-                return apiBase.participant.receiveFromRouter(new TestPacketContext({
-                    'packet': {
-                        'src': "fakeHandler",
-                        'response': "ok",
-                        'replyTo': invokePacket.msgId,
-                        'contentType': "text/winnar",
-                        'entity': "You won!"
-                    },
-                    'leaderState': "leader"
-                }));
-            }).then(function () {
-                var fowardedPacket = testPacket.responses[0];
-                expect(fowardedPacket.contentType).toEqual("text/winnar");
-                expect(fowardedPacket.entity).toEqual("You won!");
-                done();
-            });
+            apiBase.routePacket(testPacket);
+
+            var invokePacket=apiBase.participant.sentPackets[0];
+
+            apiBase.participant.receiveFromRouter(new TestPacketContext({
+                'packet': {
+                    'src': "fakeHandler",
+                    'response': "ok",
+                    'replyTo': invokePacket.msgId,
+                    'contentType' : "text/winnar",
+                    'entity': "You won!"
+                },
+                'leaderState': "leader"
+            }));
+
+            var fowardedPacket=testPacket.responses[0];
+            expect(fowardedPacket.contentType).toEqual("text/winnar");
+            expect(fowardedPacket.entity).toEqual("You won!");
 
         });
 
@@ -272,143 +258,108 @@ describe("Intent API Class", function () {
                 });
             };
 
-            it("creates an /ozpIntents/invocations resource for in flight intents",function(done){
+            it("creates an /ozpIntents/invocations resource for in flight intents",function(){
                 var invocations = apiBase.data['/ozpIntents/invocations'];
                 expect(invocations.entity.length).toEqual(0);
-                apiBase.routePacket(testPacket).then(function() {
-                    expect(invocations.entity.length).toEqual(1);
-                    done();
-                });
+                apiBase.routePacket(testPacket);
+                expect(invocations.entity.length).toEqual(1);
             });
 
-            it("directly invokes a handler if there is only 1 to choose from",function (done){
+            it("directly invokes a handler if there is only 1 to choose from",function (){
                 var invocations = apiBase.data['/ozpIntents/invocations'];
-                apiBase.routePacket(testPacket).then(function() {
-                    var invocation = apiBase.data[invocations.entity[0]];
+                apiBase.routePacket(testPacket);
+                var invocation = apiBase.data[invocations.entity[0]];
 
-                    expect(invocation.entity.handlerChoices.length).toEqual(1);
+                expect(invocation.entity.handlerChoices.length).toEqual(1);
 
-                    expect(invocation.entity.handlerChosen.resource).toEqual(handlerResource);
-                    expect(invocation.entity.handlerChosen.reason).toEqual("onlyOne");
+                expect(invocation.entity.handlerChosen.resource).toEqual(handlerResource);
+                expect(invocation.entity.handlerChosen.reason).toEqual("onlyOne");
 
-                    expect(invocation.entity.state).toEqual("delivering");
-                    done();
-                });
+                expect(invocation.entity.state).toEqual("delivering");
             });
 
-            it("prompts the user to choose when multiple handlers available",function (done){
+            it("prompts the user to choose when multiple handlers available",function (){
                 var invocations = apiBase.data['/ozpIntents/invocations'];
 
-                apiBase.routePacket(registerPacket)
-                    .then(apiBase.routePacket(testPacket))
-                    .then(function() {
-                        var invocation = apiBase.data[invocations.entity[0]];
-                        expect(invocation.entity.handlerChoices.length).toEqual(2);
-                        expect(invocation.entity.state).toEqual("choosing");
-                        done();
-                    });
+                apiBase.routePacket(registerPacket);
+
+                apiBase.routePacket(testPacket);
+                var invocation = apiBase.data[invocations.entity[0]];
+                expect(invocation.entity.handlerChoices.length).toEqual(2);
+                expect(invocation.entity.state).toEqual("choosing");
             });
 
-            it("invokes a chosen handler",function (done){
-                var invocations,invocation,choosingPacket;
+            it("invokes a chosen handler",function (){
+                apiBase.routePacket(registerPacket);
+                apiBase.routePacket(testPacket);
+                var invocations = apiBase.data['/ozpIntents/invocations'];
+                var invocation = apiBase.data[invocations.entity[0]];
+                var choosingPacket = getChoosingPacket(invocation);
 
-                apiBase.routePacket(registerPacket)
-                    .then(apiBase.routePacket(testPacket))
-                    .then(function() {
-                        invocations = apiBase.data['/ozpIntents/invocations'];
-                        invocation = apiBase.data[invocations.entity[0]];
-                        choosingPacket = getChoosingPacket(invocation);
+                apiBase.routePacket(choosingPacket);
+                expect(invocation.entity.handlerChosen.resource).toEqual(choosingPacket.packet.entity.resource);
+                expect(invocation.entity.handlerChosen.reason).toEqual(choosingPacket.packet.entity.reason);
 
-                        return apiBase.routePacket(choosingPacket)
-                    }).then(function() {
-                        expect(invocation.entity.handlerChosen.resource).toEqual(choosingPacket.packet.entity.resource);
-                        expect(invocation.entity.handlerChosen.reason).toEqual(choosingPacket.packet.entity.reason);
-                        expect(invocation.entity.state).toEqual("delivering");
-                        done();
-                    });
+                expect(invocation.entity.state).toEqual("delivering");
             });
 
-            it("receives confirmation that the desired handler has received the invocation",function (done){
-                var invocations,invocation,runningPacket;
+            it("receives confirmation that the desired handler has received the invocation",function (){
+                apiBase.routePacket(registerPacket);
+                apiBase.routePacket(testPacket);
+                var invocations = apiBase.data['/ozpIntents/invocations'];
+                var invocation = apiBase.data[invocations.entity[0]];
+                apiBase.routePacket( getChoosingPacket(invocation));
+                var runningPacket = getRunningPacket(invocation);
 
-                apiBase.routePacket(registerPacket)
-                    .then(apiBase.routePacket(testPacket))
-                    .then(function(){
-                        invocations = apiBase.data['/ozpIntents/invocations'];
-                        invocation = apiBase.data[invocations.entity[0]];
-                        return apiBase.routePacket( getChoosingPacket(invocation));
-                    }).then(function(){
-                        runningPacket = getRunningPacket(invocation);
-                        return apiBase.routePacket(runningPacket);
-                    }).then(function(){
-                        expect(invocation.entity.handler.address).toEqual(runningPacket.packet.entity.address);
-                        expect(invocation.entity.handler.resource).toEqual(runningPacket.packet.entity.resource);
-                        expect(invocation.entity.state).toEqual("running");
-                        done();
-                    });
+                apiBase.routePacket(runningPacket);
+                console.log(testPacket);
+                expect(invocation.entity.handler.address).toEqual(runningPacket.packet.entity.address);
+                expect(invocation.entity.handler.resource).toEqual(runningPacket.packet.entity.resource);
+                expect(invocation.entity.state).toEqual("running");
             });
 
-            it("receives notification that the desired handler has received the completed handling the invocation",function (done){
-                var invocations,invocation,invocationResource,completePacket;
+            it("receives notification that the desired handler has received the completed handling the invocation",function (){
                 apiBase.handleDelete = function(){};
 
-                apiBase.routePacket(registerPacket)
-                    .then(apiBase.routePacket(testPacket))
-                    .then(function() {
-                        invocations = apiBase.data['/ozpIntents/invocations'];
-                        invocation = apiBase.data[invocations.entity[0]];
-                        invocationResource = invocation.resource;
+                apiBase.routePacket(registerPacket);
+                apiBase.routePacket(testPacket);
 
-                        var packet = getChoosingPacket(invocation);
-                        return apiBase.routePacket(packet);
-                    }).then(function(){
-                        var packet = getRunningPacket(invocation);
-                        return apiBase.routePacket(packet);
-                    })
-                    .then(function() {
-                        completePacket = getCompletePacket(invocation);
-                        return apiBase.routePacket(completePacket);
-                    }).then(function() {
-                        expect(apiBase.data[invocationResource].entity.reply.contentType)
-                            .toEqual(completePacket.packet.entity.reply.contentType);
-                        expect(apiBase.data[invocationResource].entity.reply.entity)
-                            .toEqual(completePacket.packet.entity.reply.entity);
-                        expect(apiBase.data[invocationResource].entity.state)
-                            .toEqual(completePacket.packet.entity.state);
-                        done();
-                    });
+                var invocations = apiBase.data['/ozpIntents/invocations'];
+                var invocation = apiBase.data[invocations.entity[0]];
+                var invocationResource = invocation.resource;
+
+                apiBase.routePacket( getChoosingPacket(invocation));
+                apiBase.routePacket(getRunningPacket(invocation));
+
+                var completePacket = getCompletePacket(invocation);
+                apiBase.routePacket(completePacket);
+
+                expect(apiBase.data[invocationResource].entity.reply.contentType).toEqual(completePacket.packet.entity.reply.contentType);
+                expect(apiBase.data[invocationResource].entity.reply.entity).toEqual(completePacket.packet.entity.reply.entity);
+                expect(apiBase.data[invocationResource].entity.state).toEqual(completePacket.packet.entity.state);
 
             });
 
-            it("notifies the invoker of failure",function (done){
-                var invocations,invocation,invocationResource,failPacket;
+            it("notifies the invoker of failure",function (){
                 apiBase.handleDelete = function(){};
 
-                apiBase.routePacket(registerPacket)
-                    .then(apiBase.routePacket(testPacket))
-                    .then(function() {
-                        invocations = apiBase.data['/ozpIntents/invocations'];
-                        invocation = apiBase.data[invocations.entity[0]];
-                        invocationResource = invocation.resource;
+                apiBase.routePacket(registerPacket);
+                apiBase.routePacket(testPacket);
 
-                        var packet = getChoosingPacket(invocation);
-                        return apiBase.routePacket(packet);
-                    }).then(function(){
-                        var packet = getRunningPacket(invocation);
-                        apiBase.routePacket(packet);
-                    })
-                    .then(function() {
-                        failPacket = getFailPacket(invocation);
-                        return apiBase.routePacket(failPacket);
-                    }).then(function() {
-                        expect(apiBase.data[invocationResource].entity.reply.contentType)
-                            .toEqual(failPacket.packet.entity.reply.contentType);
-                        expect(apiBase.data[invocationResource].entity.reply.entity)
-                            .toEqual(failPacket.packet.entity.reply.entity);
-                        expect(apiBase.data[invocationResource].entity.state)
-                            .toEqual(failPacket.packet.entity.state);
-                        done();
-                    });
+                var invocations = apiBase.data['/ozpIntents/invocations'];
+                var invocation = apiBase.data[invocations.entity[0]];
+                var invocationResource = invocation.resource;
+
+                apiBase.routePacket( getChoosingPacket(invocation));
+                apiBase.routePacket(getRunningPacket(invocation));
+
+                var failPacket = getFailPacket(invocation);
+                apiBase.routePacket(failPacket);
+
+                expect(apiBase.data[invocationResource].entity.reply.contentType).toEqual(failPacket.packet.entity.reply.contentType);
+                expect(apiBase.data[invocationResource].entity.reply.entity).toEqual(failPacket.packet.entity.reply.entity);
+                expect(apiBase.data[invocationResource].entity.state).toEqual(failPacket.packet.entity.state);
+
             });
         });
     });
