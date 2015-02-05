@@ -233,6 +233,124 @@ describe("Async Action",function() {
 			// success!
 		}
 	});
+
+    it("can determine if an object is an AsyncAction",function(){
+        var foo = {
+            a: true
+        };
+        expect(ozpIwc.AsyncAction.isAnAction(action)).toEqual(true);
+        expect(ozpIwc.AsyncAction.isAnAction(foo)).toEqual(false);
+    });
+
+    describe('All functionality', function(){
+        it("can resolve an AsyncAction immediately if a group of actions have resolved",function() {
+            var tempAction1 = new ozpIwc.AsyncAction().resolve('success',{foo:1});
+            var tempAction2 = new ozpIwc.AsyncAction().resolve('success',{foo:2});
+            ozpIwc.AsyncAction.all([tempAction1,tempAction2])
+                .success(function(results){
+                    expect(results.length).toEqual(2);
+                    expect(results[0]).toEqual({foo:1});
+                    expect(results[1]).toEqual({foo:2});
+                })
+                .failure(function(err){
+                    expect("this").toEqual("not happen.");
+                })
+        });
+        it("can reject an AsyncAction immediately if any action in a group of actions rejects",function() {
+            var tempAction1 = new ozpIwc.AsyncAction().resolve('failure',"I dropped my ice cream.");
+            var tempAction2 = new ozpIwc.AsyncAction().resolve('success',{foo:2});
+            ozpIwc.AsyncAction.all([tempAction1,tempAction2])
+                .success(function(results){
+                    expect("this").toEqual("not happen.");
+                })
+                .failure(function(err){
+                    expect(err).toEqual("I dropped my ice cream.");
+                });
+        });
+
+        it("can resolve an AsyncAction asynchronously if a group of actions have resolved",function(done) {
+            var tempAction1 = new ozpIwc.AsyncAction();
+            var tempAction2 = new ozpIwc.AsyncAction();
+            ozpIwc.AsyncAction.all([tempAction1,tempAction2])
+                .success(function(results){
+                    expect(results.length).toEqual(2);
+                    expect(results[0]).toEqual({foo:1});
+                    expect(results[1]).toEqual({foo:2});
+                    done();
+                });
+            tempAction1.resolve('success',{foo:1});
+            tempAction2.resolve('success',{foo:2});
+        });
+        it("can reject an AsyncAction asynchronously if any action in a group of actions rejects",function(done) {
+            var tempAction1 = new ozpIwc.AsyncAction();
+            var tempAction2 = new ozpIwc.AsyncAction();
+            ozpIwc.AsyncAction.all([tempAction1,tempAction2])
+                .success(function(results){
+                    expect("this").toEqual("not happen.");
+                })
+                .failure(function(err){
+                    expect(err).toEqual("I dropped my ice cream.");
+                    done();
+                });
+            tempAction1.resolve('failure',"I dropped my ice cream.");
+            tempAction2.resolve('success',"wont resolve.");
+        });
+
+        it('can resolve all with a mixture of AsyncAction and non-AsyncAction objects immediately',function(){
+            var tempAction1 = new ozpIwc.AsyncAction().resolve('success',{foo:1});
+            var tempAction2 = new ozpIwc.AsyncAction().resolve('success',{foo:2});
+            ozpIwc.AsyncAction.all([tempAction1,true,"works",action.resolve('success',1),2,tempAction2])
+                .success(function(results){
+                    expect(results[0]).toEqual({foo:1});
+                    expect(results[1]).toEqual(true);
+                    expect(results[2]).toEqual("works");
+                    expect(results[3]).toEqual(1);
+                    expect(results[4]).toEqual(2);
+                    expect(results[5]).toEqual({foo:2});
+                });
+        });
+
+        it('can reject all with a mixture of AsyncAction and non-AsyncAction objects immediately',function(){
+            var tempAction1 = new ozpIwc.AsyncAction().resolve('success',{foo:1});
+            var tempAction2 = new ozpIwc.AsyncAction().resolve('success',{foo:2});
+            ozpIwc.AsyncAction.all([tempAction1,true,"works",action.resolve('failure',"test"),2,tempAction2])
+                .success(function(results){
+                    expect("this").toEqual('not to happen.');
+                })
+                .failure(function(err){
+                    expect(err).toEqual("test");
+                });
+        });
+
+        it('can resolve all with a mixture of AsyncAction and non-AsyncAction objects asynchronously',function(done){
+            var tempAction1 = new ozpIwc.AsyncAction().resolve('success',{foo:1});
+            var tempAction2 = new ozpIwc.AsyncAction().resolve('success',{foo:2});
+            ozpIwc.AsyncAction.all([tempAction1,true,"works",action,2,tempAction2])
+                .success(function(results){
+                    expect(results[0]).toEqual({foo:1});
+                    expect(results[1]).toEqual(true);
+                    expect(results[2]).toEqual("works");
+                    expect(results[3]).toEqual(1);
+                    expect(results[4]).toEqual(2);
+                    expect(results[5]).toEqual({foo:2});
+                    done();
+                });
+            action.resolve('success',1);
+        });
+        it('can reject all with a mixture of AsyncAction and non-AsyncAction objects asynchronously',function(done){
+            var tempAction1 = new ozpIwc.AsyncAction().resolve('success',{foo:1});
+            var tempAction2 = new ozpIwc.AsyncAction().resolve('success',{foo:2});
+            ozpIwc.AsyncAction.all([tempAction1,true,"works",action,2,tempAction2])
+                .success(function(results){
+                    expect("this").toEqual('not to happen.');
+                })
+                .failure(function(err){
+                    expect(err).toEqual("test");
+                    done();
+                });
+            action.resolve('failure',"test");
+        });
+    });
 });
 
 describe("General Utilities", function() {

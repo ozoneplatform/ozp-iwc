@@ -40,6 +40,7 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
     this.receivedPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "receivedPackets");
     this.forbiddenPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "forbiddenPackets");
 
+
     this.router = {
         'send': function() {
         }
@@ -52,13 +53,10 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
 
     this.send = function(packet, callback) {
         packet = ozpIwc.InternalParticipant.prototype.send.call(this, packet, callback);
-        var self = this;
+        this.sentPackets.push(packet);
         // tick to trigger the async send
         tick(0);
-        return packet.then(function(resolution){
-            self.sentPackets.push(resolution.packet);
-            return resolution;
-        });
+        return packet;
     };
 
     this.reply = function(originalPacket, packet, callback) {

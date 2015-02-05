@@ -237,7 +237,6 @@ ozpIwc.Router=function(config) {
 
     if(!config.disableBus){
         this.participants["$bus.multicast"]=new ozpIwc.MulticastParticipant("$bus.multicast");
-        this.participants["$bus.multicast"].authorization = config.authorization || ozpIwc.authorization;
     }
     /**
      * @property watchdog
@@ -245,16 +244,13 @@ ozpIwc.Router=function(config) {
      */
 	this.watchdog=new ozpIwc.RouterWatchdog({
         router: this,
-        heartbeatFrequency: config.heartbeatFrequency,
-        authorization: config.authorization || ozpIwc.authorization
+        heartbeatFrequency: config.heartbeatFrequency
     });
-
 	this.registerParticipant(this.watchdog);
 
     ozpIwc.metrics.gauge('transport.router.participants').set(function() {
         return self.getParticipantCount();
     });
-
 };
 
 /**
@@ -304,27 +300,23 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
     });
     this.events.trigger("preRegisterParticipant",registerEvent);
 
-
     if(registerEvent.canceled){
         // someone vetoed this participant
         ozpIwc.log.log("registeredParticipant[DENIED] origin:"+participant.origin+
             " because " + registerEvent.cancelReason);
-        return ozpIwc.rejectWith(registerEvent.cancelReason);
+        return null;
     }
 
     this.participants[address] = participant;
-
-    var self = this;
-    return participant.connectToRouter(this,address).then(function(){
-        var registeredEvent=new ozpIwc.CancelableEvent({
-            'packet': packet,
-            'participant': participant
-        });
-        self.events.trigger("registeredParticipant",registeredEvent);
-    //	ozpIwc.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
-        return address;
+     participant.connectToRouter(this,address);
+    var registeredEvent=new ozpIwc.CancelableEvent({
+        'packet': packet,
+        'participant': participant
     });
+    this.events.trigger("registeredParticipant",registeredEvent);
 
+//	ozpIwc.log.log("registeredParticipant["+participant_id+"] origin:"+participant.origin);
+    return address;
 };
 
 /**
@@ -410,8 +402,6 @@ ozpIwc.Router.prototype.registerMulticast=function(participant,multicastGroups) 
  * @param {ozpIwc.TransportPacket} packet The packet to route.
  * @param {ozpIwc.Participant} sendingParticipant Information about the participant that is attempting to send
  * the packet.
- * @returns {Promise} a promise that will resolve when delivering locally and sending through peer has completed.
- *                    this is promise chained because both operations require authorization checks.
  */
 ozpIwc.Router.prototype.send=function(packet,sendingParticipant) {
 
@@ -423,17 +413,12 @@ ozpIwc.Router.prototype.send=function(packet,sendingParticipant) {
 
     if(preSendEvent.canceled) {
         ozpIwc.metrics.counter("transport.packets.sendCanceled");
-        return new Promise(function(resolve,reject){
-            reject(preSendEvent.cancelReason);
-        });
+        return;
     }
     ozpIwc.metrics.counter("transport.packets.sent").inc();
-    var promises = [];
-    promises.push(this.deliverLocal(packet,sendingParticipant));
+    this.deliverLocal(packet,sendingParticipant);
     this.events.trigger("send",{'packet': packet});
-    promises.push(this.peer.send(packet));
-
-    return Promise.all(promises);
+    this.peer.send(packet);
 };
 
 /**

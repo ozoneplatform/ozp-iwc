@@ -14,6 +14,7 @@ var ozpIwc=ozpIwc || {};
  */
 ozpIwc.Participant=function() {
 
+
     /**
      * An events module for the participant.
      * @property events
@@ -100,8 +101,6 @@ ozpIwc.Participant=function() {
         };
         self.leaveEventChannel();
     });
-
-
 };
 
 /**
@@ -127,36 +126,35 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
         'policies': ['policy/receiveAsPolicy.json']
     };
 
-    return ozpIwc.authorization.isPermitted(request,this)
-        .then(function() {
-            return ozpIwc.authorization.formatCategory(packetContext.packet.permissions);
-        }).then(function(permissions) {
+    var onError = function(err){
+        self.forbiddenPacketsMeter.mark();
+        /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
+        ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+    };
 
-            var request = {
-                'subject': {
-                    'ozp:iwc:address': {
-                        'attributeValue': self.address
-                    }
-                },
-                'resource': permissions,
-                'action': {
-                    'ozp:iwc:action': {'attributeValue': 'read'}
-                },
-                'policies': ['policy/readPolicy.json']
-            };
+    ozpIwc.authorization.isPermitted(request,this)
+        .success(function() {
+            ozpIwc.authorization.formatCategory(packetContext.packet.permissions)
+                .success(function(permissions) {
+                    var request = {
+                        'subject': {
+                            'ozp:iwc:address': {
+                                'attributeValue': self.address
+                            }
+                        },
+                        'resource': permissions,
+                        'action': {
+                            'ozp:iwc:action': {'attributeValue': 'read'}
+                        },
+                        'policies': ['policy/readPolicy.json']
+                    };
 
-            return ozpIwc.authorization.isPermitted(request, self);
-        }).then(function(resolution){
-            self.receiveFromRouterImpl(packetContext);
-            return resolution;
-        })['catch'](function(e){
-            self.forbiddenPacketsMeter.mark();
-            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-            console.error(e);
-            //bubble up
-            throw e;
-        });
+                    ozpIwc.authorization.isPermitted(request, self)
+                        .success(function (resolution) {
+                            self.receiveFromRouterImpl(packetContext);
+                        }).failure(onError);
+                }).failure(onError);
+        }).failure(onError);
 };
 
 /**
@@ -185,18 +183,6 @@ ozpIwc.Participant.prototype.receiveFromRouterImpl = function (packetContext) {
 ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.address=address;
     this.router=router;
-    //var self = this;
-    ////Whenever this participant is registered to a multicast group, add it to the sendAs/receiveAs attributes
-    //this.router.on("registeredMulticast",function(event){
-    //    var entity = event.entity;
-    //    if(entity && entity.address === self.address && entity.group) {
-    //        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:sendAs',
-    //            {'dataType': 'http://www.w3.org/2001/XMLSchema#string', 'attributeValue': entity.group});
-    //        self.securityAttributes.pushIfNotExist('ozp:iwc:participant:receiveAs',
-    //            {'dataType': 'http://www.w3.org/2001/XMLSchema#string', 'attributeValue': entity.group});
-    //    }
-    //});
-    //this.securityAttributes.rawAddress=address;
     this.msgId=0;
     this.metricRoot="participants."+ this.address.split(".").reverse().join(".");
     this.sentPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"sentPackets").unit("packets");
@@ -209,7 +195,7 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
 
     this.events.trigger("connectedToRouter");
-    return this.joinEventChannel();
+    this.joinEventChannel();
 };
 
 /**
@@ -258,20 +244,15 @@ ozpIwc.Participant.prototype.send=function(packet) {
         'policies': ['policy/sendAsPolicy.json']
     };
     var self = this;
-    var retVal;
-    return ozpIwc.authorization.isPermitted(request,this).then(function(resolution) {
-        packet = self.fixPacket(packet);
-        self.sentPacketsMeter.mark();
-        retVal = resolution;
-        return self.router.send(packet, self);
-    }).then(function(){
-        retVal.packet = packet;
-        return retVal;
-    })['catch'](function(e){
-        console.error(e);
-        //bubble up
-        throw e;
-    });
+    packet = self.fixPacket(packet);
+    ozpIwc.authorization.isPermitted(request,this)
+        .success(function(resolution) {
+            self.sentPacketsMeter.mark();
+            self.router.send(packet, self);
+        }).failure(function(e){
+            console.error("Participant Failed to send a packet:",e);
+        });
+    return packet;
 };
 
 /**
@@ -310,7 +291,7 @@ ozpIwc.Participant.prototype.heartbeat=function() {
 ozpIwc.Participant.prototype.joinEventChannel = function() {
     if(this.router) {
         this.router.registerMulticast(this, ["$bus.multicast"]);
-        return this.send({
+        this.send({
             dst: "$bus.multicast",
             action: "connect",
             entity: {
@@ -318,14 +299,9 @@ ozpIwc.Participant.prototype.joinEventChannel = function() {
                 participantType: this.participantType
             }
         });
-        return new Promise(function(resolve,reject){
-            resolve();
-        });
+        return true;
     } else {
-
-        return new Promise(function(resolve,reject){
-            reject();
-        });
+        return false;
     }
 };
 

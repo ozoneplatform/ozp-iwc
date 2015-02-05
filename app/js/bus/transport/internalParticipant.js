@@ -40,12 +40,10 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
     var self = this;
     this.on("connectedToRouter",function() {
         self.securityAttributes.pushIfNotExist('ozp:iwc:address', self.address);
-
         self.securityAttributes.pushIfNotExist('ozp:iwc:sendAs',self.address);
-
         self.securityAttributes.pushIfNotExist('ozp:iwc:receiveAs', self.address);
 
-        ozpIwc.metrics.gauge(self.metricRoot,"registeredcallbacks").set(function() {
+        ozpIwc.metrics.gauge(self.metricRoot,"registeredCallbacks").set(function() {
             return self.getCallbackCount();
         });
     });
@@ -110,11 +108,11 @@ ozpIwc.InternalParticipant.prototype.send=function(originalPacket,callback) {
 	}
     var self=this;
     var send = ozpIwc.Participant.prototype.send;
-    return new Promise(function(resolve,reject) {
-        resolve();
-    }).then(function(){
-        return send.call(self,packet);
+	ozpIwc.util.setImmediate(function() {
+        send.call(self,packet);
     });
+
+	return packet;
 };
 
 /**

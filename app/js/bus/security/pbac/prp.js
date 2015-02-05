@@ -28,32 +28,29 @@ ozpIwc.policyAuth.PRP = function(config){
  *                   chained "then".
  */
 ozpIwc.policyAuth.PRP.prototype.getPolicies = function(policyURIs){
+    var asyncAction = new ozpIwc.AsyncAction();
     policyURIs = policyURIs || [];
     policyURIs = Array.isArray(policyURIs)? policyURIs : [policyURIs];
     var policies = [];
-
 
     var policiesToGather = this.persistentPolicies.concat(policyURIs);
     for(var i in policiesToGather){
         if(this.policyCache[policiesToGather[i]]){
             policies.push(ozpIwc.util.clone(this.policyCache[policiesToGather[i]]));
         } else {
-            var promise = this.fetchPolicy(policiesToGather[i]);
+            var async = this.fetchPolicy(policiesToGather[i]);
 
             //Push the policy fetch to the array, when it resolves its value (policy) will be part of the array
-            policies.push(promise);
+            policies.push(async);
         }
     }
 
     // If there are no policies to check against, assume trivial and permit
     if(policies.length === 0){
-        var self = this;
-        return new Promise(function(resolve,reject){
-            resolve([self.getPermitAll()]);
-        });
+        asyncAction.resolve('success',[this.getPermitAll()]);
     }
 
-    return Promise.all(policies);
+    return ozpIwc.AsyncAction.all(policies);
 };
 
 
@@ -65,19 +62,22 @@ ozpIwc.policyAuth.PRP.prototype.defaultCombiningAlgorithm =
  * Fetches the requested policy and stores a copy of it in the cache. Returns a denyAll if policy is unobtainable.
  * @method fetchPolicy
  * @param {String} policyURI the uri to gather the policy from
- * @returns {Promise} promise chain, the policy will be passed to the chained "then".
+ * @returns {AsyncAction} promise chain, the policy will be passed to the chained "then".
  */
 ozpIwc.policyAuth.PRP.prototype.fetchPolicy = function(policyURI){
+    var asyncAction = new ozpIwc.AsyncAction();
     var self = this;
-    return ozpIwc.util.ajax({
+    ozpIwc.util.ajax({
         'method': "GET",
         'href': policyURI
     }).then(function(data){
         self.policyCache[policyURI] = self.formatPolicy(data.response);
-        return ozpIwc.util.clone(self.policyCache[policyURI]);
+        asyncAction.resolve('success',ozpIwc.util.clone(self.policyCache[policyURI]));
     })['catch'](function(e){
-        return self.getDenyall(policyURI);
+        //Note: failure resolves success because we force a denyAll policy.
+        asnyAction.resolve('success',self.getDenyall(policyURI));
     });
+    return asyncAction;
 };
 
 ozpIwc.policyAuth.PRP.prototype.formatPolicy = function(data){

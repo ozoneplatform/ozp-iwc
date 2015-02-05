@@ -26,13 +26,14 @@ ozpIwc.policyAuth.PIP = function(config){
  * @returns {Promise} – Returns the attributes of the subject merged with any parent subjects.
  */
 ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
+    var asyncAction = new ozpIwc.AsyncAction();
     var self = this;
+
     if(this.informationCache[id]){
         var returnObj = {};
         returnObj[id] = self.informationCache[id];
-        return ozpIwc.util.resolveWith(returnObj);
-    } else {
-        return ozpIwc.util.ajax({
+        return asyncAction.resolve('success',returnObj);
+        ozpIwc.util.ajax({
             href: id,
             method: "GET"
         }).then(function(data){
@@ -40,16 +41,16 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
                 self.informationCache[id] = {};
                 self.informationCache[id].attributeValue = Array.isArray(data.attributeValue ) ?
                     data.attributeValue  : [data.attributeValue ];
-
-                var returnObj = {};
-                returnObj[id] = self.informationCache[id];
-                return returnObj;
+                    var returnObj = {};
+                    returnObj[id] = self.informationCache[id];
+                asyncAction.resolve('success',returnObj);
             } else {
-                throw "Invalid data loaded from the remote PIP";
+                asyncAction.resolve('failure',"Invalid data loaded from the remote PIP");
             }
-        })['catch'](function(e){
-            return {};
+        })['catch'](function(err){
+            asyncAction.resolve('failure',err);
         });
+        return asyncAction;
     }
 
 };
@@ -68,26 +69,30 @@ ozpIwc.policyAuth.PIP.prototype.grantAttributes = function(subjectId,attributes)
  * @param {String} [parentSubjectId] – The subject to inherit attributes from.
  */
 ozpIwc.policyAuth.PIP.prototype.grantParent = function (subjectId,parentId){
+    var asyncAction = new ozpIwc.AsyncAction();
     this.informationCache[subjectId] = this.informationCache[subjectId] || [];
     var self = this;
-    return new Promise(function(resolve,reject){
 
-        if(self.informationCache[parentId]){
-            for(var i in self.informationCache[parentId]){
-                if(self.informationCache[subjectId].indexOf(self.informationCache[parentId]) < 0){
-                    self.informationCache[subjectId].push(self.informationCache[parentId][i]);
-                }
+    if(self.informationCache[parentId]){
+        for(var i in self.informationCache[parentId]){
+            if(self.informationCache[subjectId].indexOf(self.informationCache[parentId]) < 0){
+                self.informationCache[subjectId].push(self.informationCache[parentId][i]);
             }
-            resolve(self.informationCache[subjectId]);
-        } else {
-            return self.getAttributes(parentId).then(function(attributes){
+        }
+        return asyncAction.resolve('success',self.informationCache[subjectId]);
+
+    } else {
+        self.getAttributes(parentId)
+            .success(function(attributes){
                 for(var i in attributes){
                     if(self.informationCache[subjectId].indexOf(attributes[i]) < 0) {
                         self.informationCache[subjectId].push(attributes[i]);
                     }
                 }
-                return attributes;
+                asyncAction.resolve('success',self.informationCache[subjectId]);
+            }).failure(function(err){
+                asyncAction.resolve('failure',err);
             });
-        }
-    });
+        return asyncAction;
+    }
 };

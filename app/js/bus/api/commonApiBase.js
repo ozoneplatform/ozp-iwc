@@ -372,23 +372,36 @@ ozpIwc.CommonApiBase.prototype.makeValue=function(/*packet*/) {
  * ```
  */
 ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
+    var asyncAction = new ozpIwc.AsyncAction();
 
-    return ozpIwc.authorization.formatCategory(packetContext.packet.permissions).then(function(permissions) {
-        var request = {
-            'subject': {
-                'ozp:iwc:node': {'attributeValue': packetContext.packet.resource}
-            },
-            'resource': permissions,
-            'action': {
-                'ozp:iwc:action': {'attributeValue': 'access'}
-            },
-            'policies': ['policy/apiNodePolicy.json']
-        };
-        var context = {
-            securityAttributes: node.permissions
-        };
-        return ozpIwc.authorization.isPermitted(request, context);
-    });
+    ozpIwc.authorization.formatCategory(packetContext.packet.permissions)
+        .success(function(permissions) {
+            var subject = (packetContext.packet.resource) ?
+                {'ozp:iwc:node': {'attributeValue': packetContext.packet.resource}} : {};
+            var request = {
+                'subject': subject,
+                'resource': permissions || {},
+                'action': {
+                    'ozp:iwc:action': {'attributeValue': 'access'}
+                },
+                'policies': ['policy/apiNodePolicy.json']
+            };
+            var context = {
+                securityAttributes: node.permissions
+            };
+
+            ozpIwc.authorization.isPermitted(request, context)
+                .success(function (resolution) {
+                    asyncAction.resolve("success",resolution);
+                }).failure(function (err) {
+                    console.error("Api could not perform action:", err);
+                    asyncAction.resolve("failure",err);
+                });
+        }).failure(function(err){
+            console.error("Api could not format permission check on packet", err);
+            action.resolve("failure",err);
+        });
+    return asyncAction;
 };
 
 
@@ -403,7 +416,6 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
     if(!changes) {
         return;
     }
-    var promises = [];
     this.events.trigger("changedNode",node,changes);
     node.eachWatcher(function(watcher) {
         // @TODO check that the recipient has permission to both the new and old values
@@ -417,9 +429,8 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
             'entity': changes
         };
 
-        promises.push(this.participant.send(reply));
+        this.participant.send(reply);
     },this);
-    return Promise.all(promises);
 };
 
 /**
@@ -497,13 +508,15 @@ ozpIwc.CommonApiBase.prototype.createKey=function(prefix) {
  * @method routePacket
  * @param {ozpIwc.TransportPacketContext} packetContext The packet to route.
  *
- * @return {Promise} Returns a promise that resolves when the packet has been routed.
- *
  */
 ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
     var packet=packetContext.packet;
     this.events.trigger("receive",packetContext);
-    var errorHandler = function(e){
+    var self=this;
+    var errorWrap=function(f) {
+        try {
+            f.apply(self);
+        } catch(e) {
         if(!e.errorAction) {
             ozpIwc.log.log("Unexpected error:",e);
         }
@@ -511,6 +524,8 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
             'response': e.errorAction || "unknownError",
             'entity': e.message
         });
+            return;
+        }
     };
     if(packetContext.leaderState !== 'leader' && packetContext.leaderState !== 'actingLeader'  )	{
         // if not leader, just drop it.
@@ -523,41 +538,31 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         // if it's a response packet that didn't wire an explicit handler, drop the sucker
         return;
     }
-    var self = this;
-    try{
         var node;
 
-        var handler=self.findHandler(packetContext);
-        self.validateResource(node,packetContext);
-        node=self.findOrMakeValue(packetContext.packet);
+    errorWrap(function() {
+        var handler=this.findHandler(packetContext);
+        this.validateResource(node,packetContext);
+        node=this.findOrMakeValue(packetContext.packet);
 
-        return self.isPermitted(node,packetContext).then(function() {
-            var promises = [];
-            try{
-                self.validatePreconditions(node,packetContext);
-                var snapshot=node.snapshot();
-                promises.push(handler.call(self,node,packetContext));
-                promises.push(self.notifyWatchers(node, node.changesSince(snapshot)));
+        this.isPermitted(node,packetContext)
+            .success(function() {
+                errorWrap(function() {
+                    this.validatePreconditions(node,packetContext);
+                    var snapshot=node.snapshot();
+                    handler.call(this,node,packetContext);
+                    this.notifyWatchers(node, node.changesSince(snapshot));
 
                 // update all the collection values
-                self.dynamicNodes.forEach(function(resource) {
-                    promises.push(self.updateDynamicNode(self.data[resource]));
+                    this.dynamicNodes.forEach(function(resource) {
+                        this.updateDynamicNode(this.data[resource]);
+                    },this);
                 });
-            }catch(e){
-                errorHandler(e);
-            }finally {
-                return Promise.all(promises);
-            }
-
-        })['catch'](function(e) {
-            packetContext.replyTo({'response':'noPerm'});
-            return;
-        });
-
-    }catch(e){
-        errorHandler(e);
-        return ozpIwc.util.resolveWith();
-    }
+            },this)
+            .failure(function() {
+                packetContext.replyTo({'response':'noPerm'});
+            });
+    });
 };
 
 /**
@@ -715,7 +720,6 @@ ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
         return;
     }
     var ofInterest=[];
-    var promises = [];
 
     for(var k in this.data) {
         if(node.isUpdateNeeded(this.data[k])){
@@ -726,9 +730,8 @@ ozpIwc.CommonApiBase.prototype.updateDynamicNode=function(node) {
     if(ofInterest) {
         var snapshot=node.snapshot();
         node.updateContent(ofInterest);
-        promises.push(this.notifyWatchers(node,node.changesSince(snapshot)));
+        this.notifyWatchers(node,node.changesSince(snapshot));
     }
-    return Promise.all(promises);
 };
 
 /**

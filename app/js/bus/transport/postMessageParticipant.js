@@ -53,20 +53,13 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
      * @property securityAttributes.origin
      * @type String
      */
-    //this.securityAttributes.origin=this.origin;
+    this.securityAttributes.pushIfNotExist("ozp:iwc:origin",this.origin);
 
-    var self = this;
     this.on("connectedToRouter",function() {
-        self.securityAttributes.pushIfNotExist('ozp:iwc:address', self.address);
-
-        self.securityAttributes.pushIfNotExist('ozp:iwc:sendAs', self.address);
-
-        self.securityAttributes.pushIfNotExist('ozp:iwc:receiveAs', self.address);
-
-        ozpIwc.metrics.gauge(self.metricRoot,"registeredCallbacks").set(function() {
-            return self.getCallbackCount();
-        });
-    });
+        this.securityAttributes.pushIfNotExist('ozp:iwc:address', this.address);
+        this.securityAttributes.pushIfNotExist('ozp:iwc:sendAs', this.address);
+        this.securityAttributes.pushIfNotExist('ozp:iwc:receiveAs', this.address);
+    },this);
     /**
      * @property heartBeatStatus.origin
      * @type String
@@ -262,21 +255,23 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
         };
 
         var self = this;
-        ozpIwc.authorization.isPermitted(request).then(function(){
+        ozpIwc.authorization.isPermitted(request)
+            .success(function(){
                 participant=new ozpIwc.PostMessageParticipant({
                     'origin': event.origin,
                     'sourceWindow': event.source,
                     'credentials': packet.entity
                 });
-                self.router.registerParticipant(participant,packet,true).then(function(){
-                    self.participants.push(participant);
-                    isPacket(packet);
-                });
-        })['catch'](function(e){
-            console.error("Failed to connect. Could not authorize:",e);
-        });
+                self.router.registerParticipant(participant,packet);
+                self.participants.push(participant);
+                isPacket(packet);
+
+            }).failure(function(err){
+                console.error("Failed to connect. Could not authorize:",err);
+            });
 
 	} else{
         isPacket(packet);
     }
+
 };
