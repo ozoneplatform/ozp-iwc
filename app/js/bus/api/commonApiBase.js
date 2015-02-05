@@ -517,13 +517,13 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         try {
             f.apply(self);
         } catch(e) {
-        if(!e.errorAction) {
-            ozpIwc.log.log("Unexpected error:",e);
-        }
-        packetContext.replyTo({
-            'response': e.errorAction || "unknownError",
-            'entity': e.message
-        });
+            if(!e.errorAction) {
+                ozpIwc.log.log("Unexpected error:",e);
+            }
+            packetContext.replyTo({
+                'response': e.errorAction || "unknownError",
+                'entity': e.message
+            });
             return;
         }
     };
@@ -538,7 +538,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         // if it's a response packet that didn't wire an explicit handler, drop the sucker
         return;
     }
-        var node;
+    var node;
 
     errorWrap(function() {
         var handler=this.findHandler(packetContext);

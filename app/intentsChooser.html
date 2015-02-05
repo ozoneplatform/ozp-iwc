@@ -105,16 +105,16 @@
         }
         var loc=ozpIwc.util.parseOzpUrl(m[1]);
 
-            client.send(loc,function(reply,done) {
-                if(reply.response!=="ok") {
-                    failure();
-                    done();
-                    return;
-                }
-                showHandlers(reply.entity.handlerChoices,reply);
-                showCancel(reply);
+        client.send(loc,function(reply,done) {
+            if(reply.response!=="ok") {
+                failure();
                 done();
-            });
+                return;
+            }
+            showHandlers(reply.entity.handlerChoices,reply);
+            showCancel(reply);
+            done();
+        });
 
     </script>
   </body>

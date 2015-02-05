@@ -213,9 +213,9 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
         updateInFlightEntity.entity.state = "delivering";
         inflightPacket.set(updateInFlightEntity);
 
-        return this.invokeIntentHandler(handlerNodes[0],packetContext,inflightPacket);
+        this.invokeIntentHandler(handlerNodes[0],packetContext,inflightPacket);
     } else {
-        return this.chooseIntentHandler(node,packetContext,inflightPacket);
+        this.chooseIntentHandler(node,packetContext,inflightPacket);
     }
 };
 
@@ -298,7 +298,7 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (handlerNode, packetC
     packet.entity.inFlightIntent = inFlightIntent.resource;
 
     var self = this;
-    return this.participant.send(packet,function(response,done) {
+    this.participant.send(packet,function(response,done) {
         var blacklist=['src','dst','msgId','replyTo'];
         var packet={};
         for(var k in response) {

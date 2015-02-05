@@ -1,5 +1,5 @@
 describe("IWC Client", function() {
-    jasmine.getEnv().defaultTimeoutInterval = 200000;// e.g. 15000 milliseconds
+    jasmine.getEnv().defaultTimeoutInterval = 3000;// e.g. 15000 milliseconds
 
     var client;
     var participant;
@@ -79,7 +79,7 @@ describe("IWC Client", function() {
             // use the called flag to prevent this
             var called = false;
             client.on("receive", function(packet) {
-                console.log("client received:", JSON.stringify(packet));
+                //console.log("client received:", JSON.stringify(packet));
                 if (packet.entity.tick && !called) {
                     done();
                     called = true;
