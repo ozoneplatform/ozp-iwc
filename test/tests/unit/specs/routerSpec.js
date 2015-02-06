@@ -118,9 +118,7 @@ describe("Router", function() {
             participant.send({
                 dst: participant2.address,
                 permissions: {
-                    'ozp:iwc:perm': {
-                        attributeValue: ["shared"]
-                    }
+                    'ozp:iwc:perm': "shared"
                 },
                 entity: {foo: "bar"}
             });

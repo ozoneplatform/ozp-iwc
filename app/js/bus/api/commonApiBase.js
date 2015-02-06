@@ -377,12 +377,12 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
     ozpIwc.authorization.formatCategory(packetContext.packet.permissions)
         .success(function(permissions) {
             var subject = (packetContext.packet.resource) ?
-                {'ozp:iwc:node': {'attributeValue': packetContext.packet.resource}} : {};
+                {'ozp:iwc:node': packetContext.packet.resource} : {};
             var request = {
                 'subject': subject,
                 'resource': permissions || {},
                 'action': {
-                    'ozp:iwc:action': {'attributeValue': 'access'}
+                    'ozp:iwc:action': 'access'
                 },
                 'policies': ['policy/apiNodePolicy.json']
             };

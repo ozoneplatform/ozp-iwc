@@ -163,23 +163,17 @@ var mockPolicies = {
                 "description": "The following domains are white-listed to connect to the IWC bus.",
                 "category": {
                     "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": {
-                        "ozp:iwc:origin": {
-                            "attributeValue": [
+                        "ozp:iwc:origin": [
                                 "http://localhost:13000",
                                 "http://localhost:15001",
                                 "http://ozone-development.github.io"
-                            ]
-                        }
+                        ]
                     },
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": {
-                        "ozp:iwc:bus": {
-                            "attributeValue": ["$bus.multicast"]
-                        }
+                        "ozp:iwc:bus":  ["$bus.multicast"]
                     },
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
-                        "ozp:iwc:action": {
-                            "attributeValue": ["connect"]
-                        }
+                        "ozp:iwc:action":  ["connect"]
                     }
                 }
             }
@@ -198,9 +192,7 @@ var mockPolicies = {
                     "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:address",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:receiveAs",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
-                        "ozp:iwc:action": {
-                            "attributeValue": ["receiveAs"]
-                        }
+                        "ozp:iwc:action":  ["receiveAs"]
                     }
                 }
             }
@@ -219,9 +211,7 @@ var mockPolicies = {
                     "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:address",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:sendAs",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
-                        "ozp:iwc:action": {
-                            "attributeValue": ["sendAs"]
-                        }
+                        "ozp:iwc:action": ["sendAs"]
                     }
                 }
             }
@@ -240,9 +230,7 @@ var mockPolicies = {
                     "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:address",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:permissions",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
-                        "ozp:iwc:action": {
-                            "attributeValue": ["read", "write"]
-                        }
+                        "ozp:iwc:action": ["read", "write"]
                     }
                 }
             }
@@ -261,9 +249,7 @@ var mockPolicies = {
                     "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:node",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:permissions",
                     "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
-                        "ozp:iwc:action": {
-                            "attributeValue": ["access"]
-                        }
+                        "ozp:iwc:action": ["access"]
                     }
                 }
             }

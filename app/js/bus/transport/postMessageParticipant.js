@@ -243,13 +243,13 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 	if(!participant) {
         var request = {
             'subject':{
-                'ozp:iwc:origin':{'attributeValue': event.origin}
+                'ozp:iwc:origin': event.origin
             },
             'resource': {
-                'ozp:iwc:bus': {'attributeValue': '$bus.multicast'}
+                'ozp:iwc:bus': '$bus.multicast'
             },
             'action': {
-                'ozp:iwc:action': {'attributeValue': 'connect'}
+                'ozp:iwc:action': 'connect'
             },
             'policies': ['policy/connectPolicy.json']
         };

@@ -29,15 +29,13 @@ ozpIwc.policyAuth.SecurityAttribute.prototype.pushIfNotExist = function(id, val,
     }
     var value = Array.isArray(val) ? val : [val];
     if (!this.attributes[id]) {
-        this.attributes[id] = {
-            attributeValue: []
-        };
-        this.attributes[id].attributeValue = this.attributes[id].attributeValue.concat(value);
+        this.attributes[id] = [];
+        this.attributes[id] = this.attributes[id].concat(value);
     } else {
-        for (var i in this.attributes[id].attributeValue) {
+        for (var i in this.attributes[id]) {
             for (var j in value) {
-                if (!comp(this.attributes[id].attributeValue[i], value[j])) {
-                    this.attributes[id].attributeValue.push(val);
+                if (!comp(this.attributes[id][i], value[j])) {
+                    this.attributes[id].push(val);
                 }
             }
         }

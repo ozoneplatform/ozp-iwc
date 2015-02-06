@@ -116,12 +116,13 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
 
     var request = {
         'subject': {
-            'ozp:iwc:address': {'attributeValue': this.address}
+            'ozp:iwc:address': this.address
         },
         'resource': {
-            'ozp:iwc:receiveAs': {'attributeValue': packetContext.packet.dst}},
+            'ozp:iwc:receiveAs': packetContext.packet.dst
+        },
         'action': {
-            'ozp:iwc:action': {'attributeValue': 'receiveAs'}
+            'ozp:iwc:action': 'receiveAs'
         },
         'policies': ['policy/receiveAsPolicy.json']
     };
@@ -138,13 +139,11 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
                 .success(function(permissions) {
                     var request = {
                         'subject': {
-                            'ozp:iwc:address': {
-                                'attributeValue': self.address
-                            }
+                            'ozp:iwc:address':  self.address
                         },
                         'resource': permissions || {},
                         'action': {
-                            'ozp:iwc:action': {'attributeValue': 'read'}
+                            'ozp:iwc:action': 'read'
                         },
                         'policies': ['policy/readPolicy.json']
                     };
@@ -233,13 +232,13 @@ ozpIwc.Participant.prototype.send=function(packet) {
 
     var request = {
         'subject': {
-            'ozp:iwc:address': {'attributeValue': this.address}
+            'ozp:iwc:address': this.address
         },
         'resource': {
-            'ozp:iwc:sendAs': {'attributeValue':  packet.src}
+            'ozp:iwc:sendAs': packet.src
         },
         'action': {
-            'ozp:iwc:action': {'attributeValue': 'sendAs'}
+            'ozp:iwc:action':  'sendAs'
         },
         'policies': ['policy/sendAsPolicy.json']
     };

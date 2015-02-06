@@ -44,24 +44,20 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
     var self = this;
 
     if(this.informationCache[id]) {
-        var returnObj = {};
-        returnObj[id] = self.informationCache[id];
-        return asyncAction.resolve('success', returnObj);
+        return asyncAction.resolve('success', self.informationCache[id]);
     } else {
         ozpIwc.util.ajax({
             href: id,
             method: "GET"
         }).then(function(data){
-            if(data.attributeValue) {
-                self.informationCache[id] = {};
-                self.informationCache[id].attributeValue = Array.isArray(data.attributeValue ) ?
-                    data.attributeValue  : [data.attributeValue ];
-                    var returnObj = {};
-                    returnObj[id] = self.informationCache[id];
-                asyncAction.resolve('success',returnObj);
-            } else {
-                asyncAction.resolve('failure',"Invalid data loaded from the remote PIP");
+            if(typeof data !== "object") {
+                return asyncAction.resolve('failure',"Invalid data loaded from the remote PIP");
             }
+            self.informationCache[id] = {};
+            for(var i in data){
+                self.informationCache[id][i] = Array.isArray(data[i] ) ? data[i]  : [data[i] ];
+            }
+            asyncAction.resolve('success', self.informationCache[id]);
         })['catch'](function(err){
             asyncAction.resolve('failure',err);
         });
@@ -77,7 +73,11 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
  * @param {object} [attributes] – The attributes to grant (replacing previous values, if applicable)
  */
 ozpIwc.policyAuth.PIP.prototype.grantAttributes = function(subjectId,attributes){
-    this.informationCache[subjectId] = attributes;
+    var attrs = {};
+    for(var i in attributes){
+        attrs[i] = Array.isArray(attributes[i]) ? attributes[i] : [attributes[i]];
+    }
+    this.informationCache[subjectId] = attrs;
 };
 
 /**
@@ -91,13 +91,16 @@ ozpIwc.policyAuth.PIP.prototype.grantAttributes = function(subjectId,attributes)
  */
 ozpIwc.policyAuth.PIP.prototype.grantParent = function (subjectId,parentId){
     var asyncAction = new ozpIwc.AsyncAction();
-    this.informationCache[subjectId] = this.informationCache[subjectId] || [];
+    this.informationCache[subjectId] = this.informationCache[subjectId] || {};
     var self = this;
 
     if(self.informationCache[parentId]){
         for(var i in self.informationCache[parentId]){
-            if(self.informationCache[subjectId].indexOf(self.informationCache[parentId]) < 0){
-                self.informationCache[subjectId].push(self.informationCache[parentId][i]);
+            self.informationCache[subjectId][i] = self.informationCache[subjectId][i] || [];
+            for(var j in self.informationCache[parentId][i]) {
+                if (self.informationCache[subjectId][i].indexOf(self.informationCache[parentId][i][j]) < 0) {
+                    self.informationCache[subjectId][i].push(self.informationCache[parentId][i][j]);
+                }
             }
         }
         return asyncAction.resolve('success',self.informationCache[subjectId]);

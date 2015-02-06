@@ -242,7 +242,7 @@ describe("Common API Base class",function() {
                     'msgId' : "1234",
                     'src' : "srcParticipant",
                     'permissions': {
-                        'ozp:iwc:haxed' : {attributeValue: ['no']}
+                        'ozp:iwc:haxed' : 'no'
                     }
                 }
             });

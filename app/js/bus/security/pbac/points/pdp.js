@@ -115,7 +115,33 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,contextHolder){
     return asyncAction;
 };
 
-/**
+
+ozpIwc.policyAuth.PDP.prototype.formatAttributes = function(attributes,pip){
+    attributes = Array.isArray(attributes) ? attributes : [attributes];
+    var asyncAction = new ozpIwc.AsyncAction();
+    pip = pip || this.pip;
+    var asyncs = [];
+    for(var i in attributes){
+        asyncs.push(this.formatAttribute(attributes[i],pip));
+    }
+    ozpIwc.AsyncAction.all(asyncs).success(function(attrs){
+        var retObj = {};
+        for(var i in attrs){
+            if(Object.keys(attrs[i]).length > 0) {
+                for (var j in attrs[i]) {
+                    retObj[j] = attrs[i][j];
+                }
+            }
+        }
+        asyncAction.resolve("success",retObj);
+    });
+    return asyncAction;
+};
+
+
+
+
+    /**
  * Takes a URN, array of urns, object, array of objects, or array of any combination and fetches/formats to the
  * necessary structure to be used by a request of policy's category object.
  *
@@ -142,78 +168,35 @@ ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
         return asyncAction.resolve('success');
     }
 
-    // If its an object, it contains already formatted attributes, push them individually to the promise array
-    var objectHandler = function(object,asyncArray){
-        var keys = Object.keys(object);
-        if(keys.length === 0){
-            asyncArray.push(object);
-        } else {
-            for (var i in keys) {
-                if (['string', 'number', 'boolean'].indexOf(typeof object[keys[i]]) >= 0) {
-                    var tmp = object[keys[i]];
-                    object[keys[i]] = {
-                        attributeValue: [tmp]
-                    };
-                }
-                object[keys[i]].attributeValue = object[keys[i]].attributeValue || [];
-
-                if (object[keys[i]].attributeValue) {
-                    var obj = {};
-                    obj[keys[i]] = object[keys[i]];
-                    obj[keys[i]].attributeValue = Array.isArray(object[keys[i]].attributeValue) ?
-                        obj[keys[i]].attributeValue : [obj[keys[i]].attributeValue];
-                    asyncArray.push(obj);
-                } else {
-                    //@TODO if an attribute doesn't format, do we ignore it?
-                }
-            }
-        }
-    };
-
-    // If its an array, its multiple actions. Wrap as needed
-    var arrayHandler = function(array,asyncArray){
-        if(array.length === 0){
-            asyncArray.push(array);
-        } else {
-            for (var i in array) {
-                if (typeof array[i] === "string") {
-                    var promise = pip.getAttributes(array[i]);
-                    asyncArray.push(promise);
-                } else if (Array.isArray(array[i])) {
-                    arrayHandler(array[i], asyncArray);
-                } else if (typeof array[i] === "object") {
-                    objectHandler(array[i], asyncArray);
-                }
-            }
-        }
-    };
 
     if(!attribute){
-        //do nothing and return an empty promise.all
+        //do nothing and return an empty object.
+        asyncAction.resolve('success', {});
+
     }else if(typeof attribute === "string") {
         // If its a string, use it as a key and fetch its attrs from PIP
-        asyncs.push(pip.getAttributes(attribute));
+        pip.getAttributes(attribute)
+            .success(function(attr){
+                //TODO check if is an array or string (APPLY RECURSION!)
+                asyncAction.resolve("success",attr);
+            })
+
     } else if(Array.isArray(attribute)){
         // If its an array, its multiple actions. Wrap as needed
-        arrayHandler(attribute,asyncs);
+        return this.formatAttributes(attribute,pip);
+
     } else if(typeof attribute === "object"){
-        objectHandler(attribute,asyncs);
-    }
-    ozpIwc.AsyncAction.all(asyncs)
-        .success(function(formattedAttributes){
-            var returnObject = {};
-            for(var i in formattedAttributes){
-                if(formattedAttributes[i]) {
-                    var keys = Object.keys(formattedAttributes[i]);
-                    for (var j in keys) {
-                        returnObject[keys[j]] = formattedAttributes[i][keys[j]];
-                    }
-                }
+        // If its an object, make sure each key's value is an array.
+        var keys = Object.keys(attribute);
+        for (var i in keys) {
+            var tmp = attribute[keys[i]];
+            if (['string', 'number', 'boolean'].indexOf(typeof attribute[keys[i]]) >= 0) {
+                attribute[keys[i]] =  [tmp];
             }
-            asyncAction.resolve('success',returnObject);
-        }).failure(function(err){
-            asyncAction.resolve('failure',err);
-        });
+            attribute[keys[i]] = attribute[keys[i]] || [];
+        }
+        asyncAction.resolve("success",attribute);
+    }
     return asyncAction;
 };
 
@@ -239,31 +222,27 @@ ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
  */
 ozpIwc.policyAuth.PDP.prototype.formatAction = function(action){
 
-    var formatted = {
-        'attributeValue' : []
-    };
+    var formatted =  [];
 
     var objectHandler = function(object,formatted){
         var values;
         // We only care about attributeValues
-        if(object['ozp:iwc:action'] && object['ozp:iwc:action'].attributeValue){
-            values = object['ozp:iwc:action'].attributeValue;
-        }else if(object.attributeValue){
-            values = object.attributeValue;
+        if(object['ozp:iwc:action']){
+            values = object['ozp:iwc:action'];
         }
         if(Array.isArray(values)) {
                 return arrayHandler(values,formatted);
-        } else if(typeof values === 'string'){
-            if(formatted.attributeValue.indexOf(values) < 0){
-                formatted.attributeValue.push(values);
+        } else if(['string', 'number', 'boolean'].indexOf(typeof values) >= 0){
+            if(formatted.indexOf(values) < 0){
+                formatted.push(values);
             }
         }
     };
     var arrayHandler = function(array,formatted){
         for(var i in array){
             if(typeof array[i] === 'string') {
-                if (formatted.attributeValue.indexOf(array[i]) < 0) {
-                    formatted.attributeValue.push(array[i]);
+                if (formatted.indexOf(array[i]) < 0) {
+                    formatted.push(array[i]);
                 }
             } else if(Array.isArray(array[i])){
                 arrayHandler(array[i],formatted);
@@ -277,9 +256,7 @@ ozpIwc.policyAuth.PDP.prototype.formatAction = function(action){
         //do nothing and return an empty array
     }else if(typeof action === "string"){
         // If its a string, its a single action.
-        if(formatted.attributeValue.indexOf(action) < 0){
-            formatted.attributeValue.push(action);
-        }
+        formatted.push(action);
     } else if(Array.isArray(action)){
         arrayHandler(action,formatted);
     } else if(typeof action === 'object'){
@@ -329,6 +306,9 @@ ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request,pip){
     var asyncAction = new ozpIwc.AsyncAction();
     pip = pip || this.pip;
     request = request || {};
+    request.subject = request.subject || {};
+    request.resource = request.resource || {};
+    request.action = request.action || {};
     var asyncs = [];
 
     var subjectAsync = this.formatAttribute(request.subject,pip);
@@ -422,7 +402,9 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,pip){
     if(!category){
         return asyncAction.resolve('success');
     }
+
     pip = pip || this.pip;
+
     this.formatAttribute(category,pip)
         .success(function(attributes){
             for(var i in attributes['ozp:iwc:permissions']){
@@ -613,7 +595,9 @@ ozpIwc.policyAuth.PDP.prototype.gatherContext = function(contextHolder){
     var permissions = {};
     for(var i in contextHolder.securityAttributes.attributes) {
         permissions[i] = contextHolder.securityAttributes.attributes[i];
-        this.pip.grantAttributes(i, contextHolder.securityAttributes.attributes[i]);
+        var wrapped = {};
+        wrapped[i] = permissions[i];
+        this.pip.grantAttributes(i, wrapped);
     }
     this.pip.grantAttributes("ozp:iwc:permissions", permissions);
 
