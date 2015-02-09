@@ -59,6 +59,8 @@ ozpIwc.Participant=function() {
      * @type ozpIwc.metricTypes.Meter
      */
     this.forbiddenPacketsMeter=fakeMeter;
+    this.latencyInTimer=fakeMeter;
+    this.latencyOutTimer=fakeMeter;
 
     /**
      * The type of the participant.
@@ -120,6 +122,9 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     })
         .success(function(){
             self.receivedPacketsMeter.mark();
+            if(packetContext.packet.time) {
+                self.latencyInTimer.mark(ozpIwc.util.now() - packetContext.packet.time);
+            }
 
             self.receiveFromRouterImpl(packetContext);
         })
@@ -157,10 +162,16 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.router=router;
     this.securityAttributes.rawAddress=address;
     this.msgId=0;
-    this.metricRoot="participants."+ this.address.split(".").reverse().join(".");
+    if(this.name) {
+        this.metricRoot="participants."+ this.name +"." + this.address.split(".").reverse().join(".");
+    } else {
+        this.metricRoot="participants."+ this.address.split(".").reverse().join(".");
+    }
     this.sentPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"sentPackets").unit("packets");
     this.receivedPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"receivedPackets").unit("packets");
     this.forbiddenPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"forbiddenPackets").unit("packets");
+    this.latencyInTimer=ozpIwc.metrics.timer(this.metricRoot,"latencyIn").unit("packets");
+    this.latencyOutTimer=ozpIwc.metrics.timer(this.metricRoot,"latencyOut").unit("packets");
     
     this.namesResource="/address/"+this.address;
     this.heartBeatStatus.address=this.address;
@@ -203,7 +214,12 @@ ozpIwc.Participant.prototype.fixPacket=function(packet) {
  */
 ozpIwc.Participant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
+    
     this.sentPacketsMeter.mark();
+    if(packet.time) {
+        this.latencyOutTimer.mark(ozpIwc.util.now() - packet.time);
+    }
+
     this.router.send(packet,this);
     return packet;
 };
@@ -231,7 +247,7 @@ ozpIwc.Participant.prototype.heartbeat=function() {
             'action' : "set",
             'entity' : this.heartBeatStatus,
             'contentType' : this.heartBeatContentType
-        },function() {/* eat the response*/});
+        });
     }
 };
 

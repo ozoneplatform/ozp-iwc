@@ -20,6 +20,8 @@ ozpIwc.Peer=function() {
      */
     this.selfId=ozpIwc.util.generateId();
 
+    this.metricPrefix="peer."+this.selfId;
+
     /**
      * @TODO (DOC)
      * @property sequenceCounter
@@ -114,7 +116,7 @@ ozpIwc.Peer.maxSeqIdPerSource=500;
 ozpIwc.Peer.prototype.haveSeen=function(packet) {
     // don't forward our own packets
     if (packet.srcPeer === this.selfId) {
-        ozpIwc.metrics.counter('network.packets.droppedOwnPacket').inc();
+        ozpIwc.metrics.counter(this.metricPrefix,'droppedOwnPacket').inc();
         return true;
     }
     var seen = this.packetsSeen[packet.srcPeer];
@@ -156,10 +158,13 @@ ozpIwc.Peer.prototype.send= function(packet) {
 
     this.events.trigger("preSend",preSendEvent);
     if(!preSendEvent.canceled) {
-        ozpIwc.metrics.counter('network.packets.sent').inc();
+        ozpIwc.metrics.counter(this.metricPrefix,'sent').inc();
+        if(packet.time) {
+            ozpIwc.metrics.timer(this.metricPrefix,'latencyOut').mark(ozpIwc.util.now() - packet.time);
+        }
         this.events.trigger("send",{'packet':networkPacket});
     } else {
-        ozpIwc.metrics.counter('network.packets.sendRejected').inc();
+        ozpIwc.metrics.counter(this.metricPrefix,'sendRejected').inc();
     }
 };
 
@@ -176,10 +181,14 @@ ozpIwc.Peer.prototype.send= function(packet) {
 ozpIwc.Peer.prototype.receive=function(linkId,packet) {
     // drop it if we've seen it before
     if(this.haveSeen(packet)) {
-        ozpIwc.metrics.counter('network.packets.dropped').inc();
+        ozpIwc.metrics.counter(this.metricPrefix,'dropped').inc();
         return;
     }
-    ozpIwc.metrics.counter('network.packets.received').inc();
+    ozpIwc.metrics.counter(this.metricPrefix,'received').inc();
+    if(packet.data.time) {
+        ozpIwc.metrics.timer(this.metricPrefix,'latencyIn').mark(ozpIwc.util.now() - packet.data.time);
+    }
+
     this.events.trigger("receive",{'packet':packet,'linkId': linkId});
 };
 

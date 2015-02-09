@@ -1,347 +1,3 @@
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-
-/**
- * Common classes used between both the Client and the Bus.
- * @module common
- */
-
-/**
- * An Event emmitter/receiver class.
- * @class Event
- * @namespace ozpIwc
- */
-ozpIwc.Event=function() {
-    /**
-     * A key value store of events.
-     * @property events
-     * @type Object
-     * @default {}
-     */
-	this.events={};
-};
-
-/**
- * Registers a handler for the the event.
- *
- * @method on
- * @param {String} event The name of the event to trigger on.
- * @param {Function} callback Function to be invoked.
- * @param {Object} [self] Used as the this pointer when callback is invoked.
- *
- * @returns {Object} A handle that can be used to unregister the callback via
- * {{#crossLink "ozpIwc.Event/off:method"}}{{/crossLink}}
- */
-ozpIwc.Event.prototype.on=function(event,callback,self) {
-	var wrapped=callback;
-	if(self) {
-		wrapped=function() {
-			callback.apply(self,arguments);
-		};
-		wrapped.ozpIwcDelegateFor=callback;
-	}
-	this.events[event]=this.events[event]||[];
-	this.events[event].push(wrapped);
-	return wrapped;
-};
-
-/**
- * Unregisters an event handler previously registered.
- *
- * @method off
- * @param {String} event
- * @param {Function} callback
- */
-ozpIwc.Event.prototype.off=function(event,callback) {
-	this.events[event]=(this.events[event]||[]).filter( function(h) {
-		return h!==callback && h.ozpIwcDelegateFor !== callback;
-	});
-};
-
-/**
- * Fires an event that will be received by all handlers.
- *
- * @method
- * @param {String} eventName Name of the event.
- * @param {Object} event Event object to pass to the handers.
- *
- * @returns {Object} The event after all handlers have processed it.
- */
-ozpIwc.Event.prototype.trigger=function(eventName,event) {
-	event = event || new ozpIwc.CancelableEvent();
-	var handlers=this.events[eventName] || [];
-
-	handlers.forEach(function(h) {
-		h(event);
-	});
-	return event;
-};
-
-
-/**
- * Adds an {{#crossLink "ozpIwc.Event/off:method"}}on(){{/crossLink}} and
- * {{#crossLink "ozpIwc.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this object.
- *
- * @method mixinOnOff
- * @param {Object} target Target to receive the on/off functions
- */
-ozpIwc.Event.prototype.mixinOnOff=function(target) {
-	var self=this;
-	target.on=function() { return self.on.apply(self,arguments);};
-	target.off=function() { return self.off.apply(self,arguments);};
-};
-
-/**
- * Convenient base for events that can be canceled.  Provides and manages
- * the properties canceled and cancelReason, as well as the member function
- * cancel().
- *
- * @class CancelableEvent
- * @namespace ozpIwc
- * @param {Object} data Data that will be copied into the event
- */
-ozpIwc.CancelableEvent=function(data) {
-	data = data || {};
-	for(var k in data) {
-		this[k]=data[k];
-	}
-	this.canceled=false;
-	this.cancelReason=null;
-};
-
-/**
- * Marks the event as canceled.
- * @method cancel
- * @param {String} reason A text description of why the event was canceled.
- *
- * @returns {ozpIwc.CancelableEvent} Reference to self
- */
-ozpIwc.CancelableEvent.prototype.cancel=function(reason) {
-	reason= reason || "Unknown";
-	this.canceled=true;
-	this.cancelReason=reason;
-	return this;
-};
-
-if(!(window.console && console.log)) {
-    console = {
-        log: function(){},
-        debug: function(){},
-        info: function(){},
-        warn: function(){},
-        error: function(){}
-    };
-}
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-/**
- * @submodule common
- */
-
-/**
- * @class util
- * @namespace ozpIwc
- * @static
- */
-ozpIwc.util=ozpIwc.util || {};
-
-/**
- * Used to get the current epoch time.  Tests overrides this
- * to allow a fast-forward on time-based actions.
- *
- * @method now
- * @returns {Number}
- */
-ozpIwc.util.now=function() {
-    return new Date().getTime();
-};
-
-/**
- * Create a class with the given parent in it's prototype chain.
- *
- * @method extend
- * @param {Function} baseClass The class being derived from.
- * @param {Function} newConstructor The new base class.
- *
- * @returns {Function} New Constructor with an augmented prototype.
- */
-ozpIwc.util.extend=function(baseClass,newConstructor) {
-    if(!baseClass || !baseClass.prototype) {
-        ozpIwc.log.error("Cannot create a new class for ",newConstructor," due to invalid baseclass:",baseClass);
-        throw new Error("Cannot create a new class due to invalid baseClass.  Dependency not loaded first?");
-    }
-    newConstructor.prototype = Object.create(baseClass.prototype);
-    newConstructor.prototype.constructor = newConstructor;
-    return newConstructor;
-};
-
-/**
- * Invoke postMessage on a given window in a safe manner. Test whether the browser
- * supports structured clones, and stringifies the message if not. Catches
- * errors (especially attempts to send non-cloneable objects), and tries to
- * send a stringified copy of the message asa fallback.
- *
- * @param window a window on which to invoke postMessage
- * @param msg the message to be sent
- * @param origin the target origin. The message will be sent only if it matches the origin of window.
- */
-ozpIwc.util.safePostMessage = function(window,msg,origin) {
-    try {
-        var data = msg;
-        if (!ozpIwc.util.structuredCloneSupport() && typeof data !== 'string') {
-           data=JSON.stringify(msg);
-        }
-        window.postMessage(data, origin);
-    } catch (e) {
-        try {
-            window.postMessage(JSON.stringify(msg), origin);
-        } catch (e) {
-            ozpIwc.util.log("Invalid call to window.postMessage: " + e.message);
-        }
-    }
-};
-
-/**
- * Detect browser support for structured clones. Returns quickly since it
- * caches the result. This method only determines browser support for structured
- * clones. Clients are responsible, when accessing capabilities that rely on structured
- * cloning, to ensure that objects to be cloned meet the criteria of the structured clone
- * algorithm. (See ozpIwc.util.safePostMessage for a method which handles attempts to
- * clone an invalid object.). NB: a bug in FF will cause file objects to be treated as
- * non-cloneable, even in FF versions that support structured clones.
- * (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126).
- *
- * @private
- *
- * @method structuredCloneSupport
- *
- * @returns {Boolean} True if structured clones are supported, false otherwise.
- */
-ozpIwc.util.structuredCloneSupport=function() {
-    ozpIwc.util = ozpIwc.util || {};
-    if (ozpIwc.util.structuredCloneSupportCache !== undefined) {
-        return ozpIwc.util.structuredCloneSupportCache;
-    }
-    var cloneSupport = 'postMessage' in window;
-    //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
-    try {
-        window.postMessage({
-            toString: function () {
-                cloneSupport = false;
-            }
-        }, "*");
-    } catch (e) {
-        //exception expected: objects with methods can't be cloned
-        //e.DATA_CLONE_ERR will exist only for browsers with structured clone support, which can be used as an additional check if needed
-    }
-    ozpIwc.util.structuredCloneSupportCache=cloneSupport;
-    return ozpIwc.util.structuredCloneSupportCache;
-};
-
-ozpIwc.util.structuredCloneSupport.cache=undefined;
-
-/**
- * Does a deep clone of a serializable object.  Note that this will not
- * clone unserializable objects like DOM elements, Date, RegExp, etc.
- *
- * @method clone
- * @param {Array|Object} value The value to be cloned.
- * @returns {Array|Object}  a deep copy of the object
- */
-ozpIwc.util.clone=function(value) {
-	if(Array.isArray(value) || typeof(value) === 'object') {
-        try {
-            return JSON.parse(JSON.stringify(value));
-        } catch (e) {
-            ozpIwc.log.log(e);
-        }
-	} else {
-		return value;
-	}
-};
-
-
-/**
- * A regex method to parse query parameters.
- *
- * @method parseQueryParams
- * @param {String} query
- *
- */
-ozpIwc.util.parseQueryParams=function(query) {
-    query = query || window.location.search;
-    var params={};
-	var regex=/\??([^&=]+)=?([^&]*)/g;
-	var match;
-	while((match=regex.exec(query)) !== null) {
-		params[match[1]]=decodeURIComponent(match[2]);
-	}
-    return params;
-};
-
-/**
- * Determines the origin of a given url
- * @method determineOrigin
- * @param url
- * @returns {String}
- */
-ozpIwc.util.determineOrigin=function(url) {
-    var a=document.createElement("a");
-    a.href = url;
-    var origin=a.protocol + "//" + a.hostname;
-    if(a.port) {
-        origin+= ":" + a.port;
-    }
-    return origin;
-};
-
-/**
- * Escapes regular expression characters in a string.
- * @method escapeRegex
- * @param {String} str
- * @returns {String}
- */
-ozpIwc.util.escapeRegex=function(str) {
-    return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-};
-
-/**
- * 
- * @method parseOzpUrl
- * @param {type} url
- * @returns {ozpIwc.TransportPacket}
- */
-ozpIwc.util.parseOzpUrl=function(url) {
-    var m = /^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(decodeURIComponent(url));
-    if (m) {
-        // an action of "get" is implied
-        var packet = {
-            'dst': m[1],
-            'resource': m[2],
-            'action': "get"
-        };
-        // TODO: parse the query params into fields
-
-        return packet;
-    }
-    return null;
-};
-
-/**
- * Returns true if the specified packet meets the criteria of an IWC Packet.
- * @method isIwcPacket
- * @static
- * @param {ozpIwc.TransportPacket} packet
- * @returns {Boolean}
- */
-ozpIwc.util.isIWCPacket=function(packet) {
-    if(typeof packet.src !== "string" ||typeof packet.dst !== "string" ||
-        typeof packet.ver !== "number" || typeof packet.msgId !== "string") {
-        return false;
-    } else {
-        return true;
-    }
-};
 /*!
  * https://github.com/es-shims/es5-shim
  * @license es5-shim Copyright 2009-2014 by contributors, MIT License
@@ -2961,6 +2617,350 @@ define("promise/utils",
   });
 requireModule('promise/polyfill').polyfill();
 }());
+/** @namespace */
+var ozpIwc=ozpIwc || {};
+
+/**
+ * Common classes used between both the Client and the Bus.
+ * @module common
+ */
+
+/**
+ * An Event emmitter/receiver class.
+ * @class Event
+ * @namespace ozpIwc
+ */
+ozpIwc.Event=function() {
+    /**
+     * A key value store of events.
+     * @property events
+     * @type Object
+     * @default {}
+     */
+	this.events={};
+};
+
+/**
+ * Registers a handler for the the event.
+ *
+ * @method on
+ * @param {String} event The name of the event to trigger on.
+ * @param {Function} callback Function to be invoked.
+ * @param {Object} [self] Used as the this pointer when callback is invoked.
+ *
+ * @returns {Object} A handle that can be used to unregister the callback via
+ * {{#crossLink "ozpIwc.Event/off:method"}}{{/crossLink}}
+ */
+ozpIwc.Event.prototype.on=function(event,callback,self) {
+	var wrapped=callback;
+	if(self) {
+		wrapped=function() {
+			callback.apply(self,arguments);
+		};
+		wrapped.ozpIwcDelegateFor=callback;
+	}
+	this.events[event]=this.events[event]||[];
+	this.events[event].push(wrapped);
+	return wrapped;
+};
+
+/**
+ * Unregisters an event handler previously registered.
+ *
+ * @method off
+ * @param {String} event
+ * @param {Function} callback
+ */
+ozpIwc.Event.prototype.off=function(event,callback) {
+	this.events[event]=(this.events[event]||[]).filter( function(h) {
+		return h!==callback && h.ozpIwcDelegateFor !== callback;
+	});
+};
+
+/**
+ * Fires an event that will be received by all handlers.
+ *
+ * @method
+ * @param {String} eventName Name of the event.
+ * @param {Object} event Event object to pass to the handers.
+ *
+ * @returns {Object} The event after all handlers have processed it.
+ */
+ozpIwc.Event.prototype.trigger=function(eventName,event) {
+	event = event || new ozpIwc.CancelableEvent();
+	var handlers=this.events[eventName] || [];
+
+	handlers.forEach(function(h) {
+		h(event);
+	});
+	return event;
+};
+
+
+/**
+ * Adds an {{#crossLink "ozpIwc.Event/off:method"}}on(){{/crossLink}} and
+ * {{#crossLink "ozpIwc.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this object.
+ *
+ * @method mixinOnOff
+ * @param {Object} target Target to receive the on/off functions
+ */
+ozpIwc.Event.prototype.mixinOnOff=function(target) {
+	var self=this;
+	target.on=function() { return self.on.apply(self,arguments);};
+	target.off=function() { return self.off.apply(self,arguments);};
+};
+
+/**
+ * Convenient base for events that can be canceled.  Provides and manages
+ * the properties canceled and cancelReason, as well as the member function
+ * cancel().
+ *
+ * @class CancelableEvent
+ * @namespace ozpIwc
+ * @param {Object} data Data that will be copied into the event
+ */
+ozpIwc.CancelableEvent=function(data) {
+	data = data || {};
+	for(var k in data) {
+		this[k]=data[k];
+	}
+	this.canceled=false;
+	this.cancelReason=null;
+};
+
+/**
+ * Marks the event as canceled.
+ * @method cancel
+ * @param {String} reason A text description of why the event was canceled.
+ *
+ * @returns {ozpIwc.CancelableEvent} Reference to self
+ */
+ozpIwc.CancelableEvent.prototype.cancel=function(reason) {
+	reason= reason || "Unknown";
+	this.canceled=true;
+	this.cancelReason=reason;
+	return this;
+};
+
+if(!(window.console && console.log)) {
+    console = {
+        log: function(){},
+        debug: function(){},
+        info: function(){},
+        warn: function(){},
+        error: function(){}
+    };
+}
+/** @namespace */
+var ozpIwc=ozpIwc || {};
+/**
+ * @submodule common
+ */
+
+/**
+ * @class util
+ * @namespace ozpIwc
+ * @static
+ */
+ozpIwc.util=ozpIwc.util || {};
+
+/**
+ * Used to get the current epoch time.  Tests overrides this
+ * to allow a fast-forward on time-based actions.
+ *
+ * @method now
+ * @returns {Number}
+ */
+ozpIwc.util.now=function() {
+    return new Date().getTime();
+};
+
+/**
+ * Create a class with the given parent in it's prototype chain.
+ *
+ * @method extend
+ * @param {Function} baseClass The class being derived from.
+ * @param {Function} newConstructor The new base class.
+ *
+ * @returns {Function} New Constructor with an augmented prototype.
+ */
+ozpIwc.util.extend=function(baseClass,newConstructor) {
+    if(!baseClass || !baseClass.prototype) {
+        ozpIwc.log.error("Cannot create a new class for ",newConstructor," due to invalid baseclass:",baseClass);
+        throw new Error("Cannot create a new class due to invalid baseClass.  Dependency not loaded first?");
+    }
+    newConstructor.prototype = Object.create(baseClass.prototype);
+    newConstructor.prototype.constructor = newConstructor;
+    return newConstructor;
+};
+
+/**
+ * Invoke postMessage on a given window in a safe manner. Test whether the browser
+ * supports structured clones, and stringifies the message if not. Catches
+ * errors (especially attempts to send non-cloneable objects), and tries to
+ * send a stringified copy of the message asa fallback.
+ *
+ * @param window a window on which to invoke postMessage
+ * @param msg the message to be sent
+ * @param origin the target origin. The message will be sent only if it matches the origin of window.
+ */
+ozpIwc.util.safePostMessage = function(window,msg,origin) {
+    try {
+        var data = msg;
+        if (!ozpIwc.util.structuredCloneSupport() && typeof data !== 'string') {
+           data=JSON.stringify(msg);
+        }
+        window.postMessage(data, origin);
+    } catch (e) {
+        try {
+            window.postMessage(JSON.stringify(msg), origin);
+        } catch (e) {
+            ozpIwc.util.log("Invalid call to window.postMessage: " + e.message);
+        }
+    }
+};
+
+/**
+ * Detect browser support for structured clones. Returns quickly since it
+ * caches the result. This method only determines browser support for structured
+ * clones. Clients are responsible, when accessing capabilities that rely on structured
+ * cloning, to ensure that objects to be cloned meet the criteria of the structured clone
+ * algorithm. (See ozpIwc.util.safePostMessage for a method which handles attempts to
+ * clone an invalid object.). NB: a bug in FF will cause file objects to be treated as
+ * non-cloneable, even in FF versions that support structured clones.
+ * (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126).
+ *
+ * @private
+ *
+ * @method structuredCloneSupport
+ *
+ * @returns {Boolean} True if structured clones are supported, false otherwise.
+ */
+ozpIwc.util.structuredCloneSupport=function() {
+    ozpIwc.util = ozpIwc.util || {};
+    if (ozpIwc.util.structuredCloneSupportCache !== undefined) {
+        return ozpIwc.util.structuredCloneSupportCache;
+    }
+    var cloneSupport = 'postMessage' in window;
+    //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
+    try {
+        window.postMessage({
+            toString: function () {
+                cloneSupport = false;
+            }
+        }, "*");
+    } catch (e) {
+        //exception expected: objects with methods can't be cloned
+        //e.DATA_CLONE_ERR will exist only for browsers with structured clone support, which can be used as an additional check if needed
+    }
+    ozpIwc.util.structuredCloneSupportCache=cloneSupport;
+    return ozpIwc.util.structuredCloneSupportCache;
+};
+
+ozpIwc.util.structuredCloneSupport.cache=undefined;
+
+/**
+ * Does a deep clone of a serializable object.  Note that this will not
+ * clone unserializable objects like DOM elements, Date, RegExp, etc.
+ *
+ * @method clone
+ * @param {Array|Object} value The value to be cloned.
+ * @returns {Array|Object}  a deep copy of the object
+ */
+ozpIwc.util.clone=function(value) {
+	if(Array.isArray(value) || typeof(value) === 'object') {
+        try {
+            return JSON.parse(JSON.stringify(value));
+        } catch (e) {
+            ozpIwc.log.log(e);
+        }
+	} else {
+		return value;
+	}
+};
+
+
+/**
+ * A regex method to parse query parameters.
+ *
+ * @method parseQueryParams
+ * @param {String} query
+ *
+ */
+ozpIwc.util.parseQueryParams=function(query) {
+    query = query || window.location.search;
+    var params={};
+	var regex=/\??([^&=]+)=?([^&]*)/g;
+	var match;
+	while((match=regex.exec(query)) !== null) {
+		params[match[1]]=decodeURIComponent(match[2]);
+	}
+    return params;
+};
+
+/**
+ * Determines the origin of a given url
+ * @method determineOrigin
+ * @param url
+ * @returns {String}
+ */
+ozpIwc.util.determineOrigin=function(url) {
+    var a=document.createElement("a");
+    a.href = url;
+    var origin=a.protocol + "//" + a.hostname;
+    if(a.port) {
+        origin+= ":" + a.port;
+    }
+    return origin;
+};
+
+/**
+ * Escapes regular expression characters in a string.
+ * @method escapeRegex
+ * @param {String} str
+ * @returns {String}
+ */
+ozpIwc.util.escapeRegex=function(str) {
+    return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+
+/**
+ * 
+ * @method parseOzpUrl
+ * @param {type} url
+ * @returns {ozpIwc.TransportPacket}
+ */
+ozpIwc.util.parseOzpUrl=function(url) {
+    var m = /^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(decodeURIComponent(url));
+    if (m) {
+        // an action of "get" is implied
+        var packet = {
+            'dst': m[1],
+            'resource': m[2],
+            'action': "get"
+        };
+        // TODO: parse the query params into fields
+
+        return packet;
+    }
+    return null;
+};
+
+/**
+ * Returns true if the specified packet meets the criteria of an IWC Packet.
+ * @method isIwcPacket
+ * @static
+ * @param {ozpIwc.TransportPacket} packet
+ * @returns {Boolean}
+ */
+ozpIwc.util.isIWCPacket=function(packet) {
+    if(typeof packet.src !== "string" ||typeof packet.dst !== "string" ||
+        typeof packet.ver !== "number" || typeof packet.msgId !== "string") {
+        return false;
+    } else {
+        return true;
+    }
+};
 /*
  * The MIT License (MIT) Copyright (c) 2012 Mike Ihbe
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -4976,6 +4976,8 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
      */
     this.selfId = config.selfId || this.peer.selfId;
 
+    this.metricsPrefix="keyBroadcastLocalStorageLink."+this.selfId;
+    
     /**
      * Milliseconds to wait before deleting this link's keys
      * @todo UNUSUED
@@ -5059,17 +5061,16 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     var receiveStorageEvent = function (event) {
         if(event.newValue) {
             try {
-                packet = JSON.parse(event.key);
+                packet = JSON.parse(event.newValue);
             } catch (e) {
-                ozpIwc.log.log("Parse error on " + event.key);
-                ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.parseError').inc();
+                ozpIwc.log.log("Parse error on " + event.newValue);
+                ozpIwc.metrics.counter(self.metricsPrefix,'packets_parseError').inc();
                 return;
             }
             if (packet.data.fragment) {
                 self.handleFragment(packet);
             } else {
-                self.peer.receive(self.linkId, packet);
-                ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
+                self.forwardToPeer(packet);
             }
         }
     };
@@ -5083,6 +5084,14 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
         window.removeEventListener('storage', receiveStorageEvent);
     }, this);
 
+};
+
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.forwardToPeer=function(packet) {
+    this.peer.receive(this.linkId, packet);
+    ozpIwc.metrics.counter(this.metricsPrefix,'packets_received').inc();
+    if(packet.data.time) {
+        ozpIwc.metrics.timer(this.metricsPrefix,'latencyIn').mark(ozpIwc.util.now() - packet.data.time);
+    }
 };
 
 /**
@@ -5114,8 +5123,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet)
         var packetIndex = this.peer.packetsSeen[defragmentedPacket.srcPeer].indexOf(defragmentedPacket.sequence);
         delete this.peer.packetsSeen[defragmentedPacket.srcPeer][packetIndex];
 
-        this.peer.receive(this.linkId, defragmentedPacket);
-        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
+        this.forwardToPeer(defragmentedPacket);
 
         delete this.fragments[key];
     }
@@ -5159,8 +5167,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
 
         // Add a timeout to destroy the fragment should the whole message not be received.
         this.fragments[key].timeoutFunc = function () {
-            ozpIwc.metrics.counter('network.packets.dropped').inc();
-            ozpIwc.metrics.counter('network.fragments.dropped').inc(self.total );
+            ozpIwc.metrics.meter(self.metricsPrefix,'fragments_dropped').mark(self.total);
             delete self.fragments[self.key];
         };
     }
@@ -5181,7 +5188,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
         this.fragments[key].srcPeer === undefined) {
         return null;
     } else {
-        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.fragments.received').inc();
+        ozpIwc.metrics.meter(this.metricsPrefix,'fragments_received').mark();
         return true;
     }
 };
@@ -5224,6 +5231,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
     try {
        str = JSON.stringify(packet.data);
     } catch (e){
+        ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
         var msgId = packet.msgId || "unknown";
         ozpIwc.log.error("Failed to write packet(msgId=" + msgId+ "):" + e.message);
         return;
@@ -5275,7 +5283,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
             this.attemptSend(this.sendQueue.shift());
         }
     } else {
-        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
+        ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
         ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + " Send queue full.");
     }
 };
@@ -5304,7 +5312,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
                 self.attemptSend(packet, retryCount);
             }, timeOut);
         } else {
-            ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
+            ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
             ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + sendStatus);
             return sendStatus;
         }
@@ -5323,9 +5331,12 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     var sendStatus;
     try {
         var p = JSON.stringify(packet);
-        localStorage.setItem(p, "x");
-        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
-        localStorage.removeItem(p);
+        localStorage.setItem("x", p);
+        ozpIwc.metrics.meter(this.metricsPrefix,'packets_sent').mark();
+        if(packet.data.time) {
+            ozpIwc.metrics.timer(this.metricsPrefix,'latencyOut').mark(ozpIwc.util.now() - packet.data.time);
+        }
+        localStorage.removeItem("x");
         sendStatus = null;
     }
     catch (e) {
@@ -5600,6 +5611,8 @@ ozpIwc.Peer=function() {
      */
     this.selfId=ozpIwc.util.generateId();
 
+    this.metricPrefix="peer."+this.selfId;
+
     /**
      * @TODO (DOC)
      * @property sequenceCounter
@@ -5694,7 +5707,7 @@ ozpIwc.Peer.maxSeqIdPerSource=500;
 ozpIwc.Peer.prototype.haveSeen=function(packet) {
     // don't forward our own packets
     if (packet.srcPeer === this.selfId) {
-        ozpIwc.metrics.counter('network.packets.droppedOwnPacket').inc();
+        ozpIwc.metrics.counter(this.metricPrefix,'droppedOwnPacket').inc();
         return true;
     }
     var seen = this.packetsSeen[packet.srcPeer];
@@ -5736,10 +5749,13 @@ ozpIwc.Peer.prototype.send= function(packet) {
 
     this.events.trigger("preSend",preSendEvent);
     if(!preSendEvent.canceled) {
-        ozpIwc.metrics.counter('network.packets.sent').inc();
+        ozpIwc.metrics.counter(this.metricPrefix,'sent').inc();
+        if(packet.time) {
+            ozpIwc.metrics.timer(this.metricPrefix,'latencyOut').mark(ozpIwc.util.now() - packet.time);
+        }
         this.events.trigger("send",{'packet':networkPacket});
     } else {
-        ozpIwc.metrics.counter('network.packets.sendRejected').inc();
+        ozpIwc.metrics.counter(this.metricPrefix,'sendRejected').inc();
     }
 };
 
@@ -5756,10 +5772,14 @@ ozpIwc.Peer.prototype.send= function(packet) {
 ozpIwc.Peer.prototype.receive=function(linkId,packet) {
     // drop it if we've seen it before
     if(this.haveSeen(packet)) {
-        ozpIwc.metrics.counter('network.packets.dropped').inc();
+        ozpIwc.metrics.counter(this.metricPrefix,'dropped').inc();
         return;
     }
-    ozpIwc.metrics.counter('network.packets.received').inc();
+    ozpIwc.metrics.counter(this.metricPrefix,'received').inc();
+    if(packet.data.time) {
+        ozpIwc.metrics.timer(this.metricPrefix,'latencyIn').mark(ozpIwc.util.now() - packet.data.time);
+    }
+
     this.events.trigger("receive",{'packet':packet,'linkId': linkId});
 };
 
@@ -5935,6 +5955,8 @@ ozpIwc.Participant=function() {
      * @type ozpIwc.metricTypes.Meter
      */
     this.forbiddenPacketsMeter=fakeMeter;
+    this.latencyInTimer=fakeMeter;
+    this.latencyOutTimer=fakeMeter;
 
     /**
      * The type of the participant.
@@ -5996,6 +6018,9 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     })
         .success(function(){
             self.receivedPacketsMeter.mark();
+            if(packetContext.packet.time) {
+                self.latencyInTimer.mark(ozpIwc.util.now() - packetContext.packet.time);
+            }
 
             self.receiveFromRouterImpl(packetContext);
         })
@@ -6033,10 +6058,16 @@ ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.router=router;
     this.securityAttributes.rawAddress=address;
     this.msgId=0;
-    this.metricRoot="participants."+ this.address.split(".").reverse().join(".");
+    if(this.name) {
+        this.metricRoot="participants."+ this.name +"." + this.address.split(".").reverse().join(".");
+    } else {
+        this.metricRoot="participants."+ this.address.split(".").reverse().join(".");
+    }
     this.sentPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"sentPackets").unit("packets");
     this.receivedPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"receivedPackets").unit("packets");
     this.forbiddenPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"forbiddenPackets").unit("packets");
+    this.latencyInTimer=ozpIwc.metrics.timer(this.metricRoot,"latencyIn").unit("packets");
+    this.latencyOutTimer=ozpIwc.metrics.timer(this.metricRoot,"latencyOut").unit("packets");
     
     this.namesResource="/address/"+this.address;
     this.heartBeatStatus.address=this.address;
@@ -6079,7 +6110,12 @@ ozpIwc.Participant.prototype.fixPacket=function(packet) {
  */
 ozpIwc.Participant.prototype.send=function(packet) {
     packet=this.fixPacket(packet);
+    
     this.sentPacketsMeter.mark();
+    if(packet.time) {
+        this.latencyOutTimer.mark(ozpIwc.util.now() - packet.time);
+    }
+
     this.router.send(packet,this);
     return packet;
 };
@@ -6107,7 +6143,7 @@ ozpIwc.Participant.prototype.heartbeat=function() {
             'action' : "set",
             'entity' : this.heartBeatStatus,
             'contentType' : this.heartBeatContentType
-        },function() {/* eat the response*/});
+        });
     }
 };
 

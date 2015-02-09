@@ -14,7 +14,6 @@
   </head>
   <body>
 		<div class="header">
-		<span id="myAddress"></span>
 		<select id="ballColor">
 			<option value="blue">blue</option>
 			<option value="red">red</option>
@@ -24,7 +23,9 @@
 			<option value="purple">purple</option>
 			<option value="#BADA55">kerbal</option>
 		</select>
-		<!--Latencies: <span id="averageLatencies"></span> -->
+		<span id="myAddress" style="border: 1px solid black; padding 2px;"></span>
+		<span id="averageLatencies"></span>
+        FPS: [<span id="fps"></span>]
 		</div>
 		<svg id="viewport" version="1.1"
      baseProfile="full"

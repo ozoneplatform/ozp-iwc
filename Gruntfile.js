@@ -14,11 +14,11 @@ module.exports = function(grunt) {
         
         src: {
             common: [
-                'app/js/common/event.js',
-                'app/js/common/**/*.js',
                 'bower_components/es5-shim/es5-shim.js',
                 'bower_components/es5-shim/es5-sham.js',
-                'bower_components/es6-promise/promise.js'
+                'bower_components/es6-promise/promise.js',
+                'app/js/common/event.js',
+                'app/js/common/**/*.js'
             ],
             metrics: [
                 '<%= src.common %>',
