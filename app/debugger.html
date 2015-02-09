@@ -99,7 +99,16 @@
                    placeholder="filter metrics..."
                    tooltip-placement="bottom" tooltip="Search for metric...">
             </input>
-            <table>
+            <div class="container-fluid" style="height: 600px;">
+            <div class="col-md-3" style="font-size: 0.7em; overflow:scroll; padding: 0px; height: 100%;">
+                <label ng-repeat="metric in metrics | orderBy:'name' | filter:viewFilter" style="white-space: nowrap; display: block;">
+                    <input type="checkbox" ng-model="metric.visible">
+                       {{::metric.name}}
+                </label>
+            </div>
+            <time-series metrics="metrics" class="col-md-9" style="padding: 0px;height:100%;"></time-series>
+            </div>
+<!--            <table>
                 <thead>
                     <tr>
                         <td>Metric</td>
@@ -114,7 +123,7 @@
                         <td><pre>{{metric.value | json}}</pre></td>
                     </tr>
                 </tbody>
-            </table>
+            </table>-->
         </tab>
         <tab heading="{{::api.address}}" ng-repeat="api in apis" ng-controller="apiDisplayController">
             <div class="btn-group">

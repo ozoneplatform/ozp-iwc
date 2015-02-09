@@ -62,6 +62,7 @@ module.exports = function(grunt) {
                 'bower_components/angular/angular.js',
                 'bower_components/vis/dist/vis.js',
                 'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
+                'app/js/debugger/debugger.js',
                 'app/js/debugger/**/*.js'
             ],
             debuggerCss: [
