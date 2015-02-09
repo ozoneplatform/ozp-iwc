@@ -225,10 +225,7 @@ module.exports = function(grunt) {
             all: [
                 'Gruntfile.js',
                 '<%= src.all %>',
-                '!app/js/common/es5-sham.min.js',
-                '!app/js/common/es5-shim.min.js',
-                '!app/js/common/promise-1.0.0.js'
-                
+                '!bower_components/**/*'
             ],
             test: {
                 src: ['<%= src.test %>']

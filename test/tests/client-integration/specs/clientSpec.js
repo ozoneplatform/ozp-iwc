@@ -182,7 +182,7 @@ describe("IWC Client", function() {
                 expect(client.intents()).toEqual(client.api('intents.api'));
                 done();
             });
-        })
+        });
     });
 
     describe("launch parameters",function() {

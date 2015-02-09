@@ -101,16 +101,3 @@ ozpIwc.util.ajaxResponseHeaderToJSON = function(header) {
 
     return obj;
 };
-
-/**
- * Returns the protocol of the URL
- * @method getProtocol
- * @param {String} url
- *
- * @returns {String}
- */
-var getProtocol =function (url){
-    var a = document.createElement('a');
-    a.href = url;
-    return a.protocol;
-};

@@ -81,7 +81,7 @@ ozpIwc.IntentsApiDefinitionValue.prototype.deserialize=function(serverData) {
 // we need the persistent data to conform with the structure of non persistent data.
     this.entity= clone.entity || {};
 
-    this.pattern = (typeof clone.pattern == "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
+    this.pattern = (typeof clone.pattern === "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
     this.pattern.toJSON = RegExp.prototype.toString;
 
     this.contentType=clone.contentType || this.contentType;

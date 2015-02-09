@@ -127,13 +127,13 @@ ozpIwc.testUtil.testPacket = function(link,size){
 };
 ozpIwc.testUtil.BrowsingContext = function(onLoad,msgHandler,id){
     this.msgQueue = this.msgQueue || [];
-
+    var self=this;
     var msgEvent = function(e){
         if(e.data !== "") {
             var message;
             try {
                 if (typeof(e.data) === 'string') {
-                    if(e.data.indexOf("setImmediate$") == -1) {
+                    if(e.data.indexOf("setImmediate$") === -1) {
                         message = JSON.parse(e.data);
                     }
                 } else {
@@ -184,9 +184,8 @@ ozpIwc.testUtil.BrowsingContext.prototype.addScript = function(type,val){
             return new Promise(function(res,rej) {
                 res();
             });
-            break;
-
-        case 'src':
+        case 'src': 
+            /* falls through */
         default:
             var xhrObj = new XMLHttpRequest();
             // open and send a synchronous request
@@ -206,10 +205,9 @@ ozpIwc.testUtil.BrowsingContext.prototype.addScript = function(type,val){
                 } else {//others
                     script.onload = function () {
                         res();
-                    }
+                    };
                 }
             });
-            break;
     }
 
 };

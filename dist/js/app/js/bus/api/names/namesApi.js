@@ -105,10 +105,11 @@ ozpIwc.NamesApi.prototype.removeDeadNodes = function(){
         if(this.dynamicNodes.indexOf(key) < 0 && node.entity && node.entity.time) {
             if ((ozpIwc.util.now() - node.entity.time) > this.heartbeatFrequency * this.heartbeatDropCount) {
                 var snapshot = node.snapshot();
-                node.deleteData;
+                node.deleteData();
                 this.notifyWatchers(node, node.changesSince(snapshot));
                 delete this.data[key];
                 // update all the collection values
+                /*jshint loopfunc:true*/
                 this.dynamicNodes.forEach(function(resource) {
                     this.updateDynamicNode(this.data[resource]);
                 },this);

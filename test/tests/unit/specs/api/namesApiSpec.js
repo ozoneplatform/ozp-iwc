@@ -74,7 +74,7 @@ describe("Names API",function() {
                     "/api/system.api"
                 ]);
                 expect(context.responses[0].contentType).toEqual("application/vnd.ozp-iwc-api-list-v1+json");
-            })
+            });
         });
         [ {
             'resource': "/address",

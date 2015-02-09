@@ -4194,19 +4194,6 @@ ozpIwc.util.ajaxResponseHeaderToJSON = function(header) {
     return obj;
 };
 
-/**
- * Returns the protocol of the URL
- * @method getProtocol
- * @param {String} url
- *
- * @returns {String}
- */
-var getProtocol =function (url){
-    var a = document.createElement('a');
-    a.href = url;
-    return a.protocol;
-};
-
 /** @namespace */
 var ozpIwc=ozpIwc || {};
 /**
@@ -6246,9 +6233,9 @@ ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContex
 	var packet=packetContext.packet;
 	if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
         var cancel = false;
-        function done() {
+        var done=function() {
             cancel = true;
-        }
+        };
         this.replyCallbacks[packet.replyTo](packet,done);
 		if (cancel) {
             this.cancelCallback(packet.replyTo);
@@ -7949,6 +7936,7 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
             var participant=self.router.participants[k];
             participant.heartBeatStatus.time = ozpIwc.util.now();
             if(participant instanceof ozpIwc.MulticastParticipant) {
+                /*jshint loopfunc:true*/
                 participant.members.forEach(function(member){
                     self.send({
                         'dst': "names.api",
@@ -8332,7 +8320,7 @@ ozpIwc.CommonApiCollectionValue.prototype.deserialize=function(serverData) {
     ozpIwc.CommonApiValue.prototype.deserialize.apply(this,arguments);
     var clone = ozpIwc.util.clone(serverData);
 
-    this.pattern = (typeof clone.pattern == "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
+    this.pattern = (typeof clone.pattern === "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
     this.pattern.toJSON = RegExp.prototype.toString;
 };
 
@@ -9521,8 +9509,7 @@ ozpIwc.Endpoint.prototype.delete=function(resource, data, requestHeaders) {
 
     return this.endpointRegistry.loadPromise.then(function() {
         if(!self.baseUrl) {
-            throw Error("The server did not define a relation of type " 
-                + this.name + " for retrivieving " + resource);
+            throw Error("The server did not define a relation of type " + this.name + " for retrivieving " + resource);
         }
         if(resource.indexOf(self.baseUrl)!==0) {
             resource=self.baseUrl + resource;
@@ -10647,7 +10634,7 @@ ozpIwc.IntentsApiDefinitionValue.prototype.deserialize=function(serverData) {
 // we need the persistent data to conform with the structure of non persistent data.
     this.entity= clone.entity || {};
 
-    this.pattern = (typeof clone.pattern == "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
+    this.pattern = (typeof clone.pattern === "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
     this.pattern.toJSON = RegExp.prototype.toString;
 
     this.contentType=clone.contentType || this.contentType;
@@ -10963,10 +10950,11 @@ ozpIwc.NamesApi.prototype.removeDeadNodes = function(){
         if(this.dynamicNodes.indexOf(key) < 0 && node.entity && node.entity.time) {
             if ((ozpIwc.util.now() - node.entity.time) > this.heartbeatFrequency * this.heartbeatDropCount) {
                 var snapshot = node.snapshot();
-                node.deleteData;
+                node.deleteData();
                 this.notifyWatchers(node, node.changesSince(snapshot));
                 delete this.data[key];
                 // update all the collection values
+                /*jshint loopfunc:true*/
                 this.dynamicNodes.forEach(function(resource) {
                     this.updateDynamicNode(this.data[resource]);
                 },this);

@@ -73,9 +73,9 @@ ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContex
 	var packet=packetContext.packet;
 	if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
         var cancel = false;
-        function done() {
+        var done=function() {
             cancel = true;
-        }
+        };
         this.replyCallbacks[packet.replyTo](packet,done);
 		if (cancel) {
             this.cancelCallback(packet.replyTo);

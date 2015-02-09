@@ -1,7 +1,6 @@
 describe("System API",function() {
 
     var systemApi;
-    var intentsApi;
     var applicationNode;
     var userNode;
     var systemNode;
@@ -94,7 +93,7 @@ describe("System API",function() {
                 'action': 'delete'
             }
         });
-        var node = systemApi.data[applicationNode.resource].entity;
+//        var node = systemApi.data[applicationNode.resource].entity;
         systemApi.handleDelete(applicationNode,packetContext);
 
         var reply=packetContext.responses[0];

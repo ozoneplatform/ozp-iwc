@@ -3171,9 +3171,9 @@ ozpIwc.Client.prototype.receive=function(packet) {
 
     if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
         var cancel = false;
-        function done() {
+        var done=function() {
             cancel = true;
-        }
+        };
         this.replyCallbacks[packet.replyTo](packet,done);
         if (cancel) {
             this.cancelCallback(packet.replyTo);
@@ -3377,7 +3377,7 @@ ozpIwc.Client.prototype.connect=function() {
                         } else{
                             reject(reply.response);
                         }
-                    })
+                    });
 
                 });
         }).then(function(apis) {
@@ -3411,13 +3411,17 @@ ozpIwc.Client.prototype.connect=function() {
 
                     //prevent overriding client constructed fields
                     if(!self.hasOwnProperty(apiFuncName)){
+                        // wrap this in a function to break the closure
+                        // on apiObj.address that would otherwise register
+                        // everything for the last api in the list
+                        /*jshint loopfunc:true*/
                         (function(addr){
                             self[apiFuncName] = function(){
                                 return self.api(addr);
                             };
                             self.apiMap[addr] = self.apiMap[addr] || {};
                             self.apiMap[addr].functionName = apiFuncName;
-                        })(apiObj.address)
+                        })(apiObj.address);
                     }
                 }
         }).then(function() {
