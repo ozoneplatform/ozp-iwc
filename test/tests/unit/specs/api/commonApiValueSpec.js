@@ -28,6 +28,7 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         expect(value.entity).toEqual(config.entity);
         expect(value.contentType).toEqual(config.contentType);
         expect(value.permissions.attributes.perms).toEqual(['yes']);
+        expect(value.permissions.attributes['ozp:iwc:node']).toEqual([config.resource]);
         expect(value.version).toEqual(1);
     });
 
@@ -42,6 +43,7 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         expect(value.contentType).toEqual("test/testType+json");
         expect(value.permissions.attributes.perms.length).toEqual(1);
         expect(value.permissions.attributes.perms[0]).toEqual("maybe");
+        expect(value.permissions.attributes['ozp:iwc:node']).toEqual([config.resource]);
         expect(value.version).toEqual(2);
     });
 
@@ -56,8 +58,7 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         expect(value.contentType).toEqual("test/testType+json");
         expect(value.permissions.attributes.perms.length).toEqual(1);
         expect(value.permissions.attributes.perms[0]).toEqual("yes");
-        expect(value.permissions.attributes['ozp:iwc:node'].length).toEqual(1);
-        expect(value.permissions.attributes['ozp:iwc:node'][0]).toEqual("testResource");
+        expect(value.permissions.attributes['ozp:iwc:node']).toEqual([config.resource]);
         expect(value.version).toEqual(2);
     });
 
@@ -67,7 +68,9 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         expect(value.resource).toEqual("testResource");
         expect(value.entity).toBeUndefined();
         expect(value.contentType).toBeUndefined();
-        expect(value.permissions).toEqual([]);
+        expect(Object.keys(value.permissions.attributes).length).toEqual(1);
+        expect(Object.keys(value.permissions.attributes).indexOf("ozp:iwc:node")).toBeGreaterThan(-1);
+        expect(Object.keys(value.permissions.attributes).indexOf("perms")).toEqual(-1);
         expect(value.version).toEqual(0);
     });
 
@@ -76,7 +79,9 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         expect(p.resource).toEqual(config.resource);
         expect(p.entity).toEqual(config.entity);
         expect(p.contentType).toEqual(config.contentType);
-        expect(Object.keys(p.permissions.attributes)).toEqual(["ozp:iwc:node","perms"]);
+        expect(Object.keys(p.permissions.attributes).length).toEqual(2);
+        expect(Object.keys(p.permissions.attributes).indexOf("ozp:iwc:node")).toBeGreaterThan(-1);
+        expect(Object.keys(p.permissions.attributes).indexOf("perms")).toBeGreaterThan(-1);
         expect(p.permissions.attributes.perms.length).toEqual(1);
         expect(p.permissions.attributes.perms[0]).toEqual("yes");
         expect(p.eTag).toEqual(1);
@@ -91,7 +96,9 @@ function commonApiValueContractTests(ClassUnderTest,baseConfig) {
         });
         expect(p.resource).toEqual(config.resource);
         expect(p.entity).toEqual(config.entity);
-        expect(Object.keys(p.permissions.attributes)).toEqual(["ozp:iwc:node","perms"]);
+        expect(Object.keys(p.permissions.attributes).length).toEqual(2);
+        expect(Object.keys(p.permissions.attributes).indexOf("ozp:iwc:node")).toBeGreaterThan(-1);
+        expect(Object.keys(p.permissions.attributes).indexOf("perms")).toBeGreaterThan(-1);
         expect(p.permissions.attributes.perms.length).toEqual(1);
         expect(p.permissions.attributes.perms[0]).toEqual("yes");
         expect(p.eTag).toEqual(1);

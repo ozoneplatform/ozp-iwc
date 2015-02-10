@@ -74,6 +74,10 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,contextHolder){
     }
 
     var formattedPolicies = [];
+
+    var onError = function(err){
+        asyncAction.resolve('failure',err);
+    };
     //Format the request
     this.formatRequest(request,pip)
         .success(function(formattedRequest){
@@ -101,17 +105,11 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,contextHolder){
                             if(result === "Permit"){
                                asyncAction.resolve('success',response);
                             } else {
-                               asyncAction.resolve('failure',response);
+                                onError(response);
                             }
-                        }).failure(function(err){
-                            asyncAction.resolve('failure',err);
-                        });
-                }).failure(function(err){
-                   asyncAction.resolve('failure',err);
-                });
-        }).failure(function(err){
-            asyncAction.resolve('failure',err);
-        });
+                        }).failure(onError);
+                }).failure(onError);
+        }).failure(onError);
     return asyncAction;
 };
 
