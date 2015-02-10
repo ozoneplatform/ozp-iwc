@@ -518,6 +518,8 @@ ozpIwc.Client.prototype.createIframePeer=function() {
             self.iframe.src=self.peerUrl+"/iframe_peer.html";
             self.iframe.height=1;
             self.iframe.width=1;
+            self.iframe.setAttribute("area-hidden",true);
+            self.iframe.setAttribute("hidden",true);
             self.iframe.style.setProperty ("display", "none", "important");
             document.body.appendChild(self.iframe);
             self.peer=self.iframe.contentWindow;
