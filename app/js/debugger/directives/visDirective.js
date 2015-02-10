@@ -1,3 +1,4 @@
+/* global debuggerModule */
 
 debuggerModule.directive('timeSeries', function() {
         return {
@@ -10,8 +11,10 @@ debuggerModule.directive('timeSeries', function() {
             link: function($scope,element){
                 $scope.container = element[0];
                 // Create a DataSet with data (enables two way data binding)
-                $scope.data = new vis.DataSet();
-
+                $scope.data = new vis.DataSet({
+                    
+                });
+                $scope.groups = new vis.DataSet();
                 // Configuration for the Timeline
                 $scope.options = {
                     stack:false,
@@ -24,11 +27,9 @@ debuggerModule.directive('timeSeries', function() {
                 };
 
                 // Create a Timeline
-                $scope.timeline = new vis.Graph2d($scope.container, $scope.data, $scope.options);
-
+                $scope.timeline = new vis.Graph2d($scope.container, $scope.data,$scope.groups, $scope.options);
             },
             controller: function($scope){
-                
                 $scope.$on("timeSeriesData",function(event,data) {
                     $scope.data.add(data);
                     var now=$scope.timeline.getCurrentTime();
@@ -38,14 +39,14 @@ debuggerModule.directive('timeSeries', function() {
                     }
                 });
                 $scope.$watch('metrics',function(newVal){
-                    $scope.timeline.setGroups(newVal.map(function(m) {
+//                    $scope.timeline.setGroups(
+                    $scope.groups.update(newVal.map(function(m) {
                         return {
                             id: m.name,
                             content: m.name,
                             visible: m.visible
                         };
                     }));
-                    $scope.timeline.fit();
                 },true);
             }
         };

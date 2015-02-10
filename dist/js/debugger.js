@@ -2617,9 +2617,7 @@ define("promise/utils",
   });
 requireModule('promise/polyfill').polyfill();
 }());
-/** @namespace */
 var ozpIwc=ozpIwc || {};
-
 /**
  * Common classes used between both the Client and the Bus.
  * @module common
@@ -2751,8 +2749,6 @@ if(!(window.console && console.log)) {
         error: function(){}
     };
 }
-/** @namespace */
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule common
  */
@@ -4090,9 +4086,6 @@ ozpIwc.MetricsRegistry.prototype.allMetrics=function() {
 
 ozpIwc.metrics=new ozpIwc.MetricsRegistry();
 
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-
 /**
  * Utility methods used on the IWC bus.
  * @module bus
@@ -4194,8 +4187,6 @@ ozpIwc.util.ajaxResponseHeaderToJSON = function(header) {
     return obj;
 };
 
-/** @namespace */
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule bus.util
  */
@@ -4292,9 +4283,6 @@ ozpIwc.AsyncAction.prototype.success=function(callback,self) {
 ozpIwc.AsyncAction.prototype.failure=function(callback,self) {
 	return this.when("failure",callback,self);
 };
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.util
  */
@@ -4508,8 +4496,6 @@ ozpIwc.log=ozpIwc.log || {
     attachTo.clearImmediate = clearImmediate;
 }(new Function("return this")()));
 
-/** @namespace */
-var ozpIwc=ozpIwc || {};
 /**
 * @submodule bus.util
 */
@@ -4717,7 +4703,6 @@ ozpIwc.abacPolicies.permitAll=function() {
 };
 
 
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule bus.security
  */
@@ -4796,7 +4781,6 @@ ozpIwc.BasicAuthentication.prototype.login=function(credentials,preAuthenticated
 };
 
 
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule bus.security
  */
@@ -4915,8 +4899,6 @@ ozpIwc.BasicAuthorization.prototype.isPermitted=function(request) {
  */
 ozpIwc.authorization=new ozpIwc.BasicAuthorization();
 /** @namespace **/
-var ozpIwc = ozpIwc || {};
-
 
 /**
  * Classes related to security aspects of the IWC.
@@ -4977,7 +4959,16 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     this.selfId = config.selfId || this.peer.selfId;
 
     this.metricsPrefix="keyBroadcastLocalStorageLink."+this.selfId;
+    this.droppedFragmentsCounter=ozpIwc.metrics.counter(this.metricsPrefix,'fragmentsDropped');
+    this.fragmentsReceivedCounter=ozpIwc.metrics.counter(this.metricsPrefix,'fragmentsReceived');
+
+    this.packetsSentCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsSent');
+    this.packetsReceivedCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsReceived');
+    this.packetParseErrorCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsParseError');
+    this.packetsFailedCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsFailed');
     
+    this.latencyInTimer=ozpIwc.metrics.timer(this.metricsPrefix,'latencyIn');
+    this.latencyOutTimer=ozpIwc.metrics.timer(this.metricsPrefix,'latencyOut');
     /**
      * Milliseconds to wait before deleting this link's keys
      * @todo UNUSUED
@@ -5064,7 +5055,7 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
                 packet = JSON.parse(event.newValue);
             } catch (e) {
                 ozpIwc.log.log("Parse error on " + event.newValue);
-                ozpIwc.metrics.counter(self.metricsPrefix,'packets_parseError').inc();
+                self.packetParseErrorCounter.inc();
                 return;
             }
             if (packet.data.fragment) {
@@ -5088,9 +5079,9 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
 
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.forwardToPeer=function(packet) {
     this.peer.receive(this.linkId, packet);
-    ozpIwc.metrics.counter(this.metricsPrefix,'packets_received').inc();
+    this.packetsReceivedCounter.inc();
     if(packet.data.time) {
-        ozpIwc.metrics.timer(this.metricsPrefix,'latencyIn').mark(ozpIwc.util.now() - packet.data.time);
+        this.latencyInTimer.mark(ozpIwc.util.now() - packet.data.time);
     }
 };
 
@@ -5167,7 +5158,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
 
         // Add a timeout to destroy the fragment should the whole message not be received.
         this.fragments[key].timeoutFunc = function () {
-            ozpIwc.metrics.meter(self.metricsPrefix,'fragments_dropped').mark(self.total);
+            self.droppedFragmentsCounter.inc(self.total);
             delete self.fragments[self.key];
         };
     }
@@ -5188,7 +5179,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
         this.fragments[key].srcPeer === undefined) {
         return null;
     } else {
-        ozpIwc.metrics.meter(this.metricsPrefix,'fragments_received').mark();
+        this.fragmentsReceivedCounter.inc();
         return true;
     }
 };
@@ -5231,7 +5222,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
     try {
        str = JSON.stringify(packet.data);
     } catch (e){
-        ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
+        this.packetsFailedCounter.inc();
         var msgId = packet.msgId || "unknown";
         ozpIwc.log.error("Failed to write packet(msgId=" + msgId+ "):" + e.message);
         return;
@@ -5283,7 +5274,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
             this.attemptSend(this.sendQueue.shift());
         }
     } else {
-        ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
+        this.packetsFailedCounter.inc();
         ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + " Send queue full.");
     }
 };
@@ -5312,7 +5303,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
                 self.attemptSend(packet, retryCount);
             }, timeOut);
         } else {
-            ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
+            this.packetsFailedCounter.inc();
             ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + sendStatus);
             return sendStatus;
         }
@@ -5332,9 +5323,9 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     try {
         var p = JSON.stringify(packet);
         localStorage.setItem("x", p);
-        ozpIwc.metrics.meter(this.metricsPrefix,'packets_sent').mark();
+        this.packetsSentCounter.inc();
         if(packet.data.time) {
-            ozpIwc.metrics.timer(this.metricsPrefix,'latencyOut').mark(ozpIwc.util.now() - packet.data.time);
+            this.latencyOutTimer.mark(ozpIwc.util.now() - packet.data.time);
         }
         localStorage.removeItem("x");
         sendStatus = null;
@@ -5356,8 +5347,6 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     }
 };
 
-/** @namespace **/
-var ozpIwc = ozpIwc || {};
 /**
  * @submodule bus.network
  */
@@ -5894,8 +5883,6 @@ ozpIwc.Peer.prototype.shutdown=function() {
  * @type Array[String]
  */
 
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.transport
  */
@@ -6322,8 +6309,6 @@ ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
     }
     return success;
 };
-
-var ozpIwc=ozpIwc || {};
 
 /**
  * @submodule bus.transport
@@ -6776,8 +6761,6 @@ ozpIwc.Router.prototype.receiveFromPeer=function(packet) {
     }
 };
 
-
-var ozpIwc=ozpIwc || {};
 
 /**
  * @submodule bus.transport
@@ -7471,8 +7454,6 @@ ozpIwc.LeaderGroupParticipant.prototype._validateState = function(state){
         return false;
     }
 };
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.transport
  */
@@ -9456,8 +9437,6 @@ ozpIwc.CommonApiBase.prototype.persistNodes=function() {
 	throw new ozpIwc.ApiError("noImplementation","Base class persistence call not implemented.  Use DataApi to persist nodes.");
 };
 
-var ozpIwc=ozpIwc || {};
-
 /**
  * @class Endpoint
  * @namespace ozpIwc
@@ -11092,8 +11071,6 @@ ozpIwc.NamesApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config)
     }
 	ozpIwc.CommonApiValue.apply(this,arguments);
 });
-
-var ozpIwc=ozpIwc || {};
 
 /**
  * @submodule bus.api.Type
@@ -85636,7 +85613,6 @@ angular.module("template/typeahead/typeahead-popup.html", []).run(["$templateCac
     "");
 }]);
 
-
 var debuggerModule=angular.module("ozpIwc.debugger",[
     'ui.bootstrap'
 ]);
@@ -85659,6 +85635,7 @@ debuggerModule.controller("debuggerController",["$scope","iwcClient",function(sc
     ];
 }]);
 
+/* global debuggerModule */
 debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(scope,client) {
     scope.keys=[];
     scope.query = function() {
@@ -85670,7 +85647,7 @@ debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(
 						'action': "get",
 						'resource': key.resource
 				}, function (response, done) {
-						for (i in response) {
+						for (var i in response) {
 								key[i] = response[i];
 						}
 						key.isLoaded = true;
@@ -85731,6 +85708,7 @@ debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(
     scope.refresh();
 }]);
 
+/* global debuggerModule */
 
 debuggerModule.controller('electionController',['$scope',function($scope){
     $scope.ELECTION_TIME = ozpIwc.ELECTION_TIMEOUT;
@@ -85805,7 +85783,7 @@ debuggerModule.controller('electionController',['$scope',function($scope){
             style: "background-color: lightgray",
             group: packet.src,
             subgroup: "delay"
-        }
+        };
     }
     function genTimelineData(packet){
         var state = (packet.action === "election" && typeof(packet.entity.state) !== 'undefined' && Object.keys(packet.entity.state).length > 0);
@@ -85904,11 +85882,15 @@ debuggerModule.controller('electionController',['$scope',function($scope){
     }
 
     function logPacket(msg) {
-        if($scope.enableOrNot === "disabled") return;
+        if($scope.enableOrNot === "disabled") {
+            return;
+        }
         var packet = msg.packet.data;
         packet.debuggerTime = Date.now();
         var actions = ['election','victory','leaderQuery','leaderResponse'];
-        if(actions.indexOf(packet.action) < 0) return;
+        if(actions.indexOf(packet.action) < 0) {
+            return;
+        }
 
         switch (packet.dst) {
             case "data.api.election":
@@ -86057,6 +86039,7 @@ debuggerModule.controller('electionController',['$scope',function($scope){
             }
         };
     });
+/* global debuggerModule */
 debuggerModule.controller("metricsController",['$scope','$interval',function(scope,$interval) {
     scope.updateFrequency=1000;
     scope.updateActive=true;
@@ -86099,8 +86082,6 @@ debuggerModule.controller("metricsController",['$scope','$interval',function(sco
             }
         });
         scope.$broadcast('timeSeriesData',dataPoints);
-
-
     };
     
     scope.refresh();
@@ -86120,13 +86101,14 @@ debuggerModule.controller("metricsController",['$scope','$interval',function(sco
     scope.$watch('updateFrequency', updateTimer);
 }]);
 
+/* global debuggerModule */
 debuggerModule.controller("packetLogController",["$scope",function(scope) {
     scope.logging=false;
     scope.viewFilter="";
     scope.packets=[];
     scope.maxShown=50;
     
-    function logPacket(msg) {        
+    var logPacket=function(msg) {        
         if(!scope.logging) {
             return;
         }
@@ -86142,6 +86124,7 @@ debuggerModule.controller("packetLogController",["$scope",function(scope) {
 
 }]);
 
+/* global debuggerModule */
 
 debuggerModule.directive('timeSeries', function() {
         return {
@@ -86154,8 +86137,10 @@ debuggerModule.directive('timeSeries', function() {
             link: function($scope,element){
                 $scope.container = element[0];
                 // Create a DataSet with data (enables two way data binding)
-                $scope.data = new vis.DataSet();
-
+                $scope.data = new vis.DataSet({
+                    
+                });
+                $scope.groups = new vis.DataSet();
                 // Configuration for the Timeline
                 $scope.options = {
                     stack:false,
@@ -86168,11 +86153,9 @@ debuggerModule.directive('timeSeries', function() {
                 };
 
                 // Create a Timeline
-                $scope.timeline = new vis.Graph2d($scope.container, $scope.data, $scope.options);
-
+                $scope.timeline = new vis.Graph2d($scope.container, $scope.data,$scope.groups, $scope.options);
             },
             controller: function($scope){
-                
                 $scope.$on("timeSeriesData",function(event,data) {
                     $scope.data.add(data);
                     var now=$scope.timeline.getCurrentTime();
@@ -86182,14 +86165,14 @@ debuggerModule.directive('timeSeries', function() {
                     }
                 });
                 $scope.$watch('metrics',function(newVal){
-                    $scope.timeline.setGroups(newVal.map(function(m) {
+//                    $scope.timeline.setGroups(
+                    $scope.groups.update(newVal.map(function(m) {
                         return {
                             id: m.name,
                             content: m.name,
                             visible: m.visible
                         };
                     }));
-                    $scope.timeline.fit();
                 },true);
             }
         };

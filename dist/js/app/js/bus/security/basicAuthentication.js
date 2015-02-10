@@ -1,4 +1,3 @@
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule bus.security
  */

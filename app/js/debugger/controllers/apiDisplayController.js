@@ -1,3 +1,4 @@
+/* global debuggerModule */
 debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(scope,client) {
     scope.keys=[];
     scope.query = function() {
@@ -9,7 +10,7 @@ debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(
 						'action': "get",
 						'resource': key.resource
 				}, function (response, done) {
-						for (i in response) {
+						for (var i in response) {
 								key[i] = response[i];
 						}
 						key.isLoaded = true;

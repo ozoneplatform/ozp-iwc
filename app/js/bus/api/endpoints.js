@@ -1,5 +1,3 @@
-var ozpIwc=ozpIwc || {};
-
 /**
  * @class Endpoint
  * @namespace ozpIwc

@@ -1,6 +1,3 @@
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.util
  */

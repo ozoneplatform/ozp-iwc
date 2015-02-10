@@ -73,7 +73,8 @@ module.exports = function(grunt) {
             all: [
                 '<%= src.metrics %>',
                 '<%= src.bus %>',
-                '<%= src.client %>'
+                '<%= src.client %>',
+                '<%= src.debugger %>'
             ]
         },
         output: {

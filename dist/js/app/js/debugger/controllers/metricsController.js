@@ -1,3 +1,4 @@
+/* global debuggerModule */
 debuggerModule.controller("metricsController",['$scope','$interval',function(scope,$interval) {
     scope.updateFrequency=1000;
     scope.updateActive=true;
@@ -40,8 +41,6 @@ debuggerModule.controller("metricsController",['$scope','$interval',function(sco
             }
         });
         scope.$broadcast('timeSeriesData',dataPoints);
-
-
     };
     
     scope.refresh();

@@ -2617,9 +2617,7 @@ define("promise/utils",
   });
 requireModule('promise/polyfill').polyfill();
 }());
-/** @namespace */
 var ozpIwc=ozpIwc || {};
-
 /**
  * Common classes used between both the Client and the Bus.
  * @module common
@@ -2751,8 +2749,6 @@ if(!(window.console && console.log)) {
         error: function(){}
     };
 }
-/** @namespace */
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule common
  */

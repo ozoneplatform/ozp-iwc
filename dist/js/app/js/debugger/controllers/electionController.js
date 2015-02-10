@@ -1,3 +1,4 @@
+/* global debuggerModule */
 
 debuggerModule.controller('electionController',['$scope',function($scope){
     $scope.ELECTION_TIME = ozpIwc.ELECTION_TIMEOUT;
@@ -72,7 +73,7 @@ debuggerModule.controller('electionController',['$scope',function($scope){
             style: "background-color: lightgray",
             group: packet.src,
             subgroup: "delay"
-        }
+        };
     }
     function genTimelineData(packet){
         var state = (packet.action === "election" && typeof(packet.entity.state) !== 'undefined' && Object.keys(packet.entity.state).length > 0);
@@ -171,11 +172,15 @@ debuggerModule.controller('electionController',['$scope',function($scope){
     }
 
     function logPacket(msg) {
-        if($scope.enableOrNot === "disabled") return;
+        if($scope.enableOrNot === "disabled") {
+            return;
+        }
         var packet = msg.packet.data;
         packet.debuggerTime = Date.now();
         var actions = ['election','victory','leaderQuery','leaderResponse'];
-        if(actions.indexOf(packet.action) < 0) return;
+        if(actions.indexOf(packet.action) < 0) {
+            return;
+        }
 
         switch (packet.dst) {
             case "data.api.election":

@@ -2617,9 +2617,7 @@ define("promise/utils",
   });
 requireModule('promise/polyfill').polyfill();
 }());
-/** @namespace */
 var ozpIwc=ozpIwc || {};
-
 /**
  * Common classes used between both the Client and the Bus.
  * @module common
@@ -2751,8 +2749,6 @@ if(!(window.console && console.log)) {
         error: function(){}
     };
 }
-/** @namespace */
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule common
  */
@@ -4090,9 +4086,6 @@ ozpIwc.MetricsRegistry.prototype.allMetrics=function() {
 
 ozpIwc.metrics=new ozpIwc.MetricsRegistry();
 
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-
 /**
  * Utility methods used on the IWC bus.
  * @module bus
@@ -4194,8 +4187,6 @@ ozpIwc.util.ajaxResponseHeaderToJSON = function(header) {
     return obj;
 };
 
-/** @namespace */
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule bus.util
  */
@@ -4292,9 +4283,6 @@ ozpIwc.AsyncAction.prototype.success=function(callback,self) {
 ozpIwc.AsyncAction.prototype.failure=function(callback,self) {
 	return this.when("failure",callback,self);
 };
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.util
  */
@@ -4508,8 +4496,6 @@ ozpIwc.log=ozpIwc.log || {
     attachTo.clearImmediate = clearImmediate;
 }(new Function("return this")()));
 
-/** @namespace */
-var ozpIwc=ozpIwc || {};
 /**
 * @submodule bus.util
 */
@@ -4717,7 +4703,6 @@ ozpIwc.abacPolicies.permitAll=function() {
 };
 
 
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule bus.security
  */
@@ -4796,7 +4781,6 @@ ozpIwc.BasicAuthentication.prototype.login=function(credentials,preAuthenticated
 };
 
 
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule bus.security
  */
@@ -4915,8 +4899,6 @@ ozpIwc.BasicAuthorization.prototype.isPermitted=function(request) {
  */
 ozpIwc.authorization=new ozpIwc.BasicAuthorization();
 /** @namespace **/
-var ozpIwc = ozpIwc || {};
-
 
 /**
  * Classes related to security aspects of the IWC.
@@ -4977,7 +4959,16 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     this.selfId = config.selfId || this.peer.selfId;
 
     this.metricsPrefix="keyBroadcastLocalStorageLink."+this.selfId;
+    this.droppedFragmentsCounter=ozpIwc.metrics.counter(this.metricsPrefix,'fragmentsDropped');
+    this.fragmentsReceivedCounter=ozpIwc.metrics.counter(this.metricsPrefix,'fragmentsReceived');
+
+    this.packetsSentCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsSent');
+    this.packetsReceivedCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsReceived');
+    this.packetParseErrorCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsParseError');
+    this.packetsFailedCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsFailed');
     
+    this.latencyInTimer=ozpIwc.metrics.timer(this.metricsPrefix,'latencyIn');
+    this.latencyOutTimer=ozpIwc.metrics.timer(this.metricsPrefix,'latencyOut');
     /**
      * Milliseconds to wait before deleting this link's keys
      * @todo UNUSUED
@@ -5064,7 +5055,7 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
                 packet = JSON.parse(event.newValue);
             } catch (e) {
                 ozpIwc.log.log("Parse error on " + event.newValue);
-                ozpIwc.metrics.counter(self.metricsPrefix,'packets_parseError').inc();
+                self.packetParseErrorCounter.inc();
                 return;
             }
             if (packet.data.fragment) {
@@ -5088,9 +5079,9 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
 
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.forwardToPeer=function(packet) {
     this.peer.receive(this.linkId, packet);
-    ozpIwc.metrics.counter(this.metricsPrefix,'packets_received').inc();
+    this.packetsReceivedCounter.inc();
     if(packet.data.time) {
-        ozpIwc.metrics.timer(this.metricsPrefix,'latencyIn').mark(ozpIwc.util.now() - packet.data.time);
+        this.latencyInTimer.mark(ozpIwc.util.now() - packet.data.time);
     }
 };
 
@@ -5167,7 +5158,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
 
         // Add a timeout to destroy the fragment should the whole message not be received.
         this.fragments[key].timeoutFunc = function () {
-            ozpIwc.metrics.meter(self.metricsPrefix,'fragments_dropped').mark(self.total);
+            self.droppedFragmentsCounter.inc(self.total);
             delete self.fragments[self.key];
         };
     }
@@ -5188,7 +5179,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
         this.fragments[key].srcPeer === undefined) {
         return null;
     } else {
-        ozpIwc.metrics.meter(this.metricsPrefix,'fragments_received').mark();
+        this.fragmentsReceivedCounter.inc();
         return true;
     }
 };
@@ -5231,7 +5222,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
     try {
        str = JSON.stringify(packet.data);
     } catch (e){
-        ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
+        this.packetsFailedCounter.inc();
         var msgId = packet.msgId || "unknown";
         ozpIwc.log.error("Failed to write packet(msgId=" + msgId+ "):" + e.message);
         return;
@@ -5283,7 +5274,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
             this.attemptSend(this.sendQueue.shift());
         }
     } else {
-        ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
+        this.packetsFailedCounter.inc();
         ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + " Send queue full.");
     }
 };
@@ -5312,7 +5303,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
                 self.attemptSend(packet, retryCount);
             }, timeOut);
         } else {
-            ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
+            this.packetsFailedCounter.inc();
             ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + sendStatus);
             return sendStatus;
         }
@@ -5332,9 +5323,9 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     try {
         var p = JSON.stringify(packet);
         localStorage.setItem("x", p);
-        ozpIwc.metrics.meter(this.metricsPrefix,'packets_sent').mark();
+        this.packetsSentCounter.inc();
         if(packet.data.time) {
-            ozpIwc.metrics.timer(this.metricsPrefix,'latencyOut').mark(ozpIwc.util.now() - packet.data.time);
+            this.latencyOutTimer.mark(ozpIwc.util.now() - packet.data.time);
         }
         localStorage.removeItem("x");
         sendStatus = null;
@@ -5356,8 +5347,6 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     }
 };
 
-/** @namespace **/
-var ozpIwc = ozpIwc || {};
 /**
  * @submodule bus.network
  */
@@ -5894,8 +5883,6 @@ ozpIwc.Peer.prototype.shutdown=function() {
  * @type Array[String]
  */
 
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.transport
  */
@@ -6322,8 +6309,6 @@ ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
     }
     return success;
 };
-
-var ozpIwc=ozpIwc || {};
 
 /**
  * @submodule bus.transport
@@ -6776,8 +6761,6 @@ ozpIwc.Router.prototype.receiveFromPeer=function(packet) {
     }
 };
 
-
-var ozpIwc=ozpIwc || {};
 
 /**
  * @submodule bus.transport
@@ -7471,8 +7454,6 @@ ozpIwc.LeaderGroupParticipant.prototype._validateState = function(state){
         return false;
     }
 };
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.transport
  */
@@ -9456,8 +9437,6 @@ ozpIwc.CommonApiBase.prototype.persistNodes=function() {
 	throw new ozpIwc.ApiError("noImplementation","Base class persistence call not implemented.  Use DataApi to persist nodes.");
 };
 
-var ozpIwc=ozpIwc || {};
-
 /**
  * @class Endpoint
  * @namespace ozpIwc
@@ -11092,8 +11071,6 @@ ozpIwc.NamesApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config)
     }
 	ozpIwc.CommonApiValue.apply(this,arguments);
 });
-
-var ozpIwc=ozpIwc || {};
 
 /**
  * @submodule bus.api.Type

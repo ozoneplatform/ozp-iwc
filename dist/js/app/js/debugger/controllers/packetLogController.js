@@ -1,10 +1,11 @@
+/* global debuggerModule */
 debuggerModule.controller("packetLogController",["$scope",function(scope) {
     scope.logging=false;
     scope.viewFilter="";
     scope.packets=[];
     scope.maxShown=50;
     
-    function logPacket(msg) {        
+    var logPacket=function(msg) {        
         if(!scope.logging) {
             return;
         }
