@@ -7,7 +7,7 @@ describe("Policy Repository Point",function() {
         });
 
         it("formats server loaded policies as Policy Elements",function(){
-            var policy = prp.formatPolicy(mockPolicies['policy/connectPolicy.json']);
+            var policy = prp.formatPolicy(mockPolicies['policy/connect']);
             expect(policy.evaluate).not.toBeUndefined();
         });
 
@@ -53,7 +53,7 @@ describe("Policy Repository Point",function() {
             spyOn(ozpIwc.util,"ajax").and.callFake(function(){
                 return new Promise(function(resolve,reject){
                     resolve({
-                        'response': mockPolicies['policy/connectPolicy.json']
+                        'response': mockPolicies['/policy/connect']
                     });
                 });
             });
@@ -62,20 +62,20 @@ describe("Policy Repository Point",function() {
         });
 
         it("fetches desired policies.",function(done){
-            prp.fetchPolicy("connectionPolicy.json")
+            prp.fetchPolicy("/policy/connect")
                 .success(function(policy){
-                    expect(policy.policyId).toEqual(mockPolicies['policy/connectPolicy.json'].policyId);
-                    expect(policy.version).toEqual(mockPolicies['policy/connectPolicy.json'].version);
-                    expect(policy.description).toEqual(mockPolicies['policy/connectPolicy.json'].description);
-                    expect(policy.rule.category).toEqual(mockPolicies['policy/connectPolicy.json'].rule.category);
-                    expect(policy.ruleCombiningAlgId).toEqual(mockPolicies['policy/connectPolicy.json'].ruleCombiningAlgId);
+                    expect(policy.policyId).toEqual(mockPolicies['/policy/connect'].policyId);
+                    expect(policy.version).toEqual(mockPolicies['/policy/connect'].version);
+                    expect(policy.description).toEqual(mockPolicies['/policy/connect'].description);
+                    expect(policy.rule.category).toEqual(mockPolicies['/policy/connect'].rule.category);
+                    expect(policy.ruleCombiningAlgId).toEqual(mockPolicies['/policy/connect'].ruleCombiningAlgId);
                     done();
                 })
         });
 
 
         it("returns a promise chain with policy evaluation call for the PDP",function(done){
-            prp.getPolicies("connectionPolicy.json")
+            prp.getPolicies("/policy/connect")
                 .success(function(policies){
                     expect(Array.isArray(policies)).toEqual(true);
                     expect(policies.length).toEqual(1);

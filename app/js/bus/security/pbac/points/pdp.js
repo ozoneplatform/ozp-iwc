@@ -31,6 +31,15 @@ ozpIwc.policyAuth.PDP = function(config){
      * @default new ozpIwc.policyAuth.PIP()
      */
     this.pip = config.pip || new ozpIwc.policyAuth.PIP();
+
+    this.policySets = config.policySets ||
+    {
+        'connectSet': ["/policy/connect"],
+        'apiSet': ["/policy/apiNode"],
+        'readSet': ["/policy/read"],
+        'receiveAsSet': ["/policy/receiveAs"],
+        'sendAsSet': ["/policy/sendAs"]
+    };
 };
 
 
@@ -591,8 +600,8 @@ ozpIwc.policyAuth.PDP.prototype.mappedId = function(string){
 ozpIwc.policyAuth.PDP.prototype.gatherContext = function(contextHolder){
 
     var permissions = {};
-    for(var i in contextHolder.securityAttributes.attributes) {
-        permissions[i] = contextHolder.securityAttributes.attributes[i];
+    for(var i in contextHolder.permissions.attributes) {
+        permissions[i] = contextHolder.permissions.attributes[i];
         var wrapped = {};
         wrapped[i] = permissions[i];
         this.pip.grantAttributes(i, wrapped);

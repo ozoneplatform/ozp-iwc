@@ -81,9 +81,9 @@ ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name)
     },this);
 
     //At creation the multicast participant knows what it can sendAs/receiveAs
-    this.securityAttributes.pushIfNotExist('ozp:iwc:address', name);
-    this.securityAttributes.pushIfNotExist('ozp:iwc:sendAs', name);
-    this.securityAttributes.pushIfNotExist('ozp:iwc:receiveAs', name);
+    this.permissions.pushIfNotExist('ozp:iwc:address', name);
+    this.permissions.pushIfNotExist('ozp:iwc:sendAs', name);
+    this.permissions.pushIfNotExist('ozp:iwc:receiveAs', name);
 });
 
 /**

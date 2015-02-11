@@ -7,17 +7,12 @@ ozpIwc.policyAuth = ozpIwc.policyAuth || {};
  * Policy Information Point
  *
  * @param config
- * @param {Object} config.informationCache
+ * @param {Object} config.attributes
  * @constructor
  */
-ozpIwc.policyAuth.PIP = function(config){
-    config = config || {};
-
-
-    this.informationCache = config.informationCache || {};
-
-
-};
+ozpIwc.policyAuth.PIP = ozpIwc.util.extend(ozpIwc.policyAuth.SecurityAttribute,function(config) {
+    ozpIwc.policyAuth.SecurityAttribute.apply(this,arguments);
+});
 
 
 /**
@@ -43,8 +38,8 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
     var asyncAction = new ozpIwc.AsyncAction();
     var self = this;
 
-    if(this.informationCache[id]) {
-        return asyncAction.resolve('success', self.informationCache[id]);
+    if(this.attributes[id]) {
+        return asyncAction.resolve('success', self.attributes[id]);
     } else {
         ozpIwc.util.ajax({
             href: id,
@@ -53,11 +48,11 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
             if(typeof data !== "object") {
                 return asyncAction.resolve('failure',"Invalid data loaded from the remote PIP");
             }
-            self.informationCache[id] = {};
+            self.attributes[id] = {};
             for(var i in data){
-                self.informationCache[id][i] = Array.isArray(data[i] ) ? data[i]  : [data[i] ];
+                self.attributes[id][i] = Array.isArray(data[i] ) ? data[i]  : [data[i] ];
             }
-            asyncAction.resolve('success', self.informationCache[id]);
+            asyncAction.resolve('success', self.attributes[id]);
         })['catch'](function(err){
             asyncAction.resolve('failure',err);
         });
@@ -77,7 +72,7 @@ ozpIwc.policyAuth.PIP.prototype.grantAttributes = function(subjectId,attributes)
     for(var i in attributes){
         attrs[i] = Array.isArray(attributes[i]) ? attributes[i] : [attributes[i]];
     }
-    this.informationCache[subjectId] = attrs;
+    this.attributes[subjectId] = attrs;
 };
 
 /**
@@ -91,29 +86,29 @@ ozpIwc.policyAuth.PIP.prototype.grantAttributes = function(subjectId,attributes)
  */
 ozpIwc.policyAuth.PIP.prototype.grantParent = function (subjectId,parentId){
     var asyncAction = new ozpIwc.AsyncAction();
-    this.informationCache[subjectId] = this.informationCache[subjectId] || {};
+    this.attributes[subjectId] = this.attributes[subjectId] || {};
     var self = this;
 
-    if(self.informationCache[parentId]){
-        for(var i in self.informationCache[parentId]){
-            self.informationCache[subjectId][i] = self.informationCache[subjectId][i] || [];
-            for(var j in self.informationCache[parentId][i]) {
-                if (self.informationCache[subjectId][i].indexOf(self.informationCache[parentId][i][j]) < 0) {
-                    self.informationCache[subjectId][i].push(self.informationCache[parentId][i][j]);
+    if(self.attributes[parentId]){
+        for(var i in self.attributes[parentId]){
+            self.attributes[subjectId][i] = self.attributes[subjectId][i] || [];
+            for(var j in self.attributes[parentId][i]) {
+                if (self.attributes[subjectId][i].indexOf(self.attributes[parentId][i][j]) < 0) {
+                    self.attributes[subjectId][i].push(self.attributes[parentId][i][j]);
                 }
             }
         }
-        return asyncAction.resolve('success',self.informationCache[subjectId]);
+        return asyncAction.resolve('success',self.attributes[subjectId]);
 
     } else {
         self.getAttributes(parentId)
             .success(function(attributes){
                 for(var i in attributes){
-                    if(self.informationCache[subjectId].indexOf(attributes[i]) < 0) {
-                        self.informationCache[subjectId].push(attributes[i]);
+                    if(self.attributes[subjectId].indexOf(attributes[i]) < 0) {
+                        self.attributes[subjectId].push(attributes[i]);
                     }
                 }
-                asyncAction.resolve('success',self.informationCache[subjectId]);
+                asyncAction.resolve('success',self.attributes[subjectId]);
             }).failure(function(err){
                 asyncAction.resolve('failure',err);
             });

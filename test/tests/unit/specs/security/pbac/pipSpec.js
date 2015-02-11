@@ -13,7 +13,7 @@ describe("Policy Information Point",function() {
         });
 
         pip = new ozpIwc.policyAuth.PIP({
-            informationCache : {
+            attributes : {
                 'ozp:attributeCollection:fake': {
                     'ozp:val1': ["fakeVal"],
                     'ozp:val2': ["otherFakeVal"]
@@ -25,7 +25,7 @@ describe("Policy Information Point",function() {
     it("returns an attribute from the cache if possible",function(){
         pip.getAttributes('ozp:attributeCollection:fake')
             .success(function(attr){
-                expect(attr).toEqual(pip.informationCache['ozp:attributeCollection:fake']);
+                expect(attr).toEqual(pip.attributes['ozp:attributeCollection:fake']);
             });
     });
 
@@ -44,7 +44,7 @@ describe("Policy Information Point",function() {
                 'ozp:fake1' : 'newVal',
                 'ozp:fake2' : 'newVal2'
             });
-        expect(pip.informationCache['ozp:attributeCollection:fake']).toEqual({
+        expect(pip.attributes['ozp:attributeCollection:fake']).toEqual({
             'ozp:fake1': ['newVal'],
             'ozp:fake2': ['newVal2']
         });
@@ -55,21 +55,21 @@ describe("Policy Information Point",function() {
                 'ozp:fake1' : 'newVal',
                 'ozp:fake2' : 'newVal2'
         });
-        expect(pip.informationCache['ozp:attributeCollection:fake2']).toEqual({
+        expect(pip.attributes['ozp:attributeCollection:fake2']).toEqual({
                 'ozp:fake1' : ['newVal'],
                 'ozp:fake2' : ['newVal2']
         });
     });
 
     it('grants Attributes from a parent to an existing attributeId',function(){
-        pip.informationCache['ozp:attributeCollection:parent'] = {
+        pip.attributes['ozp:attributeCollection:parent'] = {
             'ozp:fake1' : ['newVal'],
             'ozp:fake2' : ['newVal2']
         };
 
         pip.grantParent('ozp:attributeCollection:fake','ozp:attributeCollection:parent')
             .success(function(){
-                expect(pip.informationCache['ozp:attributeCollection:fake']).toEqual({
+                expect(pip.attributes['ozp:attributeCollection:fake']).toEqual({
                     'ozp:val1': ["fakeVal"],
                     'ozp:val2': ["otherFakeVal"],
                     'ozp:fake1' : ['newVal'],
@@ -87,7 +87,7 @@ describe("Policy Information Point",function() {
         pip.grantParent('ozp:attributeCollection:fake2','ozp:attributeCollection:parent');
 
 
-        expect(pip.informationCache['ozp:attributeCollection:fake2']).toEqual({
+        expect(pip.attributes['ozp:attributeCollection:fake2']).toEqual({
             'ozp:val1': ["fakeVal"],
             'ozp:val2': ["otherFakeVal"]
         });

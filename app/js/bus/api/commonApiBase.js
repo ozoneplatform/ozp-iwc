@@ -355,8 +355,8 @@ ozpIwc.CommonApiBase.prototype.makeValue=function(/*packet*/) {
  * @todo make the packetContext have the srcSubject inside of it
  *
  * @method isPermitted
- * @param {ozpIwc.CommonApiValue} node The node of the api that permission is being checked against
  * @param {ozpIwc.TransportPacketContext} packetContext The packet of which permission is in question.
+ * @param {ozpIwc.CommonApiValue} node The node of the api that permission is being checked against
  *
  * @returns {ozpIwc.AsyncAction} An asynchronous response, the response will call either success or failure depending on
  * the result of the check.
@@ -371,28 +371,21 @@ ozpIwc.CommonApiBase.prototype.makeValue=function(/*packet*/) {
  *      });
  * ```
  */
-ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
+ozpIwc.CommonApiBase.prototype.isPermitted=function(packetContext,node) {
     var asyncAction = new ozpIwc.AsyncAction();
 
     ozpIwc.authorization.formatCategory(packetContext.packet.permissions)
         .success(function(permissions) {
-            var subject = (packetContext.packet.resource) ?
-                {'ozp:iwc:node': packetContext.packet.resource} : {};
             var request = {
-                'subject': subject,
+                'subject': {'ozp:iwc:node': packetContext.packet.resource},
                 'resource': permissions || {},
-                'action': {
-                    'ozp:iwc:action': 'access'
-                },
-                'policies': ['policy/apiNodePolicy.json']
-            };
-            var context = {
-                securityAttributes: node.permissions || {}
+                'action': {'ozp:iwc:action': 'access'},
+                'policies': ozpIwc.authorization.policySets.apiSet
             };
 
-            ozpIwc.authorization.isPermitted(request, context)
+            ozpIwc.authorization.isPermitted(request, node)
                 .success(function (resolution) {
-                    asyncAction.resolve("success",resolution);
+                        asyncAction.resolve("success",resolution);
                 }).failure(function (err) {
                     console.error("Api could not perform action:", err);
                     asyncAction.resolve("failure",err);
@@ -401,6 +394,7 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
             console.error("Api could not format permission check on packet", err);
             asyncAction.resolve("failure",err);
         });
+
     return asyncAction;
 };
 
@@ -545,7 +539,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         this.validateResource(node,packetContext);
         node=this.findOrMakeValue(packetContext.packet);
 
-        this.isPermitted(node,packetContext)
+        this.isPermitted(packetContext,node)
             .success(function() {
                 errorWrap(function() {
                     this.validatePreconditions(node,packetContext);

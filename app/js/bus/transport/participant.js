@@ -10,7 +10,7 @@ var ozpIwc=ozpIwc || {};
  * @constructor
  * @mixes ozpIwc.security.Actor
  * @property {String} address The assigned address to this address.
- * @property {ozpIwc.security.Subject} securityAttributes The security attributes for this participant.
+ * @property {ozpIwc.policyAuth.SecurityAttribute} permissions The security attributes for this participant.
  */
 ozpIwc.Participant=function() {
 
@@ -25,11 +25,11 @@ ozpIwc.Participant=function() {
 
     /**
      * A key value store of the security attributes assigned to the participant.
-     * @property securityAttributes
+     * @property permissions
      * @type Object
      * @default {}
      */
-	this.securityAttributes= new ozpIwc.policyAuth.SecurityAttribute();
+	this.permissions= new ozpIwc.policyAuth.SecurityAttribute();
 
     /**
      * The message id assigned to the next packet if a packet msgId is not specified.
@@ -115,16 +115,10 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     var self = this;
 
     var request = {
-        'subject': {
-            'ozp:iwc:address': this.address
-        },
-        'resource': {
-            'ozp:iwc:receiveAs': packetContext.packet.dst
-        },
-        'action': {
-            'ozp:iwc:action': 'receiveAs'
-        },
-        'policies': ['policy/receiveAsPolicy.json']
+        'subject': {'ozp:iwc:address': this.address},
+        'resource': {'ozp:iwc:receiveAs': packetContext.packet.dst},
+        'action': {'ozp:iwc:action': 'receiveAs'},
+        'policies': ozpIwc.authorization.policySets.receiveAsSet
     };
 
     var onError = function(err){
@@ -138,14 +132,10 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
             ozpIwc.authorization.formatCategory(packetContext.packet.permissions)
                 .success(function(permissions) {
                     var request = {
-                        'subject': {
-                            'ozp:iwc:address':  self.address
-                        },
+                        'subject': {'ozp:iwc:address':  self.address},
                         'resource': permissions || {},
-                        'action': {
-                            'ozp:iwc:action': 'read'
-                        },
-                        'policies': ['policy/readPolicy.json']
+                        'action': {'ozp:iwc:action': 'read'},
+                        'policies': ozpIwc.authorization.policySets.readSet
                     };
 
                     ozpIwc.authorization.isPermitted(request, self)
@@ -229,22 +219,15 @@ ozpIwc.Participant.prototype.fixPacket=function(packet) {
  * @returns {ozpIwc.TransportPacket}
  */
 ozpIwc.Participant.prototype.send=function(packet) {
-
-    var request = {
-        'subject': {
-            'ozp:iwc:address': this.address
-        },
-        'resource': {
-            'ozp:iwc:sendAs': packet.src
-        },
-        'action': {
-            'ozp:iwc:action':  'sendAs'
-        },
-        'policies': ['policy/sendAsPolicy.json']
-    };
     var self = this;
+    var request = {
+        'subject': {'ozp:iwc:address': this.address},
+        'resource': {'ozp:iwc:sendAs': packet.src},
+        'action': {'ozp:iwc:action': 'sendAs'},
+        'policies': ozpIwc.authorization.policySets.sendAsSet
+    };
     packet = self.fixPacket(packet);
-    ozpIwc.authorization.isPermitted(request,this)
+    ozpIwc.authorization.isPermitted(request,self)
         .success(function(resolution) {
             self.sentPacketsMeter.mark();
             self.router.send(packet, self);

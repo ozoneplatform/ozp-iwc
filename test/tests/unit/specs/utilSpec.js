@@ -350,6 +350,14 @@ describe("Async Action",function() {
                 });
             action.resolve('failure',"test");
         });
+
+        it('will call a resolved callback immediately if the action had previously resolved', function(done){
+            var action = new ozpIwc.AsyncAction().resolve('success',{foo:1});
+            action.success(function(val){
+                expect(val).toEqual({foo:1});
+                done();
+            });
+        })
     });
 });
 

@@ -144,15 +144,15 @@ var FakeRouter = function() {
     };
     this.registerMulticast = function(participant,groups) {
         groups.forEach(function(groupName){
-            participant.securityAttributes.pushIfNotExist('ozp:iwc:sendAs', groupName);
-            participant.securityAttributes.pushIfNotExist('ozp:iwc:receiveAs', groupName);
+            participant.permissions.pushIfNotExist('ozp:iwc:sendAs', groupName);
+            participant.permissions.pushIfNotExist('ozp:iwc:receiveAs', groupName);
         });
     };
 };
 
 // Assorted mock policies for PBAC testing. Fill the PRP Cache with this and ajax calls wont be needed!
 var mockPolicies = {
-    'policy/connectPolicy.json': {
+    '/policy/connect': {
         "policyId": "connectPolicy.json",
         "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
         "version": "1.0",
@@ -179,7 +179,7 @@ var mockPolicies = {
             }
         ]
     },
-    'policy/receiveAsPolicy.json': {
+    '/policy/receiveAs': {
         "policyId": "urn:ozp:iwc:xacml:policy:connect1",
         "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
         "version": "1.0",
@@ -198,7 +198,7 @@ var mockPolicies = {
             }
         ]
     },
-    'policy/sendAsPolicy.json': {
+    '/policy/sendAs': {
         "policyId": "urn:ozp:iwc:xacml:policy:connect1",
         "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
         "version": "1.0",
@@ -217,7 +217,7 @@ var mockPolicies = {
             }
         ]
     },
-    'policy/readPolicy.json': {
+    '/policy/read': {
         "policyId": "urn:ozp:iwc:xacml:policy:read1",
         "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
         "version": "1.0",
@@ -236,7 +236,7 @@ var mockPolicies = {
             }
         ]
     },
-    'policy/apiNodePolicy.json': {
+    '/policy/apiNode': {
         "policyId": "urn:ozp:iwc:xacml:policy:apiNode1",
         "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
         "version": "1.0",

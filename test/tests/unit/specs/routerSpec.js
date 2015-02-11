@@ -103,11 +103,11 @@ describe("Router", function() {
 
             router.registerParticipant(participant);
             router.registerParticipant(participant2);
-            participant.securityAttributes.pushIfNotExist("ozp:iwc:perm",'shared');
-            participant2.securityAttributes.pushIfNotExist("ozp:iwc:perm",'shared');
+            participant.permissions.pushIfNotExist("ozp:iwc:perm",'shared');
+            participant2.permissions.pushIfNotExist("ozp:iwc:perm",'shared');
 
-            participant.securityAttributes.pushIfNotExist("ozp:iwc:color",'blue');
-            participant2.securityAttributes.pushIfNotExist("ozp:iwc:color",'red');
+            participant.permissions.pushIfNotExist("ozp:iwc:color",'blue');
+            participant2.permissions.pushIfNotExist("ozp:iwc:color",'red');
         });
 
         it("allows receipt of shared permissions", function(done) {

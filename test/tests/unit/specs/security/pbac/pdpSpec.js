@@ -3,10 +3,10 @@ describe("Policy Decision Point",function() {
     var pdp;
     var mockPIP = {
         'getAttributes': function (id) {
-            var obj = this.informationCache[id] || {};
+            var obj = this.attributes[id] || {};
             return new ozpIwc.AsyncAction().resolve("success", obj);
         },
-        'informationCache' : {
+        'attributes' : {
             'urn:subjectId:1': {
                 'ozp:iwc:fakeAttribute1' : ['fakeVal']
             },
@@ -26,7 +26,7 @@ describe("Policy Decision Point",function() {
 
     var mockPRP = {
         'getPolicies': function(policyURIs){
-            return ozpIwc.AsyncAction.all([mockPolicies['policy/connectPolicy.json']]);
+            return ozpIwc.AsyncAction.all([mockPolicies['policy/connect']]);
         }
     };
 

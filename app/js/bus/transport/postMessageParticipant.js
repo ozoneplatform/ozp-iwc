@@ -50,15 +50,15 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	this.participantType="postMessageProxy";
 
     /**
-     * @property securityAttributes.origin
+     * @property permissions.attributes['ozp:iwc:origin']
      * @type String
      */
-    this.securityAttributes.pushIfNotExist("ozp:iwc:origin",this.origin);
+    this.permissions.pushIfNotExist("ozp:iwc:origin",this.origin);
 
     this.on("connectedToRouter",function() {
-        this.securityAttributes.pushIfNotExist('ozp:iwc:address', this.address);
-        this.securityAttributes.pushIfNotExist('ozp:iwc:sendAs', this.address);
-        this.securityAttributes.pushIfNotExist('ozp:iwc:receiveAs', this.address);
+        this.permissions.pushIfNotExist('ozp:iwc:address', this.address);
+        this.permissions.pushIfNotExist('ozp:iwc:sendAs', this.address);
+        this.permissions.pushIfNotExist('ozp:iwc:receiveAs', this.address);
     },this);
     /**
      * @property heartBeatStatus.origin
@@ -241,35 +241,28 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
-        var request = {
-            'subject':{
-                'ozp:iwc:origin': event.origin
-            },
-            'resource': {
-                'ozp:iwc:bus': '$bus.multicast'
-            },
-            'action': {
-                'ozp:iwc:action': 'connect'
-            },
-            'policies': ['policy/connectPolicy.json']
-        };
 
         var self = this;
+        var request = {
+            'subject': {'ozp:iwc:origin': event.origin},
+            'resource': {'ozp:iwc:bus': '$bus.multicast'},
+            'action': {'ozp:iwc:action': 'connect'},
+            'policies': ozpIwc.authorization.policySets.connectSet
+        };
         ozpIwc.authorization.isPermitted(request)
-            .success(function(){
-                participant=new ozpIwc.PostMessageParticipant({
+            .success(function () {
+                participant = new ozpIwc.PostMessageParticipant({
                     'origin': event.origin,
                     'sourceWindow': event.source,
                     'credentials': packet.entity
                 });
-                self.router.registerParticipant(participant,packet);
+                self.router.registerParticipant(participant, packet);
                 self.participants.push(participant);
                 isPacket(packet);
 
-            }).failure(function(err){
-                console.error("Failed to connect. Could not authorize:",err);
+            }).failure(function (err) {
+                console.error("Failed to connect. Could not authorize:", err);
             });
-
 	} else{
         isPacket(packet);
     }
