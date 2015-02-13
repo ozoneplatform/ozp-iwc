@@ -69,6 +69,6 @@ describe("IWC LocalStorage Key Broadcast", function() {
                 scope.linkB.send(message);
             });
             otherContext.send(referencePacket);
-        })
+        });
     });
 });

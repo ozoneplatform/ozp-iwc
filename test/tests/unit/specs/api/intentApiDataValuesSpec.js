@@ -47,7 +47,7 @@ describe("Intents in Flight Value",function() {
         intentType: "text/plain",
         intentAction: "view"
     });
-    var handlerNode=new ozpIwc.CommonApiValue({resource:"/text/plain/view/1234"});
+//    var handlerNode=new ozpIwc.CommonApiValue({resource:"/text/plain/view/1234"});
     var packet =  {
             src: "src0",
             msgId: "p:0",

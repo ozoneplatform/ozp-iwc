@@ -489,8 +489,7 @@ describe("General Utilities", function() {
            "data.api/foo/bar": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"},
            "data.api/foo/bar?1234": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"},
            "data.api/foo/bar#1234": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"},
-           "data.api/foo/bar?1234#blay": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"},
-           "data.api/foo/bar?1234": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"}
+           "data.api/foo/bar?1234#blay": {'dst':"data.api",'resource':"/foo/bar", 'action':"get"}
         }; 
        var rejectedCases=[
            "http://data.api/foo/bar",

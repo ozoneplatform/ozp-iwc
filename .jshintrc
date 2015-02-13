@@ -21,7 +21,7 @@
   "globals": {
     "angular": false,
     "ozpIwc": false,
-
+    "File" : false,
     // jasmine globals
       "describe": false,
       "xdescribe": false,

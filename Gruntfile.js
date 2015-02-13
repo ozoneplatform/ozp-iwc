@@ -14,9 +14,11 @@ module.exports = function(grunt) {
         
         src: {
             common: [
+                'bower_components/es5-shim/es5-shim.js',
+                'bower_components/es5-shim/es5-sham.js',
+                'bower_components/es6-promise/promise.js',
                 'app/js/common/event.js',
-                'app/js/common/**/*.js',
-                'bower_components/es6-promise/promise.js'
+                'app/js/common/**/*.js'
             ],
             metrics: [
                 '<%= src.common %>',
@@ -60,6 +62,7 @@ module.exports = function(grunt) {
                 'bower_components/angular/angular.js',
                 'bower_components/vis/dist/vis.js',
                 'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
+                'app/js/debugger/debugger.js',
                 'app/js/debugger/**/*.js'
             ],
             debuggerCss: [
@@ -150,6 +153,12 @@ module.exports = function(grunt) {
                         expand: true,
                         nonull:true
                     },{
+                        src: ['**/*'],
+                        dest: './dist/js/app/js',
+                        cwd: 'app/js',
+                        expand: true,
+                        nonull:true
+                    },{
                         src: ['*'],
                         dest: './dist/fonts',
                         cwd: 'bower_components/bootstrap/dist/fonts',
@@ -217,10 +226,7 @@ module.exports = function(grunt) {
             all: [
                 'Gruntfile.js',
                 '<%= src.all %>',
-                '!app/js/common/es5-sham.min.js',
-                '!app/js/common/es5-shim.min.js',
-                '!app/js/common/promise-1.0.0.js'
-                
+                '!bower_components/**/*'
             ],
             test: {
                 src: ['<%= src.test %>']
@@ -259,6 +265,9 @@ module.exports = function(grunt) {
             },
             intentsDemo: {
                 options:{	port: 15006, base: ["dist","demo/intentDemo","test/tests/unit"]}
+            },
+            performanceTester: {
+                options:{	port: 15007, base: ["dist","demo/performanceTester"]}
             }
         },
         dist: {

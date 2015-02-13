@@ -1,2843 +1,3 @@
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-
-/**
- * Common classes used between both the Client and the Bus.
- * @module common
- */
-
-/**
- * An Event emmitter/receiver class.
- * @class Event
- * @namespace ozpIwc
- */
-ozpIwc.Event=function() {
-    /**
-     * A key value store of events.
-     * @property events
-     * @type Object
-     * @default {}
-     */
-	this.events={};
-};
-
-/**
- * Registers a handler for the the event.
- *
- * @method on
- * @param {String} event The name of the event to trigger on.
- * @param {Function} callback Function to be invoked.
- * @param {Object} [self] Used as the this pointer when callback is invoked.
- *
- * @returns {Object} A handle that can be used to unregister the callback via
- * {{#crossLink "ozpIwc.Event/off:method"}}{{/crossLink}}
- */
-ozpIwc.Event.prototype.on=function(event,callback,self) {
-	var wrapped=callback;
-	if(self) {
-		wrapped=function() {
-			callback.apply(self,arguments);
-		};
-		wrapped.ozpIwcDelegateFor=callback;
-	}
-	this.events[event]=this.events[event]||[];
-	this.events[event].push(wrapped);
-	return wrapped;
-};
-
-/**
- * Unregisters an event handler previously registered.
- *
- * @method off
- * @param {String} event
- * @param {Function} callback
- */
-ozpIwc.Event.prototype.off=function(event,callback) {
-	this.events[event]=(this.events[event]||[]).filter( function(h) {
-		return h!==callback && h.ozpIwcDelegateFor !== callback;
-	});
-};
-
-/**
- * Fires an event that will be received by all handlers.
- *
- * @method
- * @param {String} eventName Name of the event.
- * @param {Object} event Event object to pass to the handers.
- *
- * @returns {Object} The event after all handlers have processed it.
- */
-ozpIwc.Event.prototype.trigger=function(eventName,event) {
-	event = event || new ozpIwc.CancelableEvent();
-	var handlers=this.events[eventName] || [];
-
-	handlers.forEach(function(h) {
-		h(event);
-	});
-	return event;
-};
-
-
-/**
- * Adds an {{#crossLink "ozpIwc.Event/off:method"}}on(){{/crossLink}} and
- * {{#crossLink "ozpIwc.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this object.
- *
- * @method mixinOnOff
- * @param {Object} target Target to receive the on/off functions
- */
-ozpIwc.Event.prototype.mixinOnOff=function(target) {
-	var self=this;
-	target.on=function() { return self.on.apply(self,arguments);};
-	target.off=function() { return self.off.apply(self,arguments);};
-};
-
-/**
- * Convenient base for events that can be canceled.  Provides and manages
- * the properties canceled and cancelReason, as well as the member function
- * cancel().
- *
- * @class CancelableEvent
- * @namespace ozpIwc
- * @param {Object} data Data that will be copied into the event
- */
-ozpIwc.CancelableEvent=function(data) {
-	data = data || {};
-	for(var k in data) {
-		this[k]=data[k];
-	}
-	this.canceled=false;
-	this.cancelReason=null;
-};
-
-/**
- * Marks the event as canceled.
- * @method cancel
- * @param {String} reason A text description of why the event was canceled.
- *
- * @returns {ozpIwc.CancelableEvent} Reference to self
- */
-ozpIwc.CancelableEvent.prototype.cancel=function(reason) {
-	reason= reason || "Unknown";
-	this.canceled=true;
-	this.cancelReason=reason;
-	return this;
-};
-
-/*
- json2.js
- 2014-02-04
-
- Public Domain.
-
- NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
-
- See http://www.JSON.org/js.html
-
-
- This code should be minified before deployment.
- See http://javascript.crockford.com/jsmin.html
-
- USE YOUR OWN COPY. IT IS EXTREMELY UNWISE TO LOAD CODE FROM SERVERS YOU DO
- NOT CONTROL.
-
-
- This file creates a global JSON object containing two methods: stringify
- and parse.
-
- JSON.stringify(value, replacer, space)
- value       any JavaScript value, usually an object or array.
-
- replacer    an optional parameter that determines how object
- values are stringified for objects. It can be a
- function or an array of strings.
-
- space       an optional parameter that specifies the indentation
- of nested structures. If it is omitted, the text will
- be packed without extra whitespace. If it is a number,
- it will specify the number of spaces to indent at each
- level. If it is a string (such as '\t' or '&nbsp;'),
- it contains the characters used to indent at each level.
-
- This method produces a JSON text from a JavaScript value.
-
- When an object value is found, if the object contains a toJSON
- method, its toJSON method will be called and the result will be
- stringified. A toJSON method does not serialize: it returns the
- value represented by the name/value pair that should be serialized,
- or undefined if nothing should be serialized. The toJSON method
- will be passed the key associated with the value, and this will be
- bound to the value
-
- For example, this would serialize Dates as ISO strings.
-
- Date.prototype.toJSON = function (key) {
- function f(n) {
- // Format integers to have at least two digits.
- return n < 10 ? '0' + n : n;
- }
-
- return this.getUTCFullYear()   + '-' +
- f(this.getUTCMonth() + 1) + '-' +
- f(this.getUTCDate())      + 'T' +
- f(this.getUTCHours())     + ':' +
- f(this.getUTCMinutes())   + ':' +
- f(this.getUTCSeconds())   + 'Z';
- };
-
- You can provide an optional replacer method. It will be passed the
- key and value of each member, with this bound to the containing
- object. The value that is returned from your method will be
- serialized. If your method returns undefined, then the member will
- be excluded from the serialization.
-
- If the replacer parameter is an array of strings, then it will be
- used to select the members to be serialized. It filters the results
- such that only members with keys listed in the replacer array are
- stringified.
-
- Values that do not have JSON representations, such as undefined or
- functions, will not be serialized. Such values in objects will be
- dropped; in arrays they will be replaced with null. You can use
- a replacer function to replace those with JSON values.
- JSON.stringify(undefined) returns undefined.
-
- The optional space parameter produces a stringification of the
- value that is filled with line breaks and indentation to make it
- easier to read.
-
- If the space parameter is a non-empty string, then that string will
- be used for indentation. If the space parameter is a number, then
- the indentation will be that many spaces.
-
- Example:
-
- text = JSON.stringify(['e', {pluribus: 'unum'}]);
- // text is '["e",{"pluribus":"unum"}]'
-
-
- text = JSON.stringify(['e', {pluribus: 'unum'}], null, '\t');
- // text is '[\n\t"e",\n\t{\n\t\t"pluribus": "unum"\n\t}\n]'
-
- text = JSON.stringify([new Date()], function (key, value) {
- return this[key] instanceof Date ?
- 'Date(' + this[key] + ')' : value;
- });
- // text is '["Date(---current time---)"]'
-
-
- JSON.parse(text, reviver)
- This method parses a JSON text to produce an object or array.
- It can throw a SyntaxError exception.
-
- The optional reviver parameter is a function that can filter and
- transform the results. It receives each of the keys and values,
- and its return value is used instead of the original value.
- If it returns what it received, then the structure is not modified.
- If it returns undefined then the member is deleted.
-
- Example:
-
- // Parse the text. Values that look like ISO date strings will
- // be converted to Date objects.
-
- myData = JSON.parse(text, function (key, value) {
- var a;
- if (typeof value === 'string') {
- a =
- /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
- if (a) {
- return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4],
- +a[5], +a[6]));
- }
- }
- return value;
- });
-
- myData = JSON.parse('["Date(09/09/2001)"]', function (key, value) {
- var d;
- if (typeof value === 'string' &&
- value.slice(0, 5) === 'Date(' &&
- value.slice(-1) === ')') {
- d = new Date(value.slice(5, -1));
- if (d) {
- return d;
- }
- }
- return value;
- });
-
-
- This is a reference implementation. You are free to copy, modify, or
- redistribute.
- */
-
-/*jslint evil: true, regexp: true */
-
-/*members "", "\b", "\t", "\n", "\f", "\r", "\"", JSON, "\\", apply,
- call, charCodeAt, getUTCDate, getUTCFullYear, getUTCHours,
- getUTCMinutes, getUTCMonth, getUTCSeconds, hasOwnProperty, join,
- lastIndex, length, parse, prototype, push, replace, slice, stringify,
- test, toJSON, toString, valueOf
- */
-
-
-// Create a JSON object only if one does not already exist. We create the
-// methods in a closure to avoid creating global variables.
-
-if (typeof JSON !== 'object') {
-    JSON = {};
-}
-
-(function () {
-    'use strict';
-
-    function f(n) {
-        // Format integers to have at least two digits.
-        return n < 10 ? '0' + n : n;
-    }
-
-    if (typeof Date.prototype.toJSON !== 'function') {
-
-        Date.prototype.toJSON = function () {
-
-            return isFinite(this.valueOf())
-                ? this.getUTCFullYear()     + '-' +
-                f(this.getUTCMonth() + 1) + '-' +
-                f(this.getUTCDate())      + 'T' +
-                f(this.getUTCHours())     + ':' +
-                f(this.getUTCMinutes())   + ':' +
-                f(this.getUTCSeconds())   + 'Z'
-                : null;
-        };
-
-        String.prototype.toJSON      =
-            Number.prototype.toJSON  =
-                Boolean.prototype.toJSON = function () {
-                    return this.valueOf();
-                };
-    }
-
-    var cx,
-        escapable,
-        gap,
-        indent,
-        meta,
-        rep;
-
-
-    function quote(string) {
-
-// If the string contains no control characters, no quote characters, and no
-// backslash characters, then we can safely slap some quotes around it.
-// Otherwise we must also replace the offending characters with safe escape
-// sequences.
-
-        escapable.lastIndex = 0;
-        return escapable.test(string) ? '"' + string.replace(escapable, function (a) {
-            var c = meta[a];
-            return typeof c === 'string'
-                ? c
-                : '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-        }) + '"' : '"' + string + '"';
-    }
-
-
-    function str(key, holder) {
-
-// Produce a string from holder[key].
-
-        var i,          // The loop counter.
-            k,          // The member key.
-            v,          // The member value.
-            length,
-            mind = gap,
-            partial,
-            value = holder[key];
-
-// If the value has a toJSON method, call it to obtain a replacement value.
-
-        if (value && typeof value === 'object' &&
-            typeof value.toJSON === 'function') {
-            value = value.toJSON(key);
-        }
-
-// If we were called with a replacer function, then call the replacer to
-// obtain a replacement value.
-
-        if (typeof rep === 'function') {
-            value = rep.call(holder, key, value);
-        }
-
-// What happens next depends on the value's type.
-
-        switch (typeof value) {
-            case 'string':
-                return quote(value);
-
-            case 'number':
-
-// JSON numbers must be finite. Encode non-finite numbers as null.
-
-                return isFinite(value) ? String(value) : 'null';
-
-            case 'boolean':
-            case 'null':
-
-// If the value is a boolean or null, convert it to a string. Note:
-// typeof null does not produce 'null'. The case is included here in
-// the remote chance that this gets fixed someday.
-
-                return String(value);
-
-// If the type is 'object', we might be dealing with an object or an array or
-// null.
-
-            case 'object':
-
-// Due to a specification blunder in ECMAScript, typeof null is 'object',
-// so watch out for that case.
-
-                if (!value) {
-                    return 'null';
-                }
-
-// Make an array to hold the partial results of stringifying this object value.
-
-                gap += indent;
-                partial = [];
-
-// Is the value an array?
-
-                if (Object.prototype.toString.apply(value) === '[object Array]') {
-
-// The value is an array. Stringify every element. Use null as a placeholder
-// for non-JSON values.
-
-                    length = value.length;
-                    for (i = 0; i < length; i += 1) {
-                        partial[i] = str(i, value) || 'null';
-                    }
-
-// Join all of the elements together, separated with commas, and wrap them in
-// brackets.
-
-                    v = partial.length === 0
-                        ? '[]'
-                        : gap
-                        ? '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']'
-                        : '[' + partial.join(',') + ']';
-                    gap = mind;
-                    return v;
-                }
-
-// If the replacer is an array, use it to select the members to be stringified.
-
-                if (rep && typeof rep === 'object') {
-                    length = rep.length;
-                    for (i = 0; i < length; i += 1) {
-                        if (typeof rep[i] === 'string') {
-                            k = rep[i];
-                            v = str(k, value);
-                            if (v) {
-                                partial.push(quote(k) + (gap ? ': ' : ':') + v);
-                            }
-                        }
-                    }
-                } else {
-
-// Otherwise, iterate through all of the keys in the object.
-
-                    for (k in value) {
-                        if (Object.prototype.hasOwnProperty.call(value, k)) {
-                            v = str(k, value);
-                            if (v) {
-                                partial.push(quote(k) + (gap ? ': ' : ':') + v);
-                            }
-                        }
-                    }
-                }
-
-// Join all of the member texts together, separated with commas,
-// and wrap them in braces.
-
-                v = partial.length === 0
-                    ? '{}'
-                    : gap
-                    ? '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}'
-                    : '{' + partial.join(',') + '}';
-                gap = mind;
-                return v;
-        }
-    }
-
-// If the JSON object does not yet have a stringify method, give it one.
-
-    if (typeof JSON.stringify !== 'function') {
-        escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
-        meta = {    // table of character substitutions
-            '\b': '\\b',
-            '\t': '\\t',
-            '\n': '\\n',
-            '\f': '\\f',
-            '\r': '\\r',
-            '"' : '\\"',
-            '\\': '\\\\'
-        };
-        JSON.stringify = function (value, replacer, space) {
-
-// The stringify method takes a value and an optional replacer, and an optional
-// space parameter, and returns a JSON text. The replacer can be a function
-// that can replace values, or an array of strings that will select the keys.
-// A default replacer method can be provided. Use of the space parameter can
-// produce text that is more easily readable.
-
-            var i;
-            gap = '';
-            indent = '';
-
-// If the space parameter is a number, make an indent string containing that
-// many spaces.
-
-            if (typeof space === 'number') {
-                for (i = 0; i < space; i += 1) {
-                    indent += ' ';
-                }
-
-// If the space parameter is a string, it will be used as the indent string.
-
-            } else if (typeof space === 'string') {
-                indent = space;
-            }
-
-// If there is a replacer, it must be a function or an array.
-// Otherwise, throw an error.
-
-            rep = replacer;
-            if (replacer && typeof replacer !== 'function' &&
-                (typeof replacer !== 'object' ||
-                    typeof replacer.length !== 'number')) {
-                throw new Error('JSON.stringify');
-            }
-
-// Make a fake root object containing our value under the key of ''.
-// Return the result of stringifying the value.
-
-            return str('', {'': value});
-        };
-    }
-
-
-// If the JSON object does not yet have a parse method, give it one.
-
-    if (typeof JSON.parse !== 'function') {
-        cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
-        JSON.parse = function (text, reviver) {
-
-// The parse method takes a text and an optional reviver function, and returns
-// a JavaScript value if the text is a valid JSON text.
-
-            var j;
-
-            function walk(holder, key) {
-
-// The walk method is used to recursively walk the resulting structure so
-// that modifications can be made.
-
-                var k, v, value = holder[key];
-                if (value && typeof value === 'object') {
-                    for (k in value) {
-                        if (Object.prototype.hasOwnProperty.call(value, k)) {
-                            v = walk(value, k);
-                            if (v !== undefined) {
-                                value[k] = v;
-                            } else {
-                                delete value[k];
-                            }
-                        }
-                    }
-                }
-                return reviver.call(holder, key, value);
-            }
-
-
-// Parsing happens in four stages. In the first stage, we replace certain
-// Unicode characters with escape sequences. JavaScript handles many characters
-// incorrectly, either silently deleting them, or treating them as line endings.
-
-            text = String(text);
-            cx.lastIndex = 0;
-            if (cx.test(text)) {
-                text = text.replace(cx, function (a) {
-                    return '\\u' +
-                        ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-                });
-            }
-
-// In the second stage, we run the text against regular expressions that look
-// for non-JSON patterns. We are especially concerned with '()' and 'new'
-// because they can cause invocation, and '=' because it can cause mutation.
-// But just to be safe, we want to reject all unexpected forms.
-
-// We split the second stage into 4 regexp operations in order to work around
-// crippling inefficiencies in IE's and Safari's regexp engines. First we
-// replace the JSON backslash pairs with '@' (a non-JSON character). Second, we
-// replace all simple value tokens with ']' characters. Third, we delete all
-// open brackets that follow a colon or comma or that begin the text. Finally,
-// we look to see that the remaining characters are only whitespace or ']' or
-// ',' or ':' or '{' or '}'. If that is so, then the text is safe for eval.
-
-            if (/^[\],:{}\s]*$/
-                .test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
-                    .replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
-                    .replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
-
-// In the third stage we use the eval function to compile the text into a
-// JavaScript structure. The '{' operator is subject to a syntactic ambiguity
-// in JavaScript: it can begin a block or an object literal. We wrap the text
-// in parens to eliminate the ambiguity.
-
-                j = eval('(' + text + ')');
-
-// In the optional fourth stage, we recursively walk the new structure, passing
-// each name/value pair to a reviver function for possible transformation.
-
-                return typeof reviver === 'function'
-                    ? walk({'': j}, '')
-                    : j;
-            }
-
-// If the text is not JSON parseable, then a SyntaxError is thrown.
-
-            throw new SyntaxError('JSON.parse');
-        };
-    }
-}());
-/*!
- * https://github.com/es-shims/es5-shim
- * @license es5-shim Copyright 2009-2014 by contributors, MIT License
- * see https://github.com/es-shims/es5-shim/blob/master/LICENSE
- */
-
-// vim: ts=4 sts=4 sw=4 expandtab
-
-//Add semicolon to prevent IIFE from being passed as argument to concated code.
-;
-
-// UMD (Universal Module Definition)
-// see https://github.com/umdjs/umd/blob/master/returnExports.js
-(function (root, factory) {
-    'use strict';
-    /*global define, exports, module */
-    if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
-        define(factory);
-    } else if (typeof exports === 'object') {
-        // Node. Does not work with strict CommonJS, but
-        // only CommonJS-like enviroments that support module.exports,
-        // like Node.
-        module.exports = factory();
-    } else {
-        // Browser globals (root is window)
-        root.returnExports = factory();
-    }
-}(this, function () {
-
-    var call = Function.prototype.call;
-    var prototypeOfObject = Object.prototype;
-    var owns = call.bind(prototypeOfObject.hasOwnProperty);
-
-// If JS engine supports accessors creating shortcuts.
-    var defineGetter;
-    var defineSetter;
-    var lookupGetter;
-    var lookupSetter;
-    var supportsAccessors = owns(prototypeOfObject, '__defineGetter__');
-    if (supportsAccessors) {
-        defineGetter = call.bind(prototypeOfObject.__defineGetter__);
-        defineSetter = call.bind(prototypeOfObject.__defineSetter__);
-        lookupGetter = call.bind(prototypeOfObject.__lookupGetter__);
-        lookupSetter = call.bind(prototypeOfObject.__lookupSetter__);
-    }
-
-// ES5 15.2.3.2
-// http://es5.github.com/#x15.2.3.2
-    if (!Object.getPrototypeOf) {
-        // https://github.com/es-shims/es5-shim/issues#issue/2
-        // http://ejohn.org/blog/objectgetprototypeof/
-        // recommended by fschaefer on github
-        //
-        // sure, and webreflection says ^_^
-        // ... this will nerever possibly return null
-        // ... Opera Mini breaks here with infinite loops
-        Object.getPrototypeOf = function getPrototypeOf(object) {
-            var proto = object.__proto__;
-            if (proto || proto === null) {
-                return proto;
-            } else if (object.constructor) {
-                return object.constructor.prototype;
-            } else {
-                return prototypeOfObject;
-            }
-        };
-    }
-
-//ES5 15.2.3.3
-//http://es5.github.com/#x15.2.3.3
-
-    function doesGetOwnPropertyDescriptorWork(object) {
-        try {
-            object.sentinel = 0;
-            return Object.getOwnPropertyDescriptor(object, 'sentinel').value === 0;
-        } catch (exception) {
-            // returns falsy
-        }
-    }
-
-//check whether getOwnPropertyDescriptor works if it's given. Otherwise,
-//shim partially.
-    if (Object.defineProperty) {
-        var getOwnPropertyDescriptorWorksOnObject = doesGetOwnPropertyDescriptorWork({});
-        var getOwnPropertyDescriptorWorksOnDom = typeof document === 'undefined' ||
-            doesGetOwnPropertyDescriptorWork(document.createElement('div'));
-        if (!getOwnPropertyDescriptorWorksOnDom || !getOwnPropertyDescriptorWorksOnObject) {
-            var getOwnPropertyDescriptorFallback = Object.getOwnPropertyDescriptor;
-        }
-    }
-
-    if (!Object.getOwnPropertyDescriptor || getOwnPropertyDescriptorFallback) {
-        var ERR_NON_OBJECT = 'Object.getOwnPropertyDescriptor called on a non-object: ';
-
-        Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(object, property) {
-            if ((typeof object !== 'object' && typeof object !== 'function') || object === null) {
-                throw new TypeError(ERR_NON_OBJECT + object);
-            }
-
-            // make a valiant attempt to use the real getOwnPropertyDescriptor
-            // for I8's DOM elements.
-            if (getOwnPropertyDescriptorFallback) {
-                try {
-                    return getOwnPropertyDescriptorFallback.call(Object, object, property);
-                } catch (exception) {
-                    // try the shim if the real one doesn't work
-                }
-            }
-
-            // If object does not owns property return undefined immediately.
-            if (!owns(object, property)) {
-                return;
-            }
-
-            // If object has a property then it's for sure both `enumerable` and
-            // `configurable`.
-            var descriptor = { enumerable: true, configurable: true };
-
-            // If JS engine supports accessor properties then property may be a
-            // getter or setter.
-            if (supportsAccessors) {
-                // Unfortunately `__lookupGetter__` will return a getter even
-                // if object has own non getter property along with a same named
-                // inherited getter. To avoid misbehavior we temporary remove
-                // `__proto__` so that `__lookupGetter__` will return getter only
-                // if it's owned by an object.
-                var prototype = object.__proto__;
-                var notPrototypeOfObject = object !== prototypeOfObject;
-                // avoid recursion problem, breaking in Opera Mini when
-                // Object.getOwnPropertyDescriptor(Object.prototype, 'toString')
-                // or any other Object.prototype accessor
-                if (notPrototypeOfObject) {
-                    object.__proto__ = prototypeOfObject;
-                }
-
-                var getter = lookupGetter(object, property);
-                var setter = lookupSetter(object, property);
-
-                if (notPrototypeOfObject) {
-                    // Once we have getter and setter we can put values back.
-                    object.__proto__ = prototype;
-                }
-
-                if (getter || setter) {
-                    if (getter) {
-                        descriptor.get = getter;
-                    }
-                    if (setter) {
-                        descriptor.set = setter;
-                    }
-                    // If it was accessor property we're done and return here
-                    // in order to avoid adding `value` to the descriptor.
-                    return descriptor;
-                }
-            }
-
-            // If we got this far we know that object has an own property that is
-            // not an accessor so we set it as a value and return descriptor.
-            descriptor.value = object[property];
-            descriptor.writable = true;
-            return descriptor;
-        };
-    }
-
-// ES5 15.2.3.4
-// http://es5.github.com/#x15.2.3.4
-    if (!Object.getOwnPropertyNames) {
-        Object.getOwnPropertyNames = function getOwnPropertyNames(object) {
-            return Object.keys(object);
-        };
-    }
-
-// ES5 15.2.3.5
-// http://es5.github.com/#x15.2.3.5
-    if (!Object.create) {
-
-        // Contributed by Brandon Benvie, October, 2012
-        var createEmpty;
-        var supportsProto = !({ __proto__: null } instanceof Object);
-        // the following produces false positives
-        // in Opera Mini => not a reliable check
-        // Object.prototype.__proto__ === null
-        /*global document */
-        if (supportsProto || typeof document === 'undefined') {
-            createEmpty = function () {
-                return { __proto__: null };
-            };
-        } else {
-            // In old IE __proto__ can't be used to manually set `null`, nor does
-            // any other method exist to make an object that inherits from nothing,
-            // aside from Object.prototype itself. Instead, create a new global
-            // object and *steal* its Object.prototype and strip it bare. This is
-            // used as the prototype to create nullary objects.
-            createEmpty = function () {
-                var iframe = document.createElement('iframe');
-                var parent = document.body || document.documentElement;
-                iframe.style.display = 'none';
-                parent.appendChild(iframe);
-                iframe.src = 'javascript:';
-                var empty = iframe.contentWindow.Object.prototype;
-                parent.removeChild(iframe);
-                iframe = null;
-                delete empty.constructor;
-                delete empty.hasOwnProperty;
-                delete empty.propertyIsEnumerable;
-                delete empty.isPrototypeOf;
-                delete empty.toLocaleString;
-                delete empty.toString;
-                delete empty.valueOf;
-                empty.__proto__ = null;
-
-                function Empty() {}
-                Empty.prototype = empty;
-                // short-circuit future calls
-                createEmpty = function () {
-                    return new Empty();
-                };
-                return new Empty();
-            };
-        }
-
-        Object.create = function create(prototype, properties) {
-
-            var object;
-            function Type() {}  // An empty constructor.
-
-            if (prototype === null) {
-                object = createEmpty();
-            } else {
-                if (typeof prototype !== 'object' && typeof prototype !== 'function') {
-                    // In the native implementation `parent` can be `null`
-                    // OR *any* `instanceof Object`  (Object|Function|Array|RegExp|etc)
-                    // Use `typeof` tho, b/c in old IE, DOM elements are not `instanceof Object`
-                    // like they are in modern browsers. Using `Object.create` on DOM elements
-                    // is...err...probably inappropriate, but the native version allows for it.
-                    throw new TypeError('Object prototype may only be an Object or null'); // same msg as Chrome
-                }
-                Type.prototype = prototype;
-                object = new Type();
-                // IE has no built-in implementation of `Object.getPrototypeOf`
-                // neither `__proto__`, but this manually setting `__proto__` will
-                // guarantee that `Object.getPrototypeOf` will work as expected with
-                // objects created using `Object.create`
-                object.__proto__ = prototype;
-            }
-
-            if (properties !== void 0) {
-                Object.defineProperties(object, properties);
-            }
-
-            return object;
-        };
-    }
-
-// ES5 15.2.3.6
-// http://es5.github.com/#x15.2.3.6
-
-// Patch for WebKit and IE8 standard mode
-// Designed by hax <hax.github.com>
-// related issue: https://github.com/es-shims/es5-shim/issues#issue/5
-// IE8 Reference:
-//     http://msdn.microsoft.com/en-us/library/dd282900.aspx
-//     http://msdn.microsoft.com/en-us/library/dd229916.aspx
-// WebKit Bugs:
-//     https://bugs.webkit.org/show_bug.cgi?id=36423
-
-    function doesDefinePropertyWork(object) {
-        try {
-            Object.defineProperty(object, 'sentinel', {});
-            return 'sentinel' in object;
-        } catch (exception) {
-            // returns falsy
-        }
-    }
-
-// check whether defineProperty works if it's given. Otherwise,
-// shim partially.
-    if (Object.defineProperty) {
-        var definePropertyWorksOnObject = doesDefinePropertyWork({});
-        var definePropertyWorksOnDom = typeof document === 'undefined' ||
-            doesDefinePropertyWork(document.createElement('div'));
-        if (!definePropertyWorksOnObject || !definePropertyWorksOnDom) {
-            var definePropertyFallback = Object.defineProperty,
-                definePropertiesFallback = Object.defineProperties;
-        }
-    }
-
-    if (!Object.defineProperty || definePropertyFallback) {
-        var ERR_NON_OBJECT_DESCRIPTOR = 'Property description must be an object: ';
-        var ERR_NON_OBJECT_TARGET = 'Object.defineProperty called on non-object: ';
-        var ERR_ACCESSORS_NOT_SUPPORTED = 'getters & setters can not be defined on this javascript engine';
-
-        Object.defineProperty = function defineProperty(object, property, descriptor) {
-            if ((typeof object !== 'object' && typeof object !== 'function') || object === null) {
-                throw new TypeError(ERR_NON_OBJECT_TARGET + object);
-            }
-            if ((typeof descriptor !== 'object' && typeof descriptor !== 'function') || descriptor === null) {
-                throw new TypeError(ERR_NON_OBJECT_DESCRIPTOR + descriptor);
-            }
-            // make a valiant attempt to use the real defineProperty
-            // for I8's DOM elements.
-            if (definePropertyFallback) {
-                try {
-                    return definePropertyFallback.call(Object, object, property, descriptor);
-                } catch (exception) {
-                    // try the shim if the real one doesn't work
-                }
-            }
-
-            // If it's a data property.
-            if ('value' in descriptor) {
-                // fail silently if 'writable', 'enumerable', or 'configurable'
-                // are requested but not supported
-                /*
-                 // alternate approach:
-                 if ( // can't implement these features; allow false but not true
-                 ('writable' in descriptor && !descriptor.writable) ||
-                 ('enumerable' in descriptor && !descriptor.enumerable) ||
-                 ('configurable' in descriptor && !descriptor.configurable)
-                 ))
-                 throw new RangeError(
-                 'This implementation of Object.defineProperty does not support configurable, enumerable, or writable.'
-                 );
-                 */
-
-                if (supportsAccessors && (lookupGetter(object, property) || lookupSetter(object, property))) {
-                    // As accessors are supported only on engines implementing
-                    // `__proto__` we can safely override `__proto__` while defining
-                    // a property to make sure that we don't hit an inherited
-                    // accessor.
-                    var prototype = object.__proto__;
-                    object.__proto__ = prototypeOfObject;
-                    // Deleting a property anyway since getter / setter may be
-                    // defined on object itself.
-                    delete object[property];
-                    object[property] = descriptor.value;
-                    // Setting original `__proto__` back now.
-                    object.__proto__ = prototype;
-                } else {
-                    object[property] = descriptor.value;
-                }
-            } else {
-                if (!supportsAccessors) {
-                    throw new TypeError(ERR_ACCESSORS_NOT_SUPPORTED);
-                }
-                // If we got that far then getters and setters can be defined !!
-                if ('get' in descriptor) {
-                    defineGetter(object, property, descriptor.get);
-                }
-                if ('set' in descriptor) {
-                    defineSetter(object, property, descriptor.set);
-                }
-            }
-            return object;
-        };
-    }
-
-// ES5 15.2.3.7
-// http://es5.github.com/#x15.2.3.7
-    if (!Object.defineProperties || definePropertiesFallback) {
-        Object.defineProperties = function defineProperties(object, properties) {
-            // make a valiant attempt to use the real defineProperties
-            if (definePropertiesFallback) {
-                try {
-                    return definePropertiesFallback.call(Object, object, properties);
-                } catch (exception) {
-                    // try the shim if the real one doesn't work
-                }
-            }
-
-            for (var property in properties) {
-                if (owns(properties, property) && property !== '__proto__') {
-                    Object.defineProperty(object, property, properties[property]);
-                }
-            }
-            return object;
-        };
-    }
-
-// ES5 15.2.3.8
-// http://es5.github.com/#x15.2.3.8
-    if (!Object.seal) {
-        Object.seal = function seal(object) {
-            if (Object(object) !== object) {
-                throw new TypeError('Object.seal can only be called on Objects.');
-            }
-            // this is misleading and breaks feature-detection, but
-            // allows "securable" code to "gracefully" degrade to working
-            // but insecure code.
-            return object;
-        };
-    }
-
-// ES5 15.2.3.9
-// http://es5.github.com/#x15.2.3.9
-    if (!Object.freeze) {
-        Object.freeze = function freeze(object) {
-            if (Object(object) !== object) {
-                throw new TypeError('Object.freeze can only be called on Objects.');
-            }
-            // this is misleading and breaks feature-detection, but
-            // allows "securable" code to "gracefully" degrade to working
-            // but insecure code.
-            return object;
-        };
-    }
-
-// detect a Rhino bug and patch it
-    try {
-        Object.freeze(function () {});
-    } catch (exception) {
-        Object.freeze = (function freeze(freezeObject) {
-            return function freeze(object) {
-                if (typeof object === 'function') {
-                    return object;
-                } else {
-                    return freezeObject(object);
-                }
-            };
-        }(Object.freeze));
-    }
-
-// ES5 15.2.3.10
-// http://es5.github.com/#x15.2.3.10
-    if (!Object.preventExtensions) {
-        Object.preventExtensions = function preventExtensions(object) {
-            if (Object(object) !== object) {
-                throw new TypeError('Object.preventExtensions can only be called on Objects.');
-            }
-            // this is misleading and breaks feature-detection, but
-            // allows "securable" code to "gracefully" degrade to working
-            // but insecure code.
-            return object;
-        };
-    }
-
-// ES5 15.2.3.11
-// http://es5.github.com/#x15.2.3.11
-    if (!Object.isSealed) {
-        Object.isSealed = function isSealed(object) {
-            if (Object(object) !== object) {
-                throw new TypeError('Object.isSealed can only be called on Objects.');
-            }
-            return false;
-        };
-    }
-
-// ES5 15.2.3.12
-// http://es5.github.com/#x15.2.3.12
-    if (!Object.isFrozen) {
-        Object.isFrozen = function isFrozen(object) {
-            if (Object(object) !== object) {
-                throw new TypeError('Object.isFrozen can only be called on Objects.');
-            }
-            return false;
-        };
-    }
-
-// ES5 15.2.3.13
-// http://es5.github.com/#x15.2.3.13
-    if (!Object.isExtensible) {
-        Object.isExtensible = function isExtensible(object) {
-            // 1. If Type(O) is not Object throw a TypeError exception.
-            if (Object(object) !== object) {
-                throw new TypeError('Object.isExtensible can only be called on Objects.');
-            }
-            // 2. Return the Boolean value of the [[Extensible]] internal property of O.
-            var name = '';
-            while (owns(object, name)) {
-                name += '?';
-            }
-            object[name] = true;
-            var returnValue = owns(object, name);
-            delete object[name];
-            return returnValue;
-        };
-    }
-
-}));
-/*!
- * https://github.com/es-shims/es5-shim
- * @license es5-shim Copyright 2009-2014 by contributors, MIT License
- * see https://github.com/es-shims/es5-shim/blob/master/LICENSE
- */
-
-// vim: ts=4 sts=4 sw=4 expandtab
-
-
-// UMD (Universal Module Definition)
-// see https://github.com/umdjs/umd/blob/master/returnExports.js
-// Add semicolon to prevent IIFE from being passed as argument to concatenated code.
-;(function (root, factory) {
-    'use strict';
-    /*global define, exports, module */
-    if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
-        define(factory);
-    } else if (typeof exports === 'object') {
-        // Node. Does not work with strict CommonJS, but
-        // only CommonJS-like enviroments that support module.exports,
-        // like Node.
-        module.exports = factory();
-    } else {
-        // Browser globals (root is window)
-        root.returnExports = factory();
-    }
-}(this, function () {
-
-    /**
-     * Brings an environment as close to ECMAScript 5 compliance
-     * as is possible with the facilities of erstwhile engines.
-     *
-     * Annotated ES5: http://es5.github.com/ (specific links below)
-     * ES5 Spec: http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
-     * Required reading: http://javascriptweblog.wordpress.com/2011/12/05/extending-javascript-natives/
-     */
-
-// Shortcut to an often accessed properties, in order to avoid multiple
-// dereference that costs universally.
-    var ArrayPrototype = Array.prototype;
-    var ObjectPrototype = Object.prototype;
-    var FunctionPrototype = Function.prototype;
-    var StringPrototype = String.prototype;
-    var NumberPrototype = Number.prototype;
-    var array_slice = ArrayPrototype.slice;
-    var array_splice = ArrayPrototype.splice;
-    var array_push = ArrayPrototype.push;
-    var array_unshift = ArrayPrototype.unshift;
-    var call = FunctionPrototype.call;
-
-// Having a toString local variable name breaks in Opera so use to_string.
-    var to_string = ObjectPrototype.toString;
-
-    var isFunction = function (val) {
-        return to_string.call(val) === '[object Function]';
-    };
-    var isRegex = function (val) {
-        return to_string.call(val) === '[object RegExp]';
-    };
-    var isArray = function isArray(obj) {
-        return to_string.call(obj) === '[object Array]';
-    };
-    var isString = function isString(obj) {
-        return to_string.call(obj) === '[object String]';
-    };
-    var isArguments = function isArguments(value) {
-        var str = to_string.call(value);
-        var isArgs = str === '[object Arguments]';
-        if (!isArgs) {
-            isArgs = !isArray(value) &&
-                value !== null &&
-                typeof value === 'object' &&
-                typeof value.length === 'number' &&
-                value.length >= 0 &&
-                isFunction(value.callee);
-        }
-        return isArgs;
-    };
-
-    var supportsDescriptors = Object.defineProperty && (function () {
-        try {
-            Object.defineProperty({}, 'x', {});
-            return true;
-        } catch (e) { /* this is ES3 */
-            return false;
-        }
-    }());
-
-// Define configurable, writable and non-enumerable props
-// if they don't exist.
-    var defineProperty;
-    if (supportsDescriptors) {
-        defineProperty = function (object, name, method, forceAssign) {
-            if (!forceAssign && (name in object)) { return; }
-            Object.defineProperty(object, name, {
-                configurable: true,
-                enumerable: false,
-                writable: true,
-                value: method
-            });
-        };
-    } else {
-        defineProperty = function (object, name, method, forceAssign) {
-            if (!forceAssign && (name in object)) { return; }
-            object[name] = method;
-        };
-    }
-    var defineProperties = function (object, map, forceAssign) {
-        for (var name in map) {
-            if (ObjectPrototype.hasOwnProperty.call(map, name)) {
-                defineProperty(object, name, map[name], forceAssign);
-            }
-        }
-    };
-
-//
-// Util
-// ======
-//
-
-// ES5 9.4
-// http://es5.github.com/#x9.4
-// http://jsperf.com/to-integer
-
-    function toInteger(num) {
-        var n = +num;
-        if (n !== n) { // isNaN
-            n = 0;
-        } else if (n !== 0 && n !== (1 / 0) && n !== -(1 / 0)) {
-            n = (n > 0 || -1) * Math.floor(Math.abs(n));
-        }
-        return n;
-    }
-
-    function isPrimitive(input) {
-        var type = typeof input;
-        return input === null ||
-            type === 'undefined' ||
-            type === 'boolean' ||
-            type === 'number' ||
-            type === 'string';
-    }
-
-    function toPrimitive(input) {
-        var val, valueOf, toStr;
-        if (isPrimitive(input)) {
-            return input;
-        }
-        valueOf = input.valueOf;
-        if (isFunction(valueOf)) {
-            val = valueOf.call(input);
-            if (isPrimitive(val)) {
-                return val;
-            }
-        }
-        toStr = input.toString;
-        if (isFunction(toStr)) {
-            val = toStr.call(input);
-            if (isPrimitive(val)) {
-                return val;
-            }
-        }
-        throw new TypeError();
-    }
-
-    var ES = {
-        // ES5 9.9
-        // http://es5.github.com/#x9.9
-        ToObject: function (o) {
-            /*jshint eqnull: true */
-            if (o == null) { // this matches both null and undefined
-                throw new TypeError("can't convert " + o + ' to object');
-            }
-            return Object(o);
-        },
-        ToUint32: function ToUint32(x) {
-            return x >>> 0;
-        }
-    };
-
-//
-// Function
-// ========
-//
-
-// ES-5 15.3.4.5
-// http://es5.github.com/#x15.3.4.5
-
-    var Empty = function Empty() {};
-
-    defineProperties(FunctionPrototype, {
-        bind: function bind(that) { // .length is 1
-            // 1. Let Target be the this value.
-            var target = this;
-            // 2. If IsCallable(Target) is false, throw a TypeError exception.
-            if (!isFunction(target)) {
-                throw new TypeError('Function.prototype.bind called on incompatible ' + target);
-            }
-            // 3. Let A be a new (possibly empty) internal list of all of the
-            //   argument values provided after thisArg (arg1, arg2 etc), in order.
-            // XXX slicedArgs will stand in for "A" if used
-            var args = array_slice.call(arguments, 1); // for normal call
-            // 4. Let F be a new native ECMAScript object.
-            // 11. Set the [[Prototype]] internal property of F to the standard
-            //   built-in Function prototype object as specified in 15.3.3.1.
-            // 12. Set the [[Call]] internal property of F as described in
-            //   15.3.4.5.1.
-            // 13. Set the [[Construct]] internal property of F as described in
-            //   15.3.4.5.2.
-            // 14. Set the [[HasInstance]] internal property of F as described in
-            //   15.3.4.5.3.
-            var bound;
-            var binder = function () {
-
-                if (this instanceof bound) {
-                    // 15.3.4.5.2 [[Construct]]
-                    // When the [[Construct]] internal method of a function object,
-                    // F that was created using the bind function is called with a
-                    // list of arguments ExtraArgs, the following steps are taken:
-                    // 1. Let target be the value of F's [[TargetFunction]]
-                    //   internal property.
-                    // 2. If target has no [[Construct]] internal method, a
-                    //   TypeError exception is thrown.
-                    // 3. Let boundArgs be the value of F's [[BoundArgs]] internal
-                    //   property.
-                    // 4. Let args be a new list containing the same values as the
-                    //   list boundArgs in the same order followed by the same
-                    //   values as the list ExtraArgs in the same order.
-                    // 5. Return the result of calling the [[Construct]] internal
-                    //   method of target providing args as the arguments.
-
-                    var result = target.apply(
-                        this,
-                        args.concat(array_slice.call(arguments))
-                    );
-                    if (Object(result) === result) {
-                        return result;
-                    }
-                    return this;
-
-                } else {
-                    // 15.3.4.5.1 [[Call]]
-                    // When the [[Call]] internal method of a function object, F,
-                    // which was created using the bind function is called with a
-                    // this value and a list of arguments ExtraArgs, the following
-                    // steps are taken:
-                    // 1. Let boundArgs be the value of F's [[BoundArgs]] internal
-                    //   property.
-                    // 2. Let boundThis be the value of F's [[BoundThis]] internal
-                    //   property.
-                    // 3. Let target be the value of F's [[TargetFunction]] internal
-                    //   property.
-                    // 4. Let args be a new list containing the same values as the
-                    //   list boundArgs in the same order followed by the same
-                    //   values as the list ExtraArgs in the same order.
-                    // 5. Return the result of calling the [[Call]] internal method
-                    //   of target providing boundThis as the this value and
-                    //   providing args as the arguments.
-
-                    // equiv: target.call(this, ...boundArgs, ...args)
-                    return target.apply(
-                        that,
-                        args.concat(array_slice.call(arguments))
-                    );
-
-                }
-
-            };
-
-            // 15. If the [[Class]] internal property of Target is "Function", then
-            //     a. Let L be the length property of Target minus the length of A.
-            //     b. Set the length own property of F to either 0 or L, whichever is
-            //       larger.
-            // 16. Else set the length own property of F to 0.
-
-            var boundLength = Math.max(0, target.length - args.length);
-
-            // 17. Set the attributes of the length own property of F to the values
-            //   specified in 15.3.5.1.
-            var boundArgs = [];
-            for (var i = 0; i < boundLength; i++) {
-                boundArgs.push('$' + i);
-            }
-
-            // XXX Build a dynamic function with desired amount of arguments is the only
-            // way to set the length property of a function.
-            // In environments where Content Security Policies enabled (Chrome extensions,
-            // for ex.) all use of eval or Function costructor throws an exception.
-            // However in all of these environments Function.prototype.bind exists
-            // and so this code will never be executed.
-            bound = Function('binder', 'return function (' + boundArgs.join(',') + '){ return binder.apply(this, arguments); }')(binder);
-
-            if (target.prototype) {
-                Empty.prototype = target.prototype;
-                bound.prototype = new Empty();
-                // Clean up dangling references.
-                Empty.prototype = null;
-            }
-
-            // TODO
-            // 18. Set the [[Extensible]] internal property of F to true.
-
-            // TODO
-            // 19. Let thrower be the [[ThrowTypeError]] function Object (13.2.3).
-            // 20. Call the [[DefineOwnProperty]] internal method of F with
-            //   arguments "caller", PropertyDescriptor {[[Get]]: thrower, [[Set]]:
-            //   thrower, [[Enumerable]]: false, [[Configurable]]: false}, and
-            //   false.
-            // 21. Call the [[DefineOwnProperty]] internal method of F with
-            //   arguments "arguments", PropertyDescriptor {[[Get]]: thrower,
-            //   [[Set]]: thrower, [[Enumerable]]: false, [[Configurable]]: false},
-            //   and false.
-
-            // TODO
-            // NOTE Function objects created using Function.prototype.bind do not
-            // have a prototype property or the [[Code]], [[FormalParameters]], and
-            // [[Scope]] internal properties.
-            // XXX can't delete prototype in pure-js.
-
-            // 22. Return F.
-            return bound;
-        }
-    });
-
-// _Please note: Shortcuts are defined after `Function.prototype.bind` as we
-// us it in defining shortcuts.
-    var owns = call.bind(ObjectPrototype.hasOwnProperty);
-
-//
-// Array
-// =====
-//
-
-// ES5 15.4.4.12
-// http://es5.github.com/#x15.4.4.12
-    var spliceNoopReturnsEmptyArray = (function () {
-        var a = [1, 2];
-        var result = a.splice();
-        return a.length === 2 && isArray(result) && result.length === 0;
-    }());
-    defineProperties(ArrayPrototype, {
-        // Safari 5.0 bug where .splice() returns undefined
-        splice: function splice(start, deleteCount) {
-            if (arguments.length === 0) {
-                return [];
-            } else {
-                return array_splice.apply(this, arguments);
-            }
-        }
-    }, spliceNoopReturnsEmptyArray);
-
-    var spliceWorksWithEmptyObject = (function () {
-        var obj = {};
-        ArrayPrototype.splice.call(obj, 0, 0, 1);
-        return obj.length === 1;
-    }());
-    defineProperties(ArrayPrototype, {
-        splice: function splice(start, deleteCount) {
-            if (arguments.length === 0) { return []; }
-            var args = arguments;
-            this.length = Math.max(toInteger(this.length), 0);
-            if (arguments.length > 0 && typeof deleteCount !== 'number') {
-                args = array_slice.call(arguments);
-                if (args.length < 2) {
-                    args.push(this.length - start);
-                } else {
-                    args[1] = toInteger(deleteCount);
-                }
-            }
-            return array_splice.apply(this, args);
-        }
-    }, !spliceWorksWithEmptyObject);
-
-// ES5 15.4.4.12
-// http://es5.github.com/#x15.4.4.13
-// Return len+argCount.
-// [bugfix, ielt8]
-// IE < 8 bug: [].unshift(0) === undefined but should be "1"
-    var hasUnshiftReturnValueBug = [].unshift(0) !== 1;
-    defineProperties(ArrayPrototype, {
-        unshift: function () {
-            array_unshift.apply(this, arguments);
-            return this.length;
-        }
-    }, hasUnshiftReturnValueBug);
-
-// ES5 15.4.3.2
-// http://es5.github.com/#x15.4.3.2
-// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/isArray
-    defineProperties(Array, { isArray: isArray });
-
-// The IsCallable() check in the Array functions
-// has been replaced with a strict check on the
-// internal class of the object to trap cases where
-// the provided function was actually a regular
-// expression literal, which in V8 and
-// JavaScriptCore is a typeof "function".  Only in
-// V8 are regular expression literals permitted as
-// reduce parameters, so it is desirable in the
-// general case for the shim to match the more
-// strict and common behavior of rejecting regular
-// expressions.
-
-// ES5 15.4.4.18
-// http://es5.github.com/#x15.4.4.18
-// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/forEach
-
-// Check failure of by-index access of string characters (IE < 9)
-// and failure of `0 in boxedString` (Rhino)
-    var boxedString = Object('a');
-    var splitString = boxedString[0] !== 'a' || !(0 in boxedString);
-
-    var properlyBoxesContext = function properlyBoxed(method) {
-        // Check node 0.6.21 bug where third parameter is not boxed
-        var properlyBoxesNonStrict = true;
-        var properlyBoxesStrict = true;
-        if (method) {
-            method.call('foo', function (_, __, context) {
-                if (typeof context !== 'object') { properlyBoxesNonStrict = false; }
-            });
-
-            method.call([1], function () {
-                'use strict';
-                properlyBoxesStrict = typeof this === 'string';
-            }, 'x');
-        }
-        return !!method && properlyBoxesNonStrict && properlyBoxesStrict;
-    };
-
-    defineProperties(ArrayPrototype, {
-        forEach: function forEach(fun /*, thisp*/) {
-            var object = ES.ToObject(this),
-                self = splitString && isString(this) ? this.split('') : object,
-                thisp = arguments[1],
-                i = -1,
-                length = self.length >>> 0;
-
-            // If no callback function or if callback is not a callable function
-            if (!isFunction(fun)) {
-                throw new TypeError(); // TODO message
-            }
-
-            while (++i < length) {
-                if (i in self) {
-                    // Invoke the callback function with call, passing arguments:
-                    // context, property value, property key, thisArg object
-                    // context
-                    fun.call(thisp, self[i], i, object);
-                }
-            }
-        }
-    }, !properlyBoxesContext(ArrayPrototype.forEach));
-
-// ES5 15.4.4.19
-// http://es5.github.com/#x15.4.4.19
-// https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/map
-    defineProperties(ArrayPrototype, {
-        map: function map(fun /*, thisp*/) {
-            var object = ES.ToObject(this),
-                self = splitString && isString(this) ? this.split('') : object,
-                length = self.length >>> 0,
-                result = Array(length),
-                thisp = arguments[1];
-
-            // If no callback function or if callback is not a callable function
-            if (!isFunction(fun)) {
-                throw new TypeError(fun + ' is not a function');
-            }
-
-            for (var i = 0; i < length; i++) {
-                if (i in self) {
-                    result[i] = fun.call(thisp, self[i], i, object);
-                }
-            }
-            return result;
-        }
-    }, !properlyBoxesContext(ArrayPrototype.map));
-
-// ES5 15.4.4.20
-// http://es5.github.com/#x15.4.4.20
-// https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/filter
-    defineProperties(ArrayPrototype, {
-        filter: function filter(fun /*, thisp */) {
-            var object = ES.ToObject(this),
-                self = splitString && isString(this) ? this.split('') : object,
-                length = self.length >>> 0,
-                result = [],
-                value,
-                thisp = arguments[1];
-
-            // If no callback function or if callback is not a callable function
-            if (!isFunction(fun)) {
-                throw new TypeError(fun + ' is not a function');
-            }
-
-            for (var i = 0; i < length; i++) {
-                if (i in self) {
-                    value = self[i];
-                    if (fun.call(thisp, value, i, object)) {
-                        result.push(value);
-                    }
-                }
-            }
-            return result;
-        }
-    }, !properlyBoxesContext(ArrayPrototype.filter));
-
-// ES5 15.4.4.16
-// http://es5.github.com/#x15.4.4.16
-// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/every
-    defineProperties(ArrayPrototype, {
-        every: function every(fun /*, thisp */) {
-            var object = ES.ToObject(this),
-                self = splitString && isString(this) ? this.split('') : object,
-                length = self.length >>> 0,
-                thisp = arguments[1];
-
-            // If no callback function or if callback is not a callable function
-            if (!isFunction(fun)) {
-                throw new TypeError(fun + ' is not a function');
-            }
-
-            for (var i = 0; i < length; i++) {
-                if (i in self && !fun.call(thisp, self[i], i, object)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }, !properlyBoxesContext(ArrayPrototype.every));
-
-// ES5 15.4.4.17
-// http://es5.github.com/#x15.4.4.17
-// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/some
-    defineProperties(ArrayPrototype, {
-        some: function some(fun /*, thisp */) {
-            var object = ES.ToObject(this),
-                self = splitString && isString(this) ? this.split('') : object,
-                length = self.length >>> 0,
-                thisp = arguments[1];
-
-            // If no callback function or if callback is not a callable function
-            if (!isFunction(fun)) {
-                throw new TypeError(fun + ' is not a function');
-            }
-
-            for (var i = 0; i < length; i++) {
-                if (i in self && fun.call(thisp, self[i], i, object)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }, !properlyBoxesContext(ArrayPrototype.some));
-
-// ES5 15.4.4.21
-// http://es5.github.com/#x15.4.4.21
-// https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/reduce
-    var reduceCoercesToObject = false;
-    if (ArrayPrototype.reduce) {
-        reduceCoercesToObject = typeof ArrayPrototype.reduce.call('es5', function (_, __, ___, list) { return list; }) === 'object';
-    }
-    defineProperties(ArrayPrototype, {
-        reduce: function reduce(fun /*, initial*/) {
-            var object = ES.ToObject(this),
-                self = splitString && isString(this) ? this.split('') : object,
-                length = self.length >>> 0;
-
-            // If no callback function or if callback is not a callable function
-            if (!isFunction(fun)) {
-                throw new TypeError(fun + ' is not a function');
-            }
-
-            // no value to return if no initial value and an empty array
-            if (!length && arguments.length === 1) {
-                throw new TypeError('reduce of empty array with no initial value');
-            }
-
-            var i = 0;
-            var result;
-            if (arguments.length >= 2) {
-                result = arguments[1];
-            } else {
-                do {
-                    if (i in self) {
-                        result = self[i++];
-                        break;
-                    }
-
-                    // if array contains no values, no initial value to return
-                    if (++i >= length) {
-                        throw new TypeError('reduce of empty array with no initial value');
-                    }
-                } while (true);
-            }
-
-            for (; i < length; i++) {
-                if (i in self) {
-                    result = fun.call(void 0, result, self[i], i, object);
-                }
-            }
-
-            return result;
-        }
-    }, !reduceCoercesToObject);
-
-// ES5 15.4.4.22
-// http://es5.github.com/#x15.4.4.22
-// https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Objects/Array/reduceRight
-    var reduceRightCoercesToObject = false;
-    if (ArrayPrototype.reduceRight) {
-        reduceRightCoercesToObject = typeof ArrayPrototype.reduceRight.call('es5', function (_, __, ___, list) { return list; }) === 'object';
-    }
-    defineProperties(ArrayPrototype, {
-        reduceRight: function reduceRight(fun /*, initial*/) {
-            var object = ES.ToObject(this),
-                self = splitString && isString(this) ? this.split('') : object,
-                length = self.length >>> 0;
-
-            // If no callback function or if callback is not a callable function
-            if (!isFunction(fun)) {
-                throw new TypeError(fun + ' is not a function');
-            }
-
-            // no value to return if no initial value, empty array
-            if (!length && arguments.length === 1) {
-                throw new TypeError('reduceRight of empty array with no initial value');
-            }
-
-            var result, i = length - 1;
-            if (arguments.length >= 2) {
-                result = arguments[1];
-            } else {
-                do {
-                    if (i in self) {
-                        result = self[i--];
-                        break;
-                    }
-
-                    // if array contains no values, no initial value to return
-                    if (--i < 0) {
-                        throw new TypeError('reduceRight of empty array with no initial value');
-                    }
-                } while (true);
-            }
-
-            if (i < 0) {
-                return result;
-            }
-
-            do {
-                if (i in self) {
-                    result = fun.call(void 0, result, self[i], i, object);
-                }
-            } while (i--);
-
-            return result;
-        }
-    }, !reduceRightCoercesToObject);
-
-// ES5 15.4.4.14
-// http://es5.github.com/#x15.4.4.14
-// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/indexOf
-    var hasFirefox2IndexOfBug = Array.prototype.indexOf && [0, 1].indexOf(1, 2) !== -1;
-    defineProperties(ArrayPrototype, {
-        indexOf: function indexOf(sought /*, fromIndex */) {
-            var self = splitString && isString(this) ? this.split('') : ES.ToObject(this),
-                length = self.length >>> 0;
-
-            if (!length) {
-                return -1;
-            }
-
-            var i = 0;
-            if (arguments.length > 1) {
-                i = toInteger(arguments[1]);
-            }
-
-            // handle negative indices
-            i = i >= 0 ? i : Math.max(0, length + i);
-            for (; i < length; i++) {
-                if (i in self && self[i] === sought) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-    }, hasFirefox2IndexOfBug);
-
-// ES5 15.4.4.15
-// http://es5.github.com/#x15.4.4.15
-// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/lastIndexOf
-    var hasFirefox2LastIndexOfBug = Array.prototype.lastIndexOf && [0, 1].lastIndexOf(0, -3) !== -1;
-    defineProperties(ArrayPrototype, {
-        lastIndexOf: function lastIndexOf(sought /*, fromIndex */) {
-            var self = splitString && isString(this) ? this.split('') : ES.ToObject(this),
-                length = self.length >>> 0;
-
-            if (!length) {
-                return -1;
-            }
-            var i = length - 1;
-            if (arguments.length > 1) {
-                i = Math.min(i, toInteger(arguments[1]));
-            }
-            // handle negative indices
-            i = i >= 0 ? i : length - Math.abs(i);
-            for (; i >= 0; i--) {
-                if (i in self && sought === self[i]) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-    }, hasFirefox2LastIndexOfBug);
-
-//
-// Object
-// ======
-//
-
-// ES5 15.2.3.14
-// http://es5.github.com/#x15.2.3.14
-
-// http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
-    var hasDontEnumBug = !({'toString': null}).propertyIsEnumerable('toString'),
-        hasProtoEnumBug = function () {}.propertyIsEnumerable('prototype'),
-        dontEnums = [
-            'toString',
-            'toLocaleString',
-            'valueOf',
-            'hasOwnProperty',
-            'isPrototypeOf',
-            'propertyIsEnumerable',
-            'constructor'
-        ],
-        dontEnumsLength = dontEnums.length;
-
-    defineProperties(Object, {
-        keys: function keys(object) {
-            var isFn = isFunction(object),
-                isArgs = isArguments(object),
-                isObject = object !== null && typeof object === 'object',
-                isStr = isObject && isString(object);
-
-            if (!isObject && !isFn && !isArgs) {
-                throw new TypeError('Object.keys called on a non-object');
-            }
-
-            var theKeys = [];
-            var skipProto = hasProtoEnumBug && isFn;
-            if (isStr || isArgs) {
-                for (var i = 0; i < object.length; ++i) {
-                    theKeys.push(String(i));
-                }
-            } else {
-                for (var name in object) {
-                    if (!(skipProto && name === 'prototype') && owns(object, name)) {
-                        theKeys.push(String(name));
-                    }
-                }
-            }
-
-            if (hasDontEnumBug) {
-                var ctor = object.constructor,
-                    skipConstructor = ctor && ctor.prototype === object;
-                for (var j = 0; j < dontEnumsLength; j++) {
-                    var dontEnum = dontEnums[j];
-                    if (!(skipConstructor && dontEnum === 'constructor') && owns(object, dontEnum)) {
-                        theKeys.push(dontEnum);
-                    }
-                }
-            }
-            return theKeys;
-        }
-    });
-
-    var keysWorksWithArguments = Object.keys && (function () {
-        // Safari 5.0 bug
-        return Object.keys(arguments).length === 2;
-    }(1, 2));
-    var originalKeys = Object.keys;
-    defineProperties(Object, {
-        keys: function keys(object) {
-            if (isArguments(object)) {
-                return originalKeys(ArrayPrototype.slice.call(object));
-            } else {
-                return originalKeys(object);
-            }
-        }
-    }, !keysWorksWithArguments);
-
-//
-// Date
-// ====
-//
-
-// ES5 15.9.5.43
-// http://es5.github.com/#x15.9.5.43
-// This function returns a String value represent the instance in time
-// represented by this Date object. The format of the String is the Date Time
-// string format defined in 15.9.1.15. All fields are present in the String.
-// The time zone is always UTC, denoted by the suffix Z. If the time value of
-// this object is not a finite Number a RangeError exception is thrown.
-    var negativeDate = -62198755200000;
-    var negativeYearString = '-000001';
-    var hasNegativeDateBug = Date.prototype.toISOString && new Date(negativeDate).toISOString().indexOf(negativeYearString) === -1;
-
-    defineProperties(Date.prototype, {
-        toISOString: function toISOString() {
-            var result, length, value, year, month;
-            if (!isFinite(this)) {
-                throw new RangeError('Date.prototype.toISOString called on non-finite value.');
-            }
-
-            year = this.getUTCFullYear();
-
-            month = this.getUTCMonth();
-            // see https://github.com/es-shims/es5-shim/issues/111
-            year += Math.floor(month / 12);
-            month = (month % 12 + 12) % 12;
-
-            // the date time string format is specified in 15.9.1.15.
-            result = [month + 1, this.getUTCDate(), this.getUTCHours(), this.getUTCMinutes(), this.getUTCSeconds()];
-            year = (
-                (year < 0 ? '-' : (year > 9999 ? '+' : '')) +
-                ('00000' + Math.abs(year)).slice(0 <= year && year <= 9999 ? -4 : -6)
-                );
-
-            length = result.length;
-            while (length--) {
-                value = result[length];
-                // pad months, days, hours, minutes, and seconds to have two
-                // digits.
-                if (value < 10) {
-                    result[length] = '0' + value;
-                }
-            }
-            // pad milliseconds to have three digits.
-            return (
-                year + '-' + result.slice(0, 2).join('-') +
-                'T' + result.slice(2).join(':') + '.' +
-                ('000' + this.getUTCMilliseconds()).slice(-3) + 'Z'
-                );
-        }
-    }, hasNegativeDateBug);
-
-
-// ES5 15.9.5.44
-// http://es5.github.com/#x15.9.5.44
-// This function provides a String representation of a Date object for use by
-// JSON.stringify (15.12.3).
-    var dateToJSONIsSupported = false;
-    try {
-        dateToJSONIsSupported = (
-            Date.prototype.toJSON &&
-            new Date(NaN).toJSON() === null &&
-            new Date(negativeDate).toJSON().indexOf(negativeYearString) !== -1 &&
-            Date.prototype.toJSON.call({ // generic
-                toISOString: function () {
-                    return true;
-                }
-            })
-            );
-    } catch (e) {
-    }
-    if (!dateToJSONIsSupported) {
-        Date.prototype.toJSON = function toJSON(key) {
-            // When the toJSON method is called with argument key, the following
-            // steps are taken:
-
-            // 1.  Let O be the result of calling ToObject, giving it the this
-            // value as its argument.
-            // 2. Let tv be toPrimitive(O, hint Number).
-            var o = Object(this),
-                tv = toPrimitive(o),
-                toISO;
-            // 3. If tv is a Number and is not finite, return null.
-            if (typeof tv === 'number' && !isFinite(tv)) {
-                return null;
-            }
-            // 4. Let toISO be the result of calling the [[Get]] internal method of
-            // O with argument "toISOString".
-            toISO = o.toISOString;
-            // 5. If IsCallable(toISO) is false, throw a TypeError exception.
-            if (typeof toISO !== 'function') {
-                throw new TypeError('toISOString property is not callable');
-            }
-            // 6. Return the result of calling the [[Call]] internal method of
-            //  toISO with O as the this value and an empty argument list.
-            return toISO.call(o);
-
-            // NOTE 1 The argument is ignored.
-
-            // NOTE 2 The toJSON function is intentionally generic; it does not
-            // require that its this value be a Date object. Therefore, it can be
-            // transferred to other kinds of objects for use as a method. However,
-            // it does require that any such object have a toISOString method. An
-            // object is free to use the argument key to filter its
-            // stringification.
-        };
-    }
-
-// ES5 15.9.4.2
-// http://es5.github.com/#x15.9.4.2
-// based on work shared by Daniel Friesen (dantman)
-// http://gist.github.com/303249
-    var supportsExtendedYears = Date.parse('+033658-09-27T01:46:40.000Z') === 1e15;
-    var acceptsInvalidDates = !isNaN(Date.parse('2012-04-04T24:00:00.500Z')) || !isNaN(Date.parse('2012-11-31T23:59:59.000Z'));
-    var doesNotParseY2KNewYear = isNaN(Date.parse('2000-01-01T00:00:00.000Z'));
-    if (!Date.parse || doesNotParseY2KNewYear || acceptsInvalidDates || !supportsExtendedYears) {
-        // XXX global assignment won't work in embeddings that use
-        // an alternate object for the context.
-        /*global Date: true */
-        Date = (function (NativeDate) {
-
-            // Date.length === 7
-            function Date(Y, M, D, h, m, s, ms) {
-                var length = arguments.length;
-                if (this instanceof NativeDate) {
-                    var date = length === 1 && String(Y) === Y ? // isString(Y)
-                        // We explicitly pass it through parse:
-                        new NativeDate(Date.parse(Y)) :
-                        // We have to manually make calls depending on argument
-                        // length here
-                            length >= 7 ? new NativeDate(Y, M, D, h, m, s, ms) :
-                            length >= 6 ? new NativeDate(Y, M, D, h, m, s) :
-                            length >= 5 ? new NativeDate(Y, M, D, h, m) :
-                            length >= 4 ? new NativeDate(Y, M, D, h) :
-                            length >= 3 ? new NativeDate(Y, M, D) :
-                            length >= 2 ? new NativeDate(Y, M) :
-                            length >= 1 ? new NativeDate(Y) :
-                        new NativeDate();
-                    // Prevent mixups with unfixed Date object
-                    date.constructor = Date;
-                    return date;
-                }
-                return NativeDate.apply(this, arguments);
-            }
-
-            // 15.9.1.15 Date Time String Format.
-            var isoDateExpression = new RegExp('^' +
-                '(\\d{4}|[+-]\\d{6})' + // four-digit year capture or sign +
-                // 6-digit extended year
-                '(?:-(\\d{2})' + // optional month capture
-                '(?:-(\\d{2})' + // optional day capture
-                '(?:' + // capture hours:minutes:seconds.milliseconds
-                'T(\\d{2})' + // hours capture
-                ':(\\d{2})' + // minutes capture
-                '(?:' + // optional :seconds.milliseconds
-                ':(\\d{2})' + // seconds capture
-                '(?:(\\.\\d{1,}))?' + // milliseconds capture
-                ')?' +
-                '(' + // capture UTC offset component
-                'Z|' + // UTC capture
-                '(?:' + // offset specifier +/-hours:minutes
-                '([-+])' + // sign capture
-                '(\\d{2})' + // hours offset capture
-                ':(\\d{2})' + // minutes offset capture
-                ')' +
-                ')?)?)?)?' +
-                '$');
-
-            var months = [
-                0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365
-            ];
-
-            function dayFromMonth(year, month) {
-                var t = month > 1 ? 1 : 0;
-                return (
-                    months[month] +
-                    Math.floor((year - 1969 + t) / 4) -
-                    Math.floor((year - 1901 + t) / 100) +
-                    Math.floor((year - 1601 + t) / 400) +
-                    365 * (year - 1970)
-                    );
-            }
-
-            function toUTC(t) {
-                return Number(new NativeDate(1970, 0, 1, 0, 0, 0, t));
-            }
-
-            // Copy any custom methods a 3rd party library may have added
-            for (var key in NativeDate) {
-                Date[key] = NativeDate[key];
-            }
-
-            // Copy "native" methods explicitly; they may be non-enumerable
-            Date.now = NativeDate.now;
-            Date.UTC = NativeDate.UTC;
-            Date.prototype = NativeDate.prototype;
-            Date.prototype.constructor = Date;
-
-            // Upgrade Date.parse to handle simplified ISO 8601 strings
-            Date.parse = function parse(string) {
-                var match = isoDateExpression.exec(string);
-                if (match) {
-                    // parse months, days, hours, minutes, seconds, and milliseconds
-                    // provide default values if necessary
-                    // parse the UTC offset component
-                    var year = Number(match[1]),
-                        month = Number(match[2] || 1) - 1,
-                        day = Number(match[3] || 1) - 1,
-                        hour = Number(match[4] || 0),
-                        minute = Number(match[5] || 0),
-                        second = Number(match[6] || 0),
-                        millisecond = Math.floor(Number(match[7] || 0) * 1000),
-                    // When time zone is missed, local offset should be used
-                    // (ES 5.1 bug)
-                    // see https://bugs.ecmascript.org/show_bug.cgi?id=112
-                        isLocalTime = Boolean(match[4] && !match[8]),
-                        signOffset = match[9] === '-' ? 1 : -1,
-                        hourOffset = Number(match[10] || 0),
-                        minuteOffset = Number(match[11] || 0),
-                        result;
-                    if (
-                        hour < (
-                            minute > 0 || second > 0 || millisecond > 0 ?
-                        24 : 25
-                        ) &&
-                        minute < 60 && second < 60 && millisecond < 1000 &&
-                        month > -1 && month < 12 && hourOffset < 24 &&
-                        minuteOffset < 60 && // detect invalid offsets
-                        day > -1 &&
-                        day < (
-                        dayFromMonth(year, month + 1) -
-                        dayFromMonth(year, month)
-                        )
-                        ) {
-                        result = (
-                            (dayFromMonth(year, month) + day) * 24 +
-                            hour +
-                            hourOffset * signOffset
-                            ) * 60;
-                        result = (
-                            (result + minute + minuteOffset * signOffset) * 60 +
-                            second
-                            ) * 1000 + millisecond;
-                        if (isLocalTime) {
-                            result = toUTC(result);
-                        }
-                        if (-8.64e15 <= result && result <= 8.64e15) {
-                            return result;
-                        }
-                    }
-                    return NaN;
-                }
-                return NativeDate.parse.apply(this, arguments);
-            };
-
-            return Date;
-        }(Date));
-        /*global Date: false */
-    }
-
-// ES5 15.9.4.4
-// http://es5.github.com/#x15.9.4.4
-    if (!Date.now) {
-        Date.now = function now() {
-            return new Date().getTime();
-        };
-    }
-
-
-//
-// Number
-// ======
-//
-
-// ES5.1 15.7.4.5
-// http://es5.github.com/#x15.7.4.5
-    var hasToFixedBugs = NumberPrototype.toFixed && (
-        (0.00008).toFixed(3) !== '0.000' ||
-        (0.9).toFixed(0) !== '1' ||
-        (1.255).toFixed(2) !== '1.25' ||
-        (1000000000000000128).toFixed(0) !== '1000000000000000128'
-        );
-
-    var toFixedHelpers = {
-        base: 1e7,
-        size: 6,
-        data: [0, 0, 0, 0, 0, 0],
-        multiply: function multiply(n, c) {
-            var i = -1;
-            while (++i < toFixedHelpers.size) {
-                c += n * toFixedHelpers.data[i];
-                toFixedHelpers.data[i] = c % toFixedHelpers.base;
-                c = Math.floor(c / toFixedHelpers.base);
-            }
-        },
-        divide: function divide(n) {
-            var i = toFixedHelpers.size, c = 0;
-            while (--i >= 0) {
-                c += toFixedHelpers.data[i];
-                toFixedHelpers.data[i] = Math.floor(c / n);
-                c = (c % n) * toFixedHelpers.base;
-            }
-        },
-        numToString: function numToString() {
-            var i = toFixedHelpers.size;
-            var s = '';
-            while (--i >= 0) {
-                if (s !== '' || i === 0 || toFixedHelpers.data[i] !== 0) {
-                    var t = String(toFixedHelpers.data[i]);
-                    if (s === '') {
-                        s = t;
-                    } else {
-                        s += '0000000'.slice(0, 7 - t.length) + t;
-                    }
-                }
-            }
-            return s;
-        },
-        pow: function pow(x, n, acc) {
-            return (n === 0 ? acc : (n % 2 === 1 ? pow(x, n - 1, acc * x) : pow(x * x, n / 2, acc)));
-        },
-        log: function log(x) {
-            var n = 0;
-            while (x >= 4096) {
-                n += 12;
-                x /= 4096;
-            }
-            while (x >= 2) {
-                n += 1;
-                x /= 2;
-            }
-            return n;
-        }
-    };
-
-    defineProperties(NumberPrototype, {
-        toFixed: function toFixed(fractionDigits) {
-            var f, x, s, m, e, z, j, k;
-
-            // Test for NaN and round fractionDigits down
-            f = Number(fractionDigits);
-            f = f !== f ? 0 : Math.floor(f);
-
-            if (f < 0 || f > 20) {
-                throw new RangeError('Number.toFixed called with invalid number of decimals');
-            }
-
-            x = Number(this);
-
-            // Test for NaN
-            if (x !== x) {
-                return 'NaN';
-            }
-
-            // If it is too big or small, return the string value of the number
-            if (x <= -1e21 || x >= 1e21) {
-                return String(x);
-            }
-
-            s = '';
-
-            if (x < 0) {
-                s = '-';
-                x = -x;
-            }
-
-            m = '0';
-
-            if (x > 1e-21) {
-                // 1e-21 < x < 1e21
-                // -70 < log2(x) < 70
-                e = toFixedHelpers.log(x * toFixedHelpers.pow(2, 69, 1)) - 69;
-                z = (e < 0 ? x * toFixedHelpers.pow(2, -e, 1) : x / toFixedHelpers.pow(2, e, 1));
-                z *= 0x10000000000000; // Math.pow(2, 52);
-                e = 52 - e;
-
-                // -18 < e < 122
-                // x = z / 2 ^ e
-                if (e > 0) {
-                    toFixedHelpers.multiply(0, z);
-                    j = f;
-
-                    while (j >= 7) {
-                        toFixedHelpers.multiply(1e7, 0);
-                        j -= 7;
-                    }
-
-                    toFixedHelpers.multiply(toFixedHelpers.pow(10, j, 1), 0);
-                    j = e - 1;
-
-                    while (j >= 23) {
-                        toFixedHelpers.divide(1 << 23);
-                        j -= 23;
-                    }
-
-                    toFixedHelpers.divide(1 << j);
-                    toFixedHelpers.multiply(1, 1);
-                    toFixedHelpers.divide(2);
-                    m = toFixedHelpers.numToString();
-                } else {
-                    toFixedHelpers.multiply(0, z);
-                    toFixedHelpers.multiply(1 << (-e), 0);
-                    m = toFixedHelpers.numToString() + '0.00000000000000000000'.slice(2, 2 + f);
-                }
-            }
-
-            if (f > 0) {
-                k = m.length;
-
-                if (k <= f) {
-                    m = s + '0.0000000000000000000'.slice(0, f - k + 2) + m;
-                } else {
-                    m = s + m.slice(0, k - f) + '.' + m.slice(k - f);
-                }
-            } else {
-                m = s + m;
-            }
-
-            return m;
-        }
-    }, hasToFixedBugs);
-
-
-//
-// String
-// ======
-//
-
-// ES5 15.5.4.14
-// http://es5.github.com/#x15.5.4.14
-
-// [bugfix, IE lt 9, firefox 4, Konqueror, Opera, obscure browsers]
-// Many browsers do not split properly with regular expressions or they
-// do not perform the split correctly under obscure conditions.
-// See http://blog.stevenlevithan.com/archives/cross-browser-split
-// I've tested in many browsers and this seems to cover the deviant ones:
-//    'ab'.split(/(?:ab)*/) should be ["", ""], not [""]
-//    '.'.split(/(.?)(.?)/) should be ["", ".", "", ""], not ["", ""]
-//    'tesst'.split(/(s)*/) should be ["t", undefined, "e", "s", "t"], not
-//       [undefined, "t", undefined, "e", ...]
-//    ''.split(/.?/) should be [], not [""]
-//    '.'.split(/()()/) should be ["."], not ["", "", "."]
-
-    var string_split = StringPrototype.split;
-    if (
-        'ab'.split(/(?:ab)*/).length !== 2 ||
-        '.'.split(/(.?)(.?)/).length !== 4 ||
-        'tesst'.split(/(s)*/)[1] === 't' ||
-        'test'.split(/(?:)/, -1).length !== 4 ||
-        ''.split(/.?/).length ||
-        '.'.split(/()()/).length > 1
-        ) {
-        (function () {
-            var compliantExecNpcg = typeof (/()??/).exec('')[1] === 'undefined'; // NPCG: nonparticipating capturing group
-
-            StringPrototype.split = function (separator, limit) {
-                var string = this;
-                if (typeof separator === 'undefined' && limit === 0) {
-                    return [];
-                }
-
-                // If `separator` is not a regex, use native split
-                if (to_string.call(separator) !== '[object RegExp]') {
-                    return string_split.call(this, separator, limit);
-                }
-
-                var output = [],
-                    flags = (separator.ignoreCase ? 'i' : '') +
-                        (separator.multiline ? 'm' : '') +
-                        (separator.extended ? 'x' : '') + // Proposed for ES6
-                        (separator.sticky ? 'y' : ''), // Firefox 3+
-                    lastLastIndex = 0,
-                // Make `global` and avoid `lastIndex` issues by working with a copy
-                    separator2, match, lastIndex, lastLength;
-                separator = new RegExp(separator.source, flags + 'g');
-                string += ''; // Type-convert
-                if (!compliantExecNpcg) {
-                    // Doesn't need flags gy, but they don't hurt
-                    separator2 = new RegExp('^' + separator.source + '$(?!\\s)', flags);
-                }
-                /* Values for `limit`, per the spec:
-                 * If undefined: 4294967295 // Math.pow(2, 32) - 1
-                 * If 0, Infinity, or NaN: 0
-                 * If positive number: limit = Math.floor(limit); if (limit > 4294967295) limit -= 4294967296;
-                 * If negative number: 4294967296 - Math.floor(Math.abs(limit))
-                 * If other: Type-convert, then use the above rules
-                 */
-                limit = typeof limit === 'undefined' ?
-                    -1 >>> 0 : // Math.pow(2, 32) - 1
-                    ES.ToUint32(limit);
-                while (match = separator.exec(string)) {
-                    // `separator.lastIndex` is not reliable cross-browser
-                    lastIndex = match.index + match[0].length;
-                    if (lastIndex > lastLastIndex) {
-                        output.push(string.slice(lastLastIndex, match.index));
-                        // Fix browsers whose `exec` methods don't consistently return `undefined` for
-                        // nonparticipating capturing groups
-                        if (!compliantExecNpcg && match.length > 1) {
-                            match[0].replace(separator2, function () {
-                                for (var i = 1; i < arguments.length - 2; i++) {
-                                    if (typeof arguments[i] === 'undefined') {
-                                        match[i] = void 0;
-                                    }
-                                }
-                            });
-                        }
-                        if (match.length > 1 && match.index < string.length) {
-                            array_push.apply(output, match.slice(1));
-                        }
-                        lastLength = match[0].length;
-                        lastLastIndex = lastIndex;
-                        if (output.length >= limit) {
-                            break;
-                        }
-                    }
-                    if (separator.lastIndex === match.index) {
-                        separator.lastIndex++; // Avoid an infinite loop
-                    }
-                }
-                if (lastLastIndex === string.length) {
-                    if (lastLength || !separator.test('')) {
-                        output.push('');
-                    }
-                } else {
-                    output.push(string.slice(lastLastIndex));
-                }
-                return output.length > limit ? output.slice(0, limit) : output;
-            };
-        }());
-
-// [bugfix, chrome]
-// If separator is undefined, then the result array contains just one String,
-// which is the this value (converted to a String). If limit is not undefined,
-// then the output array is truncated so that it contains no more than limit
-// elements.
-// "0".split(undefined, 0) -> []
-    } else if ('0'.split(void 0, 0).length) {
-        StringPrototype.split = function split(separator, limit) {
-            if (typeof separator === 'undefined' && limit === 0) { return []; }
-            return string_split.call(this, separator, limit);
-        };
-    }
-
-    var str_replace = StringPrototype.replace;
-    var replaceReportsGroupsCorrectly = (function () {
-        var groups = [];
-        'x'.replace(/x(.)?/g, function (match, group) {
-            groups.push(group);
-        });
-        return groups.length === 1 && typeof groups[0] === 'undefined';
-    }());
-
-    if (!replaceReportsGroupsCorrectly) {
-        StringPrototype.replace = function replace(searchValue, replaceValue) {
-            var isFn = isFunction(replaceValue);
-            var hasCapturingGroups = isRegex(searchValue) && (/\)[*?]/).test(searchValue.source);
-            if (!isFn || !hasCapturingGroups) {
-                return str_replace.call(this, searchValue, replaceValue);
-            } else {
-                var wrappedReplaceValue = function (match) {
-                    var length = arguments.length;
-                    var originalLastIndex = searchValue.lastIndex;
-                    searchValue.lastIndex = 0;
-                    var args = searchValue.exec(match) || [];
-                    searchValue.lastIndex = originalLastIndex;
-                    args.push(arguments[length - 2], arguments[length - 1]);
-                    return replaceValue.apply(this, args);
-                };
-                return str_replace.call(this, searchValue, wrappedReplaceValue);
-            }
-        };
-    }
-
-// ECMA-262, 3rd B.2.3
-// Not an ECMAScript standard, although ECMAScript 3rd Edition has a
-// non-normative section suggesting uniform semantics and it should be
-// normalized across all browsers
-// [bugfix, IE lt 9] IE < 9 substr() with negative value not working in IE
-    var string_substr = StringPrototype.substr;
-    var hasNegativeSubstrBug = ''.substr && '0b'.substr(-1) !== 'b';
-    defineProperties(StringPrototype, {
-        substr: function substr(start, length) {
-            return string_substr.call(
-                this,
-                    start < 0 ? ((start = this.length + start) < 0 ? 0 : start) : start,
-                length
-            );
-        }
-    }, hasNegativeSubstrBug);
-
-// ES5 15.5.4.20
-// whitespace from: http://es5.github.io/#x15.5.4.20
-    var ws = '\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003' +
-        '\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028' +
-        '\u2029\uFEFF';
-    var zeroWidth = '\u200b';
-    var wsRegexChars = '[' + ws + ']';
-    var trimBeginRegexp = new RegExp('^' + wsRegexChars + wsRegexChars + '*');
-    var trimEndRegexp = new RegExp(wsRegexChars + wsRegexChars + '*$');
-    var hasTrimWhitespaceBug = StringPrototype.trim && (ws.trim() || !zeroWidth.trim());
-    defineProperties(StringPrototype, {
-        // http://blog.stevenlevithan.com/archives/faster-trim-javascript
-        // http://perfectionkills.com/whitespace-deviations/
-        trim: function trim() {
-            if (typeof this === 'undefined' || this === null) {
-                throw new TypeError("can't convert " + this + ' to object');
-            }
-            return String(this).replace(trimBeginRegexp, '').replace(trimEndRegexp, '');
-        }
-    }, hasTrimWhitespaceBug);
-
-// ES-5 15.1.2.2
-    if (parseInt(ws + '08') !== 8 || parseInt(ws + '0x16') !== 22) {
-        /*global parseInt: true */
-        parseInt = (function (origParseInt) {
-            var hexRegex = /^0[xX]/;
-            return function parseIntES5(str, radix) {
-                str = String(str).trim();
-                if (!Number(radix)) {
-                    radix = hexRegex.test(str) ? 16 : 10;
-                }
-                return origParseInt(str, radix);
-            };
-        }(parseInt));
-    }
-
-}));
-if(!(window.console && console.log)) {
-    console = {
-        log: function(){},
-        debug: function(){},
-        info: function(){},
-        warn: function(){},
-        error: function(){}
-    };
-}
-/*!
- * @overview es6-promise - a tiny implementation of Promises/A+.
- * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
- * @license   Licensed under MIT license
- *            See https://raw.githubusercontent.com/jakearchibald/es6-promise/master/LICENSE
- * @version   2.0.0
- */
-
-(function(){function r(a,b){n[l]=a;n[l+1]=b;l+=2;2===l&&A()}function s(a){return"function"===typeof a}function F(){return function(){process.nextTick(t)}}function G(){var a=0,b=new B(t),c=document.createTextNode("");b.observe(c,{characterData:!0});return function(){c.data=a=++a%2}}function H(){var a=new MessageChannel;a.port1.onmessage=t;return function(){a.port2.postMessage(0)}}function I(){return function(){setTimeout(t,1)}}function t(){for(var a=0;a<l;a+=2)(0,n[a])(n[a+1]),n[a]=void 0,n[a+1]=void 0;
-    l=0}function p(){}function J(a,b,c,d){try{a.call(b,c,d)}catch(e){return e}}function K(a,b,c){r(function(a){var e=!1,f=J(c,b,function(c){e||(e=!0,b!==c?q(a,c):m(a,c))},function(b){e||(e=!0,g(a,b))});!e&&f&&(e=!0,g(a,f))},a)}function L(a,b){1===b.a?m(a,b.b):2===a.a?g(a,b.b):u(b,void 0,function(b){q(a,b)},function(b){g(a,b)})}function q(a,b){if(a===b)g(a,new TypeError("You cannot resolve a promise with itself"));else if("function"===typeof b||"object"===typeof b&&null!==b)if(b.constructor===a.constructor)L(a,
-    b);else{var c;try{c=b.then}catch(d){v.error=d,c=v}c===v?g(a,v.error):void 0===c?m(a,b):s(c)?K(a,b,c):m(a,b)}else m(a,b)}function M(a){a.f&&a.f(a.b);x(a)}function m(a,b){void 0===a.a&&(a.b=b,a.a=1,0!==a.e.length&&r(x,a))}function g(a,b){void 0===a.a&&(a.a=2,a.b=b,r(M,a))}function u(a,b,c,d){var e=a.e,f=e.length;a.f=null;e[f]=b;e[f+1]=c;e[f+2]=d;0===f&&a.a&&r(x,a)}function x(a){var b=a.e,c=a.a;if(0!==b.length){for(var d,e,f=a.b,g=0;g<b.length;g+=3)d=b[g],e=b[g+c],d?C(c,d,e,f):e(f);a.e.length=0}}function D(){this.error=
-    null}function C(a,b,c,d){var e=s(c),f,k,h,l;if(e){try{f=c(d)}catch(n){y.error=n,f=y}f===y?(l=!0,k=f.error,f=null):h=!0;if(b===f){g(b,new TypeError("A promises callback cannot return that same promise."));return}}else f=d,h=!0;void 0===b.a&&(e&&h?q(b,f):l?g(b,k):1===a?m(b,f):2===a&&g(b,f))}function N(a,b){try{b(function(b){q(a,b)},function(b){g(a,b)})}catch(c){g(a,c)}}function k(a,b,c,d){this.n=a;this.c=new a(p,d);this.i=c;this.o(b)?(this.m=b,this.d=this.length=b.length,this.l(),0===this.length?m(this.c,
-    this.b):(this.length=this.length||0,this.k(),0===this.d&&m(this.c,this.b))):g(this.c,this.p())}function h(a){O++;this.b=this.a=void 0;this.e=[];if(p!==a){if(!s(a))throw new TypeError("You must pass a resolver function as the first argument to the promise constructor");if(!(this instanceof h))throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");N(this,a)}}var E=Array.isArray?Array.isArray:function(a){return"[object Array]"===
-    Object.prototype.toString.call(a)},l=0,w="undefined"!==typeof window?window:{},B=w.MutationObserver||w.WebKitMutationObserver,w="undefined"!==typeof Uint8ClampedArray&&"undefined"!==typeof importScripts&&"undefined"!==typeof MessageChannel,n=Array(1E3),A;A="undefined"!==typeof process&&"[object process]"==={}.toString.call(process)?F():B?G():w?H():I();var v=new D,y=new D;k.prototype.o=function(a){return E(a)};k.prototype.p=function(){return Error("Array Methods must be provided an Array")};k.prototype.l=
-    function(){this.b=Array(this.length)};k.prototype.k=function(){for(var a=this.length,b=this.c,c=this.m,d=0;void 0===b.a&&d<a;d++)this.j(c[d],d)};k.prototype.j=function(a,b){var c=this.n;"object"===typeof a&&null!==a?a.constructor===c&&void 0!==a.a?(a.f=null,this.g(a.a,b,a.b)):this.q(c.resolve(a),b):(this.d--,this.b[b]=this.h(a))};k.prototype.g=function(a,b,c){var d=this.c;void 0===d.a&&(this.d--,this.i&&2===a?g(d,c):this.b[b]=this.h(c));0===this.d&&m(d,this.b)};k.prototype.h=function(a){return a};
-    k.prototype.q=function(a,b){var c=this;u(a,void 0,function(a){c.g(1,b,a)},function(a){c.g(2,b,a)})};var O=0;h.all=function(a,b){return(new k(this,a,!0,b)).c};h.race=function(a,b){function c(a){q(e,a)}function d(a){g(e,a)}var e=new this(p,b);if(!E(a))return (g(e,new TypeError("You must pass an array to race.")), e);for(var f=a.length,h=0;void 0===e.a&&h<f;h++)u(this.resolve(a[h]),void 0,c,d);return e};h.resolve=function(a,b){if(a&&"object"===typeof a&&a.constructor===this)return a;var c=new this(p,b);
-        q(c,a);return c};h.reject=function(a,b){var c=new this(p,b);g(c,a);return c};h.prototype={constructor:h,then:function(a,b){var c=this.a;if(1===c&&!a||2===c&&!b)return this;var d=new this.constructor(p),e=this.b;if(c){var f=arguments[c-1];r(function(){C(c,d,f,e)})}else u(this,d,a,b);return d},"catch":function(a){return this.then(null,a)}};var z={Promise:h,polyfill:function(){var a;a="undefined"!==typeof global?global:"undefined"!==typeof window&&window.document?window:self;"Promise"in a&&"resolve"in
-        a.Promise&&"reject"in a.Promise&&"all"in a.Promise&&"race"in a.Promise&&function(){var b;new a.Promise(function(a){b=a});return s(b)}()||(a.Promise=h)}};"function"===typeof define&&define.amd?define(function(){return z}):"undefined"!==typeof module&&module.exports?module.exports=z:"undefined"!==typeof this&&(this.ES6Promise=z)}).call(this);
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-/**
- * @submodule common
- */
-
-/**
- * @class util
- * @namespace ozpIwc
- * @static
- */
-ozpIwc.util=ozpIwc.util || {};
-
-/**
- * Used to get the current epoch time.  Tests overrides this
- * to allow a fast-forward on time-based actions.
- *
- * @method now
- * @returns {Number}
- */
-ozpIwc.util.now=function() {
-    return new Date().getTime();
-};
-
-/**
- * Create a class with the given parent in it's prototype chain.
- *
- * @method extend
- * @param {Function} baseClass The class being derived from.
- * @param {Function} newConstructor The new base class.
- *
- * @returns {Function} New Constructor with an augmented prototype.
- */
-ozpIwc.util.extend=function(baseClass,newConstructor) {
-    if(!baseClass || !baseClass.prototype) {
-        ozpIwc.log.error("Cannot create a new class for ",newConstructor," due to invalid baseclass:",baseClass);
-        throw new Error("Cannot create a new class due to invalid baseClass.  Dependency not loaded first?");
-    }
-    newConstructor.prototype = Object.create(baseClass.prototype);
-    newConstructor.prototype.constructor = newConstructor;
-    return newConstructor;
-};
-
-/**
- * Invoke postMessage on a given window in a safe manner. Test whether the browser
- * supports structured clones, and stringifies the message if not. Catches
- * errors (especially attempts to send non-cloneable objects), and tries to
- * send a stringified copy of the message asa fallback.
- *
- * @param window a window on which to invoke postMessage
- * @param msg the message to be sent
- * @param origin the target origin. The message will be sent only if it matches the origin of window.
- */
-ozpIwc.util.safePostMessage = function(window,msg,origin) {
-    try {
-        var data = msg;
-        if (!ozpIwc.util.structuredCloneSupport() && typeof data !== 'string') {
-           data=JSON.stringify(msg);
-        }
-        window.postMessage(data, origin);
-    } catch (e) {
-        try {
-            window.postMessage(JSON.stringify(msg), origin);
-        } catch (e) {
-            ozpIwc.util.log("Invalid call to window.postMessage: " + e.message);
-        }
-    }
-};
-
-/**
- * Detect browser support for structured clones. Returns quickly since it
- * caches the result. This method only determines browser support for structured
- * clones. Clients are responsible, when accessing capabilities that rely on structured
- * cloning, to ensure that objects to be cloned meet the criteria of the structured clone
- * algorithm. (See ozpIwc.util.safePostMessage for a method which handles attempts to
- * clone an invalid object.). NB: a bug in FF will cause file objects to be treated as
- * non-cloneable, even in FF versions that support structured clones.
- * (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126).
- *
- * @private
- *
- * @method structuredCloneSupport
- *
- * @returns {Boolean} True if structured clones are supported, false otherwise.
- */
-ozpIwc.util.structuredCloneSupport=function() {
-    ozpIwc.util = ozpIwc.util || {};
-    if (ozpIwc.util.structuredCloneSupportCache !== undefined) {
-        return ozpIwc.util.structuredCloneSupportCache;
-    }
-    var cloneSupport = 'postMessage' in window;
-    //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
-    try {
-        window.postMessage({
-            toString: function () {
-                cloneSupport = false;
-            }
-        }, "*");
-    } catch (e) {
-        //exception expected: objects with methods can't be cloned
-        //e.DATA_CLONE_ERR will exist only for browsers with structured clone support, which can be used as an additional check if needed
-    }
-    ozpIwc.util.structuredCloneSupportCache=cloneSupport;
-    return ozpIwc.util.structuredCloneSupportCache;
-};
-
-ozpIwc.util.structuredCloneSupport.cache=undefined;
-
-/**
- * Does a deep clone of a serializable object.  Note that this will not
- * clone unserializable objects like DOM elements, Date, RegExp, etc.
- *
- * @method clone
- * @param {Array|Object} value The value to be cloned.
- * @returns {Array|Object}  a deep copy of the object
- */
-ozpIwc.util.clone=function(value) {
-	if(Array.isArray(value) || typeof(value) === 'object') {
-        try {
-            return JSON.parse(JSON.stringify(value));
-        } catch (e) {
-            ozpIwc.log.log(e);
-        }
-	} else {
-		return value;
-	}
-};
-
-
-/**
- * A regex method to parse query parameters.
- *
- * @method parseQueryParams
- * @param {String} query
- *
- */
-ozpIwc.util.parseQueryParams=function(query) {
-    query = query || window.location.search;
-    var params={};
-	var regex=/\??([^&=]+)=?([^&]*)/g;
-	var match;
-	while((match=regex.exec(query)) !== null) {
-		params[match[1]]=decodeURIComponent(match[2]);
-	}
-    return params;
-};
-
-/**
- * Determines the origin of a given url
- * @method determineOrigin
- * @param url
- * @returns {String}
- */
-ozpIwc.util.determineOrigin=function(url) {
-    var a=document.createElement("a");
-    a.href = url;
-    var origin=a.protocol + "//" + a.hostname;
-    if(a.port) {
-        origin+= ":" + a.port;
-    }
-    return origin;
-};
-
-/**
- * Escapes regular expression characters in a string.
- * @method escapeRegex
- * @param {String} str
- * @returns {String}
- */
-ozpIwc.util.escapeRegex=function(str) {
-    return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-};
-
-/**
- * 
- * @method parseOzpUrl
- * @param {type} url
- * @returns {ozpIwc.TransportPacket}
- */
-ozpIwc.util.parseOzpUrl=function(url) {
-    var m = /^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(decodeURIComponent(url));
-    if (m) {
-        // an action of "get" is implied
-        var packet = {
-            'dst': m[1],
-            'resource': m[2],
-            'action': "get"
-        };
-        // TODO: parse the query params into fields
-
-        return packet;
-    }
-    return null;
-};
-
-/**
- * Returns true if the specified packet meets the criteria of an IWC Packet.
- * @method isIwcPacket
- * @static
- * @param {ozpIwc.TransportPacket} packet
- * @returns {Boolean}
- */
-ozpIwc.util.isIWCPacket=function(packet) {
-    if(typeof packet.src !== "string" ||typeof packet.dst !== "string" ||
-        typeof packet.ver !== "number" || typeof packet.msgId !== "string") {
-        return false;
-    } else {
-        return true;
-    }
-};
-
-/**
- * Returns true if the the given node is a direct descendant of the parent node.
- * @method isDirectDescendant
- * @param parent
- * @param child
- * @returns {boolean}
- */
-ozpIwc.util.isDirectDescendant = function(child,parent){
-    if (child.parentNode == parent) {
-        return true;
-    }
-    return false;
-};
-
-/**
- *
- * @param {Object} config
- * @param {Array<String>} config.reqAttrs
- * @param {Array<String>} config.optAttrs
- * @param {Array<String>} config.reqNodes
- * @param {Array<String>} config.optNodes
- */
-ozpIwc.util.elementParser = function(config){
-    config = config || {};
-
-    config.reqAttrs = config.reqAttrs || [];
-    config.optAttrs = config.optAttrs || [];
-    config.reqNodes = config.reqNodes || [];
-    config.optNodes = config.optNodes || [];
-
-    var element = config.element || {};
-
-    var findings = {
-        attrs: {},
-        nodes: {}
-    };
-    config.reqAttrs.forEach(function(attr){
-        var attribute = element.getAttribute(attr);
-        if(attribute){
-//            console.log('Found attribute of policy,(',attr,',',attribute,')');
-            findings.attrs[attr] = attribute;
-        } else {
-            console.error('Required attribute not found,(',attr,')');
-        }
-
-    });
-
-    config.optAttrs.forEach(function(attr){
-        var attribute = element.getAttribute(attr);
-        if(attribute){
-//            console.log('Found attribute of policy,(',attr,',',attribute,')');
-            findings.attrs[attr] = attribute;
-        }
-
-    });
-
-    config.reqNodes.forEach(function(tag){
-        var nodes = element.getElementsByTagName(tag);
-        findings.nodes[tag] = findings.nodes[tag] || [];
-        for(var i in nodes){
-            if(ozpIwc.util.isDirectDescendant(nodes[i],element)){
-//                console.log('Found node of policy: ', nodes[i]);
-                findings.nodes[tag].push(nodes[i]);
-            }
-        }
-        if(findings.nodes[tag].length <= 0) {
-            console.error('Required node not found,(',tag,')');
-        }
-    });
-    config.optNodes.forEach(function(tag){
-        var nodes = element.getElementsByTagName(tag);
-        for(var i in nodes){
-            if(ozpIwc.util.isDirectDescendant(nodes[i],element)){
-//                console.log('Found node of policy: ', nodes[i]);
-                findings.nodes[tag] = findings.nodes[tag] || [];
-                findings.nodes[tag].push(nodes[i]);
-            }
-        }
-    });
-    return findings;
-};
-
-ozpIwc.util.camelCased = function(string){
-    return string.charAt(0).toLowerCase() + string.substring(1);
-};
 (function() {
 var define, requireModule, require, requirejs;
 
@@ -3522,6 +682,486 @@ define("promise/utils",
   });
 requireModule('promise/polyfill').polyfill();
 }());
+/** @namespace */
+var ozpIwc=ozpIwc || {};
+
+/**
+ * Common classes used between both the Client and the Bus.
+ * @module common
+ */
+
+/**
+ * An Event emmitter/receiver class.
+ * @class Event
+ * @namespace ozpIwc
+ */
+ozpIwc.Event=function() {
+    /**
+     * A key value store of events.
+     * @property events
+     * @type Object
+     * @default {}
+     */
+	this.events={};
+};
+
+/**
+ * Registers a handler for the the event.
+ *
+ * @method on
+ * @param {String} event The name of the event to trigger on.
+ * @param {Function} callback Function to be invoked.
+ * @param {Object} [self] Used as the this pointer when callback is invoked.
+ *
+ * @returns {Object} A handle that can be used to unregister the callback via
+ * {{#crossLink "ozpIwc.Event/off:method"}}{{/crossLink}}
+ */
+ozpIwc.Event.prototype.on=function(event,callback,self) {
+	var wrapped=callback;
+	if(self) {
+		wrapped=function() {
+			callback.apply(self,arguments);
+		};
+		wrapped.ozpIwcDelegateFor=callback;
+	}
+	this.events[event]=this.events[event]||[];
+	this.events[event].push(wrapped);
+	return wrapped;
+};
+
+/**
+ * Unregisters an event handler previously registered.
+ *
+ * @method off
+ * @param {String} event
+ * @param {Function} callback
+ */
+ozpIwc.Event.prototype.off=function(event,callback) {
+	this.events[event]=(this.events[event]||[]).filter( function(h) {
+		return h!==callback && h.ozpIwcDelegateFor !== callback;
+	});
+};
+
+/**
+ * Fires an event that will be received by all handlers.
+ *
+ * @method
+ * @param {String} eventName Name of the event.
+ * @param {Object} event Event object to pass to the handers.
+ *
+ * @returns {Object} The event after all handlers have processed it.
+ */
+ozpIwc.Event.prototype.trigger=function(eventName,event) {
+	event = event || new ozpIwc.CancelableEvent();
+	var handlers=this.events[eventName] || [];
+
+	handlers.forEach(function(h) {
+		h(event);
+	});
+	return event;
+};
+
+
+/**
+ * Adds an {{#crossLink "ozpIwc.Event/off:method"}}on(){{/crossLink}} and
+ * {{#crossLink "ozpIwc.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this object.
+ *
+ * @method mixinOnOff
+ * @param {Object} target Target to receive the on/off functions
+ */
+ozpIwc.Event.prototype.mixinOnOff=function(target) {
+	var self=this;
+	target.on=function() { return self.on.apply(self,arguments);};
+	target.off=function() { return self.off.apply(self,arguments);};
+};
+
+/**
+ * Convenient base for events that can be canceled.  Provides and manages
+ * the properties canceled and cancelReason, as well as the member function
+ * cancel().
+ *
+ * @class CancelableEvent
+ * @namespace ozpIwc
+ * @param {Object} data Data that will be copied into the event
+ */
+ozpIwc.CancelableEvent=function(data) {
+	data = data || {};
+	for(var k in data) {
+		this[k]=data[k];
+	}
+	this.canceled=false;
+	this.cancelReason=null;
+};
+
+/**
+ * Marks the event as canceled.
+ * @method cancel
+ * @param {String} reason A text description of why the event was canceled.
+ *
+ * @returns {ozpIwc.CancelableEvent} Reference to self
+ */
+ozpIwc.CancelableEvent.prototype.cancel=function(reason) {
+	reason= reason || "Unknown";
+	this.canceled=true;
+	this.cancelReason=reason;
+	return this;
+};
+
+if(!(window.console && console.log)) {
+    console = {
+        log: function(){},
+        debug: function(){},
+        info: function(){},
+        warn: function(){},
+        error: function(){}
+    };
+}
+/** @namespace */
+var ozpIwc=ozpIwc || {};
+/**
+ * @submodule common
+ */
+
+/**
+ * @class util
+ * @namespace ozpIwc
+ * @static
+ */
+ozpIwc.util=ozpIwc.util || {};
+
+/**
+ * Used to get the current epoch time.  Tests overrides this
+ * to allow a fast-forward on time-based actions.
+ *
+ * @method now
+ * @returns {Number}
+ */
+ozpIwc.util.now=function() {
+    return new Date().getTime();
+};
+
+/**
+ * Create a class with the given parent in it's prototype chain.
+ *
+ * @method extend
+ * @param {Function} baseClass The class being derived from.
+ * @param {Function} newConstructor The new base class.
+ *
+ * @returns {Function} New Constructor with an augmented prototype.
+ */
+ozpIwc.util.extend=function(baseClass,newConstructor) {
+    if(!baseClass || !baseClass.prototype) {
+        ozpIwc.log.error("Cannot create a new class for ",newConstructor," due to invalid baseclass:",baseClass);
+        throw new Error("Cannot create a new class due to invalid baseClass.  Dependency not loaded first?");
+    }
+    newConstructor.prototype = Object.create(baseClass.prototype);
+    newConstructor.prototype.constructor = newConstructor;
+    return newConstructor;
+};
+
+/**
+ * Invoke postMessage on a given window in a safe manner. Test whether the browser
+ * supports structured clones, and stringifies the message if not. Catches
+ * errors (especially attempts to send non-cloneable objects), and tries to
+ * send a stringified copy of the message asa fallback.
+ *
+ * @param window a window on which to invoke postMessage
+ * @param msg the message to be sent
+ * @param origin the target origin. The message will be sent only if it matches the origin of window.
+ */
+ozpIwc.util.safePostMessage = function(window,msg,origin) {
+    try {
+        var data = msg;
+        if (!ozpIwc.util.structuredCloneSupport() && typeof data !== 'string') {
+           data=JSON.stringify(msg);
+        }
+        window.postMessage(data, origin);
+    } catch (e) {
+        try {
+            window.postMessage(JSON.stringify(msg), origin);
+        } catch (e) {
+            ozpIwc.util.log("Invalid call to window.postMessage: " + e.message);
+        }
+    }
+};
+
+/**
+ * Detect browser support for structured clones. Returns quickly since it
+ * caches the result. This method only determines browser support for structured
+ * clones. Clients are responsible, when accessing capabilities that rely on structured
+ * cloning, to ensure that objects to be cloned meet the criteria of the structured clone
+ * algorithm. (See ozpIwc.util.safePostMessage for a method which handles attempts to
+ * clone an invalid object.). NB: a bug in FF will cause file objects to be treated as
+ * non-cloneable, even in FF versions that support structured clones.
+ * (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126).
+ *
+ * @private
+ *
+ * @method structuredCloneSupport
+ *
+ * @returns {Boolean} True if structured clones are supported, false otherwise.
+ */
+ozpIwc.util.structuredCloneSupport=function() {
+    ozpIwc.util = ozpIwc.util || {};
+    if (ozpIwc.util.structuredCloneSupportCache !== undefined) {
+        return ozpIwc.util.structuredCloneSupportCache;
+    }
+    var cloneSupport = 'postMessage' in window;
+    //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
+    try {
+        window.postMessage({
+            toString: function () {
+                cloneSupport = false;
+            }
+        }, "*");
+    } catch (e) {
+        //exception expected: objects with methods can't be cloned
+        //e.DATA_CLONE_ERR will exist only for browsers with structured clone support, which can be used as an additional check if needed
+    }
+    ozpIwc.util.structuredCloneSupportCache=cloneSupport;
+    return ozpIwc.util.structuredCloneSupportCache;
+};
+
+ozpIwc.util.structuredCloneSupport.cache=undefined;
+
+/**
+ * Does a deep clone of a serializable object.  Note that this will not
+ * clone unserializable objects like DOM elements, Date, RegExp, etc.
+ *
+ * @method clone
+ * @param {Array|Object} value The value to be cloned.
+ * @returns {Array|Object}  a deep copy of the object
+ */
+ozpIwc.util.clone=function(value) {
+	if(Array.isArray(value) || typeof(value) === 'object') {
+        try {
+            return JSON.parse(JSON.stringify(value));
+        } catch (e) {
+            ozpIwc.log.log(e);
+        }
+	} else {
+		return value;
+	}
+};
+
+/**
+ * Non serializable cloning. Used to include prototype functions in the cloned object by creating a new instance
+ * and copying over any attributes.
+ * @method protoClone
+ * @param {Object|Array} obj
+ * @returns {*|Array.<T>|string|Blob}
+ */
+ozpIwc.util.protoClone = function(obj) {
+
+    if (obj instanceof Array) {
+        return obj.slice();
+    }
+
+    // Handle Object
+    if (obj instanceof Object) {
+        var clone = new obj.constructor();
+        for(var i in obj){
+
+            if(obj.hasOwnProperty(i)){
+                //recurse if needed
+                clone[i] = ozpIwc.util.protoClone(obj[i]);
+            } else{
+                clone[i] = obj[i];
+            }
+        }
+        return clone;
+    }
+    return obj;
+};
+
+/**
+ * A regex method to parse query parameters.
+ *
+ * @method parseQueryParams
+ * @param {String} query
+ *
+ */
+ozpIwc.util.parseQueryParams=function(query) {
+    query = query || window.location.search;
+    var params={};
+	var regex=/\??([^&=]+)=?([^&]*)/g;
+	var match;
+	while((match=regex.exec(query)) !== null) {
+		params[match[1]]=decodeURIComponent(match[2]);
+	}
+    return params;
+};
+
+/**
+ * Determines the origin of a given url
+ * @method determineOrigin
+ * @param url
+ * @returns {String}
+ */
+ozpIwc.util.determineOrigin=function(url) {
+    var a=document.createElement("a");
+    a.href = url;
+    var origin=a.protocol + "//" + a.hostname;
+    if(a.port) {
+        origin+= ":" + a.port;
+    }
+    return origin;
+};
+
+/**
+ * Escapes regular expression characters in a string.
+ * @method escapeRegex
+ * @param {String} str
+ * @returns {String}
+ */
+ozpIwc.util.escapeRegex=function(str) {
+    return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+
+/**
+ * 
+ * @method parseOzpUrl
+ * @param {type} url
+ * @returns {ozpIwc.TransportPacket}
+ */
+ozpIwc.util.parseOzpUrl=function(url) {
+    var m = /^(?:(?:web\+ozp|ozp):\/\/)?([0-9a-zA-Z](?:[-.\w])*)(\/[^?#]*)(\?[^#]*)?(#.*)?$/.exec(decodeURIComponent(url));
+    if (m) {
+        // an action of "get" is implied
+        var packet = {
+            'dst': m[1],
+            'resource': m[2],
+            'action': "get"
+        };
+        // TODO: parse the query params into fields
+
+        return packet;
+    }
+    return null;
+};
+
+/**
+ * Returns true if the specified packet meets the criteria of an IWC Packet.
+ * @method isIwcPacket
+ * @static
+ * @param {ozpIwc.TransportPacket} packet
+ * @returns {Boolean}
+ */
+ozpIwc.util.isIWCPacket=function(packet) {
+    if(typeof packet.src !== "string" ||typeof packet.dst !== "string" ||
+        typeof packet.ver !== "number" || typeof packet.msgId !== "string") {
+        return false;
+    } else {
+        return true;
+    }
+};
+
+/**
+ * Returns true if the the given document node is a direct descendant of the parent node.
+ * @method isDirectDescendant
+ * @param parent
+ * @param child
+ * @returns {boolean}
+ */
+ozpIwc.util.isDirectDescendant = function(child,parent){
+    if (child.parentNode === parent) {
+        return true;
+    }
+    return false;
+};
+
+/**
+ *
+ * @param {Object} config
+ * @param {Array<String>} config.reqAttrs
+ * @param {Array<String>} config.optAttrs
+ * @param {Array<String>} config.reqNodes
+ * @param {Array<String>} config.optNodes
+ */
+ozpIwc.util.elementParser = function(config){
+    config = config || {};
+
+    config.reqAttrs = config.reqAttrs || [];
+    config.optAttrs = config.optAttrs || [];
+    config.reqNodes = config.reqNodes || [];
+    config.optNodes = config.optNodes || [];
+
+    var element = config.element || {};
+
+    var findings = {
+        attrs: {},
+        nodes: {}
+    };
+    config.reqAttrs.forEach(function(attr){
+        var attribute = element.getAttribute(attr);
+        if(attribute){
+//            console.log('Found attribute of policy,(',attr,',',attribute,')');
+            findings.attrs[attr] = attribute;
+        } else {
+            console.error('Required attribute not found,(',attr,')');
+        }
+
+    });
+
+    config.optAttrs.forEach(function(attr){
+        var attribute = element.getAttribute(attr);
+        if(attribute){
+//            console.log('Found attribute of policy,(',attr,',',attribute,')');
+            findings.attrs[attr] = attribute;
+        }
+
+    });
+
+    config.reqNodes.forEach(function(tag){
+        var nodes = element.getElementsByTagName(tag);
+        findings.nodes[tag] = findings.nodes[tag] || [];
+        for(var i in nodes){
+            if(ozpIwc.util.isDirectDescendant(nodes[i],element)){
+//                console.log('Found node of policy: ', nodes[i]);
+                findings.nodes[tag].push(nodes[i]);
+            }
+        }
+        if(findings.nodes[tag].length <= 0) {
+            console.error('Required node not found,(',tag,')');
+        }
+    });
+    config.optNodes.forEach(function(tag){
+        var nodes = element.getElementsByTagName(tag);
+        for(var i in nodes){
+            if(ozpIwc.util.isDirectDescendant(nodes[i],element)){
+//                console.log('Found node of policy: ', nodes[i]);
+                findings.nodes[tag] = findings.nodes[tag] || [];
+                findings.nodes[tag].push(nodes[i]);
+            }
+        }
+    });
+    return findings;
+};
+
+ozpIwc.util.camelCased = function(string){
+    return string.charAt(0).toLowerCase() + string.substring(1);
+};
+
+/**
+ * Shortened call for returning a resolving promise (cleans up promise chaining)
+ * @param {*} obj any valid javascript to resolve with.
+ * @returns {Promise}
+ */
+ozpIwc.util.resolveWith = function(obj){
+    return new Promise(function(resolve,reject){
+        resolve(obj);
+    });
+};
+/**
+ * Shortened call for returning a rejecting promise (cleans up promise chaining)
+ * @param {*} obj any valid javascript to reject with.
+ * @returns {Promise}
+ */
+ozpIwc.util.rejectWith = function(obj){
+    return new Promise(function(resolve,reject){
+        reject(obj);
+    });
+};
 /*
  * The MIT License (MIT) Copyright (c) 2012 Mike Ihbe
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -4760,19 +2400,6 @@ ozpIwc.util.ajaxResponseHeaderToJSON = function(header) {
     return obj;
 };
 
-/**
- * Returns the protocol of the URL
- * @method getProtocol
- * @param {String} url
- *
- * @returns {String}
- */
-var getProtocol =function (url){
-    var a = document.createElement('a');
-    a.href = url;
-    return a.protocol;
-};
-
 /** @namespace */
 var ozpIwc=ozpIwc || {};
 /**
@@ -4870,6 +2497,55 @@ ozpIwc.AsyncAction.prototype.success=function(callback,self) {
  */
 ozpIwc.AsyncAction.prototype.failure=function(callback,self) {
 	return this.when("failure",callback,self);
+};
+
+/**
+ * Returns an async action that resolves when all async Actions are resolved with their resolved values (if applies).
+ * @method all
+ * @param asyncActions
+ */
+ozpIwc.AsyncAction.all = function(asyncActions) {
+    var returnAction = new ozpIwc.AsyncAction();
+    var count = asyncActions.length;
+    var self = this;
+    var results = [];
+
+
+    //Register a callback for each action's "success"
+    asyncActions.forEach(function(action,index){
+        // If its not an asyncAction, pass it through as a result.
+        if(!self.isAnAction(action)){
+            results[index] = action;
+            if(--count === 0) {
+                returnAction.resolve('success',results);
+            }
+        }else {
+            action
+                .success(function (result) {
+                    results[index] = result;
+                    //once all actions resolved, intermediateAction resolve
+                    if (--count === 0) {
+                        returnAction.resolve('success', results);
+                    }
+                }, self)
+                .failure(function (err) {
+                    //fail the returnAction if any fail.
+                    returnAction.resolve('failure', err);
+                }, self);
+        }
+    });
+
+    return returnAction;
+};
+
+/**
+ * Returns true if the object is an AsyncAction, otherwise false.
+ * @method isAnAction
+ * @param {*} action
+ * @returns {Boolean}
+ */
+ozpIwc.AsyncAction.isAnAction = function(action){
+    return ozpIwc.AsyncAction.prototype.isPrototypeOf(action);
 };
 /** @namespace */
 var ozpIwc=ozpIwc || {};
@@ -5234,68 +2910,6 @@ ozpIwc.util.alert = function (message, errorObject) {
     }
 };
 
-
-/**
- * Classes related to security aspects of the IWC.
- * @module bus
- * @submodule bus.security
- */
-
-/**
- * Attribute Based Access Control policies.
- * @class abacPolicies
- * @static
- */
-ozpIwc.abacPolicies={};
-
-/**
- * Returns `permit` when the request's object exists and is empty.
- *
- * @static
- * @method permitWhenObjectHasNoAttributes
- * @param request
- *
- * @returns {String}
- */
-ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes=function(request) {
-    if(request.object && Object.keys(request.object).length===0) {
-        return "permit";
-    }
-    return "undetermined";
-};
-/**
- * Returns `permit` when the request's subject contains all of the request's object.
- *
- * @static
- * @method subjectHasAllObjectAttributes
- * @param request
- *
- * @returns {String}
- */
-ozpIwc.abacPolicies.subjectHasAllObjectAttributes=function(request) {
-    // if no object permissions, then it's trivially true
-    if(!request.object) {
-        return "permit";
-    }
-    var subject = request.subject || {};
-    if(ozpIwc.util.objectContainsAll(subject,request.object,this.implies)) {
-        return "permit";
-    }
-    return "deny";
-};
-
-/**
- * Returns `permit` for any scenario.
- *
- * @static
- * @method permitAll
- * @returns {String}
- */
-ozpIwc.abacPolicies.permitAll=function() {
-    return "permit";
-};
-
-
 var ozpIwc=ozpIwc || {};
 /**
  * @submodule bus.security
@@ -5494,2672 +3108,6 @@ ozpIwc.BasicAuthorization.prototype.isPermitted=function(request) {
  */
 //ozpIwc.authorization=new ozpIwc.BasicAuthorization();
 ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-ozpIwc.policyAuth.BaseElement = function(config){
-    config = config || {};
-};
-
-
-ozpIwc.policyAuth.BaseElement.prototype.construct = function(element){
-    var parsed = ozpIwc.util.elementParser({
-        element: element,
-        reqAttrs: this.requiredAttributes,
-        optAttrs: this.optionalAttributes,
-        reqNodes: this.requiredNodes,
-        optNodes: this.optionalNodes
-    });
-    this.constructNodes(parsed);
-};
-
-/**
- *
- *
- * @method constructNodes
- * @param {Object}config
- * @param {Object} config.attrs
- * @param {Object} config.nodes
- */
-ozpIwc.policyAuth.BaseElement.prototype.constructNodes = function(config){
-    config = config || {};
-    config.attrs = config.attrs || {};
-    config.nodes = config.nodes || {};
-    // Attributes are just strings, simple assignment
-    for(var i in config.attrs){
-        // The property of the policy is the camelCase version of the tagName
-        // (ex. this.policyId = parsed.attrs.PolicyId)
-        var camelCasedProperty = ozpIwc.util.camelCased(i);
-        this[camelCasedProperty] = config.attrs[i];
-    }
-
-    // Each node is likely to be mapped to a XACML element, construct said element and set it as this elements property.
-    for(var j in config.nodes){
-        // The property of the policy is the camelCase version of the tagName
-        var camelCasedProperty = ozpIwc.util.camelCased(j);
-
-        // If a property of the Policy accepts multiple elements, it's defaulted as an array.
-        if(Array.isArray(this[camelCasedProperty])){
-
-            // Check if the parsed node type is an array, then we will append all its elements to this element.
-            if(Array.isArray(config.nodes[j])){
-                for(var k in config.nodes[j]){
-                    // The property of the element is the camelCase version of the tagName, the node to construct from the
-                    // parsed object uses the same notation as the tagName for the class call
-                    // (ex.ozpIwc.policyAuth[i] = ozpIwc.policyAuth.Target)
-                    this[camelCasedProperty].push(new ozpIwc.policyAuth[j]({element: config.nodes[j][k]}));
-                }
-            }else{
-                for(var k in config.nodes[j]) {
-                    this[camelCasedProperty].push(new ozpIwc.policyAuth[j]({element: config.nodes[j][k]}));
-                }
-            }
-        } else {
-            for(var k in config.nodes[j]) {
-                this[camelCasedProperty] = new ozpIwc.policyAuth[j]({element: config.nodes[j][k]});
-            }
-        }
-    }
-};
-
-
-ozpIwc.policyAuth.BaseElement.prototype.requiredAttributes = [];
-ozpIwc.policyAuth.BaseElement.prototype.optionalAttributes = [];
-ozpIwc.policyAuth.BaseElement.prototype.requiredNodes = [];
-ozpIwc.policyAuth.BaseElement.prototype.optionalNodes = [];
-ozpIwc = ozpIwc || {};
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * A collection of DataTypes for the XACML policy decision process.
- * @class DataTypes
- * @namespace ozpIwc.policyAuth
- */
-ozpIwc.policyAuth.DataTypes = ozpIwc.policyAuth.DataTypes || {};
-/**
- * @property urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name'] = function(obj){
-
-};
-
-/**
- * @property urn:oasis:names:tc:xacml:1.0:data-type:x500Name
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['urn:oasis:names:tc:xacml:1.0:data-type:x500Name'] = function(obj){
-
-};
-
-/**
- * @property urn:oasis:names:tc:xacml:2.0:data-type:ipAddress
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['urn:oasis:names:tc:xacml:2.0:data-type:ipAddress'] = function(obj){
-
-};
-
-/**
- * @property urn:oasis:names:tc:xacml:2.0:data-type:dnsName
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['urn:oasis:names:tc:xacml:2.0:data-type:dnsName'] = function(obj){
-
-};
-ozpIwc = ozpIwc || {};
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * A collection of DataTypes for the XACML policy decision process.
- * @class DataTypes
- * @namespace ozpIwc.policyAuth
- */
-ozpIwc.policyAuth.DataTypes = ozpIwc.policyAuth.DataTypes || {};
-
-/**
- * @property http://www.w3.org/2001/XMLSchema#string
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#string'] = function(obj){
-
-};
-
-/**
- * @property http://www.w3.org/2001/XMLSchema#boolean
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#boolean'] = function(obj){
-
-};
-
-/**
- * @property http://www.w3.org/2001/XMLSchema#integer
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#integer'] = function(obj){
-
-};
-
-/**
- * @property http://www.w3.org/2001/XMLSchema#double
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#double'] = function(obj){
-
-};
-
-/**
- * @property http://www.w3.org/2001/XMLSchema#time
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#time'] = function(obj){
-
-};
-
-/**
- * @property http://www.w3.org/2001/XMLSchema#date
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#date'] = function(obj){
-
-};
-
-/**
- * @property http://www.w3.org/2001/XMLSchema#dateTime
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#dateTime'] = function(obj){
-
-};
-
-/**
- * @property http://www.w3.org/2001/XMLSchema#dayTimeDuration
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#dayTimeDuration'] = function(obj){
-
-};
-
-/**
- * @property http://www.w3.org/2001/XMLSchema#yearMonthDuration
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#yearMonthDuration'] = function(obj){
-
-};
-
-/**
- * @property http://www.w3.org/2001/XMLSchema#anyURI
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#anyURI'] = function(obj){
-
-};
-
-/**
- * @property http://www.w3.org/2001/XMLSchema#hexBinary
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#hexBinary'] = function(obj){
-
-};
-
-/**
- * @property http://www.w3.org/2001/XMLSchema#base64Binary
- * @param obj
- */
-ozpIwc.policyAuth.DataTypes['http://www.w3.org/2001/XMLSchema#base64Binary'] = function(obj){
-
-};
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Advice> element SHALL contain an identifier for the advice and a set of attributes that form
- * arguments of the supplemental information defined by the advice.
- *
- * The <Advice> element is of AdviceType complexType.
- * See Section 7.18 for a description of how the set of advice to be returned by the PDP is determined.
- *
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Advice = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * Advice identifier.  The value of the advice identifier MAY be interpreted by the PEP.
-     * @property adviceId
-     * @type String
-     * @default null
-     */
-    this.adviceId = config.adviceId;
-
-    /**
-     * Advice arguments assignment.  The values of the advice arguments MAY be interpreted by the PEP.
-     * @property attributeAssignment
-     * @type {ozpIwc.policyAuth.AttributeAssignment}
-     * @defualt null
-     */
-    this.attributeAssignment = config.attributeAssignment;
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <AdviceExpression> element evaluates to an advice and SHALL contain an identifier for an advice and a set of
- * expressions that form arguments of the supplemental information defined by the advice.  The AppliesTo attribute
- * SHALL indicate the effect for which this advice must be provided to the PEP.
- *
- * The <AdviceExpression> element is of AdviceExpressionType complexType.
- * See Section 7.18 for a description of how the set of advice to be returned by the PDP is determined.
- *
- * @class AdviceExpression
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.AdviceExpression = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * Advice identifier. The value of the advice identifier MAY be interpreted by the PEP.
-     * @property adviceId
-     * @type {String}
-     * @default null
-     */
-    this.adviceId = config.adviceId;
-
-    /**
-     * The effect for which this advice must be provided to the PEP.
-     * @property appliesTo
-     * @type{ozpIwc.policyAuth.Effect}
-     */
-    this.appliesTo = config.appliesTo;
-
-    /**
-     * Advice arguments in the form of expressions. The expressions SHALL be evaluated by the PDP to constant
-     * <AttributeValue> elements or bags, which shall be the attribute assignments in the <Advice> returned to the
-     * PEP.  If an <AttributeAssignmentExpression> evaluates to an atomic attribute value, then there MUST be one
-     * resulting <AttributeAssignment> which MUST contain this single attribute value. If the
-     * <AttributeAssignmentExpression> evaluates to a bag, then there MUST be a resulting <AttributeAssignment> for
-     * each of the values in the bag. If the bag is empty, there shall be no <AttributeAssignment> from this
-     * <AttributeAssignmentExpression>.  The values of the advice arguments MAY be interpreted by the PEP.
-     *
-     * Optional
-     *
-     * @property attributeAssignmentExpression
-     * @type {ozpIwc.policyAuth.AttributeAssignmentExpression}
-     */
-    this.attributeAssignmentExpression = config.attributeAssignmentExpression;
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <AdviceExpressions> element SHALL contain a set of <AdviceExpression> elements.
- *
- * The <AdviceExpressions> element is of AdviceExpressionsType complexType.
- *
- * @class AdviceExpressions
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.AdviceExpressions = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * A sequence of advice expressions.  See Section 5.40.
-     * @property adviceExpressions
-     * @type {Array<ozpIwc.policyAuth.AdviceExpression>}
-     */
-    this.adviceExpressions = config.adviceExpressions;
-
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <AllOf> element SHALL contain a conjunctive sequence of <Match> elements.
- *
- * The <AllOf> element is of AllOfType complex type.
- *
- * @class AllOf
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.AllOf = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    config = config || {};
-    /**
-     * A conjunctive sequence of individual matches of the attributes in the request context and the embedded
-     * attribute values
-     *
-     * @property allOf
-     * @type {Array<ozpIwc.policyAuth.Match>}
-     */
-    this.match = config.match || [];
-    if(config.element){
-        this.construct(config.element);
-    }
-});
-
-/**
- * Determines if the request meets the criteria of this AllOf element.
- * Returns true IF AND ONLY IF all match tests return true.
- *
- * @method all
- * @param {Object} request
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.AllOf.prototype.all = function(request){
-    if(this.match.length === 0){
-        return true;
-    }
-    for(var i in this.match){
-        if(!this.match[i].match(request)){
-            return false;
-        }
-    }
-    return true;
-};
-
-ozpIwc.policyAuth.AllOf.prototype.optionalNodes = ['Match'];
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <AnyOf> element SHALL contain a disjunctive sequence of <AllOf> elements.
- *
- * The <AnyOf> element is of AnyOfType complex type.
- *
- * @class AnyOf
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.AnyOf = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * The <AllOf> element SHALL contain a conjunctive sequence of <Match> elements.
-     * @property allOf
-     * @type {Array<ozpIwc.policyAuth.AllOf>}
-     */
-    this.allOf = config.allOf || [];
-    if(config.element){
-        this.construct(config.element);
-    }
-});
-
-ozpIwc.policyAuth.AnyOf.prototype.any = function(request){
-    //@TODO : is True if no allOf's? Is that a global all?
-    if(this.allOf.length === 0 ){
-        return true;
-    }
-    var any = false;
-    for(var i in this.allOf){
-        if(this.allOf[i].all(request)){
-            any = true;
-        }
-    }
-    return any;
-};
-
-ozpIwc.policyAuth.AnyOf.prototype.requiredNodes = ['AllOf'];
-
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Apply> element denotes application of a function to its arguments, thus encoding a function call.
- * The <Apply> element can be applied to any combination of the members of the <Expression> element substitution group.
- * See Section 5.25.
- *
- * The <Apply> element is of ApplyType complex type.
- *
- * @class Apply
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Apply = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * The identifier of the function to be applied to the arguments.
-     * XACML-defined functions are described in Appendix A.3.
-     *
-     * @property functionId
-     * @type {String}
-     * @default null
-     */
-    this.functionId = config.functionId;
-
-    /**
-     * A free-form description of the <Apply> element.
-     * @property description
-     * @type {String}
-     * @default ""
-     */
-    this.description = config.description || "";
-
-    /**
-     * Arguments to the function, which may include other functions.
-     * @property expression
-     * @type {ozpIwc.policyAuth.Expression}
-     * @default null
-     */
-    this.expression = config.expression;
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <AssociatedAdvice> element SHALL contain a set of <Advice> elements.
- *
- * The <AssociatedAdvice> element is of AssociatedAdviceType complexType.
- *
- * @class AssociatedAdvice
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.AssociatedAdvice = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    /**
-     * A sequence of advice.  See Section 5.35.
-     * @property advice
-     * @type {Array<ozpIwc.policyAuth.Advice>}
-     * @default null
-     */
-    this.advice = config.advice
-});
-
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Attribute> element is the central abstraction of the request context.  It contains attribute meta-data and
- * one or more attribute values.  The attribute meta-data comprises the attribute identifier and the attribute issuer.
- * AttributeDesignator> elements in the policy MAY refer to attributes by means of this meta-data.
- *
- * @class Attribute
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Attribute = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * The Attribute identifier.  A number of identifiers are reserved by XACML to denote commonly used attributes.
-     * See Appendix Appendix B.
-     * @property attributeId
-     *
-     * @type {String}
-     */
-    this.attributeId = config.attributeId;
-
-    /**
-     * Optional. The Attribute issuer.  For example, this attribute value MAY be an x500Name that binds to a public
-     * key, or it may be some other identifier exchanged out-of-band by issuing and relying parties.
-     *
-     * @property issuer
-     * @type {String}
-     */
-    this.issuer = config.issuer;
-
-    /**
-     * Whether to include this attribute in the result. This is useful to correlate requests with their
-     * responses in case of multiple requests.
-     *
-     * @property includeInResult
-     * @type {Boolean}
-     * @default false
-     */
-    this.includeInResult = config.includeInResult || false;
-
-    /**
-     * One or more attribute values.  Each attribute value MAY have contents that are empty,
-     * occur once or occur multiple times.
-     *
-     * @property attributeValue
-     * @type {Array<ozpIwc.policyAuth.AttributeValue>}
-     */
-    this.attributeValue = config.attributeValue || [];
-
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <AttributeAssignment> element is used for including arguments in obligation and advice expressions.
- * It SHALL contain an AttributeId and the corresponding attribute value, by extending the
- * AttributeValueType type definition.  The <AttributeAssignment> element MAY be used in any way that is consistent
- * with the schema syntax, which is a sequence of <xs:any> elements. The value specified SHALL be understood by
- * the PEP, but it is not further specified by XACML. See Section 7.18.  Section 4.2.4.3 provides a number of
- * examples of arguments included in obligation.expressions.
- *
- * The <AttributeAssignment> element is of AttributeAssignmentType complex type.
- *
- * @class AttributeAssignment
- * @namespace ozpIwc.policyAuth
- * @param {Object} config
- * @constructor
- */
-ozpIwc.policyAuth.AttributeAssignment = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * The attribute Identifier.
-     *
-     * @property attributeId
-     * @type {String}
-     * @default null
-     */
-    this.attributeId = config.attributeId;
-
-    /**
-     * An optional category of the attribute. If this attribute is missing, the attribute has no category. The PEP
-     * SHALL interpret the significance and meaning of any Category attribute. Non-normative note: an expected use of
-     * the category is to disambiguate attributes which are relayed from the request.
-     *
-     * @property category
-     * @type {String}
-     * @default null
-     */
-    this.category = config.category;
-
-    /**
-     * An optional issuer of the attribute. If this attribute is missing, the attribute has no issuer. The PEP SHALL
-     * interpret the significance and meaning of any Issuer attribute. Non-normative note: an expected use of the
-     * issuer is to disambiguate attributes which are relayed from the request.
-     *
-     * @property issuer
-     * @type {String}
-     * @default null
-     */
-    this.issuer = config.issuer;
-});
-
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <AttributeAssignmentExpression> element is used for including arguments in obligations and advice.
- * It SHALL contain an AttributeId and an expression which SHALL by evaluated into the corresponding attribute value.
- * The value specified SHALL be understood by the PEP, but it is not further specified by XACML. See Section 7.18.
- * Section 4.2.4.3 provides a number of examples of arguments included in obligations.
-
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.AttributeAssignmentExpression = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     *The expression which evaluates to a constant attribute value or a bag of zero or more attribute values.
-     * See section 5.25.
-     *
-     * @property expression
-     * @type {ozpIwc.policyAuth.Expression}
-     */
-    this.expression = config.expression;
-
-    /**
-     * The attribute identifier. The value of the AttributeId attribute in the resulting <AttributeAssignment>
-     * element MUST be equal to this value.
-     * @property attributeId
-     * @type {String}
-     */
-    this.attributeId = config.attributeId;
-
-    /**
-     * An optional category of the attribute. If this attribute is missing, the attribute has no category.
-     * The value of the Category attribute in the resulting <AttributeAssignment> element MUST be equal to this value.
-     * @property category
-     * @type {String}
-     */
-    this.category = config.category;
-
-    /**
-     * An optional issuer of the attribute. If this attribute is missing, the attribute has no issuer. The value of the
-     * Issuer attribute in the resulting <AttributeAssignment> element MUST be equal to this value.
-     * @property issuer
-     * @type {String}
-     */
-    this.issuer = config.issuer;
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <AttributeDesignator> element retrieves a bag of values for a named attribute from the request context.
- * A named attribute SHALL be considered present if there is at least one attribute that matches the
- * criteria set out below.
- *
- * The <AttributeDesignator> element SHALL return a bag containing all the attribute values that are matched by the
- * named attribute. In the event that no matching attribute is present in the context, the MustBePresent attribute
- * governs whether this element returns an empty bag or “Indeterminate”.  See Section 7.3.5.
- *
- * The <AttributeDesignator> MAY appear in the <Match> element and MAY be passed to the <Apply> element as an argument.
- *
- * The <AttributeDesignator> element is of the AttributeDesignatorType complex type.
- *
- *
- * @class AttributeDesignator
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.AttributeDesignator = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * This attribute SHALL specify the Category with which to match the attribute.
-     *  type='xs:anyURI'
-     *
-     * @property category
-     * @type {String}
-     */
-    this.category = config.category;
-
-    /**
-     * This attribute SHALL specify the AttributeId with which to match the attribute.
-     *  type='xs:anyURI'
-     *
-     * @property attributeId
-     * @type {String}
-     */
-    this.attributeId = config.attributeId;
-
-    /**
-     * The bag returned by the <AttributeDesignator> element SHALL contain values of this data-type.
-     *  type='xs:anyURI'
-     *
-     * @property dataType
-     * @type {String}
-     */
-    this.dataType = config.dataType;
-
-    /**
-     * This attribute, if supplied, SHALL specify the Issuer with which to match the attribute.
-     *  type='xs:anyURI'
-     *
-     * @property category
-     * @type {String}
-     */
-    this.issuer = config.issuer;
-
-    /**
-     * This attribute governs whether the element returns “Indeterminate” or an empty bag in the event the named
-     * attribute is absent from the request context.  See Section 7.3.5.  Also see Sections 7.19.2 and 7.19.3.
-     *
-     * @property category
-     * @type {Boolean}
-     */
-    this.mustBePresent = config.mustBePresent;
-
-    if(config.element){
-        this.construct(config.element);
-    }
-});
-
-/**
- * A named attribute SHALL match an attribute if the values of their respective Category, AttributeId, DataType and
- * Issuer attributes match. The attribute designator’s Category MUST match, by identifier equality, the Category of
- * the <Attributes> element in which the attribute is present. The attribute designator’s AttributeId MUST match, by
- * identifier equality, the AttributeId of the attribute.  The attribute designator’s DataType MUST match, by
- * identifier equality, the DataType of the same attribute.
- *
- * @method designate
- * @param {Object}request
- * @returns {Array}
- */
-ozpIwc.policyAuth.AttributeDesignator.prototype.designate = function(request){
-    if(!request.attributes){
-        return [];
-    }
-    var bag = [];
-    for(var i in request.attributes){
-        if(request.attributes[i].category === this.category){
-            for(var j in request.attributes[i].attribute){
-                if(request.attributes[i].attribute[j].attributeId === this.attributeId &&
-                   request.attributes[i].attribute[j].dataType === this.dataType &&
-                   request.attributes[i].attribute[j].issuer === this.issuer){
-                    bag.push(request.attributes[i].attribute[j]);
-                }
-            }
-        }
-    }
-    return bag;
-
-}
-ozpIwc.policyAuth.AttributeDesignator.prototype.requiredAttributes = ['Category', 'AttributeId',
-                                                                      'DataType','MustBePresent'];
-ozpIwc.policyAuth.AttributeDesignator.prototype.optionalAttributes = ['Issuer'];
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <AttributeDesignator> element retrieves a bag of values for a named attribute from the request context.
- * A named attribute SHALL be considered present if there is at least one attribute that matches the
- * criteria set out below.
- *
- * The <AttributeDesignator> element SHALL return a bag containing all the attribute values that are matched by the
- * named attribute. In the event that no matching attribute is present in the context, the MustBePresent attribute
- * governs whether this element returns an empty bag or “Indeterminate”.  See Section 7.3.5.
- *
- * The <AttributeDesignator> MAY appear in the <Match> element and MAY be passed to the <Apply> element as an argument.
- *
- * The <AttributeDesignator> element is of the AttributeDesignatorType complex type.
- *
- *
- * @class AttributeDesignator
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.AttributeSelector = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * This attribute SHALL specify the Category with which to match the attribute.
-     *  type='xs:anyURI'
-     *
-     * @property category
-     * @type {String}
-     */
-    this.category = config.category;
-
-    /**
-     * This attribute refers to the attribute (by its AttributeId) in the request context in the category given by the
-     * Category attribute. The referenced attribute MUST have data type
-     * urn:oasis:names:tc:xacml:3.0:data-type:xpathExpression, and must select a single node in the <Content> element.
-     * The XPathCategory attribute of the referenced attribute MUST be equal to the Category attribute of the
-     * attribute selector.
-     *
-     * @property contextSelectorId
-     * @type {String}
-     * @default null
-     */
-    this.contextSelectorId = config.contextSelectorId;
-
-
-    /**
-     * The bag returned by the <AttributeDesignator> element SHALL contain values of this data-type.
-     *  type='xs:anyURI'
-     *
-     * @property dataType
-     * @type {String}
-     */
-    this.dataType = config.dataType;
-
-
-    /**
-     * This attribute SHALL contain an XPath expression to be evaluated against the specified XML content.
-     * See Section 7.3.7 for details of the XPath evaluation during <AttributeSelector> processing.
-     *
-     * @property path
-     * @type {String}
-     * @default null
-     */
-    this.path = config.path;
-
-    /**
-     * This attribute governs whether the element returns “Indeterminate” or an empty bag in the event the named
-     * attribute is absent from the request context.  See Section 7.3.5.  Also see Sections 7.19.2 and 7.19.3.
-     *
-     * @property category
-     * @type {Boolean}
-     */
-    this.mustBePresent = config.mustBePresent;
-
-    if(config.element){
-        this.construct(config.element);
-    }
-});
-
-ozpIwc.policyAuth.AttributeSelector.prototype.requiredAttributes = ['Category', 'Path',
-                                                                      'DataType','MustBePresent'];
-ozpIwc.policyAuth.AttributeSelector.prototype.optionalAttributes = ['ContextSelectorId'];
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Obligations> element SHALL contain a set of <Obligation> elements.
- *
- * The <Obligations> element is of ObligationsType complexType.
- *
- * @class Obligations
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Obligations = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    /**
-     * A sequence of obligations.  See Section 5.34.
-     * @property obligations
-     * @type {Array<ozpIwc.policyAuth.Obligation>}
-     * @default null
-     */
-    this.obligations = config.obligations
-});
-
-/**
- * The <AttributeValue> element SHALL contain a literal attribute value.
- *
- * The <AttributeValue> element is of AttributeValueType complex type.
- *
- * @class AttributeValue
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.AttributeValue = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    config = config || {};
-    /**
-     * The data-type of the attribute value.
-     * @property dataType
-     * @type String
-     * @default null
-     */
-    this.dataType = config.dataType;
-    this.value = config.value;
-    if(config.element){
-        this.construct(config.element);
-        //@TODO this is stringed, parse?
-        this.value = config.element.textContent.trim();
-    }
-});
-
-ozpIwc.policyAuth.AttributeValue.prototype.requiredAttributes = ['DataType'];
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Attributes> element specifies attributes of a subject, resource, action, environment or another category by
- * listing a sequence of <Attribute> elements associated with the category.
- *
- * The <Attributes> element is of AttributesType complex type.
- *
- * @Class Attributes
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Attributes = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * This attribute indicates which attribute category the contained attributes belong to. The Category attribute is
-     * used to differentiate between attributes of subject, resource, action, environment or other categories.
-     *
-     * @property category
-     * @type {String}
-     */
-    this.category = config.category;
-
-    /**
-     * This attribute provides a unique identifier for this <Attributes> element. See [XMLid] It is primarily
-     * intended to be referenced in multiple requests. See [Multi].
-     *
-     * @property xml:id
-     * @type {String}
-     */
-    this['xml:id'] = config['xml:id'];
-
-    /**
-     * Specifies additional sources of attributes in free form XML document format which can be referenced using
-     * <AttributeSelector> elements.
-     *
-     * @property content
-     * @type {ozpIwc.policyAuth.Content}
-     */
-    this.content = config.content;
-
-    /**
-     * A sequence of attributes that apply to the category of the request.
-     * @property attributes
-     * @type {Array<ozpIwc.policyAuth.Attribute>}
-     */
-    this.attributes = config.attributes;
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Condition> element is a Boolean function over attributes or functions of attributes.
- * @class Condition
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Condition = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * The <Condition> contains one <Expression> element, with the restriction that the <Expression> return data-type
-     * MUST be “http://www.w3.org/2001/XMLSchema#boolean”.
-     * Evaluation of the <Condition> element is described in Section 7.9.
-     *
-     * @property expression
-     * @type {ozpIwc.policyAuth.Expression}
-     * @default null
-     */
-    this.expression = config.expression;
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Content> element is a notional placeholder for additional attributes, typically the content of the resource.
- *
- * The <Content> element is of ContentType complex type.
- *
- * @class Content
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Content = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    /**
-     * The <Content> element has exactly one arbitrary type child element.
-     */
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Decision> element contains the result of policy evaluation.
- *
- * The <Decision> element is of DecisionType simple type.
- *
- * @class Decision
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Decision = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * The values of the <Decision> element have the following meanings:
-     * “Permit”: the requested access is permitted.
-     * “Deny”: the requested access is denied.
-     * “Indeterminate”: the PDP is unable to evaluate the requested access.  Reasons for such inability include:
-     *      missing attributes, network errors while retrieving policies, division by zero during policy evaluation,
-     *      syntax errors in the decision request or in the policy, etc.
-     * “NotApplicable”: the PDP does not have any policy that applies to this decision request.
-     *
-     * @property decision
-     * @type {String}
-     */
-    this.decision = config.decision;
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Description> element contains a free-form description of the <PolicySet>, <Policy>, <Rule> or <Apply> element.
- * The <Description> element is of xs:string simple type.
- * @class Description
- * @namespace ozpIwc.policyAuth
- * @param string
- * @returns {*}
- * @constructor
- */
-ozpIwc.policyAuth.Description = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    this.value = config.value || "";
-
-    if(config.element.textContent){
-        this.value = config.element.textContent.trim();
-    }
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Function> element SHALL be used to name a function as an argument to the function defined by
- * the parent <Apply> element.
- *
- * The <Function> element is of FunctionType complex type.
- *
- * @class Function
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Function = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * The identifier of the function.
-     * @property functionId
-     * @type {String}
-     * @defualt null
-     */
-    this.functionId = config.functionId;
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Match> element SHALL identify a set of entities by matching attribute values in an <Attributes> element of the
- * request context with the embedded attribute value.
- *
- * The <Match> element is of MatchType complex type.
- *
- * @class Match
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Match = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * Specifies a matching function.  The value of this attribute MUST be of type xs:anyURI
-     * @policy matchId
-     * @type String
-     * @default null
-     */
-    this.matchId = config.matchId;
-
-    /**
-     * Embedded attribute value
-     * @policy attributeValue
-     * @type *
-     * @default null
-     */
-    this.attributeValue = config.attributeValue;
-
-    /**
-     * MAY be used to identify one or more attribute values in an <Attributes> element of the request context.
-     * @policy attributeDesignator
-     * @type *
-     * @default null
-     */
-    this.attributeDesignator = config.attributeDesignator;
-
-    /**
-     * MAY be used to identify one or more attribute values in a <Content> element of the request context.
-     * @policy attributeSelector
-     * @type *
-     * @default null
-     */
-    this.attributeSelector = config.attributeSelector;
-
-    if(config.element){
-        this.construct(config.element);
-    }
-});
-
-/**
- * Evaluates the given match statement against the request object with this match element's matching function.
- *
- * @method evaluate
- * @param {Object}request
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.Match.prototype.match = function(request){
-    // If the matching function specified is not available force a failing match.
-    // @TODO Determine if this is proper behavior.
-    if(!ozpIwc.policyAuth.Functions[this.matchId]){
-        return false;
-    }
-    var values = [];
-
-    if(this.attributeDesignator){
-        values = this.attributeDesignator.designate(request);
-    }
-    if(values.length === 0){
-        return false;
-    }
-    for(var i in values){
-        if(!ozpIwc.policyAuth.Functions[this.matchId](this.attributeValue.value,values[i].value)){
-            return false;
-        }
-    }
-    return true;
-};
-
-ozpIwc.policyAuth.Match.prototype.requiredAttributes = ['MatchId'];
-ozpIwc.policyAuth.Match.prototype.requiredNodes = ['AttributeValue'];
-
-//@TODO one of these 2 optional nodes must be present. how should we address this?
-ozpIwc.policyAuth.Match.prototype.optionalNodes = ['AttributeDesignator', 'AttributeSelector'];
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <MissingAttributeDetail> element conveys information about attributes required for policy evaluation that were
- * missing from the request context.
- *
- * The <MissingAttributeDetail> element is of MissingAttributeDetailType complex type.
- *
- * @class MissingAttributeDetail
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.MissingAttributeDetail = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * The required value of the missing attribute.
-     * @property attributeValue
-     * @type {ozpIwc.policyAuth.AttributeValue}
-     */
-    this.attributeValue = config.attributeValue;
-
-    /**
-     * The category identifier of the missing attribute.
-     * @property category
-     * @type {String}
-     */
-    this.category = config.category;
-
-    /**
-     * The identifier of the missing attribute.
-     * @property attributeId
-     * @type {String}
-     */
-    this.attributeId = config.attributeId;
-
-    /**
-     * The data-type of the missing attribute.
-     * @proeprty dataType
-     * @type {String}
-     */
-    this.dataType = config.dataType;
-
-    /**
-     * This attribute, if supplied, SHALL specify the required Issuer of the missing attribute.
-     * @property issuer
-     * @type {String}
-     */
-    this.issuer = config.issuer;
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Obligation> element SHALL contain an identifier for the obligation and a set of attributes that form
- * arguments of the action defined by the obligation.
- *
- * The <Obligation> element is of ObligationType complexType.  See Section 7.18 for a description of how the set of
- * obligations to be returned by the PDP is determined.
- *
- * @class Obligation
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Obligation = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    /**
-     * Obligation identifier.  The value of the obligation identifier SHALL be interpreted by the PEP.
-     * @property obligationId
-     * @type {String}
-     * @default null
-     */
-    this.obligationId = config.obligationId;
-
-    /**
-     * Obligation arguments assignment.  The values of the obligation arguments SHALL be interpreted by the PEP.
-     * (Optional)
-     * @property attributeAssignment
-     * @type {ozpIwc.policyAuth.AttributeAssignment}
-     */
-    this.attributeAssignment = config.attributeAssignment;
-});
-
-
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <ObligationExpressions> element SHALL contain a set of <ObligationExpression> elements.
- *
- * The <ObligationExpressions> element is of ObligationExpressionsType complexType.
- *
- * @class ObligationExpressions
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.ObligationExpressions = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * A sequence of obligation expressions.  See Section 5.39.
-     * @property obligationExpressions
-     * @type {Array<ozpIwc.policyAuth.ObligationExpression>}
-     * @defualt null
-     */
-    this.obligationExpressions = config.obligationExpressions;
-
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Obligations> element SHALL contain a set of <Obligation> elements.
- *
- * The <Obligations> element is of ObligationsType complexType.
- *
- * @class Obligations
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Obligations = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    /**
-     * A sequence of obligations.  See Section 5.34.
-     * @property obligations
-     * @type {Array<ozpIwc.policyAuth.Obligation>}
-     * @default null
-     */
-    this.obligations = config.obligations
-});
-
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * 3.3.2 Policy
- * Rules are not exchanged amongst system entities. Therefore, a PAP combines rules in a policy.
- *
- * The <Policy> element is of PolicyType complex type.
- *
- * @class Policy
- * @namespace ozpIwc.policyAuth
- *
- *
- * @param {Object} config
- * @param {Object} config.target
- * @param {Function} config.ruleCombining
- * @param {Array<ozpIwc.policyAuth.Rules>} config.rules
- * @param {Array<Function>} config.obligations
- * @param {Array<Function>} config.advices
- * @constructor
- */
-ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    config=config || {};
-
-    /**
-     * @property policyId
-     * @type String
-     * @default null
-     */
-    this.policyId = config.policyId;
-
-    /**
-     * @property version
-     * @type Number
-     * @default null
-     */
-    this.version = config.version;
-
-    /**
-     * @property ruleCombiningAlgId
-     * @type String
-     * @default null
-     */
-    this.ruleCombiningAlgId = config.ruleCombiningAlgId;
-
-    /**
-     * @property target
-     * @type Object
-     * @default {}
-     */
-    this.target = config.target || {};
-
-    /**
-     * Specifies the procedure by which the results of evaluating the component rules are combined when
-     * evaluating the policy
-     *
-     * @property ruleCombining
-     * @type Function
-     * @default null
-     */
-    this.ruleCombining = config.ruleCombining || null;
-
-    /**
-     * An array of {{#crossLink "ozpIwc.policyAuth.Rule"}}{{/crossLink}}
-     * @property rules
-     * @type Array<ozpIwc.policyAuth.Rule>
-     * @default []
-     */
-    this.rule = config.rule || [];
-
-    /**
-     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
-     *
-     * @property obligations
-     * @type Array<Function>
-     * @default []
-     */
-    this.obligations = config.obligations || [];
-
-    /**
-     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
-     * ignored by the PEP.
-     *
-     * @property advices
-     * @type Array<Function>
-     * @default []
-     */
-    this.advices = config.advices || [];
-
-    if(config.element){
-        this.construct(config.element);
-    }
-
-});
-
-/**
- * @property evaluate
- * @param request
- */
-ozpIwc.policyAuth.Policy.prototype.evaluate = function(request){
-    if(this.target.isTargeted(request)){
-        return ozpIwc.policyAuth.RuleCombining[this.ruleCombiningAlgId](this.rule,request);
-    } else {
-        return "Deny";
-    }
-};
-
-
-ozpIwc.policyAuth.Policy.prototype.requiredAttributes = ['PolicyId', 'Version', 'RuleCombiningAlgId'];
-ozpIwc.policyAuth.Policy.prototype.requiredNodes = ['Target'];
-ozpIwc.policyAuth.Policy.prototype.optionalNodes = ['Description','PolicyIssuer','PolicyDefaults','CombinerParameters','RuleCombinerParameters',
-    'VariableDefinition','Rule','ObligationExpressions','AdviceExpressions'];
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <PolicyIdReference> element SHALL be used to reference a <Policy> element by id.  If <PolicyIdReference>
- * is a URL, then it MAY be resolvable to the <Policy> element.  However, the mechanism for resolving a policy
- * reference to the corresponding policy is outside the scope of this specification.
- *
- * Element <PolicyIdReference> is of xacml:IdReferenceType complex type (see Section 5.10) .
- *
- * @class PolicyIdReference
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.PolicyIdReference = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    // parse as a URL
-    // @TODO validate the URL
-    if(typeof config === "string"){
-        /*
-        @TODO PARSE URL OF POLICY SET?
-         */
-    } else {
-     /*
-       @TODO Throw error that the reference wasn't a valid URL?
-      */
-    }
-});
-
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * A collection of {{#crossLink "ozpIwc.policyAuth.Policy"}}{{/crossLink}}.
- *
- * The <PolicySet> element is of PolicySetType complex type.
- *
- * @class PolicySet
- * @namespace ozpIwc.policyAuth
- *
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.PolicySet = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    config=config || {};
-
-    /**
-     * @property policyId
-     * @type String
-     * @default null
-     */
-    this.policyId = config.policyId;
-
-    /**
-     * @property version
-     * @type Number
-     * @default null
-     */
-    this.version = config.version;
-
-    /**
-     * @property policyCombiningAlgId
-     * @type String
-     * @default null
-     */
-    this.policyCombiningAlgId = config.policyCombiningAlgId;
-
-    /**
-     * @property target
-     * @type Object
-     * @default {}
-     */
-    this.target = config.target || {};
-
-    /**
-     * Specifies the procedure by which the results of evaluating the component policies are combined when
-     * evaluating the policy
-     *
-     * @property ruleCombining
-     * @type Function
-     * @default null
-     */
-    this.policyCombining = config.policyCombining || null;
-
-    /**
-     * An array of {{#crossLink "ozpIwc.policyAuth.Policy"}}{{/crossLink}}
-     * @property policies
-     * @type Array<ozpIwc.policyAuth.Policy>
-     * @default []
-     */
-    this.policies = config.policies || [];
-
-    /**
-     * An array of {{#crossLink "ozpIwc.policyAuth.PolicySet"}}{{/crossLink}}
-     * @property policySets
-     * @type Array<ozpIwc.policyAuth.PolicySet>
-     * @default []
-     */
-    this.policySets = config.policySets || [];
-
-    /**
-     * An array of references to policies that MUST be included in this policy set.  If the <PolicyIdReference>
-     * is a URL, then it MAY be resolvable.
-     * @property policyIdReference
-     * @type Array<String>
-     * @default
-     */
-    this.policyIdReference = config.policyIdReference || [];
-
-    /**
-     * An array of references to policy sets that MUST be included in this policy set.  If the <PolicyIdReference>
-     * is a URL, then it MAY be resolvable.
-     * @property policySetIdReference
-     * @type Array<ozpIwc.policyAuth.PolicySet>
-     * @default []
-     */
-    this.policySetIdReference = config.policySetIdReference || [];
-    /**
-     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
-     *
-     * @property obligations
-     * @type Array<Function>
-     * @default []
-     */
-    this.obligations = config.obligations || [];
-
-    /**
-     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
-     * ignored by the PEP.
-     *
-     * @property advices
-     * @type Array<Function>
-     * @default []
-     */
-    this.advices = config.advices || [];
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <PolicySetIdReference> element SHALL be used to reference a <PolicySet> element by id.
- * If <PolicySetIdReference> is a URL, then it MAY be resolvable to the <PolicySet> element.
- * However, the mechanism for resolving a policy set reference to the corresponding policy set is outside the scope
- * of this specification.
- *
- * Element <PolicySetIdReference> is of xacml:IdReferenceType complex type.
- *
- * @class PolicySetIdReference
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.PolicySetIdReference = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    // parse as a URL
-    if(typeof config === "string"){
-        /*
-         @TODO PARSE URL OF POLICY SET?
-         */
-    } else {
-        /**
-         * Specifies a matching expression for the version of the policy set referenced.
-         * @property version
-         * @type String
-         * @default ""
-         */
-        this.version = config.version;
-
-        /**
-         * Specifies a matching expression for the earliest acceptable version of the policy set referenced.
-         * @property earliestVersion
-         * @type String
-         * @default ""
-         */
-        this.earliestVersion = config.earliestVersion || "";
-
-        /**
-         * Specifies a matching expression for the latest acceptable version of the policy set referenced.
-         * @property latestVersion
-         * @type String
-         * @default ""
-         */
-        this.latestVersion = config.latestVersion || "";
-    }
-
-
-});
-
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Request> element is an abstraction layer used by the policy language.  For simplicity of expression, this
- * document describes policy evaluation in terms of operations on the context.  However a conforming PDP is not
- * required to actually instantiate the context in the form of an XML document.  But, any system conforming to the
- * XACML specification MUST produce exactly the same authorization decisions as if all the inputs had been transformed
- * into the form of an <Request> element.
- *
- * The <Request> element contains <Attributes> elements.  There may be multiple <Attributes> elements with the same
- * Category attribute if the PDP implements the multiple decision profile, see [Multi].  Under other conditions, it
- * is a syntax error if there are multiple <Attributes> elements with the same Category (see Section 7.19.2 for
- * error codes).
- *
- * The <Request> element is of RequestType complex type.
- *
- * @class Request
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Request = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    config = config || {};
-    /**
-     * This attribute is used to request that the PDP return a list of all fully applicable policies and policy sets
-     * which were used in the decision as a part of the decision response.
-     *
-     * @property returnPolicyIdList
-     * @type {Boolean}
-     * @default false
-     */
-    this.returnPolicyIdList = config.returnPolicyIdList;
-
-    /**
-     * This attribute is used to request that the PDP combines multiple decisions into a single decision. The use of
-     * this attribute is specified in [Multi]. If the PDP does not implement the relevant functionality in [Multi],
-     * then the PDP must return an Indeterminate with a status code of
-     * urn:oasis:names:tc:xacml:1.0:status:processing-error if it receives a request with this attribute set to “true”.
-     *
-     * @property combinedDecision
-     * @type {Boolean}
-     * @default false
-     */
-    this.combinedDecision = config.combinedDecision;
-
-    /**
-     * Optional. Contains default values for the request, such as XPath version. See section 5.43.
-     *
-     * @proerty requestDefaults
-     * @type {ozpIwc.policyAuth.RequestDefaults}
-     */
-    this.requestDefaults = config.requestDefaults;
-
-    /**
-     * Specifies information about attributes of the request context by listing a sequence of <Attribute> elements
-     * associated with an attribute category.  One or more <Attributes> elements are allowed.  Different <Attributes>
-     * elements with different categories are used to represent information about the subject, resource, action,
-     * environment or other categories of the access request.
-     *
-     * @property attributes
-     * @type {Array<ozpIwc.policyAuth.Attributes>}
-     */
-    this.attributes = config.attributes || [];
-
-    /**
-     * Lists multiple request contexts by references to the <Attributes> elements. Implementation of this element is
-     * optional. The semantics of this element is defined in [Multi]. If the implementation does not implement this
-     * element, it MUST return an Indeterminate result if it encounters this element. See section 5.50.
-     *
-     * @property multiRequests
-     * @type {Array<ozpIwc.policyAuth.MultiRequests>}
-     */
-    this.multiRequests = config.multiRequests;
-
-});
-ozpIwc.policyAuth.Request.prototype.isValidAttribute = function(attribute){
-    if(attribute.dataType && attribute.value){
-        return true;
-    }
-    return false;
-};
-
-ozpIwc.policyAuth.Request.prototype.addAttribute = function(category,attribute){
-    var index;
-    for(var  i in this.attributes){
-        if(this.attributes[i].category === category) {
-            index = i;
-            if(this.isValidAttribute(attribute)) {
-                this.attributes[i].attribute.push(attribute);
-            }
-            break;
-        }
-    }
-    if(!index){
-        if(this.isValidAttribute(attribute)) {
-            this.attributes.push({
-                'category': category,
-                attribute: [attribute]
-            });
-        }
-    }
-};
-ozpIwc.policyAuth.Request.prototype.defaultSubjectCategory = "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject";
-ozpIwc.policyAuth.Request.prototype.defaultSubjectId = "urn:oasis:names:tc:xacml:1.0:subject:subject-id";
-
-ozpIwc.policyAuth.Request.prototype.defaultResourceCategory = "urn:oasis:names:tc:xacml:3.0:attribute-category:resource";
-ozpIwc.policyAuth.Request.prototype.defaultResourceId = "urn:oasis:names:tc:xacml:1.0:resource:resource-id";
-
-ozpIwc.policyAuth.Request.prototype.defaultActionCategory = "urn:oasis:names:tc:xacml:3.0:attribute-category:action";
-ozpIwc.policyAuth.Request.prototype.defaultActionId = "urn:oasis:names:tc:xacml:1.0:action:action-id";
-
-
-
-/**
- * @method addSubject
- */
-ozpIwc.policyAuth.Request.prototype.addSubject = function(attribute){
-    attribute.attributeId  = attribute.attributeId || this.defaultSubjectId;
-    this.addAttribute(this.defaultSubjectCategory,attribute);
-};
-
-/**
- *  @method addResource
- */
-ozpIwc.policyAuth.Request.prototype.addResource = function(attribute){
-    attribute.attributeId  = attribute.attributeId || this.defaultResourceId;
-    this.addAttribute(this.defaultResourceCategory,attribute);
-};
-
-/**
- *  @method addAction
- */
-ozpIwc.policyAuth.Request.prototype.addAction = function(attribute){
-    attribute.attributeId  = attribute.attributeId || this.defaultActionId;
-    this.addAttribute(this.defaultActionCategory,attribute);
-};
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Response> element is an abstraction layer used by the policy language.
- * Any proprietary system using the XACML specification MUST transform an XACML context <Response> element into the
- * form of its authorization decision.
- *
- * The <Response> element encapsulates the authorization decision produced by the PDP.  It includes a sequence of
- * one or more results, with one <Result> element per requested resource.  Multiple results MAY be returned by
- * some implementations, in particular those that support the XACML Profile for Requests for Multiple Resources
- * [Multi].  Support for multiple results is OPTIONAL.
- *
- * The <Response> element is of ResponseType complex type.
- *
- *
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Response = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * An authorization decision result.  See Section 5.48.
-     *
-     * @property result
-     * @type {Array<ozpIwc.policyAuth.Result>}
-     */
-    this.result = config.result;
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Result> element represents an authorization decision result.  It MAY include a set of obligations that MUST be
- * fulfilled by the PEP.  If the PEP does not understand or cannot fulfill an obligation, then the action of the PEP is
- * determined by its bias, see section 7.1. It MAY include a set of advice with supplemental information which
- * MAY be safely ignored by the PEP.
- *
- * The <Result> element is of ResultType complex type.
- *
- * @class Result
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Result = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * The authorization decision: “Permit”, “Deny”, “Indeterminate” or “NotApplicable”.
-     *
-     * @property decision
-     * @type {ozpIwc.policyAuth.Decision}
-     */
-    this.decision = config.decision;
-
-    /**
-     * Indicates whether errors occurred during evaluation of the decision request, and optionally, information about
-     * those errors.  If the <Response> element contains <Result> elements whose <Status> elements are all identical,
-     * and the <Response> element is contained in a protocol wrapper that can convey status information, then the
-     * common status information MAY be placed in the protocol wrapper and this <Status> element MAY be
-     * omitted from all <Result> elements.
-     *
-     * @property status
-     * @type {ozpIwc.policyAuth.Status}
-     */
-    this.status = config.status;
-
-    /**
-     * A list of obligations that MUST be fulfilled by the PEP.  If the PEP does not understand or cannot fulfill an
-     * obligation, then the action of the PEP is determined by its bias, see section 7.2.  See Section 7.18 for a
-     * description of how the set of obligations to be returned by the PDP is determined.
-     *
-     * @property obligations
-     * @type {ozpIwc.policyAuth.Obligations}
-     */
-    this.obligations = config.obligations;
-
-    /**
-     * A list of advice that provide supplemental information to the PEP.  If the PEP does not understand an advice,
-     * the PEP may safely ignore the advice. See Section 7.18 for a description of how the set of advice to be
-     * returned by the PDP is determined.
-     *
-     * @property associatedAdvice
-     * @type {ozpIwc.policyAuth.AssociatedAdvice}
-     */
-    this.associatedAdvice = config.associatedAdvice;
-
-    /**
-     * A list of attributes that were part of the request. The choice of which attributes are included here is
-     * made with the IncludeInResult attribute of the <Attribute> elements of the request. See section 5.46.
-     *
-     * @property attributes
-     * @type {ozpIwc.policyAuth.Attributes}
-     */
-    this.attributes = config.attributes;
-
-    /**
-     * If the ReturnPolicyIdList attribute in the <Request> is true (see section 5.42), a PDP that implements this
-     * optional feature MUST return a list of all policies which were found to be fully applicable. That is, all
-     * policies where both the <Target> matched and the <Condition> evaluated to true, whether or not the <Effect>
-     * was the same or different from the <Decision>.
-     *
-     * @property policyIdentifierList
-     * @type {ozpIwc.policyAuth.policyIdentiferList}
-     */
-    this.policyIdentifierList = config.policyIdentifierList;
-
-});
-
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-
-/**
- * 3.3.1 Rule
- * A rule is the most elementary unit of policy.  It may exist in isolation only within one of the major actors of
- * the XACML domain.  In order to exchange rules between major actors, they must be encapsulated in a policy.
- * A rule can be evaluated on the basis of its contents.  The main components of a rule are:
- *
- * The <Rule> element is of RuleType complex type.
- *
- * @class Rule
- * @namespace ozpIwc.policyAuth
- *
- * @param {Object} config
- * @param {Object} config.target
- * @param {String} config.effect
- * @param {Array<Function>} config.obligations
- * @param {Array<Function>} config.advices
- *
- * @constructor
- */
-ozpIwc.policyAuth.Rule = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    config=config || {};
-
-    /**
-     * A string identifying this rule.
-     * @property ruleId
-     * @type String
-     * @default null
-     */
-    this.ruleId = config.ruleId;
-
-    /**
-     * @property target
-     * @type Object
-     * @default {}
-     */
-    this.target = config.target || null ;
-
-    /**
-     * The rule-writer's intended consequence of a "True" evaluation for the rule.
-     * Two values are allowed: "Permit" and "Deny".
-     * @property effect
-     * @type String
-     * @default "Permit"
-     */
-    this.setEffect(config.effect);
-
-    /**
-     * A Boolean expression that refines the applicability of the rule beyond the predicates implied by its target.
-     * Therefore, it may be absent.
-     *
-     * @property condition
-     * @type Function
-     * @default null
-     */
-    this.condition = config.condition || null;
-
-    /**
-     * An array of Obligations expressions to be evaluated and returned to the PEP in the response context.
-     *
-     * @property obligations
-     * @type Array<Function>
-     * @default []
-     */
-    this.obligations = config.obligations || [];
-
-    /**
-     * An array of Advice expressions to be evaluated and returned to the PEP in the response context. Advices can be
-     * ignored by the PEP.
-     *
-     * @property advices
-     * @type Array<Function>
-     * @default []
-     */
-    this.advices = config.advices || [];
-
-    if(config.element){
-        this.construct(config.element);
-        this.setEffect(this.effect);
-    }
-});
-
-ozpIwc.policyAuth.Rule.prototype.requiredAttributes = ['RuleId', 'Effect'];
-ozpIwc.policyAuth.Rule.prototype.optionalNodes = ['Description','Target','Condition','ObligationExpressions','AdviceExpressions'];
-
-/**
- * 3.3.1.2 Effect
- * The effect of the rule indicates the rule-writer's intended consequence of a "True" evaluation for the rule.
- * Two values are allowed: "Permit" and "Deny".
- *
- * @method setEffect
- * @param {String} effect
- */
-ozpIwc.policyAuth.Rule.prototype.setEffect = function(effect){
-    switch(effect){
-        case "Permit":
-            this.effect = effect;
-            break;
-        case "Deny":
-            this.effect = effect;
-            break;
-        default:
-            this.effect = "Permit";
-    }
-};
-
-
-ozpIwc.policyAuth.Rule.prototype.evaluate = function(request){
-
-    if(this.target.isTargeted(request)) {
-        return this.effect;
-    } else {
-        return (this.effect === "Permit") ? "Deny" : "Permit";
-    }
-};
-
-
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <Status> element represents the status of the authorization decision result.
- *
- * The <Status> element is of StatusType complex type.
- *
- * @class Status
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Status = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * Status Code
-     * @property statusCode
-     * @type {ozpIwc.policyAuth.StatusCode}
-     */
-    this.statusCode = config.statusCode;
-
-    /**
-     * A status message describing the status code.
-     * @property statusMessage
-     * @type {ozpIwc.policyAuth.StatusMessage}
-     */
-    this.statusMessage = config.statusMessage;
-
-    /**
-     * Additional status information.
-     * @property statusDetail
-     * @type {ozpIwc.policyAuth.StatusDetail}
-     */
-    this.statusDetail = config.statusDetail;
-
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <StatusCode> element contains a major status code value and an optional sequence of minor status codes.
- *
- * The <StatusCode> element is of StatusCodeType complex type.
- *
- * @class StatusCode
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.StatusCode = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * See Section B.8 for a list of values.
-     * @property value
-     * @type {ozpIwc.policyAuth.StatusCode}
-     */
-    this.value = config.statusCode;
-
-    /**
-     * Minor status code.  This status code qualifies its parent status code.
-     * @property statusCode
-     * @type {ozpIwc.policyAuth.StatusCode}
-     */
-    this.statusCode = config.statusCode;
-
-});
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-
-/**
- * The <Target> element identifies the set of decision requests that the parent element is intended to evaluate.
- * The <Target> element SHALL appear as a child of a <PolicySet> and <Policy> element and MAY appear as a child of
- * a <Rule> element.
- *
- * The <Target> element is of TargetType complex type.
- *
- * @class Target
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.Target = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * Matching specification for attributes in the context.  If this element is missing, then the target
-     * SHALL match all contexts.
-     * @property anyOf
-     * @type {Array<ozpIwc.policyAuth.AnyOf>}
-     */
-    this.anyOf = config.anyOf || [];
-
-
-    if(config.element){
-        this.construct(config.element);
-    }
-});
-
-
-
-/**
- * Determines if the given  target meets the criteria of the request
- *   For the parent of the <Target> element to be applicable to the decision request, there MUST be at least one
- *   positive match between each <AnyOf> element of the <Target> element and the corresponding section of the <Request> element.
- * @method isTargeted
- * @param {Object} request
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.Target.prototype.isTargeted = function(request){
-    //@TODO : is True if no anyOf's? Is that a global all?
-    for(var i in this.anyOf){
-        if(!this.anyOf[i].any(request)){
-            return false;
-        }
-    }
-    return true;
-
-};
-
-ozpIwc.policyAuth.Target.prototype.optionalNodes = ['AnyOf'];
-
-
-ozpIwc.policyAuth.Target.prototype.generateEmptyTarget = function(){
-    return new ozpIwc.policyAuth.Target({
-        anyOf: [new ozpIwc.policyAuth.AnyOf({
-            allOf: [new ozpIwc.policyAuth.AllOf()]
-        })]
-    });
-};
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <VariableDefinition> element SHALL be used to define a value that can be referenced by a <VariableReference>
- * element.  The name supplied for its VariableId attribute SHALL NOT occur in the VariableId attribute of any other
- *<VariableDefinition> element within the encompassing policy.  The <VariableDefinition> element MAY contain undefined
- * VariableReference> elements, but if it does, a corresponding <VariableDefinition> element MUST be defined later in
- * the encompassing policy.  <VariableDefinition> elements MAY be grouped together or MAY be placed close to the
- * reference in the encompassing policy.  There MAY be zero or more references to each <VariableDefinition> element.
- *
- * The <VariableDefinition> element is of VariableDefinitionType complex type.
- *
- * @class VariableDefinition
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.VariableDefinition = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * @property expression
-     * @type {ozpIwc.policyAuth.Expression}
-     * @default null
-     */
-    this.expression = config.expression;
-
-    /**
-     * The name of the variable definition.
-     * @property variableId
-     * @type {String}
-     */
-    this.variableId = config.variableId;
-});
-
-/**
- * The <Expression> element is not used directly in a policy.  The <Expression> element signifies that an element that
- * extends the ExpressionType and is a member of the <Expression> element substitution group SHALL appear in its place.
- *
- * The following elements are in the <Expression> element substitution group:
- * <Apply>, <AttributeSelector>, <AttributeValue>, <Function>, <VariableReference> and <AttributeDesignator>.
- *
- * @class Expression
- * @namesapce ozpIwc.policyAuth
- */
-
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * The <VariableReference> element is used to reference a value defined within the same encompassing <Policy> element.
- * The <VariableReference> element SHALL refer to the <VariableDefinition> element by identifier equality on the value
- * of their respective VariableId attributes.  One and only one <VariableDefinition> MUST exist within the same
- * encompassing <Policy> element to which the <VariableReference> refers.  There MAY be zero or more
- * <VariableReference> elements that refer to the same <VariableDefinition> element.
- *
- * The <VariableReference> element is of the VariableReferenceType complex type, which is of the ExpressionType complex
- * type and is a member of the <Expression> element substitution group.  The <VariableReference> element MAY appear
- * any place where an <Expression> element occurs in the schema.
- *
- * @class VariableReference
- * @namespace ozpIwc.policyAuth
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.VariableReference = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-
-    /**
-     * The name used to refer to the value defined in a <VariableDefinition> element.
-     * @property variableId
-     * @type {String}
-     */
-    this.variableId = config.variableId;
-
-});
-ozpIwc = ozpIwc || {};
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * A collection of functions for the XACML policy decision process.
- * @class Functions
- * @namespace ozpIwc.policyAuth
- * @type {{}|*|ozpIwc.policyAuth.Functions}
- */
-ozpIwc.policyAuth.Functions = ozpIwc.policyAuth.Functions || {};
-
-/**
- * This function SHALL take two arguments of data-type “http://www.w3.org/2001/XMLSchema#string” and SHALL return
- * an “http://www.w3.org/2001/XMLSchema#boolean”.  The function SHALL return "True" if and only if the value of both
- * of its arguments are of equal length and each string is determined to be equal.  Otherwise, it SHALL return “False”.
- * The comparison SHALL use Unicode codepoint collation, as defined for the
- * identifier http://www.w3.org/2005/xpath-functions/collation/codepoint by [XF].
- *
- * @property urn:oasis:names:tc:xacml:1.0:function:string-equal
- * @type {Function}
- * @param {String} valA
- * @param {String} valB
- * @returns {Boolean}
- */
-
-/**
- * This function SHALL take two arguments of data-type “http://www.w3.org/2001/XMLSchema#string” and SHALL return
- * an “http://www.w3.org/2001/XMLSchema#boolean”.  The function SHALL return "True" if and only if the value of both
- * of its arguments are of equal length and each string is determined to be equal.  Otherwise, it SHALL return “False”.
- * The comparison SHALL use Unicode codepoint collation, as defined for the
- * identifier http://www.w3.org/2005/xpath-functions/collation/codepoint by [XF].
- *
- * @property urn:oasis:names:tc:xacml:1.0:function:string-equal
- * @type {Function}
- * @param {String} valA
- * @param {String} valB
- * @returns {Boolean}
- */
-
-/**
- * This function SHALL take two arguments of data-type “http://www.w3.org/2001/XMLSchema#integer” and SHALL return an
- * “http://www.w3.org/2001/XMLSchema#boolean”. The function SHALL return “True” if and only if the two arguments
- * represent the same number.
- *
- * @property urn:oasis:names:tc:xacml:1.0:function:integer-equal
- * @type {Function}
- * @param {Number} valA
- * @param {Number} valB
- * @returns {Boolean}
- */
-
-/**
- * This function SHALL take two arguments of data-type “http://www.w3.org/2001/XMLSchema#double” and SHALL return an
- * “http://www.w3.org/2001/XMLSchema#boolean”.  It SHALL perform its evaluation on doubles according to
- * IEEE 754 [IEEE754].
- *
- * @property urn:oasis:names:tc:xacml:1.0:function:double-equal
- * @type {Function}
- * @param {Number} valA
- * @param {Number} valB
- * @returns {Boolean}
- */
-
-
-
-
-ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:1.0:function:string-equal'] =
-    ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:1.0:function:boolean-equal'] =
-        ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:1.0:function:integer-equal'] =
-            ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:1.0:function:double-equal'] =
-                            function (valA, valB) { return (valA === valB); };
-
-
-/**
- * This function SHALL take two arguments of data-type “http://www.w3.org/2001/XMLSchema#date” and SHALL return an
- * “http://www.w3.org/2001/XMLSchema#boolean”.  It SHALL perform its evaluation according to the “op:date-equal”
- * function [XF] Section 10.4.9.
- *
- * @property urn:oasis:names:tc:xacml:1.0:function:date-equal
- * @type {Function}
- * @param {String} valA
- * @param {String} valB
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:1.0:function:date-equal'] = function (valA,valB){
-    return ozpIwc.policyAuth.Operations['op:date-equal'](valA,valB);
-};
-
-/**
- * This function SHALL take two arguments of data-type “http://www.w3.org/2001/XMLSchema#time” and SHALL return an
- * “http://www.w3.org/2001/XMLSchema#boolean”.  It SHALL perform its evaluation according to the “op:time-equal”
- * function [XF] Section 10.4.12.
- *
- * @property urn:oasis:names:tc:xacml:1.0:function:time-equal
- * @type {Function}
- * @param {String} valA
- * @param {String} valB
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:1.0:function:time-equal'] = function (valA,valB){
-    return ozpIwc.policyAuth.Operations['op:time-equal'](valA,valB);
-};
-/**
- * This function SHALL take two arguments of data-type “http://www.w3.org/2001/XMLSchema#dateTime” and SHALL return an
- * “http://www.w3.org/2001/XMLSchema#boolean”.  It SHALL perform its evaluation according to the “op:dateTime-equal”
- * function [XF] Section 10.4.6.
- *
- * @property urn:oasis:names:tc:xacml:1.0:function:dateTime-equal
- * @type {Function}
- * @param {String} valA
- * @param {String} valB
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:1.0:function:dateTime-equal'] = function (valA,valB){
-    return ozpIwc.policyAuth.Operations['op:dateTime-equal'](valA,valB);
-};
-
-/**
- * This function SHALL take two arguments of data-type "http://www.w3.org/2001/XMLSchema#dayTimeDuration” and SHALL
- * return an "http://www.w3.org/2001/XMLSchema#boolean".  This function shall perform its evaluation according to the
- * "op:duration-equal" function [XF] Section 10.4.5.  Note that the lexical representation of each argument MUST be
- * converted to a value expressed in fractional seconds [XF] Section 10.3.2.
- *
- * See: http://www.w3.org/TR/xpath-functions/#func-duration-equal
- *
- * @property urn:oasis:names:tc:xacml:3.0:function:dayTimeDuration-equal
- * @param {String} valA
- * @param {String} valB
- * @returns {Boolean}
- */
-
-/**
- * This function SHALL take two arguments of data-type "http://www.w3.org/2001/XMLSchema#yearMonthDuration” and SHALL
- * return an "http://www.w3.org/2001/XMLSchema#boolean".  This function shall perform its evaluation according to the
- * "op:duration-equal" function [XF] Section 10.4.5.  Note that the lexical representation of each argument MUST be
- * converted to a value expressed in fractional seconds [XF] Section 10.3.2.
- *
- * See: http://www.w3.org/TR/xpath-functions/#func-duration-equal
- *
- * @property urn:oasis:names:tc:xacml:3.0:function:yearMonthDuration-equal
- * @param {String} valA
- * @param {String} valB
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:3.0:function:dayTimeDuration-equal'] =
-    ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:3.0:function:yearMonthDuration-equal'] =
-        function (valA,valB){
-            return ozpIwc.policyAuth.Operations['op:duration-equal'](valA,valB);
-        };
-
-/**
- * This function SHALL take two arguments of data-type “http://www.w3.org/2001/XMLSchema#anyURI” and SHALL return an
- * “http://www.w3.org/2001/XMLSchema#boolean”.  The function SHALL convert the arguments to strings
- * with urn:oasis:names:tc:xacml:3.0:function:string-from-anyURI and return “True” if and only if the values of the
- * two arguments are equal on a codepoint-by-codepoint basis.
- *
- * @property urn:oasis:names:tc:xacml:1.0:function:anyURI-equal
- * @param {String} valA
- * @param {String} valB
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:1.0:function:anyURI-equal'] = function (valA,valB){
-    var uToS = ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:3.0:function:string-from-anyURI'];
-    return (uToS(valA) === uToS(valB));
-};
-ozpIwc = ozpIwc || {};
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * A collection of functions for the XACML policy decision process.
- * @class Functions
- * @namespace ozpIwc.policyAuth
- * @type {{}|*|ozpIwc.policyAuth.Functions}
- */
-ozpIwc.policyAuth.Functions = ozpIwc.policyAuth.Functions || {};
-
-/**
- *
- * @property urn:oasis:names:tc:xacml:3.0:function:string-from-anyURI
- * @param {String} valA
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.Functions['urn:oasis:names:tc:xacml:3.0:function:string-from-anyURI'] = function(valA){
-    return valA;
-};
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-ozpIwc.policyAuth.Operations = ozpIwc.policyAuth.Operations || {};
-
-
-/**
- * 10.4.9 op:date-equal
- *
- * op:date-equal($arg1 as xs:date, $arg2 as xs:date) as xs:boolean
- *
- * Summary: Returns true if and only if the starting instant of $arg1 is equal to starting instant of $arg2.
- * Returns false otherwise.
- * The starting instant of an xs:date is the xs:dateTime at time 00:00:00 on that date.
- *
- * The two starting instants are compared using op:dateTime-equal.
- *
- * This function backs up the "eq", "ne", "le" and "ge" operators on xs:date values.
- *
- * @TODO
- * @property op:time-equal
- * @param valA
- * @param valB
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.Operations['op:date-equal'] = function(valA,valB){
-    return true;
-};
-
-/**
- * 10.4.12 op:time-equal
- *
- * op:time-equal($arg1 as xs:time, $arg2 as xs:time) as xs:boolean
- *
- * Summary: Returns true if and only if the value of $arg1 converted to an xs:dateTime using the date components
- * from the reference xs:dateTime is equal to the value of $arg2 converted to an xs:dateTime using the date components
- * from the same reference xs:dateTime. Returns false otherwise.
- *
- * The two xs:dateTime values are compared using op:dateTime-equal.
- *
- * This function backs up the "eq", "ne", "le" and "ge" operators on xs:time values.
- *
- * @TODO
- * @property op:time-equal
- * @param valA
- * @param valB
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.Operations['op:time-equal'] = function(valA,valB){
-    return true;
-};
-
-/**
- * 10.4.6 op:dateTime-equal
- *
- * op:dateTime-equal($arg1 as xs:dateTime, $arg2 as xs:dateTime) as xs:boolean
- *
- * Summary: Returns true if and only if the value of $arg1 is equal to the value of $arg2 according to the algorithm
- * defined in section 3.2.7.4 of [XML Schema Part 2: Datatypes Second Edition] "Order relation on dateTime" for
- * xs:dateTime values with timezones. Returns false otherwise.
- * This function backs up the "eq", "ne", "le" and "ge" operators on xs:dateTime values.
- *
- * @TODO
- * @property op:dateTime-equal
- * @param valA
- * @param valB
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.Operations['op:dateTime-equal'] = function(valA,valB){
-    return true;
-};
-
-/**
- * 10.4.5 op:duration-equal
- *
- * op:duration-equal($arg1 as xs:duration, $arg2 as xs:duration) as xs:boolean
- *
- * Summary: Returns true if and only if the xs:yearMonthDuration and the xs:dayTimeDuration components of
- * $arg1 and $arg2 compare equal respectively. Returns false otherwise.
- *
- * This function backs up the "eq" and "ne" operators on xs:duration values.
- *
- * Note that this function, like any other, may be applied to arguments that are derived from the types given in
- * the function signature, including the two subtypes xs:dayTimeDuration and xs:yearMonthDuration.
- * With the exception of the zero-length duration, no instance of xs:dayTimeDuration can ever be
- * equal to an instance of xs:yearMonthDuration.
- *
- * @TODO
- * @property op:duration-equal
- * @param valA
- * @param valB
- * @returns {Boolean}
- */
-ozpIwc.policyAuth.Operations['op:duration-equal'] = function(valA,valB){
-    return true;
-};
-
-
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * System entity that evaluates applicable policy and renders an authorization decision.
- * @class PDP
- * @namespace ozpIwc.policyAuth
- *
- * @param {Object} config
- * @constructor
- */
-ozpIwc.policyAuth.PDP = function(config){
-    config=config || {};
-    /**
-     * An events module for the API.
-     * @property events
-     * @type Event
-     */
-    this.events = new ozpIwc.Event();
-    this.events.mixinOnOff(this);
-
-    /**
-     * A cache of policies
-     * @TODO define how desired policies will be loaded in from the back-end
-     * @property policies
-     */
-    this.policies= config.policies || [];
-
-    /**
-     * An array of policy URIs to load.
-     * @property loadPolicies
-     * @type {Array<String>}
-     */
-    this.loadPolicies = config.loadPolicies || [];
-
-    this.hasInitialized = false;
-};
-
-/**
- *  Sends a request to the given URI to retrieve the desired Policy Set.
- *  If the set cannot be retrieved, the desired set will default to always deny.
- * @TODO
- * @method gatherPolicies
- * @param {Object} config
- * @param {String} config.policyID The unique ID of the policy to gather
- * @param {String} config.uri The uri path of where the policy is expected to be found.
- */
-ozpIwc.policyAuth.PDP.prototype.gatherPolicies = function(uri){
-        var uriArray = Array.isArray(uri) ? uri : [uri];
-        var promiseArray = [];
-        var self = this;
-        for(var i in uriArray){
-            var promise = ozpIwc.util.ajax({
-                href: uri[i],
-                method: "GET"
-            }).then(function (resp) {
-                var response = resp.response;
-                // We have to catch because onload does json.parse.... and this is xml... @TODO fix...
-                var policies = [];
-                for (var i in response.children) {
-                    if (response.children[i].tagName === "Policy") {
-                        policies.push(response.children[i]);
-                    }
-                }
-
-                for (var i in policies) {
-                    var policy = new ozpIwc.policyAuth.Policy({element: policies[i]});
-                    self.policies.push(policy);
-                }
-            });
-            promiseArray.push(promise);
-        }
-        return Promise.all(promiseArray);
-};
-
-/**
- * Processes an {{#crossLink "ozpIwc.policyAuth.PEP"}}{{/crossLink}} request.
- * @method handleRequest
- * @param request
- * @returns {Promise}
- */
-ozpIwc.policyAuth.PDP.prototype.handleRequest = function(request) {
-
-    var self = this;
-    if(!this.hasInitialized){
-        return self.gatherPolicies(this.loadPolicies).then(function() {
-            self.hasInitialized = true;
-            return new Promise(function (resolve, reject) {
-                var result = self.policies.some(function (policy) {
-                    return policy.evaluate(request) === "Permit";
-                }, self);
-
-                if (result) {
-                    resolve();
-                } else {
-                    reject();
-                }
-            });
-        });
-    } else {
-            return new Promise(function (resolve, reject) {
-                var result = self.policies.some(function (policy) {
-                    return policy.evaluate(request) === "Permit";
-                }, self);
-
-                if (result) {
-                    resolve();
-                } else {
-                    reject();
-                }
-            });
-    }
-};
-
-
-/**
- * Creates a policy for the given participant to be able to send with its given address
- * @method addSendAsPolicy
- * @param {object} config
- * @param {object} config.subject
- * @param {*} config.subject.value
- * @param [String] config.subject.matchId
- * @param [String] config.subject.dataType
- * @param {object} config.resource
- * @param {*} config.resource.value
- * @param [String] config.resource.matchId
- * @param [String] config.resource.dataType
- * @param {object} config.action
- * @param {*} config.action.value
- * @param [String] config.action.matchId
- * @param [String] config.action.dataType
- */
-ozpIwc.policyAuth.PDP.prototype.addPolicy = function(config){
-    config = config || {};
-    config.subject = Array.isArray(config.subject) ? config.subject : [config.subject];
-    config.resource = Array.isArray(config.resource) ? config.resource : [config.resource];
-    config.action = Array.isArray(config.action) ? config.action : [config.action];
-
-    var policyId;
-
-    if(config.subject && config.resource && config.action){
-        policyId = 'urn:ozp:iwc:xacml:policy:run-time:'+ ozpIwc.util.generateId();
-        this.policies.push(new ozpIwc.policyAuth.Policy({
-            policyId : policyId,
-            version: '0.1',
-            ruleCombiningAlgId: 'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides',
-            target: ozpIwc.policyAuth.util.generateEmptyTarget(),
-            rule: [new ozpIwc.policyAuth.Rule({
-                ruleId: 'urn:ozp:iwc:xacml:rule:run-time:' + ozpIwc.util.generateId(),
-                effect: "Permit",
-                target: new ozpIwc.policyAuth.Target({
-                    anyOf: [
-                        // subjects
-                        new ozpIwc.policyAuth.AnyOf({
-                            allOf: ozpIwc.policyAuth.util.generateAttributeSubjects(config.subject)
-                        }),
-                        // resources
-                        new ozpIwc.policyAuth.AnyOf({
-                            allOf: ozpIwc.policyAuth.util.generateAttributeResources(config.resource)
-                        }),
-                        // actions
-                        new ozpIwc.policyAuth.AnyOf({
-                            allOf: ozpIwc.policyAuth.util.generateAttributeActions(config.action)
-                        })
-                    ]
-                })
-            })]
-        }));
-    }
-
-    return policyId;
-};
-
-ozpIwc.policyAuth.PDP.prototype.removePolicy = function(id){
-    for(var i in this.policies){
-        if(this.policies[i].policyId === id){
-            this.policies.splice(i,1);
-        }
-    }
-};
-
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * System entity that performs access control, by making decision requests and enforcing authorization decisions.
- *
- * @class PEP
- * @namespace ozpIwc.policyAuth
- *
- * @param config
- * @constructor
- */
-ozpIwc.policyAuth.PEP = function(config){
-    config=config || {};
-
-    /**
-     * The Policy Decision Point to which this PEP will send requests to be authorized.
-     * @property PDP
-     * @type {ozpIwc.policyAuth.PDP}
-     * @default ozpIwc.defaultPDP
-     */
-    this.PDP = config.PDP || ozpIwc.authorization;
-
-};
-
-/**
- * Sends a request to the PDP to determine whether the given action has authority to be completed.
- * @TODO
- * @method decide
- * @param {Object} request
- * @returns {Promise}
- */
-ozpIwc.policyAuth.PEP.prototype.request = function(request){
-    return this.PDP.handleRequest(request);
-};
-ozpIwc = ozpIwc || {};
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 ozpIwc.policyAuth.PolicyCombining = ozpIwc.policyAuth.PolicyCombining || {};
 
@@ -8169,8 +3117,50 @@ ozpIwc.policyAuth.PolicyCombining = ozpIwc.policyAuth.PolicyCombining || {};
  *
  * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides
  */
-ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides']
-    = function(){
+ozpIwc.policyAuth.PolicyCombining['deny-overrides'] =
+        function(policies,request){
+    var atLeastOneErrorD,
+        atLeastOneErrorP,
+        atLeastOneErrorDP,
+        atLeastOnePermit = false;
+
+    for(var i in policies){
+        var decision = policies[i](request);
+        switch(decision){
+            case "Deny":
+                return "Deny";
+            case "Permit":
+                atLeastOnePermit = true;
+                break;
+            case "NotApplicable":
+                continue;
+            case "Indeterminate{D}":
+                atLeastOneErrorD = true;
+                break;
+            case "Indeterminate{P}":
+                atLeastOneErrorP = true;
+                break;
+            case "Indeterminate{DP}":
+                atLeastOneErrorDP = true;
+                break;
+            default:
+                continue;
+        }
+    }
+
+    if(atLeastOneErrorDP){
+        return "Indeterminate{DP}";
+    } else if(atLeastOneErrorD && (atLeastOneErrorP || atLeastOnePermit)){
+        return "Indeterminate{DP}";
+    } else if(atLeastOneErrorD){
+        return "Indeterminate{D}";
+    } else if(atLeastOnePermit) {
+        return "Permit";
+    } else if(atLeastOneErrorP){
+        return "Indeterminate{P}";
+    }
+
+    return "NotApplicable";
 
 };
 
@@ -8178,56 +3168,56 @@ ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining
 /**
  * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides
  */
-ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides']
-    = function(){
+ozpIwc.policyAuth.PolicyCombining['permit-overrides'] =
+        function(){
 
 };
 
 /**
  * @method urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable
  */
-ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable']
-    = function(){
+ozpIwc.policyAuth.PolicyCombining['first-applicable'] =
+        function(){
 
 };
 
 /**
  * @method urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable
  */
-ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable']
-    = function(){
+ozpIwc.policyAuth.PolicyCombining['only-one-applicable'] =
+        function(){
 
 };
 
 /**
  * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
  */
-ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides']
-    = function(){
+ozpIwc.policyAuth.PolicyCombining['ordered-deny-overrides'] =
+        function(){
 
 };
 
 /**
  * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides
  */
-ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides']
-    = function(){
+ozpIwc.policyAuth.PolicyCombining['ordered-permit-overrides'] =
+        function(){
 
 };
 
 /**
  * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit
  */
-ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit']
-    = function(){
+ozpIwc.policyAuth.PolicyCombining['deny-unless-permit'] =
+        function(){
 
 };
 
 /**
  * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-unless-deny
  */
-ozpIwc.policyAuth.PolicyCombining['urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-unless-deny']
-    = function(){
+ozpIwc.policyAuth.PolicyCombining['permit-unless-deny'] =
+        function(){
 
 };
 ozpIwc = ozpIwc || {};
@@ -8238,8 +3228,8 @@ ozpIwc.policyAuth.RuleCombining = ozpIwc.policyAuth.RuleCombining || {};
 /**
  * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides
  */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides']
-    = function(rules,request){
+ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides'] =
+        function(rules,request){
     var atLeastOneErrorD,
         atLeastOneErrorP,
         atLeastOneErrorDP,
@@ -8287,587 +3277,1440 @@ ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-alg
 /**
  * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides
  */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides']
-    = function(){
+ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides'] =
+        function(){
 
 };
 
 /**
  * @method urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable
  */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable']
-    = function(){
+ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable'] =
+        function(){
 
 };
 
 /**
  * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
  */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides']
-    = function(){
+ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides'] =
+        function(){
 
 };
 
 /**
  * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides
  */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides']
-    = function(){
+ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides'] =
+        function(){
 
 };
 
 /**
  * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit
  */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit']
-    = function(){
+ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit'] =
+        function(){
 
 };
 
 /**
  * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny
  */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny']
-    = function(){
+ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny'] =
+        function(){
 
 };
 ozpIwc = ozpIwc || {};
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-ozpIwc.policyAuth.util = ozpIwc.policyAuth.util || {};
 
-ozpIwc.policyAuth.util.generateEmptyTarget = function(){
-    return new ozpIwc.policyAuth.Target({
-        anyOf: [new ozpIwc.policyAuth.AnyOf({
-            allOf: [new ozpIwc.policyAuth.AllOf()]
-        })]
-    });
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+ozpIwc.policyAuth.BaseElement = function(config){
+    config = config || {};
 };
 
-ozpIwc.policyAuth.util.generateAttribute = function(config){
+
+ozpIwc.policyAuth.BaseElement.prototype.construct = function(element){
+    var parsed = ozpIwc.util.elementParser({
+        element: element,
+        reqAttrs: this.requiredAttributes,
+        optAttrs: this.optionalAttributes,
+        reqNodes: this.requiredNodes,
+        optNodes: this.optionalNodes
+    });
+    this.constructNodes(parsed);
+};
+
+/**
+ *
+ *
+ * @method constructNodes
+ * @param {Object}config
+ * @param {Object} config.attrs
+ * @param {Object} config.nodes
+ */
+ozpIwc.policyAuth.BaseElement.prototype.constructNodes = function(config){
+    config = config || {};
+    config.attrs = config.attrs || {};
+    config.nodes = config.nodes || {};
+
+    var camelCasedProperty;
+    // Attributes are just strings, simple assignment
+    for(var i in config.attrs){
+        // The property of the policy is the camelCase version of the tagName
+        // (ex. this.policyId = parsed.attrs.PolicyId)
+        camelCasedProperty = ozpIwc.util.camelCased(i);
+        this[camelCasedProperty] = config.attrs[i];
+    }
+
+    // Each node is likely to be mapped to a XACML element, construct said element and set it as this elements property.
+    for(var j in config.nodes){
+        // The property of the policy is the camelCase version of the tagName
+        camelCasedProperty = ozpIwc.util.camelCased(j);
+
+        // If a property of the Policy accepts multiple elements, it's defaulted as an array.
+        if(Array.isArray(this[camelCasedProperty])){
+
+            // Check if the parsed node type is an array, then we will append all its elements to this element.
+            if(Array.isArray(config.nodes[j])){
+                for(var itt in config.nodes[j]){
+                    // The property of the element is the camelCase version of the tagName, the node to construct from the
+                    // parsed object uses the same notation as the tagName for the class call
+                    // (ex.ozpIwc.policyAuth[i] = ozpIwc.policyAuth.Target)
+                    this[camelCasedProperty].push(new ozpIwc.policyAuth[j]({element: config.nodes[j][itt]}));
+                }
+            }else{
+                for(var k in config.nodes[j]) {
+                    this[camelCasedProperty].push(new ozpIwc.policyAuth[j]({element: config.nodes[j][k]}));
+                }
+            }
+        } else {
+            for(var itter in config.nodes[j]) {
+                this[camelCasedProperty] = new ozpIwc.policyAuth[j]({element: config.nodes[j][itter]});
+            }
+        }
+    }
+};
+
+
+ozpIwc.policyAuth.BaseElement.prototype.requiredAttributes = [];
+ozpIwc.policyAuth.BaseElement.prototype.optionalAttributes = [];
+ozpIwc.policyAuth.BaseElement.prototype.requiredNodes = [];
+ozpIwc.policyAuth.BaseElement.prototype.optionalNodes = [];
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * 3.3.2 Policy
+ * Rules are not exchanged amongst system entities. Therefore, a PAP combines rules in a policy.
+ *
+ * The <Policy> element is of PolicyType complex type.
+ *
+ * @class Policy
+ * @namespace ozpIwc.policyAuth
+ *
+ *
+ * @param {Object} config
+ * @param {Object} config.target
+ * @param {Function} config.ruleCombining
+ * @param {Array<ozpIwc.policyAuth.Rules>} config.rules
+ * @param {Array<Function>} config.obligations
+ * @param {Array<Function>} config.advices
+ * @constructor
+ */
+ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
+    config=config || {};
+
+    /**
+     * @property policyId
+     * @type String
+     * @default null
+     */
+    this.policyId = config.policyId;
+
+    /**
+     * @property version
+     * @type Number
+     * @default null
+     */
+    this.version = config.version;
+
+    /**
+     * @property description
+     * @type String
+     * @default null
+     */
+    this.description = config.description;
+
+    /**
+     * @property ruleCombiningAlgId
+     * @type String
+     * @default null
+     */
+    this.ruleCombiningAlgId = config.ruleCombiningAlgId || this.ruleCombiningAlgId;
+
+    /**
+     * An array of {{#crossLink "ozpIwc.policyAuth.Rule"}}{{/crossLink}}
+     * @property rules
+     * @type Array<ozpIwc.policyAuth.Rule>
+     * @default []
+     */
+    this.rule = [];
+
+    for(var i in config.rule){
+        // If the rule has an evaluate function, its already constructed
+        if(config.rule[i].evaluate){
+            this.rule.push(config.rule[i]);
+        } else {
+            this.rule.push(new ozpIwc.policyAuth.Rule(config.rule[i]));
+        }
+    }
+    this.evaluate = config.evaluate || this.evaluateDefault;
+
+});
+
+/**
+ * Default value
+ * @property ruleCombiningAlgId
+ * @type {string}
+ * @default 'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides'
+ */
+ozpIwc.policyAuth.Policy.prototype.ruleCombiningAlgId = 'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides';
+
+/**
+ *
+ * @TODO request is formatted by urn. see a request.category.
+ *
+ * @method evaluate(request)
+ * @param {Object | String} [request.category.subject]  The subject attributes or id performing the action.
+ * @param {Object | String} [request.category.resource] The resource attributes or id that is being acted upon.
+ * @param {Object | String} [request.category.action]  The action attributes.  A string should be interpreted as the
+ *                                            value of the “action-id” attribute.
+ * @param {Array<String>} [request.policies]  A list of URIs applicable to this decision.
+ * @param {String} [request. combiningAlgorithm]  Only supports “deny-overrides”
+ * @returns {Promise}
+ */
+ozpIwc.policyAuth.Policy.prototype.evaluateDefault = function(request){
+    return ozpIwc.policyAuth.RuleCombining[this.ruleCombiningAlgId](this.rule,request);
+
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+
+/**
+ * 3.3.1 Rule
+ * A rule is the most elementary unit of policy.  It may exist in isolation only within one of the major actors of
+ * the XACML domain.  In order to exchange rules between major actors, they must be encapsulated in a policy.
+ * A rule can be evaluated on the basis of its contents.  The main components of a rule are:
+ *
+ * The <Rule> element is of RuleType complex type.
+ *
+ * @class Rule
+ * @namespace ozpIwc.policyAuth
+ *
+ * @param {Object} config
+ * @param {Object} config.target
+ * @param {String} config.effect
+ * @param {Array<Function>} config.obligations
+ * @param {Array<Function>} config.advices
+ *
+ * @constructor
+ */
+ozpIwc.policyAuth.Rule = function(config){
+    config=config || {};
+
+    /**
+     * A string identifying this rule.
+     * @property ruleId
+     * @type String
+     * @default null
+     */
+    this.ruleId = config.ruleId;
+
+    /**
+     * A category-keyed collection of attributes.
+     * @property ruleId
+     * @type String
+     * @default null
+     */
+    this.category = config.category;
+
+    /**
+     * The rule-writer's intended consequence of a "True" evaluation for the rule.
+     * Two values are allowed: "Permit" and "Deny".
+     * @property effect
+     * @type String
+     * @default "Permit"
+     */
+    this.setEffect(config.effect);
+};
+
+/**
+ * 3.3.1.2 Effect
+ * The effect of the rule indicates the rule-writer's intended consequence of a "True" evaluation for the rule.
+ * Two values are allowed: "Permit" and "Deny".
+ *
+ * @method setEffect
+ * @param {String} effect
+ */
+ozpIwc.policyAuth.Rule.prototype.setEffect = function(effect){
+    switch(effect){
+        case "Permit":
+            this.effect = effect;
+            break;
+        case "Deny":
+            this.effect = effect;
+            break;
+        default:
+            this.effect = "Permit";
+    }
+};
+
+ozpIwc.policyAuth.Rule.prototype.getNegativeEffect = function(){
+    switch(this.effect){
+        case "Deny":
+            return "Permit";
+        default:
+            return "Deny";
+    }
+};
+
+ozpIwc.policyAuth.Rule.prototype.evaluate = function(request){
+    var reqCategory = request.category;
+
+    // Iterate over each category
+    for(var i in this.category){
+        // If the request doesn't have the category, fail it
+        if(!reqCategory[i]){
+            //@TODO
+            return this.getNegativeEffect();
+        } else {
+            // iterate over each attribute in the request
+            for(var j in reqCategory[i]){
+                //If the attribute in the request does not exist in the policy, keep moving.
+                if(!this.category[i][j]){
+                    continue;
+                }
+                var attributes = this.category[i][j];
+
+                var matchFound = false;
+                var reqAttributes = reqCategory[i][j];
+
+
+                //Make sure the attributes are arrays
+                reqAttributes = Array.isArray(reqAttributes) ?
+                    reqAttributes : [reqAttributes];
+
+                // If no attribute values in the policy
+                if(attributes.length === 0){
+                    // and none in the request, it passes
+                    if (attributes.length === 0) {
+                        matchFound = true;
+                    } else {
+                        // it fails
+                        matchFound = false;
+                    }
+                } else {
+                    matchFound = true;
+                    // Else iterate over each req attribute value, if one doesn't show in the policy, it fails.
+                    for (var k in reqAttributes) {
+                        if(attributes.indexOf(reqAttributes[k]) < 0){
+                            matchFound = false;
+                        }
+                    }
+                }
+
+                if(!matchFound){
+                    return this.getNegativeEffect();
+                }
+            }
+        }
+    }
+    return this.effect;
+};
+
+
+ozpIwc = ozpIwc || {};
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * A security attribute constructor for policyAuth use. Structured to be common to both bus-internal and api needs.
+ * @class SecurityAttribute
+ * @namespace ozpIwc.policyAuth
+ * @param config
+ * @constructor
+ */
+ozpIwc.policyAuth.SecurityAttribute = function(config){
+    config = config || {};
+    this.attributes =  config.attributes ||  {};
+    this.comparator = config.comparator || this.comparator;
+};
+
+/**
+ * Adds a value to the security attribute if it does not already exist. Constructs the attribute object if it does not
+ * exist
+ *
+ * @method pushIfNotExist
+ * @param id
+ * @param val
+ */
+ozpIwc.policyAuth.SecurityAttribute.prototype.pushIfNotExist = function(id, val, comp) {
+    comp = comp || this.comparator;
+    if(!val){
+        return;
+    }
+    var value = Array.isArray(val) ? val : [val];
+    if (!this.attributes[id]) {
+        this.attributes[id] = [];
+        this.attributes[id] = this.attributes[id].concat(value);
+    } else {
+        for (var i in this.attributes[id]) {
+            for (var j in value) {
+                if (!comp(this.attributes[id][i], value[j])) {
+                    this.attributes[id].push(val);
+                }
+            }
+        }
+    }
+};
+
+/**
+ * Clears the attributes given to an id.
+ * @param id
+ */
+ozpIwc.policyAuth.SecurityAttribute.prototype.clear = function(id){
+    delete this.attributes[id];
+};
+
+/**
+ * Clears all attributes.
+ * @method clear
+ */
+ozpIwc.policyAuth.SecurityAttribute.prototype.clearAll = function(){
+    this.attributes = {};
+};
+
+/**
+ * Returns an object containing all of the attributes.
+ * @returns {Object}
+ */
+ozpIwc.policyAuth.SecurityAttribute.prototype.getAll = function(){
+    return this.attributes;
+};
+
+/**
+ *
+ * Determines the equality of an object against a securityAttribute value.
+ * @method comparator
+ * @param a
+ * @param b
+ * @returns {boolean}
+ */
+ozpIwc.policyAuth.SecurityAttribute.prototype.comparator = function(a, b) {
+    return a === b;
+};
+ozpIwc = ozpIwc || {};
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * System entity that evaluates applicable policy and renders an authorization decision.
+ * @class PDP
+ * @namespace ozpIwc.policyAuth
+ *
+ * @param {Object} config
+ * @param {ozpIwc.policyAuth.PRP} config.prp Policy Repository Point for the PDP to gather policies from.
+ * @param {ozpIwc.policyAuth.PIP} config.pip Policy Information Point for the PDP to gather attributes from.
+ * @constructor
+ */
+ozpIwc.policyAuth.PDP = function(config){
+    config=config || {};
+
+    /**
+     * Policy Repository Point
+     * @property prp
+     * @type {ozpIwc.policyAuth.PRP}
+     * @default new ozpIwc.policyAuth.PRP()
+     */
+    this.prp = config.prp ||  new ozpIwc.policyAuth.PRP();
+
+
+    /**
+     * Policy Information Point
+     * @property pip
+     * @type {ozpIwc.policyAuth.PIP}
+     * @default new ozpIwc.policyAuth.PIP()
+     */
+    this.pip = config.pip || new ozpIwc.policyAuth.PIP();
+
+    this.policySets = config.policySets ||
+    {
+        'connectSet': ["/policy/connect"],
+        'apiSet': ["/policy/apiNode"],
+        'readSet': ["/policy/read"],
+        'receiveAsSet': ["/policy/receiveAs"],
+        'sendAsSet': ["/policy/sendAs"]
+    };
+};
+
+
+/**
+ * @method isPermitted(request)
+ * @param {Object | String} [request.subject]       The subject attributes or id performing the action.
+ * @param {Object | String} [request.resource]      The resource attributes or id that is being acted upon.
+ * @param {Object | String} [request.action]        The action attributes.  A string should be interpreted as the
+ *                                                  value of the “action-id” attribute.
+ * @param {Array<String>} [request.policies]        A list of URIs applicable to this decision.
+ * @param {String} [request. combiningAlgorithm]    Only supports “deny-overrides”
+ * @param {Object} [contextHolder]                  An object that holds 'securityAttribute' attributes to populate the
+ *                                                  PIP cache with for request/policy use.
+ * @returns {ozpIwc.AsyncAction} will resolve with 'success' if the policy gives a "Permit".
+ *                                    rejects else wise. the async success will receive:
+ * ```{
+ *      'result': <String>,
+ *      'request': <Object> // a copy of the request passed in,
+ *      'formattedRequest': <Object> // a copy of the formatted request (for PDP user caching)
+ *      'formattedPolicies': <Object> // a copy of the formatted policies (for PDP user caching)
+ *    }```
+ */
+ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
+    var asyncAction = new ozpIwc.AsyncAction();
+
+    var self = this;
+    //If there is no request information, its a trivial "Permit"
+    if(!request){
+        return asyncAction.resolve('success',{
+                'result':"Permit"
+            });
+    }
+
+    var formattedPolicies = [];
+
+    var onError = function(err){
+        asyncAction.resolve('failure',err);
+    };
+    //Format the request
+    this.formatRequest(request)
+        .success(function(formattedRequest){
+
+            // Get the policies from the PRP
+            self.prp.getPolicies(formattedRequest.policies)
+                .success(function(policies){
+
+                    var result = ozpIwc.policyAuth.PolicyCombining['deny-overrides'](policies,formattedRequest.category);
+                    var response = {
+                        'result':result,
+                        'request': request,
+                        'formattedRequest': formattedRequest,
+                        'formattedPolicies': formattedPolicies
+                    };
+                    if(result === "Permit"){
+                       asyncAction.resolve('success',response);
+                    } else {
+                        onError(response);
+                    }
+                }).failure(onError);
+        }).failure(onError);
+    return asyncAction;
+};
+
+
+ozpIwc.policyAuth.PDP.prototype.formatAttributes = function(attributes,pip){
+    attributes = Array.isArray(attributes) ? attributes : [attributes];
+    var asyncAction = new ozpIwc.AsyncAction();
+    pip = pip || this.pip;
+    var asyncs = [];
+    for(var i in attributes){
+        asyncs.push(this.formatAttribute(attributes[i],pip));
+    }
+    ozpIwc.AsyncAction.all(asyncs).success(function(attrs){
+        var retObj = {};
+        for(var i in attrs){
+            if(Object.keys(attrs[i]).length > 0) {
+                for (var j in attrs[i]) {
+                    retObj[j] = attrs[i][j];
+                }
+            }
+        }
+        asyncAction.resolve("success",retObj);
+    });
+    return asyncAction;
+};
+
+
+
+
+    /**
+ * Takes a URN, array of urns, object, array of objects, or array of any combination and fetches/formats to the
+ * necessary structure to be used by a request of policy's category object.
+ *
+ * @method formatAttribute
+ * @param {String|Object|Array<String|Object>}attribute The attribute to format
+ * @param {ozpIwc.policyAuth.PIP} [pip] Policy information point, uses ozpIwc.authorization.pip by default.
+ * @returns {ozpIwc.AsyncAction} returns an async action that will resolve with an object of the formatted attributes.
+ *                               each attribute is ID indexed in the object, such that the formatting of id
+ *                               `ozp:iwc:node` which has attributes `a` and `b`would resolve as follows:
+ *                  ```
+ *                  {
+ *                      'ozp:iwc:node': {
+ *                          'attributeValues': ['a','b']
+ *                       }
+ *                  }
+ *                  ```
+ *
+ */
+ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
+    var asyncAction = new ozpIwc.AsyncAction();
+    pip = pip || this.pip;
+    var asyncs = [];
+    if(!attribute){
+        return asyncAction.resolve('success');
+    }
+
+
+    if(!attribute){
+        //do nothing and return an empty object.
+        asyncAction.resolve('success', {});
+
+    }else if(typeof attribute === "string") {
+        // If its a string, use it as a key and fetch its attrs from PIP
+        pip.getAttributes(attribute)
+            .success(function(attr){
+                //TODO check if is an array or string (APPLY RECURSION!)
+                asyncAction.resolve("success",attr);
+            })
+
+    } else if(Array.isArray(attribute)){
+        // If its an array, its multiple actions. Wrap as needed
+        return this.formatAttributes(attribute,pip);
+
+    } else if(typeof attribute === "object"){
+        // If its an object, make sure each key's value is an array.
+        var keys = Object.keys(attribute);
+        for (var i in keys) {
+            var tmp = attribute[keys[i]];
+            if (['string', 'number', 'boolean'].indexOf(typeof attribute[keys[i]]) >= 0) {
+                attribute[keys[i]] =  [tmp];
+            }
+            attribute[keys[i]] = attribute[keys[i]] || [];
+        }
+        asyncAction.resolve("success",attribute);
+    }
+    return asyncAction;
+};
+
+
+
+/**
+ * Formats an action to be used by a request or policy. Actions are not gathered from the Policy Information Point.
+ * Rather they are string values explaining the operation to be permitted. To comply with XACML, these strings are
+ * wrapped in objects for easier comparison
+ *
+ * @method formatAction
+ * @param {String|Object|Array<String|Object>} action
+ * @returns {Object} An object of formatted actions indexed by the ozp action id `ozp:action:id`.
+ *                   An example output for actions ['read','write'] is as follows:
+ *      ```
+ *      {
+ *          'ozp:iwc:action': {
+ *              'attributeValue': ['read', 'write']
+ *          }
+ *      }
+ *      ```
+ *
+ */
+ozpIwc.policyAuth.PDP.prototype.formatAction = function(action){
+
+    var formatted =  [];
+
+    var objectHandler = function(object,formatted){
+        var values;
+        // We only care about attributeValues
+        if(object['ozp:iwc:action']){
+            values = object['ozp:iwc:action'];
+        }
+        if(Array.isArray(values)) {
+                return arrayHandler(values,formatted);
+        } else if(['string', 'number', 'boolean'].indexOf(typeof values) >= 0){
+            if(formatted.indexOf(values) < 0){
+                formatted.push(values);
+            }
+        }
+    };
+    var arrayHandler = function(array,formatted){
+        for(var i in array){
+            if(typeof array[i] === 'string') {
+                if (formatted.indexOf(array[i]) < 0) {
+                    formatted.push(array[i]);
+                }
+            } else if(Array.isArray(array[i])){
+                arrayHandler(array[i],formatted);
+            } else if(typeof array[i] === 'object') {
+                objectHandler(array[i],formatted);
+            }
+        }
+    };
+
+    if(!action){
+        //do nothing and return an empty array
+    }else if(typeof action === "string"){
+        // If its a string, its a single action.
+        formatted.push(action);
+    } else if(Array.isArray(action)){
+        arrayHandler(action,formatted);
+    } else if(typeof action === 'object'){
+        objectHandler(action,formatted);
+    }
+
+    return {'ozp:iwc:action': formatted};
+};
+
+/**
+ * Takes a request object and applies any context needed from the PIP.
+ *
+ * @method formatRequest
+ * @param {Object}          request
+ * @param {String|Array<String>|Object}    request.subject URN(s) of attribute to gather, or formatted subject object
+ * @param {String|Array<String>Object}     request.resource URN(s) of attribute to gather, or formatted resource object
+ * @param {String|Array<String>Object}     request.action URN(s) of attribute to gather, or formatted action object
+ * @param {String}                         request.combiningAlgorithm URN of combining algorithm
+ * @param {Array<String|ozpIwc.policyAuth.Policy>}   request.policies either a URN or a formatted policy
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
+ * @returns {ozpIwc.AsyncAction}  will resolve when all attribute formatting completes.
+ *                    The resolution will pass a formatted
+ *                      structured as so:
+ *                    ```{
+ *                      'category':{
+ *                          "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": {
+ *                              <AttributeId>: {
+ *                                  "attributeValues": Array<Primitive>
+ *                              }
+ *                          },
+ *                          "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": {
+ *                              <AttributeId>: {
+ *                                  "attributeValues": Array<Primitive>
+ *                              }
+ *                          },
+ *                          "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
+ *                              "ozp:iwc:action": {
+ *                                  "attributeValues": Array<String>
+ *                              }
+ *                          }
+ *                       },
+ *                      'combiningAlgorithm': request.combiningAlgorithm,
+ *                      'policies': request.policies
+ *                     }```
+ */
+ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request,pip){
+    var asyncAction = new ozpIwc.AsyncAction();
+    pip = pip || this.pip;
+    request = request || {};
+    request.subject = request.subject || {};
+    request.resource = request.resource || {};
+    request.action = request.action || {};
+    var asyncs = [];
+
+    var subjectAsync = this.formatAttribute(request.subject,pip);
+    var resourceAsync = this.formatAttribute(request.resource,pip);
+    var actions = this.formatAction(request.action);
+
+    asyncs.push(subjectAsync,resourceAsync,actions);
+
+    ozpIwc.AsyncAction.all(asyncs)
+        .success(function(gatheredAttributes){
+            var sub = gatheredAttributes[0];
+            var res = gatheredAttributes[1];
+            var act = gatheredAttributes[2];
+            asyncAction.resolve('success',{
+                'category':{
+                    "subject": sub,
+                    "resource": res,
+                    "action": act
+                },
+                'combiningAlgorithm': request.combiningAlgorithm,
+                'policies': request.policies
+            });
+        }).failure(function(err){
+            asyncAction.resolve('failure',err);
+        });
+    return asyncAction;
+};
+
+/**
+ * The URN of the default combining algorithm to use when basing a decision on multiple policies.
+ * @property defaultCombiningAlgorithm
+ * @type {String}
+ * @default "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides"
+ */
+ozpIwc.policyAuth.PDP.prototype.defaultCombiningAlgorithm =
+    "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides";
+
+/**
+ * A factory function to create a function for evaluating formatted policies against a given combining algorithm
+ * in the ozpIwc.policyAuth.PolicyCombining namespace.
+ *
+ * @method generateEvaluation
+ * @param {String|Array<String>}        policies none, one, or many policies to evaluate with the given combining algorithm
+ * @param {String} combiningAlgorithm   the name of the combining algorithm to obtain from the
+ *                                      ozpIwc.policyAuth.PolicyCombining namespace.
+ * @returns {Function}                  returns a function call expecting a formatted request to be passed to for
+ *                                      evaluation. Ex:
+ *                                      ```
+ *                                      var pdp = new ozpIwc.policyAuth.PDP(...);
+ *                                      var evalFunc = pdp.generateEvaluation(somePolicies, someCombiningAlgorithm);
+ *                                      var result = evalFunc(someRequest);
+ *                                      ```
+ */
+//ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combiningAlgorithm){
+//    policies = policies || [];
+//    policies = Array.isArray(policies)? policies : [policies];
+//
+//    var combiningFunction = ozpIwc.policyAuth.PolicyCombining[combiningAlgorithm] ||
+//        ozpIwc.policyAuth.PolicyCombining[this.defaultCombiningAlgorithm];
+//
+//    // If there are no policies to check against, assume trivial and permit
+//    if(policies.length === 0){
+//        return ozpIwc.abacPolicies.permitAll;
+//    }
+//
+//    return function(request){
+//            return combiningFunction(policies,request);
+//    };
+//};
+
+
+/**
+ * Formats a category object. If needed the attribute data is gathered from the PIP.
+ *
+ * @method formatCategory
+ * @param {String|Array<String>|Object} category the category (subject,resource,action) to format
+ * @param {String} categoryId the category name used to map to its corresponding attributeId (see PDP.mappedID)
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
+ * @returns {ozpIwc.AsyncAction}  will resolve with a category object formatted as so:
+ *      ```
+ *      {
+ *          <AttributeId>: {
+ *              'attributeValue': {Array<Primative>}
+ *          }
+ *      }
+ *      ```
+ *
+ */
+ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,pip){
+    var asyncAction = new ozpIwc.AsyncAction();
+    if(!category){
+        return asyncAction.resolve('success');
+    }
+
+    pip = pip || this.pip;
+
+    this.formatAttribute(category,pip)
+        .success(function(attributes){
+            for(var i in attributes['ozp:iwc:permissions']){
+                attributes[i] = attributes['ozp:iwc:permissions'][i];
+            }
+            delete attributes['ozp:iwc:permissions'];
+            asyncAction.resolve('success',attributes);
+        }).failure(function(err){
+            asyncAction.resolve('failure',err);
+        });
+    return asyncAction;
+};
+
+/**
+ *
+ * Category context handling for policy objects.
+ * Takes object key-indexed categories for a policy
+ * and returns an object key-indexed listing of formatted. Each category is keyed by its XACML URN. currently only
+ * subject,resource, and action categories are supported.
+ *
+ * @method formatCategories
+ * @param {Object} categoryObj
+ * @param {Object|String|Array<String|Object>}
+ *          [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
+ *                                          Formats xacml subject category attributes
+ * @param {Object|String|Array<String|Object>}
+ *          [categoryObj["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]]
+ *                                          Formats xacml resource category attributes
+ * @param {Object|String|Array<String|Object>}
+ *          [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
+ *                                          Formats xacml action category attributes
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
+ * @returns {ozpIwc.AsyncAction} will resolve an object of categories be structured as so:
+ * ```
+ * {
+ *   'urn:oasis:names:tc:xacml:1.0:subject-category:access-subject' : {
+ *      <AttributeId>:{
+ *          'attributeValue' : Array<Primitive>
+ *      },
+ *      <AttributeId>:{
+ *          'attributeValue' : Array<Primitive>
+ *      }
+ *   },
+ *   'urn:oasis:names:tc:xacml:3.0:attribute-category:resource': {...},
+ *   'urn:oasis:names:tc:xacml:1.0:subject-category:access-subject': {...},
+ * }
+ * ```
+ */
+ozpIwc.policyAuth.PDP.prototype.formatCategories = function(categoryObj,pip){
+    var asyncAction = new ozpIwc.AsyncAction();
+    pip = pip || this.pip;
+    var categoryAsyncs = [];
+    var categoryIndexing = {};
+    for(var i in categoryObj){
+        categoryAsyncs.push(this.formatCategory(categoryObj[i],pip));
+        categoryIndexing[i] = categoryAsyncs.length - 1;
+    }
+    ozpIwc.AsyncAction.all(categoryAsyncs)
+        .success(function(categories){
+            var map = {};
+            var keys = Object.keys(categoryIndexing);
+            for(var i in keys){
+                map[keys[i]] = categories[categoryIndexing[keys[i]]] || {};
+            }
+            asyncAction.resolve('success',map);
+        }).failure(function(err){
+            asyncAction.resolve('failure',err);
+        });
+    return asyncAction;
+};
+
+
+/**
+ * Context handler for a policy rule object.
+ *
+ * Formats the rules categories,
+ * @method formatRule
+ * @param {Object} rule
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
+ * @returns {ozpIwc.AsyncAction} will resolve with a formatted rule.
+ */
+//ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule,pip) {
+//    var asyncAction = new ozpIwc.AsyncAction();
+//    pip = pip || this.pip;
+//    this.formatCategories(rule.category,pip)
+//        .success(function (categories) {
+//            rule.category = categories;
+//            asyncAction.resolve('success',rule);
+//        }).failure(function(err){
+//            asyncAction.resolve('failure',err);
+//        });
+//    return asyncAction;
+//};
+
+/**
+ * Context handler for policy rule objects.
+ *
+ * @method formatRules
+ * @param {Array<Object>} rules
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
+ * @returns {ozpIwc.AsyncAction} will resolve with a matching-order of formatted rules array.
+ */
+//ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules,pip){
+//    pip = pip || this.pip;
+//    var ruleAsyncs = [];
+//    for(var i in rules){
+//        var tmp = this.formatRule(rules[i],pip);
+//        ruleAsyncs.push(tmp);
+//    }
+//    return ozpIwc.AsyncAction.all(ruleAsyncs);
+//};
+
+
+/**
+ * Context handler for a policy object.
+ *
+ * @method formatPolicy
+ * @param {Object} policy
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
+ * @returns {ozpIwc.AsyncAction} calls and returns a formatRules AsyncAction
+ */
+//ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy,pip){
+//    var asyncAction = new ozpIwc.AsyncAction();
+//    pip = pip || this.pip;
+//    policy = policy || {};
+//
+//    this.formatRules(policy.rule,pip)
+//        .success(function(rules){
+//            policy.rule = rules;
+//            asyncAction.resolve('success',policy);
+//        }).failure(function(err){
+//            asyncAction.resolve('failure',err);
+//        });
+//    return asyncAction;
+//};
+
+
+/**
+ * Context handler for multiple policy objects.
+ *
+ * @method formatPolicies
+ * @param {Array<Object>} policies
+ * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
+ * @returns {ozpIwc.AsyncAction} will resolve with an array of formatted policies
+ */
+//ozpIwc.policyAuth.PDP.prototype.formatPolicies = function(policies,pip){
+//    var asyncAction = new ozpIwc.AsyncAction();
+//    pip = pip || this.pip;
+//    var policyAsyncs = [];
+//    for(var i in policies){
+//        policyAsyncs.push(this.formatPolicy(policies[i],pip));
+//    }
+//    ozpIwc.AsyncAction.all(policyAsyncs)
+//        .success(function(policies){
+//            var formattedPolicies = [];
+//            for(var i in policies){
+//                formattedPolicies[i] = new ozpIwc.policyAuth.Policy(policies[i]);
+//            }
+//            asyncAction.resolve('success',formattedPolicies);
+//        }).failure(function(err){
+//            asyncAction.resolve('failure',err);
+//        });
+//    return asyncAction;
+//};
+
+/**
+ * Simple mapping function for assigning attributeId's to category types.
+ *
+ * @method mappedId
+ * @param {String} string
+ * @returns {String|undefined} returns undefined if a matching Id is not found (likely because not supported).
+ */
+//ozpIwc.policyAuth.PDP.prototype.mappedId = function(string){
+//    switch(string){
+//        case "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":
+//            return "urn:oasis:names:tc:xacml:1.0:subject:subject-id";
+//        case "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":
+//            return "urn:oasis:names:tc:xacml:1.0:resource:resource-id";
+//        case "urn:oasis:names:tc:xacml:3.0:attribute-category:action":
+//            return "urn:oasis:names:tc:xacml:1.0:action:action-id";
+//        default:
+//            return undefined;
+//    }
+//};
+//
+//ozpIwc.policyAuth.PDP.prototype.gatherContext = function(contextHolder){
+//
+//    var permissions = {};
+//    for(var i in contextHolder.permissions.attributes) {
+//        permissions[i] = contextHolder.permissions.attributes[i];
+//        var wrapped = {};
+//        wrapped[i] = permissions[i];
+//        this.pip.grantAttributes(i, wrapped);
+//    }
+//    this.pip.grantAttributes("ozp:iwc:permissions", permissions);
+//
+//    //Take a snapshot of the pip to use for the permission check (due to async nature)
+//    return ozpIwc.util.protoClone(this.pip);
+//};
+
+ozpIwc = ozpIwc || {};
+
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * Policy Information Point
+ *
+ * @param config
+ * @param {Object} config.attributes
+ * @constructor
+ */
+ozpIwc.policyAuth.PIP = ozpIwc.util.extend(ozpIwc.policyAuth.SecurityAttribute,function(config) {
+    ozpIwc.policyAuth.SecurityAttribute.apply(this,arguments);
+});
+
+
+/**
+ * Returns an asyncAction that will resolve with the attributes stored at the given URN.
+ *
+ * @method getAttributes(id)
+ * @param {String} [subjectId] – The authenticated identity to get attributes for.
+ * @returns {ozpIwc.AsyncAction} – Resolves an object of the attributes of the subject.
+ * @example URN "ozp:storage:myAttrs" may contain "ozp:iwc:loginTime" and "ozp:iwc:name".
+ * getAttributes("ozp:storage:myAttrs") would resolve with the following:
+ * ```
+ * {
+ *      'ozp:iwc:loginTime' : {
+ *         'attributeValue': Array<Primative>
+ *     },
+ *      'ozp:iwc:name' : {
+ *         'attributeValue': Array<Primative>
+ *     }
+ * }
+ * ```
+ */
+ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
+    var asyncAction = new ozpIwc.AsyncAction();
+    var self = this;
+
+    if(this.attributes[id]) {
+        return asyncAction.resolve('success', self.attributes[id]);
+    } else {
+        ozpIwc.util.ajax({
+            href: id,
+            method: "GET"
+        }).then(function(data){
+            if(typeof data !== "object") {
+                return asyncAction.resolve('failure',"Invalid data loaded from the remote PIP");
+            }
+            self.attributes[id] = {};
+            for(var i in data){
+                self.attributes[id][i] = Array.isArray(data[i] ) ? data[i]  : [data[i] ];
+            }
+            asyncAction.resolve('success', self.attributes[id]);
+        })['catch'](function(err){
+            asyncAction.resolve('failure',err);
+        });
+        return asyncAction;
+    }
+
+};
+/**
+ * Sets the desired attributes in the cache at the specified URN.
+ *
+ * @method grantAttributes(subjectId,attributes)
+ * @param {String} [subjectId] – The recipient of attributes.
+ * @param {object} [attributes] – The attributes to grant (replacing previous values, if applicable)
+ */
+ozpIwc.policyAuth.PIP.prototype.grantAttributes = function(subjectId,attributes){
+    var attrs = {};
+    for(var i in attributes){
+        attrs[i] = Array.isArray(attributes[i]) ? attributes[i] : [attributes[i]];
+    }
+    this.attributes[subjectId] = attrs;
+};
+
+/**
+ * Merges the attributes stored at the parentId urn into the given subject. All merge conflicts take the parent
+ * attribute. Will resolve with the subject when completed.
+ *
+ * @method grantParent(subjectId,parentSubjectId)
+ * @param {String} [subjectId] – The recipient of attributes.
+ * @param {String} [parentSubjectId] – The subject to inherit attributes from.
+ * @returns {ozpIwc.AsyncAction} resolves with the subject and its granted attributes merged in.
+ */
+ozpIwc.policyAuth.PIP.prototype.grantParent = function (subjectId,parentId){
+    var asyncAction = new ozpIwc.AsyncAction();
+    this.attributes[subjectId] = this.attributes[subjectId] || {};
+    var self = this;
+
+    if(self.attributes[parentId]){
+        for(var i in self.attributes[parentId]){
+            self.attributes[subjectId][i] = self.attributes[subjectId][i] || [];
+            for(var j in self.attributes[parentId][i]) {
+                if (self.attributes[subjectId][i].indexOf(self.attributes[parentId][i][j]) < 0) {
+                    self.attributes[subjectId][i].push(self.attributes[parentId][i][j]);
+                }
+            }
+        }
+        return asyncAction.resolve('success',self.attributes[subjectId]);
+
+    } else {
+        self.getAttributes(parentId)
+            .success(function(attributes){
+                for(var i in attributes){
+                    if(self.attributes[subjectId].indexOf(attributes[i]) < 0) {
+                        self.attributes[subjectId].push(attributes[i]);
+                    }
+                }
+                asyncAction.resolve('success',self.attributes[subjectId]);
+            }).failure(function(err){
+                asyncAction.resolve('failure',err);
+            });
+        return asyncAction;
+    }
+};
+ozpIwc = ozpIwc || {};
+
+
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+
+/**
+ * Policy Repository Point
+ *
+ * @param config
+ * @param {Object} config.policyCache
+ * @constructor
+ */
+ozpIwc.policyAuth.PRP = function(config){
     config = config || {};
 
-    return  new ozpIwc.policyAuth.AllOf({
-        match: [new ozpIwc.policyAuth.Match({
-            matchId: config.matchId,
-            attributeDesignator: new ozpIwc.policyAuth.AttributeDesignator({
-                attributeId: config.attributeId,
-                category: config.category,
-                dataType: config.dataType,
-                mustBePresent: "false"
-            }),
-            attributeValue: new ozpIwc.policyAuth.AttributeValue({
-                dataType: config.dataType,
-                value: config.value
-            })
-        })]
+    this.persistentPolicies = config.persistentPolicies || [];
+    this.policyCache = config.policyCache || ozpIwc.policyAuth.defaultPolicies;
+
+
+};
+
+
+/**
+ * Gathers policies by their URN. These policies may need formatting by the formatPolicies function to gather any
+ * attribute data needed for the policy evaluation.
+ * If a policy cannot be found, it is labeled as a "denyAll" policy and placed in the cache. Thus, making any permission
+ * check using said policy always deny.
+ *
+ * @method getPolicy(policyURIs)
+ * @param {String | Array<String> } [policyURIs] The subject attributes or id performing the action.
+ * @param {String} [combiningAlgorithm] Defaults to “deny-overrides”.
+ * @return {ozpIwc.AsyncAction} will resolve with an array of policy data.
+ */
+ozpIwc.policyAuth.PRP.prototype.getPolicies = function(policyURIs){
+    var asyncAction = new ozpIwc.AsyncAction();
+    policyURIs = policyURIs || [];
+    policyURIs = Array.isArray(policyURIs)? policyURIs : [policyURIs];
+    var policies = [];
+
+    var policiesToGather = this.persistentPolicies.concat(policyURIs);
+    for(var i in policiesToGather){
+        if(this.policyCache[policiesToGather[i]]){
+            policies.push(ozpIwc.util.clone(this.policyCache[policiesToGather[i]]));
+        } else {
+            var async = this.fetchPolicy(policiesToGather[i]);
+
+            //Push the policy fetch to the array, when it resolves its value (policy) will be part of the array
+            policies.push(async);
+        }
+    }
+
+    // If there are no policies to check against, assume trivial and permit
+    if(policies.length === 0){
+        return asyncAction.resolve('success',[ozpIwc.abacPolicies.permitAll]);
+    }
+
+    return ozpIwc.AsyncAction.all(policies);
+};
+
+
+
+/**
+ * The URN of the default combining algorithm to use when basing a decision on multiple rules in a policy.
+ * @TODO not used.
+ * @property defaultCombiningAlgorithm
+ * @type {String}
+ * @default 'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides'
+ */
+ozpIwc.policyAuth.PRP.prototype.defaultCombiningAlgorithm =
+    'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides';
+
+/**
+ * Fetches the requested policy and stores a copy of it in the cache. Returns a denyAll if policy is unobtainable.
+ * @method fetchPolicy
+ * @param {String} policyURI the uri to gather the policy from
+ * @returns {AsyncAction} will resolve with the gathered policy constructed as an ozpIwc.policyAuth.Policy.
+ */
+ozpIwc.policyAuth.PRP.prototype.fetchPolicy = function(policyURI){
+    var asyncAction = new ozpIwc.AsyncAction();
+    var self = this;
+    ozpIwc.util.ajax({
+        'method': "GET",
+        'href': policyURI
+    }).then(function(data){
+        self.policyCache[policyURI] = self.formatPolicy(data.response);
+        asyncAction.resolve('success',ozpIwc.util.clone(self.policyCache[policyURI]));
+    })['catch'](function(e){
+        //Note: failure resolves success because we force a denyAll policy.
+        asyncAction.resolve('success',self.getDenyall(policyURI));
     });
+    return asyncAction;
 };
 
-ozpIwc.policyAuth.util.generateAttributeSubjects = function(config){
-    config = config || [];
-    config = Array.isArray(config) ? config : [config];
+/**
+ * Turns JSON data in to ozpIwc.policyAuth.Policy
+ * @method formatPolicy
+ * @param data
+ * @returns {ozpIwc.policyAuth.Policy}
+ */
+ozpIwc.policyAuth.PRP.prototype.formatPolicy = function(data){
+    return new ozpIwc.policyAuth.Policy(data);
+};
 
-    var attributes = [];
-    for (var i in config) {
-        config[i].matchId = config[i].matchId || "urn:oasis:names:tc:xacml:1.0:function:string-equal";
-        config[i].dataType = config[i].dataType || "http://www.w3.org/2001/XMLSchema#string";
-
-        var attr = ozpIwc.policyAuth.util.generateAttribute({
-            matchId: config[i].matchId,
-            attributeId: "urn:oasis:names:tc:xacml:1.0:subject:subject-id",
-            category: "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject",
-            dataType: config[i].dataType,
-            value: config[i].value
+/**
+ * Returns a policy that will always deny any request. Said policy is stored in the cache under the given URN
+ * @param urn
+ * @returns {ozpIwc.policyAuth.Policy} a denyAll policy
+ */
+ozpIwc.policyAuth.PRP.prototype.getDenyall = function(urn){
+    if(this.policyCache[urn]){
+        return this.policyCache[urn];
+    } else {
+        var policy = new ozpIwc.policyAuth.Policy({
+            policyId: urn
         });
-        attributes.push(attr);
+        policy.evaluate = ozpIwc.abacPolicies.denyAll;
+        this.policyCache[urn] = policy;
+        return policy;
     }
-    return attributes;
-};
-
-ozpIwc.policyAuth.util.generateAttributeResources = function(config){
-    config = config || [];
-    config = Array.isArray(config) ? config : [config];
-
-    var attributes = [];
-    for (var i in config){
-        config[i].matchId = config[i].matchId || "urn:oasis:names:tc:xacml:1.0:function:string-equal";
-        config[i].dataType = config[i].dataType || "http://www.w3.org/2001/XMLSchema#string";
-
-        var attr = ozpIwc.policyAuth.util.generateAttribute({
-            matchId: config[i].matchId,
-            attributeId: "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
-            category: "urn:oasis:names:tc:xacml:3.0:attribute-category:resource",
-            dataType: config[i].dataType,
-            value: config[i].value
-        });
-        attributes.push(attr);
-    }
-    return attributes;
-
-};
-
-ozpIwc.policyAuth.util.generateAttributeActions = function(config){
-    config = config || [];
-    config = Array.isArray(config) ? config : [config];
-
-    var attributes = [];
-    for (var i in config) {
-        config[i].matchId = config[i].matchId || "urn:oasis:names:tc:xacml:1.0:function:string-equal";
-        config[i].dataType = config[i].dataType || "http://www.w3.org/2001/XMLSchema#string";
-
-        var attr = ozpIwc.policyAuth.util.generateAttribute({
-            matchId: config[i].matchId,
-            attributeId: "urn:oasis:names:tc:xacml:1.0:action:action-id",
-            category: "urn:oasis:names:tc:xacml:3.0:attribute-category:action",
-            dataType: config[i].dataType,
-            value: config[i].value
-        });
-        attributes.push(attr);
-    }
-    return attributes;
 };
 
 
+/**
+ * Classes related to security aspects of the IWC.
+ * @module bus
+ * @submodule bus.security
+ */
 
-///** @namespace **/
-//var ozpIwc = ozpIwc || {};
-//
-//
-///**
-// * Classes related to security aspects of the IWC.
-// * @module bus
-// * @submodule bus.network
-// */
-//
-///**
-// * <p>This link connects peers using the HTML5 localstorage API.  It is a second generation version of
-// * the localStorageLink that bypasses most of the garbage collection issues.
-// *
-// * <p> When a packet is sent, this link turns it to a string, creates a key with that value, and
-// * immediately deletes it.  This still sends the storage event containing the packet as the key.
-// * This completely eliminates the need to garbage collect the localstorage space, with the associated
-// * mutex contention and full-buffer issues.
-// *
-// * @todo Compress the key
-// *
-// * @class KeyBroadcastLocalStorageLink
-// * @namespace ozpIwc
-// * @constructor
-// *
-// * @param {Object} [config] Configuration for this link
-// * @param {ozpIwc.Peer} [config.peer=ozpIwc.defaultPeer] The peer to connect to.
-// * @param {String} [config.prefix='ozpIwc'] Namespace for communicating, must be the same for all peers on the same network.
-// * @param {String} [config.selfId] Unique name within the peer network.  Defaults to the peer id.
-// * @param {Number} [config.maxRetries] Number of times packet transmission will retry if failed. Defaults to 6.
-// * @param {Number} [config.queueSize] Number of packets allowed to be queued at one time. Defaults to 1024.
-// * @param {Number} [config.fragmentSize] Size in bytes of which any TransportPacket exceeds will be sent in FragmentPackets.
-// * @param {Number} [config.fragmentTime] Time in milliseconds after a fragment is received and additional expected
-// * fragments are not received that the message is dropped.
-// */
-//ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
-//    config = config || {};
-//
-//    /**
-//     * Namespace for communicating, must be the same for all peers on the same network.
-//     * @property prefix
-//     * @type String
-//     * @default "ozpIwc"
-//     */
-//    this.prefix = config.prefix || 'ozpIwc';
-//
-//    /**
-//     * The peer this link will connect to.
-//     * @property peer
-//     * @type ozpIwc.Peer
-//     * @default ozpIwc.defaultPeer
-//     */
-//    this.peer = config.peer || ozpIwc.defaultPeer;
-//
-//    /**
-//     * Unique name within the peer network.  Defaults to the peer id.
-//     * @property selfId
-//     * @type String
-//     * @default ozpIwc.defaultPeer.selfId
-//     */
-//    this.selfId = config.selfId || this.peer.selfId;
-//
-//    /**
-//     * Milliseconds to wait before deleting this link's keys
-//     * @todo UNUSUED
-//     * @property myKeysTimeout
-//     * @type Number
-//     * @default 5000
-//     */
-//    this.myKeysTimeout = config.myKeysTimeout || 5000; // 5 seconds
-//
-//    /**
-//     * Milliseconds to wait before deleting other link's keys
-//     * @todo UNUSUED
-//     * @property otherKeysTimeout
-//     * @type Number
-//     * @default 120000
-//     */
-//    this.otherKeysTimeout = config.otherKeysTimeout || 2 * 60000; // 2 minutes
-//
-//
-//    /**
-//     * The maximum number of retries the link will take to send a package. A timeout of
-//     * max(1, 2^( <retry count> -1) - 1) milliseconds occurs between send attempts.
-//     * @property maxRetries
-//     * @type Number
-//     * @default 6
-//     */
-//    this.maxRetries = config.maxRetries || 6;
-//
-//    /**
-//     * Maximum number of packets that can be in the send queue at any given time.
-//     * @property queueSize
-//     * @type Number
-//     * @default 1024
-//     */
-//    this.queueSize = config.queueSize || 1024;
-//
-//    /**
-//     * A queue for outgoing packets. If this queue is full further packets will not be added.
-//     * @property sendQueue
-//     * @type Array[]
-//     * @default []
-//     */
-//    this.sendQueue = this.sendQueue || [];
-//    this.sending = false;
-//    this.sendFlow = config.sendFlow || 500;
-//
-//    /**
-//     * An array of temporarily held received packet fragments indexed by their message key.
-//     * @type Array[]
-//     * @default []
-//     */
-//    this.fragments = this.fragments || [];
-//
-//    /**
-//     * Minimum size in bytes that a packet will broken into fragments.
-//     * @property fragmentSize
-//     * @type Number
-//     * @default 1310720
-//     */
-//    this.fragmentSize = config.fragmentSize || (5 * 1024 * 1024) / 2 / 2; //50% of 5mb, divide by 2 for utf-16 characters
-//
-//    /**
-//     * The amount of time allotted to the Link to wait between expected fragment packets. If an expected fragment
-//     * is not received within this timeout the packet is dropped.
-//     * @property fragmentTimeout
-//     * @type Number
-//     * @default 1000
-//     */
-//    this.fragmentTimeout = config.fragmentTimeout || 1000; // 1 second
-//
-//    //Add fragmenting capabilities
-//    String.prototype.chunk = function (size) {
-//        var res = [];
-//        for (var i = 0; i < this.length; i += size) {
-//            res.push(this.slice(i, i + size));
-//        }
-//        return res;
-//    };
-//
-//    // Hook into the system
-//    var self = this;
-//    var packets;
-//    var receiveStorageEvent = function (event) {
-//        if(event.newValue) {
-//            try {
-//                packets = JSON.parse(event.key);
-//            } catch (e) {
-//                ozpIwc.log.log("Parse error on " + event.key);
-//                ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.parseError').inc();
-//                return;
-//            }
-////            if (packet.data.fragment) {
-////                self.handleFragment(packet);
-////            } else {
-//              for(var i in packets){
-//                self.peer.receive(self.linkId, packets[i]);
-//                ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
-//            }
-//        }
-//    };
-//    window.addEventListener('storage', receiveStorageEvent, false);
-//
-//    this.peer.on("send", function (event) {
-//        self.send(event.packet);
-//    });
-//
-//    this.peer.on("beforeShutdown", function () {
-//        window.removeEventListener('storage', receiveStorageEvent);
-//    }, this);
-//
-//};
-//
-///**
-// * Handles fragmented packets received from the router. When all fragments of a message have been received,
-// * the resulting packet will be passed on to the
-// * {{#crossLink "ozpIwc.KeyBroadcastLocalStorageLink/peer:property"}}registered peer{{/crossLink}}.
-// *
-// * @method handleFragment
-// * @param {ozpIwc.NetworkPacket} packet NetworkPacket containing an ozpIwc.FragmentPacket as its data property
-// */
-//ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet) {
-//    // Check to make sure the packet is a fragment and we haven't seen it
-//    if (this.peer.haveSeen(packet)) {
-//        return;
-//    }
-//
-//    var key = packet.data.msgId;
-//
-//    this.storeFragment(packet);
-//
-//    var defragmentedPacket = this.defragmentPacket(this.fragments[key]);
-//
-//    if (defragmentedPacket) {
-//
-//        // clear the fragment timeout
-//        window.clearTimeout(this.fragments[key].fragmentTimer);
-//
-//        // Remove the last sequence from the known packets to reuse it for the defragmented packet
-//        var packetIndex = this.peer.packetsSeen[defragmentedPacket.srcPeer].indexOf(defragmentedPacket.sequence);
-//        delete this.peer.packetsSeen[defragmentedPacket.srcPeer][packetIndex];
-//
-//        this.peer.receive(this.linkId, defragmentedPacket);
-//        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
-//
-//        delete this.fragments[key];
-//    }
-//};
-//
-///**
-// *  Stores a received fragment. When the first fragment of a message is received, a timer is set to destroy the storage
-// *  of the message fragments should not all messages be received.
-// *
-// * @method storeFragment
-// * @param {ozpIwc.NetworkPacket} packet NetworkPacket containing an {{#crossLink "ozpIwc.FragmentPacket"}}{{/crossLink}} as its data property
-// *
-// * @returns {Boolean} result true if successful.
-// */
-//ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) {
-//    if (!packet.data.fragment) {
-//        return null;
-//    }
-//
-//    // NetworkPacket properties
-//    var sequence = packet.sequence;
-//    var srcPeer = packet.srcPeer;
-//    // FragmentPacket Properties
-//    var key = packet.data.msgId;
-//    var id = packet.data.id;
-//    var chunk = packet.data.chunk;
-//    var total = packet.data.total;
-//
-//    if (key === undefined || id === undefined) {
-//        return null;
-//    }
-//
-//    // If this is the first fragment of a message, add the storage object
-//    if (!this.fragments[key]) {
-//        this.fragments[key] = {};
-//        this.fragments[key].chunks = [];
-//
-//        var self = this;
-//        self.key = key;
-//        self.total = total ;
-//
-//        // Add a timeout to destroy the fragment should the whole message not be received.
-//        this.fragments[key].timeoutFunc = function () {
-//            ozpIwc.metrics.counter('network.packets.dropped').inc();
-//            ozpIwc.metrics.counter('network.fragments.dropped').inc(self.total );
-//            delete self.fragments[self.key];
-//        };
-//    }
-//
-//    // Restart the fragment drop countdown
-//    window.clearTimeout(this.fragments[key].fragmentTimer);
-//    this.fragments[key].fragmentTimer = window.setTimeout(this.fragments[key].timeoutFunc, this.fragmentTimeout);
-//
-//    // keep a copy of properties needed for defragmenting, the last sequence & srcPeer received will be
-//    // reused in the defragmented packet
-//    this.fragments[key].total = total || this.fragments[key].total ;
-//    this.fragments[key].sequence = (sequence !== undefined) ? sequence : this.fragments[key].sequence;
-//    this.fragments[key].srcPeer = srcPeer || this.fragments[key].srcPeer;
-//    this.fragments[key].chunks[id] = chunk;
-//
-//    // If the necessary properties for defragmenting aren't set the storage fails
-//    if (this.fragments[key].total === undefined || this.fragments[key].sequence === undefined ||
-//        this.fragments[key].srcPeer === undefined) {
-//        return null;
-//    } else {
-//        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.fragments.received').inc();
-//        return true;
-//    }
-//};
-//
-///**
-// * Rebuilds the original packet sent across the keyBroadcastLocalStorageLink from the fragments it was broken up into.
-// *
-// * @method defragmentPacket
-// * @param {ozpIwc.FragmentStore} fragments the grouping of fragments to reconstruct
-// *
-// * @returns {ozpIwc.NetworkPacket} result the reconstructed NetworkPacket with TransportPacket as its data property.
-// */
-//ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragments) {
-//    if (fragments.total !== fragments.chunks.length) {
-//        return null;
-//    }
-//    try {
-//        var result = JSON.parse(fragments.chunks.join(''));
-//        return {
-//            defragmented: true,
-//            sequence: fragments.sequence,
-//            srcPeer: fragments.srcPeer,
-//            data: result
-//        };
-//    } catch (e) {
-//        return null;
-//    }
-//};
-//
-///**
-// * Publishes a packet to other peers. If the sendQueue is full the send will not occur. If the TransportPacket is larger
-// * than the {{#crossLink "ozpIwc.KeyBroadcastLocalStorageLink/fragmentSize:property"}}{{/crossLink}}, an
-// * {{#crossLink "ozpIwc.FragmentPacket"}}{{/crossLink}} will be sent instead.
-// *
-// * @method send
-// * @param {ozpIwc.NetworkPacket} packet
-// */
-//ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
-//    var str;
-//    try {
-//       str = JSON.stringify(packet.data);
-//    } catch (e){
-//        var msgId = packet.msgId || "unknown";
-//        ozpIwc.log.error("Failed to write packet(msgId=" + msgId+ "):" + e.message);
-//        return;
-//    }
-//
-//    if (str.length < this.fragmentSize) {
-//        this.queueSend(packet);
-//    } else {
-//        console.error("TOO BIG");
-////        var fragments = str.chunk(this.fragmentSize);
-////
-////        // Use the original packet as a template, delete the data and
-////        // generate new packets.
-////        var self = this;
-////        self.data= packet.data;
-////        delete packet.data;
-////
-////        var fragmentGen = function (chunk, template) {
-////
-////            template.sequence = self.peer.sequenceCounter++;
-////            template.data = {
-////                fragment: true,
-////                msgId: self.data.msgId,
-////                id: i,
-////                total: fragments.length,
-////                chunk: chunk
-////            };
-////            return template;
-////        };
-////
-////        // Generate & queue the fragments
-////        for (var i = 0; i < fragments.length; i++) {
-////            this.queueSend(fragmentGen(fragments[i], packet));
-////        }
-//    }
-//};
-//
-///**
-// * Places a packet in the {{#crossLink "ozpIwc.KeyBroadcastLocalStorageLink/sendQueue:property"}}{{/crossLink}}
-// * if it does not already hold {{#crossLink "ozpIwc.KeyBroadcastLocalStorageLink/queueSize:property"}}{{/crossLink}}
-// * amount of packets.
-// *
-// * @method queueSend
-// * @param packet
-// */
-//ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
-//    if (this.sendQueue.length < this.queueSize) {
-//        this.sendQueue = this.sendQueue.concat(packet);
-//        if(!this.sending){
-//            var self = this;
-//            this.sending = window.setTimeout(function(){
-//                self.attemptSend(self.sendQueue);
-//                self.sendQueue = [];
-//                self.sending = false;
-//            },ozpIwc.SEND_FLOW);
-//        }
-//    } else {
-//        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
-//        ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + " Send queue full.");
-//    }
-//};
-//
-///**
-// * Recursively tries sending the packet
-// * {{#crossLink "ozpIwc.KeyBroadcastLocalStorageLink/maxRetries:property"}}{{/crossLink}} times.
-// * The packet is dropped and the send fails after reaching max attempts.
-// *
-// * @method attemptSend
-// * @param {ozpIwc.NetworkPacket} packet
-// * @param {Number} [attemptCount] number of times attempted to send packet.
-// */
-//ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packets, retryCount) {
-////    console.log(packets);
-//    var sendStatus = this.sendImpl(packets);
-//    if (sendStatus) {
-//        var self = this;
-//        retryCount = retryCount || 0;
-//        var timeOut = Math.max(1, Math.pow(2, (retryCount - 1))) - 1;
-//
-//        if (retryCount < self.maxRetries) {
-//            retryCount++;
-//            // Call again but back off for an exponential amount of time.
-//            window.setTimeout(function () {
-//                self.attemptSend(packets, retryCount);
-//            }, timeOut);
-//        } else {
-//            ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
-//            ozpIwc.log.error("Failed to write packet(len=" + packets.length + "):" + sendStatus);
-//            return sendStatus;
-//        }
-//    }
-//};
-//
-///**
-// * Implementation of publishing packets to peers through localStorage. If the localStorage is full or a write collision
-// * occurs, the send will not occur. Returns status of localStorage write, null if success.
-// *
-// * @todo move counter.inc() out of the impl and handle in attemptSend?
-// * @method sendImpl
-// * @param {ozpIwc.NetworkPacket} packet
-// */
-//ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
-//    var sendStatus;
-//    try {
-//        var p = JSON.stringify(packet);
-//        localStorage.setItem(p, "x");
-//        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
-//        localStorage.removeItem(p);
-//        sendStatus = null;
-//    }
-//    catch (e) {
-//        if(e.message === "localStorage is null"){
-//            // Firefox about:config dom.storage.enabled = false : no mitigation with current links
-//            ozpIwc.util.alert("Cannot locate localStorage. Contact your system administrator.", e);
-//        } else if(e.code === 18){
-//            // cookies disabled : no mitigation with current links
-//            ozpIwc.util.alert("Ozone requires your browser to accept cookies. Contact your system administrator.", e);
-//        } else {
-//            // If the error can't be mitigated, bubble it up
-//            sendStatus = e;
-//        }
-//    }
-//    finally {
-//        return sendStatus;
-//    }
-//};
+/**
+ * Attribute Based Access Control policies.
+ * @class abacPolicies
+ * @static
+ */
+ozpIwc.abacPolicies={};
+
+/**
+ * Returns `permit` when the request's object exists and is empty.
+ *
+ * @static
+ * @method permitWhenObjectHasNoAttributes
+ * @param request
+ *
+ * @returns {String}
+ */
+ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes=function(request) {
+    if(request.object && Object.keys(request.object).length===0) {
+        return "Permit";
+    }
+    return "Undetermined";
+};
+/**
+ * Returns `permit` when the request's subject contains all of the request's object.
+ *
+ * @static
+ * @method subjectHasAllObjectAttributes
+ * @param request
+ *
+ * @returns {String}
+ */
+ozpIwc.abacPolicies.subjectHasAllObjectAttributes=function(request) {
+    // if no object permissions, then it's trivially true
+    if(!request.object) {
+        return "Permit";
+    }
+    var subject = request.subject || {};
+    if(ozpIwc.util.objectContainsAll(subject,request.object,this.implies)) {
+        return "Permit";
+    }
+    return "Deny";
+};
+
+/**
+ * Returns `permit` for any scenario.
+ *
+ * @static
+ * @method permitAll
+ * @returns {String}
+ */
+ozpIwc.abacPolicies.permitAll=function() {
+    return "Permit";
+};
+
+
+/**
+ * Returns `Deny` for any scenario.
+ *
+ * @static
+ * @method denyAll
+ * @returns {String}
+ */
+ozpIwc.abacPolicies.denyAll=function() {
+    return "Deny";
+};
+
+
+
+/**
+ *
+ * @method implies
+ * @param {Array} subjectVal
+ * @param {Array} objectVal
+ *
+ * @returns {Boolean}
+ */
+ozpIwc.abacPolicies.implies=function(subjectVal,objectVal) {
+    // no object value is trivially true
+    if(objectVal===undefined || objectVal === null) {
+        return true;
+    }
+    // no subject value when there is an object value is trivially false
+    if(subjectVal===undefined || subjectVal === null) {
+        return false;
+    }
+
+    // convert both to arrays, if necessary
+    subjectVal=Array.isArray(subjectVal)?subjectVal:[subjectVal];
+    objectVal=Array.isArray(objectVal)?objectVal:[objectVal];
+
+    // confirm that every element in objectVal is also in subjectVal
+    return ozpIwc.util.arrayContainsAll(subjectVal,objectVal);
+};
+
+
+ozpIwc.abacPolicies.defaultPolicy = function(request,action){
+    action = Array.isArray(action) ? action : [action];
+    if(!ozpIwc.util.arrayContainsAll(action,request.action['ozp:iwc:action'])) {
+        return "NotApplicable";
+    } else if(!ozpIwc.util.objectContainsAll(request.subject,request.resource,ozpIwc.abacPolicies.implies)) {
+        return "Deny";
+    } else {
+        return "Permit";
+    }
+};
+
+
+ozpIwc = ozpIwc || {};
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+ozpIwc.policyAuth.defaultPolicies = {};
+
+ozpIwc.policyAuth.defaultPolicies['/policy/connect'] = function(request){
+    var policyActions = ['connect'];
+    var whiteListedOrigins = [
+        "http://localhost:13000",
+        "http://localhost:14000",
+        "http://localhost:14001",
+        "http://localhost:14002",
+        "http://localhost:15000",
+        "http://localhost:15001",
+        "http://localhost:15002",
+        "http://localhost:15003",
+        "http://localhost:15004",
+        "http://localhost:15005",
+        "http://localhost:15006",
+        "http://localhost:15007",
+        "http://ozone-development.github.io"
+    ];
+
+    if(!ozpIwc.util.arrayContainsAll(policyActions,request.action['ozp:iwc:action'])){
+        return "NotApplicable";
+    } else if(!ozpIwc.util.arrayContainsAll(whiteListedOrigins,request.subject['ozp:iwc:origin'])){
+        return "Deny";
+    } else {
+        return "Permit";
+    }
+};
+
+/**
+ *
+ * @param request
+ * @param {Object} request.subject
+ * @param {Object} request.resource
+ * @returns {string}
+ */
+ozpIwc.policyAuth.defaultPolicies['/policy/sendAs'] = function(request){
+    return ozpIwc.abacPolicies.defaultPolicy(request,'sendAs');
+};
+
+ozpIwc.policyAuth.defaultPolicies['/policy/receiveAs'] = function(request){
+    return ozpIwc.abacPolicies.defaultPolicy(request,'receiveAs');
+};
+
+ozpIwc.policyAuth.defaultPolicies['/policy/read'] = function(request){
+    return ozpIwc.abacPolicies.defaultPolicy(request,'read');
+};
+ozpIwc.policyAuth.defaultPolicies['/policy/apiNode'] = function(request){
+    return ozpIwc.abacPolicies.defaultPolicy(request,'access');
+};
 
 /** @namespace **/
 var ozpIwc = ozpIwc || {};
@@ -8931,6 +4774,8 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
      */
     this.selfId = config.selfId || this.peer.selfId;
 
+    this.metricsPrefix="keyBroadcastLocalStorageLink."+this.selfId;
+    
     /**
      * Milliseconds to wait before deleting this link's keys
      * @todo UNUSUED
@@ -9014,17 +4859,16 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     var receiveStorageEvent = function (event) {
         if(event.newValue) {
             try {
-                packet = JSON.parse(event.key);
+                packet = JSON.parse(event.newValue);
             } catch (e) {
-                ozpIwc.log.log("Parse error on " + event.key);
-                ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.parseError').inc();
+                ozpIwc.log.log("Parse error on " + event.newValue);
+                ozpIwc.metrics.counter(self.metricsPrefix,'packets_parseError').inc();
                 return;
             }
             if (packet.data.fragment) {
                 self.handleFragment(packet);
             } else {
-                self.peer.receive(self.linkId, packet);
-                ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
+                self.forwardToPeer(packet);
             }
         }
     };
@@ -9038,6 +4882,14 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
         window.removeEventListener('storage', receiveStorageEvent);
     }, this);
 
+};
+
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.forwardToPeer=function(packet) {
+    this.peer.receive(this.linkId, packet);
+    ozpIwc.metrics.counter(this.metricsPrefix,'packets_received').inc();
+    if(packet.data.time) {
+        ozpIwc.metrics.timer(this.metricsPrefix,'latencyIn').mark(ozpIwc.util.now() - packet.data.time);
+    }
 };
 
 /**
@@ -9069,8 +4921,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet)
         var packetIndex = this.peer.packetsSeen[defragmentedPacket.srcPeer].indexOf(defragmentedPacket.sequence);
         delete this.peer.packetsSeen[defragmentedPacket.srcPeer][packetIndex];
 
-        this.peer.receive(this.linkId, defragmentedPacket);
-        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
+        this.forwardToPeer(defragmentedPacket);
 
         delete this.fragments[key];
     }
@@ -9114,8 +4965,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
 
         // Add a timeout to destroy the fragment should the whole message not be received.
         this.fragments[key].timeoutFunc = function () {
-            ozpIwc.metrics.counter('network.packets.dropped').inc();
-            ozpIwc.metrics.counter('network.fragments.dropped').inc(self.total );
+            ozpIwc.metrics.meter(self.metricsPrefix,'fragments_dropped').mark(self.total);
             delete self.fragments[self.key];
         };
     }
@@ -9136,7 +4986,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
         this.fragments[key].srcPeer === undefined) {
         return null;
     } else {
-        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.fragments.received').inc();
+        ozpIwc.metrics.meter(this.metricsPrefix,'fragments_received').mark();
         return true;
     }
 };
@@ -9179,6 +5029,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
     try {
        str = JSON.stringify(packet.data);
     } catch (e){
+        ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
         var msgId = packet.msgId || "unknown";
         ozpIwc.log.error("Failed to write packet(msgId=" + msgId+ "):" + e.message);
         return;
@@ -9230,7 +5081,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
             this.attemptSend(this.sendQueue.shift());
         }
     } else {
-        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
+        ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
         ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + " Send queue full.");
     }
 };
@@ -9259,7 +5110,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
                 self.attemptSend(packet, retryCount);
             }, timeOut);
         } else {
-            ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
+            ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
             ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + sendStatus);
             return sendStatus;
         }
@@ -9278,9 +5129,12 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     var sendStatus;
     try {
         var p = JSON.stringify(packet);
-        localStorage.setItem(p, "x");
-        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
-        localStorage.removeItem(p);
+        localStorage.setItem("x", p);
+        ozpIwc.metrics.meter(this.metricsPrefix,'packets_sent').mark();
+        if(packet.data.time) {
+            ozpIwc.metrics.timer(this.metricsPrefix,'latencyOut').mark(ozpIwc.util.now() - packet.data.time);
+        }
+        localStorage.removeItem("x");
         sendStatus = null;
     }
     catch (e) {
@@ -9555,6 +5409,8 @@ ozpIwc.Peer=function() {
      */
     this.selfId=ozpIwc.util.generateId();
 
+    this.metricPrefix="peer."+this.selfId;
+
     /**
      * @TODO (DOC)
      * @property sequenceCounter
@@ -9649,7 +5505,7 @@ ozpIwc.Peer.maxSeqIdPerSource=500;
 ozpIwc.Peer.prototype.haveSeen=function(packet) {
     // don't forward our own packets
     if (packet.srcPeer === this.selfId) {
-        ozpIwc.metrics.counter('network.packets.droppedOwnPacket').inc();
+        ozpIwc.metrics.counter(this.metricPrefix,'droppedOwnPacket').inc();
         return true;
     }
     var seen = this.packetsSeen[packet.srcPeer];
@@ -9691,10 +5547,13 @@ ozpIwc.Peer.prototype.send= function(packet) {
 
     this.events.trigger("preSend",preSendEvent);
     if(!preSendEvent.canceled) {
-        ozpIwc.metrics.counter('network.packets.sent').inc();
+        ozpIwc.metrics.counter(this.metricPrefix,'sent').inc();
+        if(packet.time) {
+            ozpIwc.metrics.timer(this.metricPrefix,'latencyOut').mark(ozpIwc.util.now() - packet.time);
+        }
         this.events.trigger("send",{'packet':networkPacket});
     } else {
-        ozpIwc.metrics.counter('network.packets.sendRejected').inc();
+        ozpIwc.metrics.counter(this.metricPrefix,'sendRejected').inc();
     }
 };
 
@@ -9711,10 +5570,14 @@ ozpIwc.Peer.prototype.send= function(packet) {
 ozpIwc.Peer.prototype.receive=function(linkId,packet) {
     // drop it if we've seen it before
     if(this.haveSeen(packet)) {
-        ozpIwc.metrics.counter('network.packets.dropped').inc();
+        ozpIwc.metrics.counter(this.metricPrefix,'dropped').inc();
         return;
     }
-    ozpIwc.metrics.counter('network.packets.received').inc();
+    ozpIwc.metrics.counter(this.metricPrefix,'received').inc();
+    if(packet.data.time) {
+        ozpIwc.metrics.timer(this.metricPrefix,'latencyIn').mark(ozpIwc.util.now() - packet.data.time);
+    }
+
     this.events.trigger("receive",{'packet':packet,'linkId': linkId});
 };
 
@@ -9841,7 +5704,7 @@ var ozpIwc=ozpIwc || {};
  * @constructor
  * @mixes ozpIwc.security.Actor
  * @property {String} address The assigned address to this address.
- * @property {ozpIwc.security.Subject} securityAttributes The security attributes for this participant.
+ * @property {ozpIwc.policyAuth.SecurityAttribute} permissions The security attributes for this participant.
  */
 ozpIwc.Participant=function() {
 
@@ -9856,11 +5719,11 @@ ozpIwc.Participant=function() {
 
     /**
      * A key value store of the security attributes assigned to the participant.
-     * @property securityAttributes
+     * @property permissions
      * @type Object
      * @default {}
      */
-	this.securityAttributes={};
+	this.permissions= new ozpIwc.policyAuth.SecurityAttribute();
 
     /**
      * The message id assigned to the next packet if a packet msgId is not specified.
@@ -9868,28 +5731,29 @@ ozpIwc.Participant=function() {
      * @type {Number}
      */
     this.msgId=0;
-    var fakeMeter=new ozpIwc.metricTypes.Meter();
 
     /**
      * A Metrics meter for packets sent from the participant.
      * @property sentPacketsmeter
      * @type ozpIwc.metricTypes.Meter
      */
-    this.sentPacketsMeter=fakeMeter;
+    this.sentPacketsMeter=new ozpIwc.metricTypes.Meter();
 
     /**
      * A Metrics meter for packets received by the participant.
      * @property receivedPacketMeter
      * @type ozpIwc.metricTypes.Meter
      */
-    this.receivedPacketsMeter=fakeMeter;
+    this.receivedPacketsMeter=new ozpIwc.metricTypes.Meter();
 
     /**
      * A Metrics meter for packets sent to the participant that did not pass authorization.
      * @property forbiddenPacketMeter
      * @type ozpIwc.metricTypes.Meter
      */
-    this.forbiddenPacketsMeter=fakeMeter;
+    this.forbiddenPacketsMeter=new ozpIwc.metricTypes.Meter();
+    this.latencyInTimer=new ozpIwc.metricTypes.Meter();
+    this.latencyOutTimer=new ozpIwc.metricTypes.Meter();
 
     /**
      * The type of the participant.
@@ -9925,23 +5789,14 @@ ozpIwc.Participant=function() {
         self.send = function(originalPacket,callback) {
             var packet=this.fixPacket(originalPacket);
             if(callback) {
-                this.replyCallbacks[packet.msgId]=callback;
+                self.replyCallbacks[packet.msgId]=callback;
             }
-            ozpIwc.Participant.prototype.send.call(this,packet);
+            ozpIwc.Participant.prototype.send.call(self,packet);
 
             return packet;
         };
-        self.
         self.leaveEventChannel();
     });
-
-    /**
-     * Policy Enforcement module for the participant.
-     * @property policyEnforcer
-     * @type {ozpIwc.policyAuth.PEP}
-     * @default new ozpIwc.policyAuth.PEP()
-     */
-    this.policyEnforcer = new ozpIwc.policyAuth.PEP();
 };
 
 /**
@@ -9954,19 +5809,43 @@ ozpIwc.Participant=function() {
  */
 ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     var self = this;
-//    this.policyEnforcer.request({
-//        'subject': this.securityAttributes,
-//        'object': packetContext.packet.permissions
-//    })
-//        .success(function(){
-            self.receivedPacketsMeter.mark();
 
-            self.receiveFromRouterImpl(packetContext);
-//        })
-//        .failure(function() {
-//            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-//            self.forbiddenPacketsMeter.mark();
-//        });
+    var request = {
+        'subject': this.permissions.getAll(),
+        'resource': {'ozp:iwc:receiveAs': packetContext.packet.dst},
+        'action': {'ozp:iwc:action': 'receiveAs'},
+        'policies': ozpIwc.authorization.policySets.receiveAsSet
+    };
+
+    var onError = function(err){
+        self.forbiddenPacketsMeter.mark();
+        /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
+        ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+        console.error("failure");
+    };
+
+    ozpIwc.authorization.isPermitted(request,this)
+        .success(function() {
+            ozpIwc.authorization.formatCategory(packetContext.packet.permissions)
+                .success(function(permissions) {
+                    var request = {
+                        'subject': self.permissions.getAll(),
+                        'resource':permissions || {},
+                        'action': {'ozp:iwc:action': 'read'},
+                        'policies': ozpIwc.authorization.policySets.readSet
+                    };
+
+                    ozpIwc.authorization.isPermitted(request, self)
+                        .success(function (resolution) {
+                            self.receivedPacketsMeter.mark();
+                            if(packetContext.packet.time) {
+                                self.latencyInTimer.mark(ozpIwc.util.now() - packetContext.packet.time);
+                            }
+
+                            self.receiveFromRouterImpl(packetContext);
+                        }).failure(onError);
+                }).failure(onError);
+        }).failure(onError);
 };
 
 /**
@@ -9995,34 +5874,25 @@ ozpIwc.Participant.prototype.receiveFromRouterImpl = function (packetContext) {
 ozpIwc.Participant.prototype.connectToRouter=function(router,address) {
     this.address=address;
     this.router=router;
-    this.securityAttributes.rawAddress=address;
     this.msgId=0;
-    this.metricRoot="participants."+ this.address.split(".").reverse().join(".");
+    if(this.name) {
+        this.metricRoot="participants."+ this.name +"." + this.address.split(".").reverse().join(".");
+    } else {
+        this.metricRoot="participants."+ this.address.split(".").reverse().join(".");
+    }
     this.sentPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"sentPackets").unit("packets");
     this.receivedPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"receivedPackets").unit("packets");
     this.forbiddenPacketsMeter=ozpIwc.metrics.meter(this.metricRoot,"forbiddenPackets").unit("packets");
+    this.latencyInTimer=ozpIwc.metrics.timer(this.metricRoot,"latencyIn").unit("packets");
+    this.latencyOutTimer=ozpIwc.metrics.timer(this.metricRoot,"latencyOut").unit("packets");
     
     this.namesResource="/address/"+this.address;
     this.heartBeatStatus.address=this.address;
     this.heartBeatStatus.name=this.name;
     this.heartBeatStatus.type=this.participantType || this.constructor.name;
 
-    this.addSRPolicy();
-
-    var sendRequest = new ozpIwc.policyAuth.Request();
-    sendRequest.addSubject({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
-    sendRequest.addAction({dataType: "http://www.w3.org/2001/XMLSchema#string",value: "sendAs"});
-    sendRequest.addResource({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
-
-    var receiveRequest = new ozpIwc.policyAuth.Request();
-    receiveRequest.addSubject({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
-    receiveRequest.addAction({dataType: "http://www.w3.org/2001/XMLSchema#string",value: "receiveAs"});
-    receiveRequest.addResource({dataType: "http://www.w3.org/2001/XMLSchema#string",value: this.address});
-
-    this.securityAttributes.sendAs= sendRequest;
-    this.securityAttributes.receiveAs= receiveRequest;
-    this.joinEventChannel();
     this.events.trigger("connectedToRouter");
+    this.joinEventChannel();
 };
 
 /**
@@ -10057,9 +5927,24 @@ ozpIwc.Participant.prototype.fixPacket=function(packet) {
  * @returns {ozpIwc.TransportPacket}
  */
 ozpIwc.Participant.prototype.send=function(packet) {
-    packet=this.fixPacket(packet);
-    this.sentPacketsMeter.mark();
-    this.router.send(packet,this);
+    var self = this;
+    var request = {
+        'subject': this.permissions.getAll(),
+        'resource': {'ozp:iwc:sendAs': packet.src},
+        'action': {'ozp:iwc:action': 'sendAs'},
+        'policies': ozpIwc.authorization.policySets.sendAsSet
+    };
+    packet = self.fixPacket(packet);
+    ozpIwc.authorization.isPermitted(request,self)
+        .success(function(resolution) {
+            self.sentPacketsMeter.mark();
+            if(packet.time) {
+                self.latencyOutTimer.mark(ozpIwc.util.now() - packet.time);
+            }
+            self.router.send(packet, self);
+        }).failure(function(e){
+            console.error("Participant Failed to send a packet:",e);
+        });
     return packet;
 };
 
@@ -10086,7 +5971,7 @@ ozpIwc.Participant.prototype.heartbeat=function() {
             'action' : "set",
             'entity' : this.heartBeatStatus,
             'contentType' : this.heartBeatContentType
-        },function() {/* eat the response*/});
+        });
     }
 };
 
@@ -10137,30 +6022,6 @@ ozpIwc.Participant.prototype.leaveEventChannel = function() {
     }
 
 };
-
-ozpIwc.Participant.prototype.addSRPolicy = function() {
-    this.srPolicyId = this.policyEnforcer.PDP.addPolicy({
-        'subject': {
-            'value': this.address
-        },
-        'resource': {
-            'value': this.address
-        },
-        'action': [
-            {
-                'value': 'sendAs'
-            },
-            {
-                'value': 'receiveAs'
-            }
-        ]
-    });
-};
-
-ozpIwc.Participant.prototype.removeSRPolicy = function() {
-    this.policyEnforcer.PDP.removePolicy(this.srPolicyId);
-};
-
 /**
  * Classes related to transport aspects of the IWC.
  * @module bus
@@ -10202,6 +6063,10 @@ ozpIwc.InternalParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config
 
     var self = this;
     this.on("connectedToRouter",function() {
+        self.permissions.pushIfNotExist('ozp:iwc:address', self.address);
+        self.permissions.pushIfNotExist('ozp:iwc:sendAs',self.address);
+        self.permissions.pushIfNotExist('ozp:iwc:receiveAs', self.address);
+
         ozpIwc.metrics.gauge(self.metricRoot,"registeredCallbacks").set(function() {
             return self.getCallbackCount();
         });
@@ -10236,9 +6101,9 @@ ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContex
 	var packet=packetContext.packet;
 	if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
         var cancel = false;
-        function done() {
+        var done=function() {
             cancel = true;
-        }
+        };
         this.replyCallbacks[packet.replyTo](packet,done);
 		if (cancel) {
             this.cancelCallback(packet.replyTo);
@@ -10527,6 +6392,9 @@ ozpIwc.Router=function(config) {
 	};
 	this.events.on("preSend",checkFormat);
 
+    if(!config.disableBus){
+        this.participants["$bus.multicast"]=new ozpIwc.MulticastParticipant("$bus.multicast");
+    }
     /**
      * @property watchdog
      * @type ozpIwc.RouterWatchdog
@@ -10535,21 +6403,11 @@ ozpIwc.Router=function(config) {
         router: this,
         heartbeatFrequency: config.heartbeatFrequency
     });
-
-    /**
-     * Policy Enforcer module for the router.
-     * @property policyEnforcer
-     * @type {ozpIwc.policyAuth.PEP}
-     * @default new ozpIwc.policyAuth.PEP()
-     */
-    this.policyEnforcer = new ozpIwc.policyAuth.PEP();
-
 	this.registerParticipant(this.watchdog);
 
     ozpIwc.metrics.gauge('transport.router.participants').set(function() {
         return self.getParticipantCount();
     });
-
 };
 
 /**
@@ -10599,7 +6457,6 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
     });
     this.events.trigger("preRegisterParticipant",registerEvent);
 
-
     if(registerEvent.canceled){
         // someone vetoed this participant
         ozpIwc.log.log("registeredParticipant[DENIED] origin:"+participant.origin+
@@ -10608,7 +6465,7 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
     }
 
     this.participants[address] = participant;
-    participant.connectToRouter(this,address);
+     participant.connectToRouter(this,address);
     var registeredEvent=new ozpIwc.CancelableEvent({
         'packet': packet,
         'participant': participant
@@ -10652,21 +6509,8 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
         ozpIwc.metrics.counter("transport.packets.rejected").inc();
         return;
     }
-
-//    this.policyEnforcer.request({
-//        'subject':localParticipant.securityAttributes,
-//        'object': packet.permissions,
-//        'action': {'action': 'receive'}
-//    })
-//        .success(function() {
-            ozpIwc.metrics.counter("transport.packets.delivered").inc();
-            localParticipant.receiveFromRouter(packetContext);
-//        })
-//        .failure(function() {
-//            /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
-//            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-//        });
-
+    ozpIwc.metrics.counter("transport.packets.delivered").inc();
+    localParticipant.receiveFromRouter(packetContext);
 };
 
 
@@ -10692,6 +6536,9 @@ ozpIwc.Router.prototype.registerMulticast=function(participant,multicastGroups) 
             var registeredEvent = new ozpIwc.CancelableEvent({
                 'entity': {'group': groupName, 'address': participant.address}
             });
+            participant.permissions.pushIfNotExist('ozp:iwc:sendAs', groupName);
+            participant.permissions.pushIfNotExist('ozp:iwc:receiveAs', groupName);
+
             self.events.trigger("registeredMulticast", registeredEvent);
         } else {
             ozpIwc.log.log("no address for " +  participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
@@ -11468,12 +7315,18 @@ var ozpIwc=ozpIwc || {};
 ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name) {
 
     /**
+     * The address of the participant.
+     * @property address
+     * @type String
+     */
+	this.address = name;
+
+    /**
      * The name of the participant.
      * @property name
      * @type String
-     * @default ""
      */
-	this.name=name;
+    this.name=name;
 
     /**
      * The type of the participant
@@ -11524,6 +7377,11 @@ ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name)
     this.on("connectedToRouter",function() {
         this.namesResource="/multicast/" + this.name;
     },this);
+
+    //At creation the multicast participant knows what it can sendAs/receiveAs
+    this.permissions.pushIfNotExist('ozp:iwc:address', name);
+    this.permissions.pushIfNotExist('ozp:iwc:sendAs', name);
+    this.permissions.pushIfNotExist('ozp:iwc:receiveAs', name);
 });
 
 /**
@@ -11535,6 +7393,8 @@ ozpIwc.MulticastParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(name)
  * @returns {Boolean} always false.
  */
 ozpIwc.MulticastParticipant.prototype.receiveFromRouterImpl=function(packet) {
+
+    this.receivedPacketsMeter.mark();
 	this.members.forEach(function(m) {
         // as we send to each member, update the context to make it believe that it's the only recipient
         packet.dstParticipant=m;
@@ -11606,20 +7466,16 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
 	this.participantType="postMessageProxy";
 
     /**
-     * @property securityAttributes.origin
+     * @property permissions.attributes['ozp:iwc:origin']
      * @type String
      */
-    this.securityAttributes.origin=this.origin;
+    this.permissions.pushIfNotExist("ozp:iwc:origin",this.origin);
 
-
-    /**
-     * Fires when the participant has connected to its router.
-     * @event #connectedToRouter
-     */
     this.on("connectedToRouter",function() {
-
+        this.permissions.pushIfNotExist('ozp:iwc:address', this.address);
+        this.permissions.pushIfNotExist('ozp:iwc:sendAs', this.address);
+        this.permissions.pushIfNotExist('ozp:iwc:receiveAs', this.address);
     },this);
-
     /**
      * @property heartBeatStatus.origin
      * @type String
@@ -11634,13 +7490,7 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
  * @param {ozpIwc.TransportPacketContext} packetContext
  */
 ozpIwc.PostMessageParticipant.prototype.receiveFromRouterImpl=function(packetContext) {
-    var self = this;
-    return this.policyEnforcer.request(this.securityAttributes.receiveAs).then(function() {
-        self.sendToRecipient(packetContext.packet);
-    })['catch'](function(){
-            console.error("FAILED TO RECEIVE");
-            ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-    });
+    this.sendToRecipient(packetContext.packet);
 };
 
 /**
@@ -11705,26 +7555,6 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
 		this.router.send(packet,this);
 	}
 };
-
-/**
- * Sends a packet to this participants router.  Calls fixPacket before doing so.
- *
- * @method send
- * @param {ozpIwc.TransportPacket} packet
- * @returns {ozpIwc.TransportPacket}
-*/
-ozpIwc.PostMessageParticipant.prototype.send=function(packet) {
-    packet=this.fixPacket(packet);
-    var self = this;
-
-    this.policyEnforcer.request(this.securityAttributes.sendAs).then(function(){
-        self.router.send(packet,this);
-    })['catch'](function(){
-        ozpIwc.metrics.counter("transport.packets.forbidden").inc();
-        console.error("FAILED TO SEND.");
-    });
-};
-
 
 /**
  * @TODO (DOC)
@@ -11826,30 +7656,31 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
 
 	// if this is a window who hasn't talked to us before, sign them up
 	if(!participant) {
-        var request = new ozpIwc.policyAuth.Request();
-        request.addSubject({'dataType': 'http://www.w3.org/2001/XMLSchema#anyURI','value': event.origin});
-        request.addResource({'dataType': 'http://www.w3.org/2001/XMLSchema#string','value': '$bus.multicast'});
-        request.addAction({'dataType': 'http://www.w3.org/2001/XMLSchema#string','value': 'connect'});
 
         var self = this;
-        this.router.policyEnforcer.request(request).then(function(){
-                participant=new ozpIwc.PostMessageParticipant({
+        var request = {
+            'subject': {'ozp:iwc:origin': event.origin},
+            'action': {'ozp:iwc:action': 'connect'},
+            'policies': ozpIwc.authorization.policySets.connectSet
+        };
+        ozpIwc.authorization.isPermitted(request)
+            .success(function () {
+                participant = new ozpIwc.PostMessageParticipant({
                     'origin': event.origin,
                     'sourceWindow': event.source,
                     'credentials': packet.entity
                 });
-                participant.securityAttributes.connect = request;
-
-                self.router.registerParticipant(participant,packet,true);
+                self.router.registerParticipant(participant, packet);
                 self.participants.push(participant);
                 isPacket(packet);
-        })['catch'](function(e){
-            console.error("COULD NOT CONNECT");
-        });
 
+            }).failure(function (err) {
+                console.error("Failed to connect. Could not authorize:", err);
+            });
 	} else{
         isPacket(packet);
     }
+
 };
 
 /**
@@ -11956,6 +7787,7 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
             var participant=self.router.participants[k];
             participant.heartBeatStatus.time = ozpIwc.util.now();
             if(participant instanceof ozpIwc.MulticastParticipant) {
+                /*jshint loopfunc:true*/
                 participant.members.forEach(function(member){
                     self.send({
                         'dst': "names.api",
@@ -12042,7 +7874,10 @@ ozpIwc.CommonApiValue = function(config) {
      * @type Object
      * @default {}
      */
-	this.permissions=config.permissions || {};
+	this.permissions=new ozpIwc.policyAuth.SecurityAttribute();
+    for(var i in config.permissions){
+        this.permissions.pushIfNotExist(i, config.permissions[i]);
+    }
 
     /**
      * @property version
@@ -12076,7 +7911,14 @@ ozpIwc.CommonApiValue = function(config) {
  */
 ozpIwc.CommonApiValue.prototype.set=function(packet) {
 	if(this.isValidContentType(packet.contentType)) {
-		this.permissions=packet.permissions || this.permissions;
+
+        if(!Array.isArray(packet.permissions)){
+            for(var i in packet.permissions) {
+                //If a permission was passed, wipe its value and set it to the new value;
+                this.permissions.clear(i);
+                this.permissions.pushIfNotExist(i,packet.permissions[i]);
+            }
+        }
 		this.contentType=packet.contentType;
 		this.entity=packet.entity;
 		this.version++;
@@ -12135,7 +7977,7 @@ ozpIwc.CommonApiValue.prototype.eachWatcher=function(callback,self) {
 ozpIwc.CommonApiValue.prototype.deleteData=function() {
 	this.entity=undefined;
 	this.contentType=undefined;
-	this.permissions=[];
+    this.permissions.clearAll();
 	this.version=0;
     this.deleted=true;
 };
@@ -12151,7 +7993,7 @@ ozpIwc.CommonApiValue.prototype.toPacket=function(base) {
 	base = base || {};
 	base.entity=ozpIwc.util.clone(this.entity);
 	base.contentType=this.contentType;
-	base.permissions=ozpIwc.util.clone(this.permissions);
+	base.permissions=ozpIwc.util.clone(this.permissions.getAll());
 	base.eTag=this.version;
 	base.resource=this.resource;
 	return base;
@@ -12244,7 +8086,9 @@ ozpIwc.CommonApiValue.prototype.deserialize=function(serverData) {
 // we need the persistent data to conform with the structure of non persistent data.
     this.entity= clone.entity || {};
     this.contentType=clone.contentType || this.contentType;
-    this.permissions=clone.permissions || this.permissions;
+    for(var i in clone.permissions){
+        this.permissions.pushIfNotExist(i, clone.permissions[i]);
+    }
     this.version=clone.version || this.version;
     this.watchers = serverData.watchers || this.watchers;
 };
@@ -12259,7 +8103,7 @@ ozpIwc.CommonApiValue.prototype.serialize=function() {
     var serverData = {};
     serverData.entity=this.entity;
     serverData.contentType=this.contentType;
-    serverData.permissions=this.permissions;
+    serverData.permissions=this.permissions.getAll();
     serverData.version=this.version;
     serverData.watchers=this.watchers;
     return serverData;
@@ -12339,7 +8183,7 @@ ozpIwc.CommonApiCollectionValue.prototype.deserialize=function(serverData) {
     ozpIwc.CommonApiValue.prototype.deserialize.apply(this,arguments);
     var clone = ozpIwc.util.clone(serverData);
 
-    this.pattern = (typeof clone.pattern == "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
+    this.pattern = (typeof clone.pattern === "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
     this.pattern.toJSON = RegExp.prototype.toString;
 };
 
@@ -12767,8 +8611,8 @@ ozpIwc.CommonApiBase.prototype.makeValue=function(/*packet*/) {
  * @todo make the packetContext have the srcSubject inside of it
  *
  * @method isPermitted
- * @param {ozpIwc.CommonApiValue} node The node of the api that permission is being checked against
  * @param {ozpIwc.TransportPacketContext} packetContext The packet of which permission is in question.
+ * @param {ozpIwc.CommonApiValue} node The node of the api that permission is being checked against
  *
  * @returns {ozpIwc.AsyncAction} An asynchronous response, the response will call either success or failure depending on
  * the result of the check.
@@ -12783,12 +8627,31 @@ ozpIwc.CommonApiBase.prototype.makeValue=function(/*packet*/) {
  *      });
  * ```
  */
-ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
-    var subject=packetContext.srcSubject || {
-        'rawAddress':packetContext.packet.src
-    };
-    //@TODO use PEP for auth
-    return new ozpIwc.AsyncAction().resolve('success');
+ozpIwc.CommonApiBase.prototype.isPermitted=function(packetContext,node) {
+    var asyncAction = new ozpIwc.AsyncAction();
+
+    ozpIwc.authorization.formatCategory(packetContext.packet.permissions)
+        .success(function(permissions) {
+            var request = {
+                'subject': node.permissions.getAll(),
+                'resource': permissions || {},
+                'action': {'ozp:iwc:action': 'access'},
+                'policies': ozpIwc.authorization.policySets.apiSet
+            };
+
+            ozpIwc.authorization.isPermitted(request, node)
+                .success(function (resolution) {
+                        asyncAction.resolve("success",resolution);
+                }).failure(function (err) {
+                    console.error("Api could not perform action:", err);
+                    asyncAction.resolve("failure",err);
+                });
+        }).failure(function(err){
+            console.error("Api could not format permission check on packet", err);
+            asyncAction.resolve("failure",err);
+        });
+
+    return asyncAction;
 };
 
 
@@ -12812,7 +8675,7 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
             'replyTo' : watcher.msgId,
             'response': 'changed',
             'resource': node.resource,
-            'permissions': node.permissions,
+            'permissions': node.permissions.getAll(),
             'entity': changes
         };
 
@@ -12932,7 +8795,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         this.validateResource(node,packetContext);
         node=this.findOrMakeValue(packetContext.packet);
 
-        this.isPermitted(node,packetContext)
+        this.isPermitted(packetContext,node)
             .success(function() {
                 errorWrap(function() {
                     this.validatePreconditions(node,packetContext);
@@ -12940,14 +8803,15 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
                     handler.call(this,node,packetContext);
                     this.notifyWatchers(node, node.changesSince(snapshot));
 
-                    // update all the collection values
+                // update all the collection values
                     this.dynamicNodes.forEach(function(resource) {
                         this.updateDynamicNode(this.data[resource]);
                     },this);
                 });
             },this)
-            .failure(function() {
+            .failure(function(err) {
                 packetContext.replyTo({'response':'noPerm'});
+                console.log("failure");
             });
     });
 };
@@ -13524,8 +9388,7 @@ ozpIwc.Endpoint.prototype.delete=function(resource, data, requestHeaders) {
 
     return this.endpointRegistry.loadPromise.then(function() {
         if(!self.baseUrl) {
-            throw Error("The server did not define a relation of type " 
-                + this.name + " for retrivieving " + resource);
+            throw Error("The server did not define a relation of type " + this.name + " for retrivieving " + resource);
         }
         if(resource.indexOf(self.baseUrl)!==0) {
             resource=self.baseUrl + resource;
@@ -14183,7 +10046,7 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
     // save the new child
     var childNode=this.findOrMakeValue({'resource':key});
     var clone = ozpIwc.util.clone(childNode);
-
+    clone.permissions = childNode.permissions.getAll();
     packetContext.packet.entity.invokeIntent = packetContext.packet.entity.invokeIntent || {};
     packetContext.packet.entity.invokeIntent.dst = packetContext.packet.src;
     packetContext.packet.entity.invokeIntent.replyTo = packetContext.packet.msgId;
@@ -14220,7 +10083,7 @@ ozpIwc.IntentsApi.prototype.handleBroadcast = function (node, packetContext) {
 
         var inflightPacket = self.makeIntentInvocation(node,packetContext);
 
-        var updateInFlightEntity = ozpIwc.util.clone(inflightPacket);
+        var updateInFlightEntity =inflightPacket.toPacket();
         updateInFlightEntity.entity.handlerChosen = {
             'resource' : handler.resource,
             'reason' : "broadcast"
@@ -14256,7 +10119,7 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
     var inflightPacket = this.makeIntentInvocation(node,packetContext);
 
     if(handlerNodes.length === 1) {
-        var updateInFlightEntity = ozpIwc.util.clone(inflightPacket);
+        var updateInFlightEntity = inflightPacket.toPacket();
         updateInFlightEntity.entity.handlerChosen = {
             'resource' : handlerNodes[0].resource,
             'reason' : "onlyOne"
@@ -14650,7 +10513,7 @@ ozpIwc.IntentsApiDefinitionValue.prototype.deserialize=function(serverData) {
 // we need the persistent data to conform with the structure of non persistent data.
     this.entity= clone.entity || {};
 
-    this.pattern = (typeof clone.pattern == "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
+    this.pattern = (typeof clone.pattern === "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
     this.pattern.toJSON = RegExp.prototype.toString;
 
     this.contentType=clone.contentType || this.contentType;
@@ -14750,7 +10613,9 @@ ozpIwc.IntentsApiInFlightIntent = ozpIwc.util.extend(ozpIwc.CommonApiValue, func
     ozpIwc.CommonApiValue.apply(this, arguments);
     this.resource = config.resource;
     this.invokePacket=config.invokePacket;
-    this.permissions=config.invokePacket.permissions;
+    //for (var i in config.invokePacket.permissions) {
+    //    this.permissions.pushIfNotExist(i,config.invokePacket.permissions[i]);
+    //}
     this.entity={
         'intent': {
             'type': config.type,
@@ -14966,10 +10831,11 @@ ozpIwc.NamesApi.prototype.removeDeadNodes = function(){
         if(this.dynamicNodes.indexOf(key) < 0 && node.entity && node.entity.time) {
             if ((ozpIwc.util.now() - node.entity.time) > this.heartbeatFrequency * this.heartbeatDropCount) {
                 var snapshot = node.snapshot();
-                node.deleteData;
+                node.deleteData();
                 this.notifyWatchers(node, node.changesSince(snapshot));
                 delete this.data[key];
                 // update all the collection values
+                /*jshint loopfunc:true*/
                 this.dynamicNodes.forEach(function(resource) {
                     this.updateDynamicNode(this.data[resource]);
                 },this);
@@ -15334,20 +11200,25 @@ ozpIwc.SystemApiApplicationValue.prototype.getIntentsRegistrations=function() {
 var ozpIwc=ozpIwc || {};
 ozpIwc.ELECTION_TIMEOUT = 1000;
 ozpIwc.apiRootUrl = ozpIwc.apiRootUrl || "/api";
+ozpIwc.policyRootUrl = ozpIwc.policyRootUrl || "/policy";
 ozpIwc.basicAuthUsername= ozpIwc.basicAuthUsername || '';
 ozpIwc.basicAuthPassword= ozpIwc.basicAuthPassword || '';
 ozpIwc.linkRelPrefix = ozpIwc.linkRelPrefix || "ozp";
+ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
+    'pip': new ozpIwc.policyAuth.PIP(),
+    'prp': new ozpIwc.policyAuth.PRP(),
+    'setsEndpoint': ozpIwc.policyRootUrl
+});
+
 if(typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
     ozpIwc.initEndpoints(ozpIwc.apiRootUrl);
+
 
     ozpIwc.defaultPeer = new ozpIwc.Peer();
     ozpIwc.defaultLocalStorageLink = new ozpIwc.KeyBroadcastLocalStorageLink({
         peer: ozpIwc.defaultPeer
     });
 
-    ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
-        loadPolicies: ['/policy/connectPolicy.xml','/policy/policy.xml']
-    });
     ozpIwc.heartBeatFrequency = 10000; // 10 seconds
     ozpIwc.defaultRouter = new ozpIwc.Router({
         peer: ozpIwc.defaultPeer,
