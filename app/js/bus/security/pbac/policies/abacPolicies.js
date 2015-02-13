@@ -71,3 +71,43 @@ ozpIwc.abacPolicies.denyAll=function() {
     return "Deny";
 };
 
+
+
+/**
+ *
+ * @method implies
+ * @param {Array} subjectVal
+ * @param {Array} objectVal
+ *
+ * @returns {Boolean}
+ */
+ozpIwc.abacPolicies.implies=function(subjectVal,objectVal) {
+    // no object value is trivially true
+    if(objectVal===undefined || objectVal === null) {
+        return true;
+    }
+    // no subject value when there is an object value is trivially false
+    if(subjectVal===undefined || subjectVal === null) {
+        return false;
+    }
+
+    // convert both to arrays, if necessary
+    subjectVal=Array.isArray(subjectVal)?subjectVal:[subjectVal];
+    objectVal=Array.isArray(objectVal)?objectVal:[objectVal];
+
+    // confirm that every element in objectVal is also in subjectVal
+    return ozpIwc.util.arrayContainsAll(subjectVal,objectVal);
+};
+
+
+ozpIwc.abacPolicies.defaultPolicy = function(request,action){
+    action = Array.isArray(action) ? action : [action];
+    if(!ozpIwc.util.arrayContainsAll(action,request.action['ozp:iwc:action'])) {
+        return "NotApplicable";
+    } else if(!ozpIwc.util.objectContainsAll(request.subject,request.resource,ozpIwc.abacPolicies.implies)) {
+        return "Deny";
+    } else {
+        return "Permit";
+    }
+};
+

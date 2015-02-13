@@ -51,6 +51,14 @@ ozpIwc.policyAuth.SecurityAttribute.prototype.clear = function(id){
 };
 
 /**
+ * Clears all attributes.
+ * @method clear
+ */
+ozpIwc.policyAuth.SecurityAttribute.prototype.clearAll = function(){
+    this.attributes = {};
+};
+
+/**
  * Returns an object containing all of the attributes.
  * @returns {Object}
  */

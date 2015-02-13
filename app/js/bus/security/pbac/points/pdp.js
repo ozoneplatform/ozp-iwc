@@ -62,17 +62,8 @@ ozpIwc.policyAuth.PDP = function(config){
  *      'formattedPolicies': <Object> // a copy of the formatted policies (for PDP user caching)
  *    }```
  */
-ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,contextHolder){
+ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
     var asyncAction = new ozpIwc.AsyncAction();
-    // Allow a custom pip to be used for the check.
-    // We use this so that we can assign attributes to the PIP (for policies to reference), take a snapshot, and
-    // move on with the async nature of the IWC and not worry about attributes being overridden.
-    var pip;
-    if(contextHolder){
-        pip = this.gatherContext(contextHolder);
-    } else {
-        pip = this.pip;
-    }
 
     var self = this;
     //If there is no request information, its a trivial "Permit"
@@ -88,35 +79,25 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request,contextHolder){
         asyncAction.resolve('failure',err);
     };
     //Format the request
-    this.formatRequest(request,pip)
+    this.formatRequest(request)
         .success(function(formattedRequest){
 
             // Get the policies from the PRP
             self.prp.getPolicies(formattedRequest.policies)
                 .success(function(policies){
 
-                    //Format the policies
-                    self.formatPolicies(policies,pip)
-                        .success(function(policies){
-                            formattedPolicies = policies;
-
-                            //Generate the evaluation function
-                            var evaluate = self.generateEvaluation(policies,formattedRequest.combiningAlgorithm);
-
-                            //Evaluate the function
-                            var result = evaluate(formattedRequest);
-                            var response = {
-                                'result':result,
-                                'request': request,
-                                'formattedRequest': formattedRequest,
-                                'formattedPolicies': formattedPolicies
-                            };
-                            if(result === "Permit"){
-                               asyncAction.resolve('success',response);
-                            } else {
-                                onError(response);
-                            }
-                        }).failure(onError);
+                    var result = ozpIwc.policyAuth.PolicyCombining['deny-overrides'](policies,formattedRequest.category);
+                    var response = {
+                        'result':result,
+                        'request': request,
+                        'formattedRequest': formattedRequest,
+                        'formattedPolicies': formattedPolicies
+                    };
+                    if(result === "Permit"){
+                       asyncAction.resolve('success',response);
+                    } else {
+                        onError(response);
+                    }
                 }).failure(onError);
         }).failure(onError);
     return asyncAction;
@@ -331,9 +312,9 @@ ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request,pip){
             var act = gatheredAttributes[2];
             asyncAction.resolve('success',{
                 'category':{
-                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": sub,
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": res,
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action": act
+                    "subject": sub,
+                    "resource": res,
+                    "action": act
                 },
                 'combiningAlgorithm': request.combiningAlgorithm,
                 'policies': request.policies
@@ -369,22 +350,22 @@ ozpIwc.policyAuth.PDP.prototype.defaultCombiningAlgorithm =
  *                                      var result = evalFunc(someRequest);
  *                                      ```
  */
-ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combiningAlgorithm){
-    policies = policies || [];
-    policies = Array.isArray(policies)? policies : [policies];
-
-    var combiningFunction = ozpIwc.policyAuth.PolicyCombining[combiningAlgorithm] ||
-        ozpIwc.policyAuth.PolicyCombining[this.defaultCombiningAlgorithm];
-
-    // If there are no policies to check against, assume trivial and permit
-    if(policies.length === 0){
-        return ozpIwc.abacPolicies.permitAll;
-    }
-
-    return function(request){
-            return combiningFunction(policies,request);
-    };
-};
+//ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combiningAlgorithm){
+//    policies = policies || [];
+//    policies = Array.isArray(policies)? policies : [policies];
+//
+//    var combiningFunction = ozpIwc.policyAuth.PolicyCombining[combiningAlgorithm] ||
+//        ozpIwc.policyAuth.PolicyCombining[this.defaultCombiningAlgorithm];
+//
+//    // If there are no policies to check against, assume trivial and permit
+//    if(policies.length === 0){
+//        return ozpIwc.abacPolicies.permitAll;
+//    }
+//
+//    return function(request){
+//            return combiningFunction(policies,request);
+//    };
+//};
 
 
 /**
@@ -493,18 +474,18 @@ ozpIwc.policyAuth.PDP.prototype.formatCategories = function(categoryObj,pip){
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {ozpIwc.AsyncAction} will resolve with a formatted rule.
  */
-ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule,pip) {
-    var asyncAction = new ozpIwc.AsyncAction();
-    pip = pip || this.pip;
-    this.formatCategories(rule.category,pip)
-        .success(function (categories) {
-            rule.category = categories;
-            asyncAction.resolve('success',rule);
-        }).failure(function(err){
-            asyncAction.resolve('failure',err);
-        });
-    return asyncAction;
-};
+//ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule,pip) {
+//    var asyncAction = new ozpIwc.AsyncAction();
+//    pip = pip || this.pip;
+//    this.formatCategories(rule.category,pip)
+//        .success(function (categories) {
+//            rule.category = categories;
+//            asyncAction.resolve('success',rule);
+//        }).failure(function(err){
+//            asyncAction.resolve('failure',err);
+//        });
+//    return asyncAction;
+//};
 
 /**
  * Context handler for policy rule objects.
@@ -514,15 +495,15 @@ ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule,pip) {
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {ozpIwc.AsyncAction} will resolve with a matching-order of formatted rules array.
  */
-ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules,pip){
-    pip = pip || this.pip;
-    var ruleAsyncs = [];
-    for(var i in rules){
-        var tmp = this.formatRule(rules[i],pip);
-        ruleAsyncs.push(tmp);
-    }
-    return ozpIwc.AsyncAction.all(ruleAsyncs);
-};
+//ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules,pip){
+//    pip = pip || this.pip;
+//    var ruleAsyncs = [];
+//    for(var i in rules){
+//        var tmp = this.formatRule(rules[i],pip);
+//        ruleAsyncs.push(tmp);
+//    }
+//    return ozpIwc.AsyncAction.all(ruleAsyncs);
+//};
 
 
 /**
@@ -533,20 +514,20 @@ ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules,pip){
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {ozpIwc.AsyncAction} calls and returns a formatRules AsyncAction
  */
-ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy,pip){
-    var asyncAction = new ozpIwc.AsyncAction();
-    pip = pip || this.pip;
-    policy = policy || {};
-
-    this.formatRules(policy.rule,pip)
-        .success(function(rules){
-            policy.rule = rules;
-            asyncAction.resolve('success',policy);
-        }).failure(function(err){
-            asyncAction.resolve('failure',err);
-        });
-    return asyncAction;
-};
+//ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy,pip){
+//    var asyncAction = new ozpIwc.AsyncAction();
+//    pip = pip || this.pip;
+//    policy = policy || {};
+//
+//    this.formatRules(policy.rule,pip)
+//        .success(function(rules){
+//            policy.rule = rules;
+//            asyncAction.resolve('success',policy);
+//        }).failure(function(err){
+//            asyncAction.resolve('failure',err);
+//        });
+//    return asyncAction;
+//};
 
 
 /**
@@ -557,25 +538,25 @@ ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy,pip){
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {ozpIwc.AsyncAction} will resolve with an array of formatted policies
  */
-ozpIwc.policyAuth.PDP.prototype.formatPolicies = function(policies,pip){
-    var asyncAction = new ozpIwc.AsyncAction();
-    pip = pip || this.pip;
-    var policyAsyncs = [];
-    for(var i in policies){
-        policyAsyncs.push(this.formatPolicy(policies[i],pip));
-    }
-    ozpIwc.AsyncAction.all(policyAsyncs)
-        .success(function(policies){
-            var formattedPolicies = [];
-            for(var i in policies){
-                formattedPolicies[i] = new ozpIwc.policyAuth.Policy(policies[i]);
-            }
-            asyncAction.resolve('success',formattedPolicies);
-        }).failure(function(err){
-            asyncAction.resolve('failure',err);
-        });
-    return asyncAction;
-};
+//ozpIwc.policyAuth.PDP.prototype.formatPolicies = function(policies,pip){
+//    var asyncAction = new ozpIwc.AsyncAction();
+//    pip = pip || this.pip;
+//    var policyAsyncs = [];
+//    for(var i in policies){
+//        policyAsyncs.push(this.formatPolicy(policies[i],pip));
+//    }
+//    ozpIwc.AsyncAction.all(policyAsyncs)
+//        .success(function(policies){
+//            var formattedPolicies = [];
+//            for(var i in policies){
+//                formattedPolicies[i] = new ozpIwc.policyAuth.Policy(policies[i]);
+//            }
+//            asyncAction.resolve('success',formattedPolicies);
+//        }).failure(function(err){
+//            asyncAction.resolve('failure',err);
+//        });
+//    return asyncAction;
+//};
 
 /**
  * Simple mapping function for assigning attributeId's to category types.
@@ -584,30 +565,30 @@ ozpIwc.policyAuth.PDP.prototype.formatPolicies = function(policies,pip){
  * @param {String} string
  * @returns {String|undefined} returns undefined if a matching Id is not found (likely because not supported).
  */
-ozpIwc.policyAuth.PDP.prototype.mappedId = function(string){
-    switch(string){
-        case "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":
-            return "urn:oasis:names:tc:xacml:1.0:subject:subject-id";
-        case "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":
-            return "urn:oasis:names:tc:xacml:1.0:resource:resource-id";
-        case "urn:oasis:names:tc:xacml:3.0:attribute-category:action":
-            return "urn:oasis:names:tc:xacml:1.0:action:action-id";
-        default:
-            return undefined;
-    }
-};
-
-ozpIwc.policyAuth.PDP.prototype.gatherContext = function(contextHolder){
-
-    var permissions = {};
-    for(var i in contextHolder.permissions.attributes) {
-        permissions[i] = contextHolder.permissions.attributes[i];
-        var wrapped = {};
-        wrapped[i] = permissions[i];
-        this.pip.grantAttributes(i, wrapped);
-    }
-    this.pip.grantAttributes("ozp:iwc:permissions", permissions);
-
-    //Take a snapshot of the pip to use for the permission check (due to async nature)
-    return ozpIwc.util.protoClone(this.pip);
-};
+//ozpIwc.policyAuth.PDP.prototype.mappedId = function(string){
+//    switch(string){
+//        case "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":
+//            return "urn:oasis:names:tc:xacml:1.0:subject:subject-id";
+//        case "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":
+//            return "urn:oasis:names:tc:xacml:1.0:resource:resource-id";
+//        case "urn:oasis:names:tc:xacml:3.0:attribute-category:action":
+//            return "urn:oasis:names:tc:xacml:1.0:action:action-id";
+//        default:
+//            return undefined;
+//    }
+//};
+//
+//ozpIwc.policyAuth.PDP.prototype.gatherContext = function(contextHolder){
+//
+//    var permissions = {};
+//    for(var i in contextHolder.permissions.attributes) {
+//        permissions[i] = contextHolder.permissions.attributes[i];
+//        var wrapped = {};
+//        wrapped[i] = permissions[i];
+//        this.pip.grantAttributes(i, wrapped);
+//    }
+//    this.pip.grantAttributes("ozp:iwc:permissions", permissions);
+//
+//    //Take a snapshot of the pip to use for the permission check (due to async nature)
+//    return ozpIwc.util.protoClone(this.pip);
+//};

@@ -5,14 +5,16 @@ ozpIwc.policyRootUrl = ozpIwc.policyRootUrl || "/policy";
 ozpIwc.basicAuthUsername= ozpIwc.basicAuthUsername || '';
 ozpIwc.basicAuthPassword= ozpIwc.basicAuthPassword || '';
 ozpIwc.linkRelPrefix = ozpIwc.linkRelPrefix || "ozp";
+ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
+    'pip': new ozpIwc.policyAuth.PIP(),
+    'prp': new ozpIwc.policyAuth.PRP(),
+    'setsEndpoint': ozpIwc.policyRootUrl
+});
+
 if(typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
     ozpIwc.initEndpoints(ozpIwc.apiRootUrl);
 
-    ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
-        'pip': new ozpIwc.policyAuth.PIP(),
-        'prp': new ozpIwc.policyAuth.PRP(),
-        'setsEndpoint': ozpIwc.policyRootUrl
-    });
+
     ozpIwc.defaultPeer = new ozpIwc.Peer();
     ozpIwc.defaultLocalStorageLink = new ozpIwc.KeyBroadcastLocalStorageLink({
         peer: ozpIwc.defaultPeer

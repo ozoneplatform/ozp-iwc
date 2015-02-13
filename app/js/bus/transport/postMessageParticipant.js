@@ -245,7 +245,6 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
         var self = this;
         var request = {
             'subject': {'ozp:iwc:origin': event.origin},
-            'resource': {'ozp:iwc:bus': '$bus.multicast'},
             'action': {'ozp:iwc:action': 'connect'},
             'policies': ozpIwc.authorization.policySets.connectSet
         };

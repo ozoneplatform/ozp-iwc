@@ -115,7 +115,7 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
     var self = this;
 
     var request = {
-        'subject': {'ozp:iwc:address': this.address},
+        'subject': this.permissions.getAll(),
         'resource': {'ozp:iwc:receiveAs': packetContext.packet.dst},
         'action': {'ozp:iwc:action': 'receiveAs'},
         'policies': ozpIwc.authorization.policySets.receiveAsSet
@@ -125,6 +125,7 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
         self.forbiddenPacketsMeter.mark();
         /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
         ozpIwc.metrics.counter("transport.packets.forbidden").inc();
+        console.error("failure");
     };
 
     ozpIwc.authorization.isPermitted(request,this)
@@ -132,8 +133,8 @@ ozpIwc.Participant.prototype.receiveFromRouter=function(packetContext) {
             ozpIwc.authorization.formatCategory(packetContext.packet.permissions)
                 .success(function(permissions) {
                     var request = {
-                        'subject': {'ozp:iwc:address':  self.address},
-                        'resource': permissions || {},
+                        'subject': self.permissions.getAll(),
+                        'resource':permissions || {},
                         'action': {'ozp:iwc:action': 'read'},
                         'policies': ozpIwc.authorization.policySets.readSet
                     };
@@ -221,7 +222,7 @@ ozpIwc.Participant.prototype.fixPacket=function(packet) {
 ozpIwc.Participant.prototype.send=function(packet) {
     var self = this;
     var request = {
-        'subject': {'ozp:iwc:address': this.address},
+        'subject': this.permissions.getAll(),
         'resource': {'ozp:iwc:sendAs': packet.src},
         'action': {'ozp:iwc:action': 'sendAs'},
         'policies': ozpIwc.authorization.policySets.sendAsSet

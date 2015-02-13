@@ -10,7 +10,9 @@ describe("Intent API Class", function () {
             };
         };
         apiBase = new ozpIwc.IntentsApi({
-            'participant': new TestParticipant()
+            'participant': new TestParticipant({
+                'staticAddress': 'test.address'
+            })
         });
     });
 
@@ -159,6 +161,7 @@ describe("Intent API Class", function () {
             apiBase.participant.receiveFromRouter(new TestPacketContext({
                 'packet': {
                     'src': "fakeHandler",
+                    'dst': 'test.address',
                     'response': "ok",
                     'replyTo': invokePacket.msgId,
                     'contentType' : "text/winnar",

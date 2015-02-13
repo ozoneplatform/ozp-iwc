@@ -54,7 +54,6 @@ ozpIwc.CommonApiValue = function(config) {
     for(var i in config.permissions){
         this.permissions.pushIfNotExist(i, config.permissions[i]);
     }
-    this.permissions.pushIfNotExist('ozp:iwc:node', config.resource);
 
     /**
      * @property version
@@ -154,11 +153,7 @@ ozpIwc.CommonApiValue.prototype.eachWatcher=function(callback,self) {
 ozpIwc.CommonApiValue.prototype.deleteData=function() {
 	this.entity=undefined;
 	this.contentType=undefined;
-	for(var i in this.permissions.attributes){
-        if(i !== "ozp:iwc:node"){
-            this.permissions.clear(i);
-        }
-    }
+    this.permissions.clearAll();
 	this.version=0;
     this.deleted=true;
 };
@@ -174,7 +169,7 @@ ozpIwc.CommonApiValue.prototype.toPacket=function(base) {
 	base = base || {};
 	base.entity=ozpIwc.util.clone(this.entity);
 	base.contentType=this.contentType;
-	base.permissions=ozpIwc.util.clone(this.permissions);
+	base.permissions=ozpIwc.util.clone(this.permissions.getAll());
 	base.eTag=this.version;
 	base.resource=this.resource;
 	return base;
@@ -284,7 +279,7 @@ ozpIwc.CommonApiValue.prototype.serialize=function() {
     var serverData = {};
     serverData.entity=this.entity;
     serverData.contentType=this.contentType;
-    serverData.permissions=this.permissions.attributes;
+    serverData.permissions=this.permissions.getAll();
     serverData.version=this.version;
     serverData.watchers=this.watchers;
     return serverData;

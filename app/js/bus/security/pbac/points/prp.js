@@ -14,7 +14,7 @@ ozpIwc.policyAuth.PRP = function(config){
     config = config || {};
 
     this.persistentPolicies = config.persistentPolicies || [];
-    this.policyCache = config.policyCache || {};
+    this.policyCache = config.policyCache || ozpIwc.policyAuth.defaultPolicies;
 
 
 };
@@ -51,7 +51,7 @@ ozpIwc.policyAuth.PRP.prototype.getPolicies = function(policyURIs){
 
     // If there are no policies to check against, assume trivial and permit
     if(policies.length === 0){
-        return asyncAction.resolve('success',[this.getPermitAll()]);
+        return asyncAction.resolve('success',[ozpIwc.abacPolicies.permitAll]);
     }
 
     return ozpIwc.AsyncAction.all(policies);
@@ -115,23 +115,6 @@ ozpIwc.policyAuth.PRP.prototype.getDenyall = function(urn){
         });
         policy.evaluate = ozpIwc.abacPolicies.denyAll;
         this.policyCache[urn] = policy;
-        return policy;
-    }
-};
-
-/**
- * Returns a policy that will always permit any request. Said policy is cached with the id 'ozp:iwc:policy:none'
- * @returns {ozpIwc.policyAuth.Policy} a permitAll policy
- */
-ozpIwc.policyAuth.PRP.prototype.getPermitAll = function(){
-    if(this.policyCache['ozp:iwc:policy:none']){
-        return this.policyCache['ozp:iwc:policy:none'];
-    } else {
-        var policy = new ozpIwc.policyAuth.Rule({
-            ruleId: 'ozp:iwc:policy:none'
-        });
-        policy.evaluate = ozpIwc.abacPolicies.permitAll;
-        this.policyCache['ozp:iwc:policy:none'] = policy;
         return policy;
     }
 };

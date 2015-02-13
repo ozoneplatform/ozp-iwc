@@ -377,7 +377,7 @@ ozpIwc.CommonApiBase.prototype.isPermitted=function(packetContext,node) {
     ozpIwc.authorization.formatCategory(packetContext.packet.permissions)
         .success(function(permissions) {
             var request = {
-                'subject': {'ozp:iwc:node': packetContext.packet.resource},
+                'subject': node.permissions.getAll(),
                 'resource': permissions || {},
                 'action': {'ozp:iwc:action': 'access'},
                 'policies': ozpIwc.authorization.policySets.apiSet
@@ -419,7 +419,7 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
             'replyTo' : watcher.msgId,
             'response': 'changed',
             'resource': node.resource,
-            'permissions': node.permissions,
+            'permissions': node.permissions.getAll(),
             'entity': changes
         };
 
@@ -555,6 +555,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
             },this)
             .failure(function(err) {
                 packetContext.replyTo({'response':'noPerm'});
+                console.log("failure");
             });
     });
 };

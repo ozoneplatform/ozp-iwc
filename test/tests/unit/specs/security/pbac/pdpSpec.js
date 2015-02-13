@@ -26,7 +26,7 @@ describe("Policy Decision Point",function() {
 
     var mockPRP = {
         'getPolicies': function(policyURIs){
-            return ozpIwc.AsyncAction.all([mockPolicies['policy/connect']]);
+            return ozpIwc.AsyncAction.all([ozpIwc.policyAuth.defaultPolicies['policy/connect']]);
         }
     };
 
@@ -38,7 +38,7 @@ describe("Policy Decision Point",function() {
     });
     describe("Request formatting",function(){
         describe("subject",function(){
-            var categoryId = "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject";
+            var categoryId = "subject";
             it("formats an empty subject",function(){
                 pdp.formatRequest({}).success(function(formattedRequest){
                     expect(formattedRequest.category[categoryId])
@@ -141,7 +141,7 @@ describe("Policy Decision Point",function() {
         });
 
         describe("resource",function() {
-            var categoryId = "urn:oasis:names:tc:xacml:3.0:attribute-category:resource";
+            var categoryId = "resource";
             it("formats an empty resource",function(){
                 pdp.formatRequest({}).success(function(formattedRequest){
                     expect(formattedRequest.category[categoryId]).toEqual({});
@@ -214,7 +214,7 @@ describe("Policy Decision Point",function() {
             });
         });
         describe("action",function(){
-            var categoryId = "urn:oasis:names:tc:xacml:3.0:attribute-category:action";
+            var categoryId = "action";
             it("formats an empty action",function(){
                 pdp.formatRequest({}).success(function(formattedRequest){
                     expect(formattedRequest.category[categoryId]).toEqual({
@@ -265,38 +265,38 @@ describe("Policy Decision Point",function() {
                 'subject': "urn:subjectId:1",
                 'resource': "urn:subjectId:1",
                 'action': "write",
-                'combiningAlgorithm' : "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides",
+                'combiningAlgorithm' : "deny-overrides",
                 'policies': ['urn:policyId:1','urn:policyId:2']
             }).success(function(formattedRequest){
                 expect(formattedRequest.category).toEqual({
-                        "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":{
+                        "subject":{
                             'ozp:iwc:fakeAttribute1': ["fakeVal"]
                         },
-                        "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":{
+                        "resource":{
                             'ozp:iwc:fakeAttribute1': ["fakeVal"]
                         },
-                        "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
+                        "action":{
                             "ozp:iwc:action": ["write"]
                         }
                 });
                 expect(formattedRequest.combiningAlgorithm)
-                    .toEqual("urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides");
+                    .toEqual("deny-overrides");
                 expect(formattedRequest.policies)
                     .toEqual(['urn:policyId:1','urn:policyId:2']);
             });
         });
     });
 
-    describe("category formatting",function(){
+    describe("attribute formatting",function(){
         it("gathers a categories attributes from the PIP if given as a string",function(){
-            pdp.formatCategory('urn:subjectId:1')
+            pdp.formatAttribute('urn:subjectId:1')
                 .success(function(category){
                     expect(category['ozp:iwc:fakeAttribute1']).toEqual(["fakeVal"]);
                 });
         });
 
         it("gathers a categories attributes from the PIP if given as an array",function(){
-            pdp.formatCategory(['urn:subjectId:1','urn:subjectId:2'])
+            pdp.formatAttribute(['urn:subjectId:1','urn:subjectId:2'])
                 .success(function(category){
                     expect(category['ozp:iwc:fakeAttribute1']).toEqual(["fakeVal"]);
                     expect(category['ozp:iwc:fakeAttribute2']).toEqual(["fakeVal"]);
@@ -305,153 +305,45 @@ describe("Policy Decision Point",function() {
 
         it("gathers multiple categories in an object with a URI given as a string",function(){
             pdp.formatCategories({
-                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" : 'urn:subjectId:1',
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource" : 'urn:subjectId:2'
+                    "subject" : 'urn:subjectId:1',
+                    "resource" : 'urn:subjectId:2'
                 }).success(function(categories){
-                    expect(categories["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute1']).toEqual(["fakeVal"]);
-                    expect(categories["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(["fakeVal"]);
+                    expect(categories.subject['ozp:iwc:fakeAttribute1']).toEqual(["fakeVal"]);
+                    expect(categories.resource['ozp:iwc:fakeAttribute2']).toEqual(["fakeVal"]);
                 });
         });
 
 
         it("gathers multiple categories in an object with  URIs given as an Array",function(){
             pdp.formatCategories({
-                "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": ['urn:subjectId:1', 'urn:subjectId:2'],
-                "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": ['urn:subjectId:1', 'urn:subjectId:2', 'urn:subjectId:3']
+                "subject": ['urn:subjectId:1', 'urn:subjectId:2'],
+                "resource": ['urn:subjectId:1', 'urn:subjectId:2', 'urn:subjectId:3']
             }).success(function(category){
-                expect(category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute1']).toEqual(['fakeVal']);
-                expect(category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                expect(category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                expect(category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                expect(category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute3']).toEqual(['fakeVal']);
-                expect(category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttributea']).toEqual(['afakeVal']);
+                expect(category.subject['ozp:iwc:fakeAttribute1']).toEqual(['fakeVal']);
+                expect(category.subject['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
+                expect(category.resource['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
+                expect(category.resource['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
+                expect(category.resource['ozp:iwc:fakeAttribute3']).toEqual(['fakeVal']);
+                expect(category.resource['ozp:iwc:fakeAttributea']).toEqual(['afakeVal']);
             });
         });
     });
 
-    describe("rule formatting",function() {
-        var rule = {
-            "ruleId": "urn:ozp:iwc:xacml:rule:fake",
-            "description": "Fake rule.",
-            'category': {
-                "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": ['urn:subjectId:1', 'urn:subjectId:2'],
-                "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": ['urn:subjectId:1', 'urn:subjectId:2', 'urn:subjectId:3']
-            }
-        };
-        it("converts any JSON rule into a Rule object and gathers any needed attribute",function(){
-            pdp.formatRule(rule)
-                .success(function(rule){
-                    expect(rule.category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute1']).toEqual(['fakeVal']);
-                    expect(rule.category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                    expect(rule.category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                    expect(rule.category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                    expect(rule.category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute3']).toEqual(['fakeVal']);
-                    expect(rule.category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttributea']).toEqual(['afakeVal']);
-                });
-        });
-        it("converts any array of JSON rules into an array of Rule objects and gathers any needed attribute",function(){
-            pdp.formatRules([rule,rule])
-                .success(function(rules){
-                    rules.forEach(function(formattedRule) {
-                        expect(formattedRule.category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute1']).toEqual(['fakeVal']);
-                        expect(formattedRule.category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                        expect(formattedRule.category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                        expect(formattedRule.category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                        expect(formattedRule.category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute3']).toEqual(['fakeVal']);
-                        expect(formattedRule.category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttributea']).toEqual(['afakeVal']);
-                    });
-                });
-        });
-    });
-
-    describe("Category attributeId mapping", function(){
-        it("maps the subject attribute Id for the designator",function(){
-            expect(pdp.mappedId("urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"))
-                .toEqual("urn:oasis:names:tc:xacml:1.0:subject:subject-id");
-        });
-        it("maps the resource attribute Id for the designator",function(){
-            expect(pdp.mappedId("urn:oasis:names:tc:xacml:3.0:attribute-category:resource"))
-                .toEqual("urn:oasis:names:tc:xacml:1.0:resource:resource-id");
-        });
-        it("maps the action attribute Id for the designator",function(){
-            expect(pdp.mappedId("urn:oasis:names:tc:xacml:3.0:attribute-category:action"))
-                .toEqual("urn:oasis:names:tc:xacml:1.0:action:action-id");
-        });
-        it("maps undefined for an unsupported category", function(){
-            expect(pdp.mappedId("urn:some:random:not:supported:category")).toBeUndefined();
-        });
-    });
-
-    describe("Policy formatting", function(){
-        var policy = new ozpIwc.policyAuth.Policy({
-            "policyId": "urn:ozp:iwc:xacml:policy:connect1",
-            "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
-            "version": "1.0",
-            "description": "Policy for Connection Allowances (testing)",
-            "rule": [
-                {
-                    "ruleId": "urn:ozp:iwc:xacml:rule:fake",
-                    "description": "Fake rule.",
-                    'category': {
-                        "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": ['urn:subjectId:1', 'urn:subjectId:2'],
-                        "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": ['urn:subjectId:1', 'urn:subjectId:2', 'urn:subjectId:3']
-                    }
-                }
-            ]
-        });
-        it("converts any JSON policy into a Policy object and gathers any needed attributes",function(){
-            pdp.formatPolicy(policy)
-                .success(function(policy){
-                    expect(policy.rule[0].category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute1']).toEqual(['fakeVal']);
-                    expect(policy.rule[0].category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                    expect(policy.rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                    expect(policy.rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                    expect(policy.rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute3']).toEqual(['fakeVal']);
-                    expect(policy.rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttributea']).toEqual(['afakeVal']);
-                    expect(policy.rule[0].evaluate).toBeDefined();
-                    expect(policy.evaluate).toBeDefined();
-                });
-        });
-        it("converts any array of JSON policies into an array of Policy objects and gathers any needed attribute",function(){
-            pdp.formatPolicies([policy,policy])
-                .success(function(policies){
-                    expect(policies[0].rule[0].category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute1']).toEqual(['fakeVal']);
-                    expect(policies[0].rule[0].category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                    expect(policies[0].rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                    expect(policies[0].rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                    expect(policies[0].rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute3']).toEqual(['fakeVal']);
-                    expect(policies[0].rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttributea']).toEqual(['afakeVal']);
-                    expect(policies[0].rule[0].evaluate).toBeDefined();
-                    expect(policies[0].evaluate).toBeDefined();
-                    expect(policies[1].rule[0].category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute1']).toEqual(['fakeVal']);
-                    expect(policies[1].rule[0].category["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                    expect(policies[1].rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                    expect(policies[1].rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute2']).toEqual(['fakeVal']);
-                    expect(policies[1].rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttribute3']).toEqual(['fakeVal']);
-                    expect(policies[1].rule[0].category["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]['ozp:iwc:fakeAttributea']).toEqual(['afakeVal']);
-                    expect(policies[1].rule[0].evaluate).toBeDefined();
-                    expect(policies[1].evaluate).toBeDefined();
-                });
-        });
-    });
 
     describe("Permission", function(){
         var request = {
             subject: "urn:subjectId:fake",
             resource: "urn:resourceId:fake",
-            action: "write"
+            action: "write",
+            policies: ['/policy/fake']
         };
+
         it("permits",function(){
-            pdp.generateEvaluation = function(){
-                return function(request){
-                    return "Permit";
-                };
+            pdp.prp.getPolicies = function(){
+                return new ozpIwc.AsyncAction().resolve("success", [ozpIwc.abacPolicies.permitAll]);
             };
-            pdp.isPermitted({
-                subject: "urn:subjectId:fake",
-                resource: "urn:resourceId:fake",
-                action: "write"
-            }).success(function(response){
+
+            pdp.isPermitted(request).success(function(response){
                 expect(response.result).toEqual("Permit");
                 expect(response.request).toEqual(request);
                 expect(response.formattedRequest).toBeDefined();
@@ -462,11 +354,10 @@ describe("Policy Decision Point",function() {
         });
 
         it("denies",function(){
-            pdp.generateEvaluation = function(){
-                return function(request){
-                    return "Deny";
-                };
+            pdp.prp.getPolicies = function(){
+                return new ozpIwc.AsyncAction().resolve("success", [ozpIwc.abacPolicies.denyAll]);
             };
+
             pdp.isPermitted(request)
                 .success(function(response){
                     expect(false).toEqual(true);

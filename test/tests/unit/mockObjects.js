@@ -22,6 +22,7 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
     ozpIwc.InternalParticipant.apply(this, arguments);
     config = config || {};
     this.origin = config.origin || "foo.com";
+    this.address = config.staticAddress;
     this.packets = [];
     this.sentPackets = [];
     // since we aren't connecting to a router, mock these out, too
@@ -148,111 +149,4 @@ var FakeRouter = function() {
             participant.permissions.pushIfNotExist('ozp:iwc:receiveAs', groupName);
         });
     };
-};
-
-// Assorted mock policies for PBAC testing. Fill the PRP Cache with this and ajax calls wont be needed!
-var mockPolicies = {
-    '/policy/connect': {
-        "policyId": "connectPolicy.json",
-        "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
-        "version": "1.0",
-        "description": "Policy for Connection Allowances (testing)",
-        "rule": [
-            {
-                "ruleId": "urn:ozp:iwc:xacml:rule:connect1",
-                "description": "The following domains are white-listed to connect to the IWC bus.",
-                "category": {
-                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject": {
-                        "ozp:iwc:origin": [
-                                "http://localhost:13000",
-                                "http://localhost:15001",
-                                "http://ozone-development.github.io"
-                        ]
-                    },
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource": {
-                        "ozp:iwc:bus":  ["$bus.multicast"]
-                    },
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
-                        "ozp:iwc:action":  ["connect"]
-                    }
-                }
-            }
-        ]
-    },
-    '/policy/receiveAs': {
-        "policyId": "urn:ozp:iwc:xacml:policy:connect1",
-        "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
-        "version": "1.0",
-        "description": "Policy for SendingAs (testing)",
-        "rule": [
-            {
-                "ruleId": "urn:ozp:iwc:xacml:rule:receiveAs",
-                "description": "The following domains are white-listed to connect to the IWC bus.",
-                "category": {
-                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:address",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:receiveAs",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
-                        "ozp:iwc:action":  ["receiveAs"]
-                    }
-                }
-            }
-        ]
-    },
-    '/policy/sendAs': {
-        "policyId": "urn:ozp:iwc:xacml:policy:connect1",
-        "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
-        "version": "1.0",
-        "description": "Policy for SendingAs (testing)",
-        "rule": [
-            {
-                "ruleId": "urn:ozp:iwc:xacml:rule:sendAs",
-                "description": "The following domains are white-listed to connect to the IWC bus.",
-                "category": {
-                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:address",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:sendAs",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
-                        "ozp:iwc:action": ["sendAs"]
-                    }
-                }
-            }
-        ]
-    },
-    '/policy/read': {
-        "policyId": "urn:ozp:iwc:xacml:policy:read1",
-        "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
-        "version": "1.0",
-        "description": "Policy for reading (testing)",
-        "rule": [
-            {
-                "ruleId": "urn:ozp:iwc:xacml:rule:read",
-                "description": "The following address can read if it has all of the security requirements.",
-                "category": {
-                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:address",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:permissions",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action": {
-                        "ozp:iwc:action": ["read", "write"]
-                    }
-                }
-            }
-        ]
-    },
-    '/policy/apiNode': {
-        "policyId": "urn:ozp:iwc:xacml:policy:apiNode1",
-        "ruleCombiningAlgId": "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
-        "version": "1.0",
-        "description": "Policy for API node access",
-        "rule": [
-            {
-                "ruleId": "urn:ozp:iwc:xacml:rule:apiNode",
-                "description": "The following node can be accessed if  all of the security requirements are met.",
-                "category": {
-                    "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":"ozp:iwc:node",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":"ozp:iwc:permissions",
-                    "urn:oasis:names:tc:xacml:3.0:attribute-category:action":{
-                        "ozp:iwc:action": ["access"]
-                    }
-                }
-            }
-        ]
-    }
 };
