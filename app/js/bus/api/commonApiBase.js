@@ -143,6 +143,7 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
 };
 
 /**
+ * TO BE DEPRECATED - This is the recursive tree scanning approach.  Replaced by iterative loadFromEndpointIterative.
  * Loads api data from a specific endpoint.
  *
  * @method loadFromEndpoint
@@ -184,6 +185,114 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHe
     return p;
 };
 
+/*
+ * REPLACES loadFromEndpoint with an iterative approach
+ * 
+ * Loads api data from a specific endpoint.
+ *
+ * @method loadFromEndpointIterative
+ * @param {String} endpointName The name of the endpoint to load from the server.
+ * @param [Object] requestHeaders
+ * @param {String} requestHeaders.name
+ * @param {String} requestHeaders.value
+ *
+ */
+ozpIwc.CommonApiBase.prototype.loadFromEndpointIterative=function(endpointName, requestHeaders) {
+    // fetch the base endpoint. it should be a HAL Json object with all of the
+    // resources and keys in it
+    var endpoint=ozpIwc.endpoint(endpointName);
+
+	var self=this;
+    return endpoint.get("/")
+        .then(function(data) {
+			var embeddedList = [];
+			var unresolvedLinks = [];
+			// if any embedded items exist, convert them to a list (primarily to cover the single element case
+			if (data.response._embedded && data.response._embedded.item) {
+				if (Object.prototype.toString.call(data.response._embedded.item) === '[object Array]' ) {
+					for (var i in data.response._embedded.item) {
+						embeddedList.push(data.response._embedded.item[i]);
+					}
+				} else {
+					embeddedList.push(data.response._embedded.item);
+				}
+				
+				embeddedList.forEach(function(item) {
+					self.updateResourceFromServerIterative(item, item._links.self.href, endpoint, requestHeaders);
+				});
+			}
+			
+			// Follow up here with loop on _links section, creating a promise to load each link if it is not in the _embedded section
+			// At end, return promise.all to activate when all outstanding loads are completed.
+			if (data.response._links && data.response._links.item) {
+				var links = [];
+				if (Object.prototype.toString.call(data.response._links.item) === '[object Array]' ) {
+					for (var i in data.response._links.item) {
+						links.push(data.response._links.item[i]);
+					}
+				} else {
+					links.push(data.response._links.item);
+				}
+				
+				// scan the list of links.  If there is no href match to an embedded item, push a promise to load the link into the list
+				links.forEach(function(link) {
+					if (!embeddedList.some(
+							function(embeddedItem) { return link.href === embeddedItem._links.self.href }
+						))
+						unresolvedLinks.push(endpoint.get(link.href, requestHeaders));
+				});
+			}
+			return Promise.all(unresolvedLinks);
+		}).then(function(unresolvedLinks) {
+			unresolvedLinks.forEach(function(item) {
+				self.updateResourceFromServerIterative(item, item._links.self.href, endpoint, requestHeaders);
+			});
+
+			// update all the collection values
+			self.dynamicNodes.forEach(function(resource) {
+				self.updateDynamicNode(self.data[resource]);
+			});
+		})['catch'](function(e) {
+			ozpIwc.log.error("Could not load from api (" + endpointName + "): " + e.message, e);
+		});
+};
+					
+/**
+ * Updates an Api node with server loaded HAL data.  (Was updateResourceFromServer, modified to be iterative, not recursive)
+ *
+ * @method updateResourceFromServerIterative
+ * @param {ozpIwc.TransportPacket} object The object retrieved from the server to store.
+ * @param {String} path The path of the resource retrieved.
+ * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
+ */
+ozpIwc.CommonApiBase.prototype.updateResourceFromServerIterative=function(item,path,endpoint,requestHeaders) {
+    //TODO where should we get content-type?
+    var header = requestHeaders || {};
+    item.contentType = item.contentType || header['Content-Type'] || 'application/json';
+
+    var parseEntity;
+    if(typeof item.entity === "string"){
+        try{
+            parseEntity = JSON.parse(item.entity);
+            item.entity = parseEntity;
+        }catch(e){
+            // fail silently for now
+        }
+    }
+    var node = this.findNodeForServerResource(item,path,endpoint);
+
+    if (node) {
+        var snapshot = node.snapshot();
+
+        var halLess = ozpIwc.util.clone(item);
+        delete halLess._links;
+        delete halLess._embedded;
+        node.deserialize(this.formatServerData(halLess));
+
+        this.notifyWatchers(node, node.changesSince(snapshot));
+    }
+};
+
 /**
  * Updates an Api node with server loaded HAL data.
  *
@@ -194,7 +303,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHe
  */
 ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint,res,header) {
     //TODO where should we get content-type?
-    header = header || {};
+    var header = header || {};
     object.contentType = object.contentType || header['Content-Type'] || 'application/json';
 
     var parseEntity;
