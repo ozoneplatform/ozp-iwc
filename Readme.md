@@ -12,8 +12,9 @@ To Build
 3.  git clone git@github.com:ozone-development/ozp-iwc.git
 4.  cd ozp-iwc
 5.  npm install
-6.  grunt test
-7.  Browse to http://localhost:14000 for an index of samples and tests!
+6.  bower install
+7.  grunt test
+8.  Browse to http://localhost:14000 for an index of samples and tests!
 
 Demo
 ---------------
