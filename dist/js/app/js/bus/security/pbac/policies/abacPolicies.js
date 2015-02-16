@@ -74,7 +74,8 @@ ozpIwc.abacPolicies.denyAll=function() {
 
 
 /**
- *
+ * Applies trivial logic to determing a subject's containing of object values
+ * @static
  * @method implies
  * @param {Array} subjectVal
  * @param {Array} objectVal
@@ -99,7 +100,14 @@ ozpIwc.abacPolicies.implies=function(subjectVal,objectVal) {
     return ozpIwc.util.arrayContainsAll(subjectVal,objectVal);
 };
 
-
+/**
+ * Determines if a request should be permitted by comparing its action to the requested policies action. Then testing
+ * if the request subject passes all of the request resources.
+ * @method defaultPolicy
+ * @param request
+ * @param action
+ * @returns {string} NotApplicable, Deny, or Permit
+ */
 ozpIwc.abacPolicies.defaultPolicy = function(request,action){
     action = Array.isArray(action) ? action : [action];
     if(!ozpIwc.util.arrayContainsAll(action,request.action['ozp:iwc:action'])) {

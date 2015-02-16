@@ -110,11 +110,7 @@ ozpIwc.policyAuth.PRP.prototype.getDenyall = function(urn){
     if(this.policyCache[urn]){
         return this.policyCache[urn];
     } else {
-        var policy = new ozpIwc.policyAuth.Policy({
-            policyId: urn
-        });
-        policy.evaluate = ozpIwc.abacPolicies.denyAll;
-        this.policyCache[urn] = policy;
-        return policy;
+        this.policyCache[urn] = ozpIwc.abacPolicies.denyAll;
+        return this.policyCache[urn];
     }
 };

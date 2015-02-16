@@ -2,6 +2,7 @@ ozpIwc = ozpIwc || {};
 
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 
+
 ozpIwc.policyAuth.BaseElement = function(config){
     config = config || {};
 };

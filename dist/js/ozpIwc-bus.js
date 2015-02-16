@@ -3222,419 +3222,6 @@ ozpIwc.policyAuth.PolicyCombining['permit-unless-deny'] =
 };
 ozpIwc = ozpIwc || {};
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-ozpIwc.policyAuth.RuleCombining = ozpIwc.policyAuth.RuleCombining || {};
-
-
-/**
- * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides
- */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides'] =
-        function(rules,request){
-    var atLeastOneErrorD,
-        atLeastOneErrorP,
-        atLeastOneErrorDP,
-        atLeastOnePermit = false;
-
-    for(var i in rules){
-        var decision = rules[i].evaluate(request);
-        switch(decision){
-            case "Deny":
-                return "Deny";
-            case "Permit":
-                atLeastOnePermit = true;
-                break;
-            case "NotApplicable":
-                continue;
-            case "Indeterminate{D}":
-                atLeastOneErrorD = true;
-                break;
-            case "Indeterminate{P}":
-                atLeastOneErrorP = true;
-                break;
-            case "Indeterminate{DP}":
-                atLeastOneErrorDP = true;
-                break;
-            default:
-                continue;
-        }
-    }
-
-    if(atLeastOneErrorDP){
-        return "Indeterminate{DP}";
-    } else if(atLeastOneErrorD && (atLeastOneErrorP || atLeastOnePermit)){
-        return "Indeterminate{DP}";
-    } else if(atLeastOneErrorD){
-        return "Indeterminate{D}";
-    } else if(atLeastOnePermit) {
-        return "Permit";
-    } else if(atLeastOneErrorP){
-        return "Indeterminate{P}";
-    }
-
-    return "NotApplicable";
-};
-
-/**
- * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides
- */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides'] =
-        function(){
-
-};
-
-/**
- * @method urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable
- */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable'] =
-        function(){
-
-};
-
-/**
- * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
- */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides'] =
-        function(){
-
-};
-
-/**
- * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides
- */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides'] =
-        function(){
-
-};
-
-/**
- * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit
- */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit'] =
-        function(){
-
-};
-
-/**
- * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny
- */
-ozpIwc.policyAuth.RuleCombining['urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny'] =
-        function(){
-
-};
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-ozpIwc.policyAuth.BaseElement = function(config){
-    config = config || {};
-};
-
-
-ozpIwc.policyAuth.BaseElement.prototype.construct = function(element){
-    var parsed = ozpIwc.util.elementParser({
-        element: element,
-        reqAttrs: this.requiredAttributes,
-        optAttrs: this.optionalAttributes,
-        reqNodes: this.requiredNodes,
-        optNodes: this.optionalNodes
-    });
-    this.constructNodes(parsed);
-};
-
-/**
- *
- *
- * @method constructNodes
- * @param {Object}config
- * @param {Object} config.attrs
- * @param {Object} config.nodes
- */
-ozpIwc.policyAuth.BaseElement.prototype.constructNodes = function(config){
-    config = config || {};
-    config.attrs = config.attrs || {};
-    config.nodes = config.nodes || {};
-
-    var camelCasedProperty;
-    // Attributes are just strings, simple assignment
-    for(var i in config.attrs){
-        // The property of the policy is the camelCase version of the tagName
-        // (ex. this.policyId = parsed.attrs.PolicyId)
-        camelCasedProperty = ozpIwc.util.camelCased(i);
-        this[camelCasedProperty] = config.attrs[i];
-    }
-
-    // Each node is likely to be mapped to a XACML element, construct said element and set it as this elements property.
-    for(var j in config.nodes){
-        // The property of the policy is the camelCase version of the tagName
-        camelCasedProperty = ozpIwc.util.camelCased(j);
-
-        // If a property of the Policy accepts multiple elements, it's defaulted as an array.
-        if(Array.isArray(this[camelCasedProperty])){
-
-            // Check if the parsed node type is an array, then we will append all its elements to this element.
-            if(Array.isArray(config.nodes[j])){
-                for(var itt in config.nodes[j]){
-                    // The property of the element is the camelCase version of the tagName, the node to construct from the
-                    // parsed object uses the same notation as the tagName for the class call
-                    // (ex.ozpIwc.policyAuth[i] = ozpIwc.policyAuth.Target)
-                    this[camelCasedProperty].push(new ozpIwc.policyAuth[j]({element: config.nodes[j][itt]}));
-                }
-            }else{
-                for(var k in config.nodes[j]) {
-                    this[camelCasedProperty].push(new ozpIwc.policyAuth[j]({element: config.nodes[j][k]}));
-                }
-            }
-        } else {
-            for(var itter in config.nodes[j]) {
-                this[camelCasedProperty] = new ozpIwc.policyAuth[j]({element: config.nodes[j][itter]});
-            }
-        }
-    }
-};
-
-
-ozpIwc.policyAuth.BaseElement.prototype.requiredAttributes = [];
-ozpIwc.policyAuth.BaseElement.prototype.optionalAttributes = [];
-ozpIwc.policyAuth.BaseElement.prototype.requiredNodes = [];
-ozpIwc.policyAuth.BaseElement.prototype.optionalNodes = [];
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-/**
- * 3.3.2 Policy
- * Rules are not exchanged amongst system entities. Therefore, a PAP combines rules in a policy.
- *
- * The <Policy> element is of PolicyType complex type.
- *
- * @class Policy
- * @namespace ozpIwc.policyAuth
- *
- *
- * @param {Object} config
- * @param {Object} config.target
- * @param {Function} config.ruleCombining
- * @param {Array<ozpIwc.policyAuth.Rules>} config.rules
- * @param {Array<Function>} config.obligations
- * @param {Array<Function>} config.advices
- * @constructor
- */
-ozpIwc.policyAuth.Policy = ozpIwc.util.extend(ozpIwc.policyAuth.BaseElement,function(config) {
-    config=config || {};
-
-    /**
-     * @property policyId
-     * @type String
-     * @default null
-     */
-    this.policyId = config.policyId;
-
-    /**
-     * @property version
-     * @type Number
-     * @default null
-     */
-    this.version = config.version;
-
-    /**
-     * @property description
-     * @type String
-     * @default null
-     */
-    this.description = config.description;
-
-    /**
-     * @property ruleCombiningAlgId
-     * @type String
-     * @default null
-     */
-    this.ruleCombiningAlgId = config.ruleCombiningAlgId || this.ruleCombiningAlgId;
-
-    /**
-     * An array of {{#crossLink "ozpIwc.policyAuth.Rule"}}{{/crossLink}}
-     * @property rules
-     * @type Array<ozpIwc.policyAuth.Rule>
-     * @default []
-     */
-    this.rule = [];
-
-    for(var i in config.rule){
-        // If the rule has an evaluate function, its already constructed
-        if(config.rule[i].evaluate){
-            this.rule.push(config.rule[i]);
-        } else {
-            this.rule.push(new ozpIwc.policyAuth.Rule(config.rule[i]));
-        }
-    }
-    this.evaluate = config.evaluate || this.evaluateDefault;
-
-});
-
-/**
- * Default value
- * @property ruleCombiningAlgId
- * @type {string}
- * @default 'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides'
- */
-ozpIwc.policyAuth.Policy.prototype.ruleCombiningAlgId = 'urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides';
-
-/**
- *
- * @TODO request is formatted by urn. see a request.category.
- *
- * @method evaluate(request)
- * @param {Object | String} [request.category.subject]  The subject attributes or id performing the action.
- * @param {Object | String} [request.category.resource] The resource attributes or id that is being acted upon.
- * @param {Object | String} [request.category.action]  The action attributes.  A string should be interpreted as the
- *                                            value of the “action-id” attribute.
- * @param {Array<String>} [request.policies]  A list of URIs applicable to this decision.
- * @param {String} [request. combiningAlgorithm]  Only supports “deny-overrides”
- * @returns {Promise}
- */
-ozpIwc.policyAuth.Policy.prototype.evaluateDefault = function(request){
-    return ozpIwc.policyAuth.RuleCombining[this.ruleCombiningAlgId](this.rule,request);
-
-};
-ozpIwc = ozpIwc || {};
-
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-
-
-/**
- * 3.3.1 Rule
- * A rule is the most elementary unit of policy.  It may exist in isolation only within one of the major actors of
- * the XACML domain.  In order to exchange rules between major actors, they must be encapsulated in a policy.
- * A rule can be evaluated on the basis of its contents.  The main components of a rule are:
- *
- * The <Rule> element is of RuleType complex type.
- *
- * @class Rule
- * @namespace ozpIwc.policyAuth
- *
- * @param {Object} config
- * @param {Object} config.target
- * @param {String} config.effect
- * @param {Array<Function>} config.obligations
- * @param {Array<Function>} config.advices
- *
- * @constructor
- */
-ozpIwc.policyAuth.Rule = function(config){
-    config=config || {};
-
-    /**
-     * A string identifying this rule.
-     * @property ruleId
-     * @type String
-     * @default null
-     */
-    this.ruleId = config.ruleId;
-
-    /**
-     * A category-keyed collection of attributes.
-     * @property ruleId
-     * @type String
-     * @default null
-     */
-    this.category = config.category;
-
-    /**
-     * The rule-writer's intended consequence of a "True" evaluation for the rule.
-     * Two values are allowed: "Permit" and "Deny".
-     * @property effect
-     * @type String
-     * @default "Permit"
-     */
-    this.setEffect(config.effect);
-};
-
-/**
- * 3.3.1.2 Effect
- * The effect of the rule indicates the rule-writer's intended consequence of a "True" evaluation for the rule.
- * Two values are allowed: "Permit" and "Deny".
- *
- * @method setEffect
- * @param {String} effect
- */
-ozpIwc.policyAuth.Rule.prototype.setEffect = function(effect){
-    switch(effect){
-        case "Permit":
-            this.effect = effect;
-            break;
-        case "Deny":
-            this.effect = effect;
-            break;
-        default:
-            this.effect = "Permit";
-    }
-};
-
-ozpIwc.policyAuth.Rule.prototype.getNegativeEffect = function(){
-    switch(this.effect){
-        case "Deny":
-            return "Permit";
-        default:
-            return "Deny";
-    }
-};
-
-ozpIwc.policyAuth.Rule.prototype.evaluate = function(request){
-    var reqCategory = request.category;
-
-    // Iterate over each category
-    for(var i in this.category){
-        // If the request doesn't have the category, fail it
-        if(!reqCategory[i]){
-            //@TODO
-            return this.getNegativeEffect();
-        } else {
-            // iterate over each attribute in the request
-            for(var j in reqCategory[i]){
-                //If the attribute in the request does not exist in the policy, keep moving.
-                if(!this.category[i][j]){
-                    continue;
-                }
-                var attributes = this.category[i][j];
-
-                var matchFound = false;
-                var reqAttributes = reqCategory[i][j];
-
-
-                //Make sure the attributes are arrays
-                reqAttributes = Array.isArray(reqAttributes) ?
-                    reqAttributes : [reqAttributes];
-
-                // If no attribute values in the policy
-                if(attributes.length === 0){
-                    // and none in the request, it passes
-                    if (attributes.length === 0) {
-                        matchFound = true;
-                    } else {
-                        // it fails
-                        matchFound = false;
-                    }
-                } else {
-                    matchFound = true;
-                    // Else iterate over each req attribute value, if one doesn't show in the policy, it fails.
-                    for (var k in reqAttributes) {
-                        if(attributes.indexOf(reqAttributes[k]) < 0){
-                            matchFound = false;
-                        }
-                    }
-                }
-
-                if(!matchFound){
-                    return this.getNegativeEffect();
-                }
-            }
-        }
-    }
-    return this.effect;
-};
-
-
-ozpIwc = ozpIwc || {};
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 
 /**
  * A security attribute constructor for policyAuth use. Structured to be common to both bus-internal and api needs.
@@ -4045,42 +3632,7 @@ ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request,pip){
  * @type {String}
  * @default "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides"
  */
-ozpIwc.policyAuth.PDP.prototype.defaultCombiningAlgorithm =
-    "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides";
-
-/**
- * A factory function to create a function for evaluating formatted policies against a given combining algorithm
- * in the ozpIwc.policyAuth.PolicyCombining namespace.
- *
- * @method generateEvaluation
- * @param {String|Array<String>}        policies none, one, or many policies to evaluate with the given combining algorithm
- * @param {String} combiningAlgorithm   the name of the combining algorithm to obtain from the
- *                                      ozpIwc.policyAuth.PolicyCombining namespace.
- * @returns {Function}                  returns a function call expecting a formatted request to be passed to for
- *                                      evaluation. Ex:
- *                                      ```
- *                                      var pdp = new ozpIwc.policyAuth.PDP(...);
- *                                      var evalFunc = pdp.generateEvaluation(somePolicies, someCombiningAlgorithm);
- *                                      var result = evalFunc(someRequest);
- *                                      ```
- */
-//ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combiningAlgorithm){
-//    policies = policies || [];
-//    policies = Array.isArray(policies)? policies : [policies];
-//
-//    var combiningFunction = ozpIwc.policyAuth.PolicyCombining[combiningAlgorithm] ||
-//        ozpIwc.policyAuth.PolicyCombining[this.defaultCombiningAlgorithm];
-//
-//    // If there are no policies to check against, assume trivial and permit
-//    if(policies.length === 0){
-//        return ozpIwc.abacPolicies.permitAll;
-//    }
-//
-//    return function(request){
-//            return combiningFunction(policies,request);
-//    };
-//};
-
+ozpIwc.policyAuth.PDP.prototype.defaultCombiningAlgorithm = "deny-overrides";
 
 /**
  * Formats a category object. If needed the attribute data is gathered from the PIP.
@@ -4128,21 +3680,13 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,pip){
  * subject,resource, and action categories are supported.
  *
  * @method formatCategories
- * @param {Object} categoryObj
- * @param {Object|String|Array<String|Object>}
- *          [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
- *                                          Formats xacml subject category attributes
- * @param {Object|String|Array<String|Object>}
- *          [categoryObj["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]]
- *                                          Formats xacml resource category attributes
- * @param {Object|String|Array<String|Object>}
- *          [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
- *                                          Formats xacml action category attributes
+ * @param {Object} categoryObj An object of categories to format.
+ * @param {Object|String|Array<String|Object>}[categoryObj[<categoryId>]] A category to format
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {ozpIwc.AsyncAction} will resolve an object of categories be structured as so:
  * ```
  * {
- *   'urn:oasis:names:tc:xacml:1.0:subject-category:access-subject' : {
+ *   '<categoryId>' : {
  *      <AttributeId>:{
  *          'attributeValue' : Array<Primitive>
  *      },
@@ -4150,8 +3694,8 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,pip){
  *          'attributeValue' : Array<Primitive>
  *      }
  *   },
- *   'urn:oasis:names:tc:xacml:3.0:attribute-category:resource': {...},
- *   'urn:oasis:names:tc:xacml:1.0:subject-category:access-subject': {...},
+ *   '<categoryId>': {...},
+ *   ...
  * }
  * ```
  */
@@ -4177,135 +3721,6 @@ ozpIwc.policyAuth.PDP.prototype.formatCategories = function(categoryObj,pip){
         });
     return asyncAction;
 };
-
-
-/**
- * Context handler for a policy rule object.
- *
- * Formats the rules categories,
- * @method formatRule
- * @param {Object} rule
- * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {ozpIwc.AsyncAction} will resolve with a formatted rule.
- */
-//ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule,pip) {
-//    var asyncAction = new ozpIwc.AsyncAction();
-//    pip = pip || this.pip;
-//    this.formatCategories(rule.category,pip)
-//        .success(function (categories) {
-//            rule.category = categories;
-//            asyncAction.resolve('success',rule);
-//        }).failure(function(err){
-//            asyncAction.resolve('failure',err);
-//        });
-//    return asyncAction;
-//};
-
-/**
- * Context handler for policy rule objects.
- *
- * @method formatRules
- * @param {Array<Object>} rules
- * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {ozpIwc.AsyncAction} will resolve with a matching-order of formatted rules array.
- */
-//ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules,pip){
-//    pip = pip || this.pip;
-//    var ruleAsyncs = [];
-//    for(var i in rules){
-//        var tmp = this.formatRule(rules[i],pip);
-//        ruleAsyncs.push(tmp);
-//    }
-//    return ozpIwc.AsyncAction.all(ruleAsyncs);
-//};
-
-
-/**
- * Context handler for a policy object.
- *
- * @method formatPolicy
- * @param {Object} policy
- * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {ozpIwc.AsyncAction} calls and returns a formatRules AsyncAction
- */
-//ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy,pip){
-//    var asyncAction = new ozpIwc.AsyncAction();
-//    pip = pip || this.pip;
-//    policy = policy || {};
-//
-//    this.formatRules(policy.rule,pip)
-//        .success(function(rules){
-//            policy.rule = rules;
-//            asyncAction.resolve('success',policy);
-//        }).failure(function(err){
-//            asyncAction.resolve('failure',err);
-//        });
-//    return asyncAction;
-//};
-
-
-/**
- * Context handler for multiple policy objects.
- *
- * @method formatPolicies
- * @param {Array<Object>} policies
- * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {ozpIwc.AsyncAction} will resolve with an array of formatted policies
- */
-//ozpIwc.policyAuth.PDP.prototype.formatPolicies = function(policies,pip){
-//    var asyncAction = new ozpIwc.AsyncAction();
-//    pip = pip || this.pip;
-//    var policyAsyncs = [];
-//    for(var i in policies){
-//        policyAsyncs.push(this.formatPolicy(policies[i],pip));
-//    }
-//    ozpIwc.AsyncAction.all(policyAsyncs)
-//        .success(function(policies){
-//            var formattedPolicies = [];
-//            for(var i in policies){
-//                formattedPolicies[i] = new ozpIwc.policyAuth.Policy(policies[i]);
-//            }
-//            asyncAction.resolve('success',formattedPolicies);
-//        }).failure(function(err){
-//            asyncAction.resolve('failure',err);
-//        });
-//    return asyncAction;
-//};
-
-/**
- * Simple mapping function for assigning attributeId's to category types.
- *
- * @method mappedId
- * @param {String} string
- * @returns {String|undefined} returns undefined if a matching Id is not found (likely because not supported).
- */
-//ozpIwc.policyAuth.PDP.prototype.mappedId = function(string){
-//    switch(string){
-//        case "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":
-//            return "urn:oasis:names:tc:xacml:1.0:subject:subject-id";
-//        case "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":
-//            return "urn:oasis:names:tc:xacml:1.0:resource:resource-id";
-//        case "urn:oasis:names:tc:xacml:3.0:attribute-category:action":
-//            return "urn:oasis:names:tc:xacml:1.0:action:action-id";
-//        default:
-//            return undefined;
-//    }
-//};
-//
-//ozpIwc.policyAuth.PDP.prototype.gatherContext = function(contextHolder){
-//
-//    var permissions = {};
-//    for(var i in contextHolder.permissions.attributes) {
-//        permissions[i] = contextHolder.permissions.attributes[i];
-//        var wrapped = {};
-//        wrapped[i] = permissions[i];
-//        this.pip.grantAttributes(i, wrapped);
-//    }
-//    this.pip.grantAttributes("ozp:iwc:permissions", permissions);
-//
-//    //Take a snapshot of the pip to use for the permission check (due to async nature)
-//    return ozpIwc.util.protoClone(this.pip);
-//};
 
 ozpIwc = ozpIwc || {};
 
@@ -4536,12 +3951,8 @@ ozpIwc.policyAuth.PRP.prototype.getDenyall = function(urn){
     if(this.policyCache[urn]){
         return this.policyCache[urn];
     } else {
-        var policy = new ozpIwc.policyAuth.Policy({
-            policyId: urn
-        });
-        policy.evaluate = ozpIwc.abacPolicies.denyAll;
-        this.policyCache[urn] = policy;
-        return policy;
+        this.policyCache[urn] = ozpIwc.abacPolicies.denyAll;
+        return this.policyCache[urn];
     }
 };
 
@@ -4621,7 +4032,8 @@ ozpIwc.abacPolicies.denyAll=function() {
 
 
 /**
- *
+ * Applies trivial logic to determing a subject's containing of object values
+ * @static
  * @method implies
  * @param {Array} subjectVal
  * @param {Array} objectVal
@@ -4646,7 +4058,14 @@ ozpIwc.abacPolicies.implies=function(subjectVal,objectVal) {
     return ozpIwc.util.arrayContainsAll(subjectVal,objectVal);
 };
 
-
+/**
+ * Determines if a request should be permitted by comparing its action to the requested policies action. Then testing
+ * if the request subject passes all of the request resources.
+ * @method defaultPolicy
+ * @param request
+ * @param action
+ * @returns {string} NotApplicable, Deny, or Permit
+ */
 ozpIwc.abacPolicies.defaultPolicy = function(request,action){
     action = Array.isArray(action) ? action : [action];
     if(!ozpIwc.util.arrayContainsAll(action,request.action['ozp:iwc:action'])) {
@@ -4663,6 +4082,12 @@ ozpIwc = ozpIwc || {};
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 ozpIwc.policyAuth.defaultPolicies = {};
 
+/**
+ * Allows origins to connect that are included in the hard coded whitelist.
+ * @method '/policy/connect'
+ * @param request
+ * @returns {string}
+ */
 ozpIwc.policyAuth.defaultPolicies['/policy/connect'] = function(request){
     var policyActions = ['connect'];
     var whiteListedOrigins = [
@@ -4691,7 +4116,8 @@ ozpIwc.policyAuth.defaultPolicies['/policy/connect'] = function(request){
 };
 
 /**
- *
+ * Applies the sendAs policy requirements to a default policy. The given request must have an action of 'sendAs'.
+ * @method '/policy/sendAs'
  * @param request
  * @param {Object} request.subject
  * @param {Object} request.resource
@@ -4701,13 +4127,38 @@ ozpIwc.policyAuth.defaultPolicies['/policy/sendAs'] = function(request){
     return ozpIwc.abacPolicies.defaultPolicy(request,'sendAs');
 };
 
+/**
+ * Applies the receiveAs policy requirements to a default policy. The given request must have an action of 'receiveAs'.
+ * @method '/policy/sendAs'
+ * @param request
+ * @param {Object} request.subject
+ * @param {Object} request.resource
+ * @returns {string}
+ */
 ozpIwc.policyAuth.defaultPolicies['/policy/receiveAs'] = function(request){
     return ozpIwc.abacPolicies.defaultPolicy(request,'receiveAs');
 };
 
+/**
+ * Applies the read policy requirements to a default policy. The given request must have an action of 'read'.
+ * @method '/policy/sendAs'
+ * @param request
+ * @param {Object} request.subject
+ * @param {Object} request.resource
+ * @returns {string}
+ */
 ozpIwc.policyAuth.defaultPolicies['/policy/read'] = function(request){
     return ozpIwc.abacPolicies.defaultPolicy(request,'read');
 };
+
+/**
+ * Applies the api access policy requirements to a default policy. The given request must have an action of 'access'.
+ * @method '/policy/sendAs'
+ * @param request
+ * @param {Object} request.subject
+ * @param {Object} request.resource
+ * @returns {string}
+ */
 ozpIwc.policyAuth.defaultPolicies['/policy/apiNode'] = function(request){
     return ozpIwc.abacPolicies.defaultPolicy(request,'access');
 };

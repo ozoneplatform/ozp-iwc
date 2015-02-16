@@ -15,7 +15,7 @@ describe("Policy Repository Point",function() {
 
             prp.getPolicies("SOMEFAKEPOLICY")
                 .success(function(policies){
-                    expect(policies[0].evaluate()).toEqual("Deny");
+                    expect(policies[0]()).toEqual("Deny");
                     done();
                 })
         });

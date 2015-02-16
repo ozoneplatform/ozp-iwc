@@ -331,42 +331,7 @@ ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request,pip){
  * @type {String}
  * @default "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides"
  */
-ozpIwc.policyAuth.PDP.prototype.defaultCombiningAlgorithm =
-    "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides";
-
-/**
- * A factory function to create a function for evaluating formatted policies against a given combining algorithm
- * in the ozpIwc.policyAuth.PolicyCombining namespace.
- *
- * @method generateEvaluation
- * @param {String|Array<String>}        policies none, one, or many policies to evaluate with the given combining algorithm
- * @param {String} combiningAlgorithm   the name of the combining algorithm to obtain from the
- *                                      ozpIwc.policyAuth.PolicyCombining namespace.
- * @returns {Function}                  returns a function call expecting a formatted request to be passed to for
- *                                      evaluation. Ex:
- *                                      ```
- *                                      var pdp = new ozpIwc.policyAuth.PDP(...);
- *                                      var evalFunc = pdp.generateEvaluation(somePolicies, someCombiningAlgorithm);
- *                                      var result = evalFunc(someRequest);
- *                                      ```
- */
-//ozpIwc.policyAuth.PDP.prototype.generateEvaluation = function(policies,combiningAlgorithm){
-//    policies = policies || [];
-//    policies = Array.isArray(policies)? policies : [policies];
-//
-//    var combiningFunction = ozpIwc.policyAuth.PolicyCombining[combiningAlgorithm] ||
-//        ozpIwc.policyAuth.PolicyCombining[this.defaultCombiningAlgorithm];
-//
-//    // If there are no policies to check against, assume trivial and permit
-//    if(policies.length === 0){
-//        return ozpIwc.abacPolicies.permitAll;
-//    }
-//
-//    return function(request){
-//            return combiningFunction(policies,request);
-//    };
-//};
-
+ozpIwc.policyAuth.PDP.prototype.defaultCombiningAlgorithm = "deny-overrides";
 
 /**
  * Formats a category object. If needed the attribute data is gathered from the PIP.
@@ -414,21 +379,13 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,pip){
  * subject,resource, and action categories are supported.
  *
  * @method formatCategories
- * @param {Object} categoryObj
- * @param {Object|String|Array<String|Object>}
- *          [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
- *                                          Formats xacml subject category attributes
- * @param {Object|String|Array<String|Object>}
- *          [categoryObj["urn:oasis:names:tc:xacml:3.0:attribute-category:resource"]]
- *                                          Formats xacml resource category attributes
- * @param {Object|String|Array<String|Object>}
- *          [categoryObj["urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"]]
- *                                          Formats xacml action category attributes
+ * @param {Object} categoryObj An object of categories to format.
+ * @param {Object|String|Array<String|Object>}[categoryObj[<categoryId>]] A category to format
  * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
  * @returns {ozpIwc.AsyncAction} will resolve an object of categories be structured as so:
  * ```
  * {
- *   'urn:oasis:names:tc:xacml:1.0:subject-category:access-subject' : {
+ *   '<categoryId>' : {
  *      <AttributeId>:{
  *          'attributeValue' : Array<Primitive>
  *      },
@@ -436,8 +393,8 @@ ozpIwc.policyAuth.PDP.prototype.formatCategory = function(category,pip){
  *          'attributeValue' : Array<Primitive>
  *      }
  *   },
- *   'urn:oasis:names:tc:xacml:3.0:attribute-category:resource': {...},
- *   'urn:oasis:names:tc:xacml:1.0:subject-category:access-subject': {...},
+ *   '<categoryId>': {...},
+ *   ...
  * }
  * ```
  */
@@ -463,132 +420,3 @@ ozpIwc.policyAuth.PDP.prototype.formatCategories = function(categoryObj,pip){
         });
     return asyncAction;
 };
-
-
-/**
- * Context handler for a policy rule object.
- *
- * Formats the rules categories,
- * @method formatRule
- * @param {Object} rule
- * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {ozpIwc.AsyncAction} will resolve with a formatted rule.
- */
-//ozpIwc.policyAuth.PDP.prototype.formatRule = function(rule,pip) {
-//    var asyncAction = new ozpIwc.AsyncAction();
-//    pip = pip || this.pip;
-//    this.formatCategories(rule.category,pip)
-//        .success(function (categories) {
-//            rule.category = categories;
-//            asyncAction.resolve('success',rule);
-//        }).failure(function(err){
-//            asyncAction.resolve('failure',err);
-//        });
-//    return asyncAction;
-//};
-
-/**
- * Context handler for policy rule objects.
- *
- * @method formatRules
- * @param {Array<Object>} rules
- * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {ozpIwc.AsyncAction} will resolve with a matching-order of formatted rules array.
- */
-//ozpIwc.policyAuth.PDP.prototype.formatRules = function(rules,pip){
-//    pip = pip || this.pip;
-//    var ruleAsyncs = [];
-//    for(var i in rules){
-//        var tmp = this.formatRule(rules[i],pip);
-//        ruleAsyncs.push(tmp);
-//    }
-//    return ozpIwc.AsyncAction.all(ruleAsyncs);
-//};
-
-
-/**
- * Context handler for a policy object.
- *
- * @method formatPolicy
- * @param {Object} policy
- * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {ozpIwc.AsyncAction} calls and returns a formatRules AsyncAction
- */
-//ozpIwc.policyAuth.PDP.prototype.formatPolicy = function(policy,pip){
-//    var asyncAction = new ozpIwc.AsyncAction();
-//    pip = pip || this.pip;
-//    policy = policy || {};
-//
-//    this.formatRules(policy.rule,pip)
-//        .success(function(rules){
-//            policy.rule = rules;
-//            asyncAction.resolve('success',policy);
-//        }).failure(function(err){
-//            asyncAction.resolve('failure',err);
-//        });
-//    return asyncAction;
-//};
-
-
-/**
- * Context handler for multiple policy objects.
- *
- * @method formatPolicies
- * @param {Array<Object>} policies
- * @param {ozpIwc.policyAuth.PIP} [pip] custom policy information point for attribute gathering.
- * @returns {ozpIwc.AsyncAction} will resolve with an array of formatted policies
- */
-//ozpIwc.policyAuth.PDP.prototype.formatPolicies = function(policies,pip){
-//    var asyncAction = new ozpIwc.AsyncAction();
-//    pip = pip || this.pip;
-//    var policyAsyncs = [];
-//    for(var i in policies){
-//        policyAsyncs.push(this.formatPolicy(policies[i],pip));
-//    }
-//    ozpIwc.AsyncAction.all(policyAsyncs)
-//        .success(function(policies){
-//            var formattedPolicies = [];
-//            for(var i in policies){
-//                formattedPolicies[i] = new ozpIwc.policyAuth.Policy(policies[i]);
-//            }
-//            asyncAction.resolve('success',formattedPolicies);
-//        }).failure(function(err){
-//            asyncAction.resolve('failure',err);
-//        });
-//    return asyncAction;
-//};
-
-/**
- * Simple mapping function for assigning attributeId's to category types.
- *
- * @method mappedId
- * @param {String} string
- * @returns {String|undefined} returns undefined if a matching Id is not found (likely because not supported).
- */
-//ozpIwc.policyAuth.PDP.prototype.mappedId = function(string){
-//    switch(string){
-//        case "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject":
-//            return "urn:oasis:names:tc:xacml:1.0:subject:subject-id";
-//        case "urn:oasis:names:tc:xacml:3.0:attribute-category:resource":
-//            return "urn:oasis:names:tc:xacml:1.0:resource:resource-id";
-//        case "urn:oasis:names:tc:xacml:3.0:attribute-category:action":
-//            return "urn:oasis:names:tc:xacml:1.0:action:action-id";
-//        default:
-//            return undefined;
-//    }
-//};
-//
-//ozpIwc.policyAuth.PDP.prototype.gatherContext = function(contextHolder){
-//
-//    var permissions = {};
-//    for(var i in contextHolder.permissions.attributes) {
-//        permissions[i] = contextHolder.permissions.attributes[i];
-//        var wrapped = {};
-//        wrapped[i] = permissions[i];
-//        this.pip.grantAttributes(i, wrapped);
-//    }
-//    this.pip.grantAttributes("ozp:iwc:permissions", permissions);
-//
-//    //Take a snapshot of the pip to use for the permission check (due to async nature)
-//    return ozpIwc.util.protoClone(this.pip);
-//};
