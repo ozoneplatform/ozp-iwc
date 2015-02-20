@@ -39,7 +39,7 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
             invokeIntent: {
                 dst: "system.api",
                 action: "invoke",
-                resource: ""
+                resource: null
             }
         }
     }];
@@ -317,6 +317,7 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (handlerNode, packetC
     var packet = ozpIwc.util.clone(handlerNode.entity.invokeIntent);
     packet.entity = packet.entity || {};
     packet.entity.inFlightIntent = inFlightIntent.resource;
+    packet.entity.inFlightIntentEntity= inFlightIntent.entity;
     packet.src=this.participant.name;
     var self = this;
     this.participant.send(packet,function(response,done) {

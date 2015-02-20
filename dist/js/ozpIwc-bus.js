@@ -10125,7 +10125,7 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
             invokeIntent: {
                 dst: "system.api",
                 action: "invoke",
-                resource: ""
+                resource: null
             }
         }
     }];
@@ -10403,6 +10403,7 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (handlerNode, packetC
     var packet = ozpIwc.util.clone(handlerNode.entity.invokeIntent);
     packet.entity = packet.entity || {};
     packet.entity.inFlightIntent = inFlightIntent.resource;
+    packet.entity.inFlightIntentEntity= inFlightIntent.entity;
     packet.src=this.participant.name;
     var self = this;
     this.participant.send(packet,function(response,done) {
@@ -10812,7 +10813,7 @@ ozpIwc.IntentsApiInFlightIntent = ozpIwc.util.extend(ozpIwc.CommonApiValue, func
     this.entity={
         'intent': {
             'type': config.type,
-            'action': config.action,
+            'action': config.action
         },
         'contentType' : config.contentType,
         'entity': config.entity,
@@ -11313,6 +11314,12 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
  */
 ozpIwc.SystemApi.prototype.rootHandleInvoke = function(node,packetContext) {
     if(packetContext.packet.entity && packetContext.packet.entity.inFlightIntent){
+        var launchParams=[
+            "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),
+            "ozpIwc.inFlightIntent="+encodeURIComponent(packetContext.packet.entity.inFlightIntent)
+        ];
+
+        ozpIwc.util.openWindow(packetContext.packet.entity.inFlightIntentEntity.entity.url,launchParams.join("&"));
         this.launchApplication(node,packetContext.packet.entity.inFlightIntent);
         packetContext.replyTo({'response': "ok"});
     } else{
@@ -11321,21 +11328,16 @@ ozpIwc.SystemApi.prototype.rootHandleInvoke = function(node,packetContext) {
 
 };
 
-/**
- * Launches the specified node's application.
- *
- * @method launchApplication
- * @param {ozpIwc.SystemApiApplicationValue} node
- * @param {ozpIwc.SystemApiMailboxValue} mailboxNode
- */
-ozpIwc.SystemApi.prototype.launchApplication=function(node,intentResource) {
-    var launchParams=[
-            "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),
-            "ozpIwc.inFlightIntent="+encodeURIComponent(intentResource)
-    ];
-
-    ozpIwc.util.openWindow(node.entity.launchUrls.default,launchParams.join("&"));
-};
+///**
+// * Launches the specified node's application.
+// *
+// * @method launchApplication
+// * @param {ozpIwc.SystemApiApplicationValue} node
+// * @param {ozpIwc.SystemApiMailboxValue} mailboxNode
+// */
+//ozpIwc.SystemApi.prototype.launchApplication=function(node,intentResource) {
+//
+//};
 
 
 /**

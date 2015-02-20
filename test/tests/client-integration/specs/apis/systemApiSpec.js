@@ -8,7 +8,7 @@ function pit(desc,fn) {
             done();
         });
     });
-};
+}
 
 describe("System API", function() {
     var client;

@@ -180,6 +180,12 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
  */
 ozpIwc.SystemApi.prototype.rootHandleInvoke = function(node,packetContext) {
     if(packetContext.packet.entity && packetContext.packet.entity.inFlightIntent){
+        var launchParams=[
+            "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),
+            "ozpIwc.inFlightIntent="+encodeURIComponent(packetContext.packet.entity.inFlightIntent)
+        ];
+
+        ozpIwc.util.openWindow(packetContext.packet.entity.inFlightIntentEntity.entity.url,launchParams.join("&"));
         this.launchApplication(node,packetContext.packet.entity.inFlightIntent);
         packetContext.replyTo({'response': "ok"});
     } else{
@@ -188,19 +194,14 @@ ozpIwc.SystemApi.prototype.rootHandleInvoke = function(node,packetContext) {
 
 };
 
-/**
- * Launches the specified node's application.
- *
- * @method launchApplication
- * @param {ozpIwc.SystemApiApplicationValue} node
- * @param {ozpIwc.SystemApiMailboxValue} mailboxNode
- */
-ozpIwc.SystemApi.prototype.launchApplication=function(node,intentResource) {
-    var launchParams=[
-            "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),
-            "ozpIwc.inFlightIntent="+encodeURIComponent(intentResource)
-    ];
-
-    ozpIwc.util.openWindow(node.entity.launchUrls.default,launchParams.join("&"));
-};
+///**
+// * Launches the specified node's application.
+// *
+// * @method launchApplication
+// * @param {ozpIwc.SystemApiApplicationValue} node
+// * @param {ozpIwc.SystemApiMailboxValue} mailboxNode
+// */
+//ozpIwc.SystemApi.prototype.launchApplication=function(node,intentResource) {
+//
+//};
 

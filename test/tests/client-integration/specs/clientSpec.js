@@ -1,3 +1,4 @@
+/*jshint noarg:false */
 describe("IWC Client", function() {
     jasmine.getEnv().defaultTimeoutInterval = 200000;// e.g. 15000 milliseconds
 

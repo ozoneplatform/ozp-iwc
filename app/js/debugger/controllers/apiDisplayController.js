@@ -4,32 +4,38 @@ debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(
     scope.query = function() {
 				scope.refresh();
     };
-		scope.loadKey = function (key) {
-				client.send({
-						'dst': scope.api.address,
-						'action': "get",
-						'resource': key.resource
-				}, function (response, done) {
-						for (var i in response) {
-								key[i] = response[i];
-						}
-						key.isLoaded = true;
-						done();
-				});
-				client.send({
-						'dst': scope.api.address,
-						'action': "list",
-						'resource': key.resource
-				}, function (response, done) {
-						if (response.response === "ok") {
-								key.children = response.entity;
-						} else {
-								key.children = "Not Supported: " + response.response;
-						}
-						done();
-				});
-		};
-
+    scope.loadKey = function (key) {
+            client.send({
+                    'dst': scope.api.address,
+                    'action': "get",
+                    'resource': key.resource
+            }, function (response, done) {
+                    for (var i in response) {
+                            key[i] = response[i];
+                    }
+                    key.isLoaded = true;
+                    done();
+            });
+            client.send({
+                    'dst': scope.api.address,
+                    'action': "list",
+                    'resource': key.resource
+            }, function (response, done) {
+                    if (response.response === "ok") {
+                            key.children = response.entity;
+                    } else {
+                            key.children = "Not Supported: " + response.response;
+                    }
+                    done();
+            });
+    };
+    scope.performAction = function(action,key) {
+        client.send({
+            'dst': scope.api.address,
+            'action': action,
+            'resource': key.resource
+        });
+    };
 
     scope.refresh=function() {
         client.send({

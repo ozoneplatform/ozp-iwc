@@ -137,7 +137,8 @@
                         <td>Content Type</td>
                         <td>Permissions</td>
                         <td>Entity</td>
-                        <td ng-show="api.hasChildren">Children</td>
+                        <td ng-show="::api.actions">Actions</td>
+                        <td ng-show="::api.hasChildren">Children</td>
                     </tr></thead>
                 <tbody>
                     <tr ng-repeat="key in keys | orderBy:'resource' | filter:viewFilter ">
@@ -155,11 +156,12 @@
                                 <button class="btn btn-primary" ng-click="loadKey(key)">
                                     <span class="glyphicon glyphicon-refresh"></span>
                                 </button>
-
-
+                                <button class="btn" ng-repeat="action in api.actions"
+                                        ng-click="performAction(action,key)">
+                                    {{::action}}
+                                </button>
                             </div>
                             {{::key.resource}}
-
                         </td>
                         <td>{{key.contentType}}</td>
                         <td><pre>{{key.permissions | json}}</pre></td>
