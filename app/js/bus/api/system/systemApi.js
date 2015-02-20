@@ -25,8 +25,8 @@ ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
         pattern: /^\/application\/.*$/,
         contentType: "application/vnd.ozp-iwc-application-list-v1+json"
     }));
-
     this.on("changedNode",this.updateIntents,this);
+
 });
 
 /**
@@ -117,27 +117,6 @@ ozpIwc.SystemApi.prototype.makeValue = function(packet){
                     contentType: packet.contentType,
                     systemApi: this
                 });
-
-                this.participant.send({
-                    dst: "intents.api",
-                    action: "register",
-                    contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
-                    resource: launchDefinition,
-                    entity: {
-                        icon: (packet.entity.icons && packet.entity.icons.small) ? packet.entity.icons.small : "",
-                        label: packet.entity.name || "",
-                        contentType: "application/json",
-                        invokeIntent: {
-                            dst: "system.api",
-                            action: "invoke",
-                            resource: packet.resource
-                        }
-                    }
-                }, function (response, done) {
-                    app.entity.launchResource = response.entity.resource;
-                    done();
-                });
-
                 return app;
             default:
                 return new ozpIwc.CommonApiValue(packet);
@@ -184,8 +163,12 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
         dst: "intents.api",
         contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
         action: "invoke",
-        resource: node.entity.launchResource,
-        entity: packetContext.packet.entity
+        resource: "/application/vnd.ozp-iwc-launch-data-v1+json/run",
+        entity: {
+            "url": node.entity.launchUrls.default,
+            "applicationId": node.resource,
+            "launchData": packetContext.packet.entity
+        }
     });
     packetContext.replyTo({'response': "ok"});
 };
@@ -195,7 +178,7 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
  *
  * @method handleInvoke
  */
-ozpIwc.SystemApi.prototype.handleInvoke = function(node,packetContext) {
+ozpIwc.SystemApi.prototype.rootHandleInvoke = function(node,packetContext) {
     if(packetContext.packet.entity && packetContext.packet.entity.inFlightIntent){
         this.launchApplication(node,packetContext.packet.entity.inFlightIntent);
         packetContext.replyTo({'response': "ok"});

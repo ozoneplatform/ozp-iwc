@@ -117,12 +117,13 @@ describe("System API",function() {
     });
 
     it('handles launch actions', function(){
+        var launchData={
+                    'foo': 1
+                };
         var packetContext=new TestPacketContext({
             'packet': {
                 'resource': "/application/abcApp",
-                'entity' : {
-                    'foo': 1
-                }
+                'entity' : launchData
             },
             action: 'launch'
         });
@@ -134,7 +135,11 @@ describe("System API",function() {
         var sent = systemApi.participant.sentPackets[0];
         expect(sent.action).toEqual("invoke");
         expect(sent.dst).toEqual("intents.api");
-        expect(sent.entity).toEqual(packetContext.packet.entity);
+        expect(sent.entity).toEqual({ 
+            "url": "http://localhost:15000/?color=blue", 
+            "applicationId": "/application/abcApp", 
+            "launchData": launchData
+        });
     });
 
     it('handles invoke actions by launching applications', function(){
@@ -150,7 +155,7 @@ describe("System API",function() {
         });
         spyOn( ozpIwc.util,"openWindow");
 
-        systemApi.handleInvoke(applicationNode,packetContext);
+        systemApi.rootHandleInvoke(applicationNode,packetContext);
 
         var reply=packetContext.responses[0];
         expect(reply.response).toEqual("ok");

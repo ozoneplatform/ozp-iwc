@@ -79,10 +79,10 @@ describe("IWC Client", function() {
             // use the called flag to prevent this
             var called = false;
             client.on("receive", function(packet) {
-                console.log("client received:", JSON.stringify(packet));
                 if (packet.entity.tick && !called) {
                     done();
                     called = true;
+                    client.off(arguments.callee);
                 }
             });
         });
@@ -101,6 +101,7 @@ describe("IWC Client", function() {
                     expect(packet.entity.tick).toBeGreaterThan(lastPing);
                     lastPing = packet.entity.tick;
                     if (callCount-- === 0) {
+                        client.off(arguments.callee);
                         done();
                     }
                 }
@@ -114,6 +115,7 @@ describe("IWC Client", function() {
             client.on("receive", function(packet) {
                 if (packet.entity.bulkyData) {
                     expect(packet.entity.bulkyData.length).toEqual(19131876);
+                    client.off(arguments.callee);
                     done();
                 }
             });
