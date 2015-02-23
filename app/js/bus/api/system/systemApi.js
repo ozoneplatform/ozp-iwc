@@ -19,6 +19,11 @@
  */
 ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
+    this.endpointUrls.push(
+        ozpIwc.linkRelPrefix+":application",
+        ozpIwc.linkRelPrefix+":user",
+        ozpIwc.linkRelPrefix+":system");
+
 
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/application",

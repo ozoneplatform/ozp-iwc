@@ -136,8 +136,8 @@ describe("System API",function() {
         expect(sent.action).toEqual("invoke");
         expect(sent.dst).toEqual("intents.api");
         expect(sent.entity).toEqual({ 
-            "url": "http://localhost:15000/?color=blue", 
-            "applicationId": "/application/abcApp", 
+            "url": "http://localhost:15000/?color=blue",
+            "applicationId": "/application/abcApp",
             "launchData": launchData
         });
     });

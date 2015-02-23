@@ -23,6 +23,7 @@
  */
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
+    this.endpointUrls.push(ozpIwc.linkRelPrefix+":intent");
 
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/ozpIntents/invocations",
@@ -51,14 +52,6 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     }
 });
 
-/**
- * Loads data from the server.
- *
- * @method loadFromServer
- */
-ozpIwc.IntentsApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint(ozpIwc.linkRelPrefix + ":intent");
-};
 /**
  * Takes the resource of the given packet and creates an empty value in the IntentsApi. Chaining of creation is
  * accounted for (A handler requires a definition, which requires a capability).

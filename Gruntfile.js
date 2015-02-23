@@ -62,13 +62,14 @@ module.exports = function(grunt) {
                 'bower_components/angular/angular.js',
                 'bower_components/vis/dist/vis.js',
                 'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
+                'bower_components/angular-ui-router/release/angular-ui-router.js',
                 'app/js/debugger/debugger.js',
                 'app/js/debugger/**/*.js'
             ],
             debuggerCss: [
                 'bower_components/bootstrap/dist/css/bootstrap.css',
                 'bower_components/vis/dist/vis.css',
-                'app/css/debugger.css'
+                'app/css/debugger/**/*.css'
             ],
             all: [
                 '<%= src.metrics %>',
@@ -163,6 +164,32 @@ module.exports = function(grunt) {
                         src: ['*'],
                         dest: './dist/fonts',
                         cwd: 'bower_components/bootstrap/dist/fonts',
+                        expand: true,
+                        nonull:true
+                    },{
+                        src: ['**/*.tpl.html'],
+                        dest: './dist/templates',
+                        cwd: 'app/js/debugger',
+                        expand: true,
+                        flatten: true,
+                        nonull:true
+                    },{
+                        src: ['**/*.json'],
+                        dest: './dist/data',
+                        cwd: 'app/js/debugger',
+                        expand: true,
+                        flatten: true,
+                        nonull:true
+                    },{
+                        src: ['**'],
+                        dest: './dist/hal-browser',
+                        cwd: 'bower_components/hal-browser',
+                        expand: true,
+                        nonull:true
+                    },{
+                        src: ['favicon.ico'],
+                        dest: './dist/',
+                        cwd: 'app/js/debugger',
                         expand: true,
                         nonull:true
                     }
@@ -302,7 +329,7 @@ module.exports = function(grunt) {
     grunt.initConfig(config);
 
     // Default task(s).
-    grunt.registerTask('build', ['copy:hackBootstrap','concat_sourcemap', 'uglify', 'copy:dist']);
+    grunt.registerTask('build', ['copy:hackBootstrap', 'concat_sourcemap', 'uglify', 'copy:dist']);
     grunt.registerTask('dist', ['jshint','build', 'yuidoc']);
     grunt.registerTask('testOnly', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
     grunt.registerTask('test', ['build','connect','watch']);

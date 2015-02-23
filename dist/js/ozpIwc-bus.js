@@ -8517,6 +8517,8 @@ ozpIwc.CommonApiBase = function(config) {
      * @default 0
      */
     this.retrievedBranches = 0;
+
+    this.endpointUrls=[];
 };
 
 /**
@@ -8583,10 +8585,11 @@ ozpIwc.CommonApiBase.prototype.findNodeForServerResource=function(object,objectP
  * @method loadFromServer
  */
 ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
-    // Do nothing by default, resolve to prevent clashing with overridden promise implementations.
-    return new Promise(function(resolve,reject){
-        resolve();
-    });
+    var promises = [];
+    for(var i in this.endpointUrls){
+        promises.push(this.loadFromEndpoint(this.endpointUrls[i]));
+    }
+    return Promise.all(promises);
 };
 
 /**
@@ -9697,17 +9700,9 @@ ozpIwc.initEndpoints=function(apiRoot) {
  */
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
-    this.endpointUrl=ozpIwc.linkRelPrefix+":user-data";
+    this.endpointUrls.push(ozpIwc.linkRelPrefix+":user-data");
 });
 
-/**
- * Loads data from the server.
- *
- * @method loadFromServer
- */
-ozpIwc.DataApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint(this.endpointUrl);
-};
 
 /**
  * Creates a DataApiValue from the given packet.
@@ -10109,6 +10104,7 @@ ozpIwc.DataApiValue.prototype.serialize=function() {
  */
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
+    this.endpointUrls.push(ozpIwc.linkRelPrefix+":intent");
 
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/ozpIntents/invocations",
@@ -10137,14 +10133,6 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     }
 });
 
-/**
- * Loads data from the server.
- *
- * @method loadFromServer
- */
-ozpIwc.IntentsApi.prototype.loadFromServer=function() {
-    return this.loadFromEndpoint(ozpIwc.linkRelPrefix + ":intent");
-};
 /**
  * Takes the resource of the given packet and creates an empty value in the IntentsApi. Chaining of creation is
  * accounted for (A handler requires a definition, which requires a capability).
@@ -11153,6 +11141,11 @@ ozpIwc.NamesApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config)
  */
 ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
+    this.endpointUrls.push(
+        ozpIwc.linkRelPrefix+":application",
+        ozpIwc.linkRelPrefix+":user",
+        ozpIwc.linkRelPrefix+":system");
+
 
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/application",
@@ -11374,6 +11367,7 @@ ozpIwc.SystemApiApplicationValue.prototype.getIntentsRegistrations=function() {
     return this.entity.intents;
 };
 var ozpIwc=ozpIwc || {};
+ozpIwc.version = "0.2";
 ozpIwc.ELECTION_TIMEOUT = 1000;
 ozpIwc.apiRootUrl = ozpIwc.apiRootUrl || "/api";
 ozpIwc.basicAuthUsername= ozpIwc.basicAuthUsername || '';

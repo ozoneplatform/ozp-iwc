@@ -1,4 +1,5 @@
 var ozpIwc=ozpIwc || {};
+ozpIwc.version = "0.2";
 ozpIwc.ELECTION_TIMEOUT = 1000;
 ozpIwc.apiRootUrl = ozpIwc.apiRootUrl || "/api";
 ozpIwc.basicAuthUsername= ozpIwc.basicAuthUsername || '';
