@@ -1,3 +1,4 @@
+/* global debuggerModule */
 debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", function(scope, http, client) {
   var dashboardDataResource = '/dashboard-data';
 
@@ -18,7 +19,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
       .then(function (reply) {
         return reply.entity;
       });
-  };
+  }
 
   function saveAppData(appResource, appListings) {
     return client.api('system.api').get(appResource).then(function(appData) {
@@ -37,9 +38,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
   function getDashboards() {
     scope.loadingDashboards = true;
     return getDashboardData().then(function(dashboardData) {
-      try {
-        var num = dashboardData.dashboards.length;
-      } catch (err) {
+      if(!(dashboardData.dashboards && dashboardData.dashboards.length)){
         scope.invalidDashboards = true;
         scope.loadingDashboards = false;
         if(!scope.$$phase) { scope.$apply(); }
@@ -67,7 +66,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
       scope.loadingDashboards = false;
       if(!scope.$$phase) { scope.$apply(); }
     });
-  };
+  }
 
   function getApplications() {
     scope.loadingMarketplace = true;
@@ -89,7 +88,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
           });
 
     });
-  };
+  }
 
   function setData(dst, resource, entity) {
     return client.api(dst)

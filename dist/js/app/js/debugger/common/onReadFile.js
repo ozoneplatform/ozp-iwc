@@ -1,3 +1,4 @@
+/* global debuggerModule */
 debuggerModule.directive('onReadFile', function ($parse) {
     return {
       restrict: 'A',

@@ -1,4 +1,5 @@
-debuggerModule.controller('HalBrowserCtrl',['$scope', '$state', 'iwcClient',function(scope, state, client){
+/* global debuggerModule */
+ debuggerModule.controller('HalBrowserCtrl',['$scope', '$state', 'iwcClient',function(scope, state, client){
  scope.$on('$stateChangeSuccess',
       function(event, toState, toParams) {
         if (toState.name.indexOf('hal-browser') > -1) {

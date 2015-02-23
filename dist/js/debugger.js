@@ -89944,7 +89944,7 @@ debuggerModule.factory("iwcClient",function() {
              * @property connectPromise
              * @type Promise
              */
-            this.connectPromise=new Promise(function(resolve) {
+            this.connectPromise=new Promise(function(resolve, reject) {
 
                     self.send({
                         dst: "names.api",
@@ -90114,7 +90114,7 @@ debuggerModule.factory("iwcClient",function() {
                     for(var i in self.launchedIntents){
                         var loadedResource = '/' + self.launchedIntents[i].entity.intent.type + '/' + self.launchedIntents[i].entity.intent.action;
                         if(resource === loadedResource){
-                            intentInvocationHandling(resource,self.launchedIntents[i].resource,otherCallback);
+                            self.intentInvocationHandling(resource,self.launchedIntents[i].resource,otherCallback);
                             delete self.launchedIntents[i];
                         }
                     }
@@ -90182,6 +90182,7 @@ debuggerModule.service("apiSettingService",function(){
     };
 });
 
+/* global debuggerModule */
 debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","apiSettingService",function(scope, attrs, client, apiDat) {
     // IWC message parameters
     scope.msg = {
@@ -90378,6 +90379,7 @@ debuggerModule.directive( "apiMessage", function() {
         templateUrl: 'templates/apiMessage.tpl.html'
     };
 });
+/* global debuggerModule */
 debuggerModule.controller("DataApiCtrl",["$scope","iwcClient",function(scope,client) {
 
 }]);
@@ -90388,6 +90390,7 @@ debuggerModule.directive( "datApi", function() {
         templateUrl: 'templates/dataApi.tpl.html'
     };
 });
+/* global debuggerModule */
 debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", function(scope, http, client) {
   var dashboardDataResource = '/dashboard-data';
 
@@ -90408,7 +90411,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
       .then(function (reply) {
         return reply.entity;
       });
-  };
+  }
 
   function saveAppData(appResource, appListings) {
     return client.api('system.api').get(appResource).then(function(appData) {
@@ -90427,9 +90430,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
   function getDashboards() {
     scope.loadingDashboards = true;
     return getDashboardData().then(function(dashboardData) {
-      try {
-        var num = dashboardData.dashboards.length;
-      } catch (err) {
+      if(!(dashboardData.dashboards && dashboardData.dashboards.length)){
         scope.invalidDashboards = true;
         scope.loadingDashboards = false;
         if(!scope.$$phase) { scope.$apply(); }
@@ -90457,7 +90458,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
       scope.loadingDashboards = false;
       if(!scope.$$phase) { scope.$apply(); }
     });
-  };
+  }
 
   function getApplications() {
     scope.loadingMarketplace = true;
@@ -90479,7 +90480,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
           });
 
     });
-  };
+  }
 
   function setData(dst, resource, entity) {
     return client.api(dst)
@@ -90531,6 +90532,7 @@ debuggerModule.directive( "webtop", function() {
         templateUrl: 'templates/webtop.tpl.html'
     };
 });
+/* global debuggerModule */
 debuggerModule.controller("IntentsApiCtrl",["$scope","iwcClient",function(scope,client) {
 
 }]);
@@ -90541,6 +90543,7 @@ debuggerModule.directive( "intentsapi", function() {
         templateUrl: 'templates/intentsApi.tpl.html'
     };
 });
+/* global debuggerModule */
 debuggerModule.controller("NamesApiCtrl",["$scope","iwcClient",function(scope,client) {
 
 }]);
@@ -90551,6 +90554,7 @@ debuggerModule.directive( "namesapi", function() {
         templateUrl: 'templates/namesApi.tpl.html'
     };
 });
+/* global debuggerModule */
 debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,client) {
 
   function saveAppData(appResource) {
@@ -90604,7 +90608,7 @@ debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,clie
           if(!scope.$$phase) { scope.$apply(); }
         });
       });
-    };
+    }
 
   scope.refresh = function() {
         getUserInfo();
@@ -90623,6 +90627,7 @@ debuggerModule.directive( "myApps", [function() {
       templateUrl: 'templates/myApps.tpl.html'
     };
 }]);
+/* global debuggerModule */
 debuggerModule.controller("SystemApiCtrl",["$scope","iwcClient",function(scope,client) {
 
 }]);
@@ -90633,6 +90638,7 @@ debuggerModule.directive( "sysapi", function() {
         templateUrl: 'templates/systemApi.tpl.html'
     };
 });
+/* global debuggerModule */
 debuggerModule.directive('onReadFile', function ($parse) {
     return {
       restrict: 'A',
@@ -91154,7 +91160,7 @@ debuggerModule.directive( "elections", [function() {
     };
 }]);
 
-
+/* global debuggerModule */
 debuggerModule.controller('GeneralCtrl',['$scope', '$state', 'iwcClient',function(scope, state, client){
     scope.ozpIwc = ozpIwc;
     scope.apis=[
@@ -91166,7 +91172,7 @@ debuggerModule.controller('GeneralCtrl',['$scope', '$state', 'iwcClient',functio
 
     scope.endpointClicked = function(endpoint) {
         state.go('hal-browser', {url: endpoint});
-    }
+    };
     scope.endpointTabulated = [];
     client.connect().then(function() {
         scope.apis.forEach(function(api){
@@ -91225,7 +91231,8 @@ debuggerModule.directive( "genAbout", [function() {
         templateUrl: 'templates/genAbout.tpl.html'
     };
 }]);
-debuggerModule.controller('HalBrowserCtrl',['$scope', '$state', 'iwcClient',function(scope, state, client){
+/* global debuggerModule */
+ debuggerModule.controller('HalBrowserCtrl',['$scope', '$state', 'iwcClient',function(scope, state, client){
  scope.$on('$stateChangeSuccess',
       function(event, toState, toParams) {
         if (toState.name.indexOf('hal-browser') > -1) {

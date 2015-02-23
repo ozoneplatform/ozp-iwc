@@ -1,3 +1,4 @@
+/* global debuggerModule */
 debuggerModule.controller("NamesApiCtrl",["$scope","iwcClient",function(scope,client) {
 
 }]);

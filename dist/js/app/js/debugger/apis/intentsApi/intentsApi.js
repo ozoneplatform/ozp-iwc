@@ -1,3 +1,4 @@
+/* global debuggerModule */
 debuggerModule.controller("IntentsApiCtrl",["$scope","iwcClient",function(scope,client) {
 
 }]);

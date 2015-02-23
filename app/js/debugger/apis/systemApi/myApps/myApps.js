@@ -1,3 +1,4 @@
+/* global debuggerModule */
 debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,client) {
 
   function saveAppData(appResource) {
@@ -51,7 +52,7 @@ debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,clie
           if(!scope.$$phase) { scope.$apply(); }
         });
       });
-    };
+    }
 
   scope.refresh = function() {
         getUserInfo();

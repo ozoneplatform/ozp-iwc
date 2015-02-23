@@ -59,7 +59,7 @@ debuggerModule.factory("iwcClient",function() {
              * @property connectPromise
              * @type Promise
              */
-            this.connectPromise=new Promise(function(resolve) {
+            this.connectPromise=new Promise(function(resolve, reject) {
 
                     self.send({
                         dst: "names.api",
@@ -229,7 +229,7 @@ debuggerModule.factory("iwcClient",function() {
                     for(var i in self.launchedIntents){
                         var loadedResource = '/' + self.launchedIntents[i].entity.intent.type + '/' + self.launchedIntents[i].entity.intent.action;
                         if(resource === loadedResource){
-                            intentInvocationHandling(resource,self.launchedIntents[i].resource,otherCallback);
+                            self.intentInvocationHandling(resource,self.launchedIntents[i].resource,otherCallback);
                             delete self.launchedIntents[i];
                         }
                     }

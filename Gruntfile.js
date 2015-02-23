@@ -329,8 +329,8 @@ module.exports = function(grunt) {
     grunt.initConfig(config);
 
     // Default task(s).
-    grunt.registerTask('build', ['copy:hackBootstrap', 'concat_sourcemap', 'uglify', 'copy:dist']);
-    grunt.registerTask('dist', ['jshint','build', 'yuidoc']);
+    grunt.registerTask('build', ['copy:hackBootstrap', 'jshint', 'concat_sourcemap', 'uglify', 'copy:dist']);
+    grunt.registerTask('dist', ['build', 'yuidoc']);
     grunt.registerTask('testOnly', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
     grunt.registerTask('test', ['build','connect','watch']);
     grunt.registerTask('default', ['dist']);

@@ -1,3 +1,4 @@
+/* global debuggerModule */
 debuggerModule.controller("DataApiCtrl",["$scope","iwcClient",function(scope,client) {
 
 }]);

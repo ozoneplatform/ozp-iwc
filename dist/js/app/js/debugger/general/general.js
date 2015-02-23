@@ -1,4 +1,4 @@
-
+/* global debuggerModule */
 debuggerModule.controller('GeneralCtrl',['$scope', '$state', 'iwcClient',function(scope, state, client){
     scope.ozpIwc = ozpIwc;
     scope.apis=[
@@ -10,7 +10,7 @@ debuggerModule.controller('GeneralCtrl',['$scope', '$state', 'iwcClient',functio
 
     scope.endpointClicked = function(endpoint) {
         state.go('hal-browser', {url: endpoint});
-    }
+    };
     scope.endpointTabulated = [];
     client.connect().then(function() {
         scope.apis.forEach(function(api){
