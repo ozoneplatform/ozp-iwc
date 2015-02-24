@@ -2986,10 +2986,10 @@ ozpIwc.Client=function(config) {
 
     /**
      * Key value store of callback functions for the client to act upon when receiving a reply via the IWC.
-     * @property replyCallbacks
+     * @property promiseCallbacks
      * @type Object
      */
-    this.replyCallbacks={};
+    this.promiseCallbacks={};
     // coerce config.peerUrl to a function
     
     var configUrl=config.peerUrl;
@@ -3115,6 +3115,7 @@ ozpIwc.Client=function(config) {
      * @defualt {}
      */
     this.watchMsgMap = {};
+    this.registeredCallbacks = {};
 
 
     /**
@@ -3164,22 +3165,44 @@ ozpIwc.Client.prototype.readLaunchParams=function(rawString) {
  * @param {ozpIwc.TransportPacket} packet
  */
 ozpIwc.Client.prototype.receive=function(packet) {
+    var handled = false;
 
-    if(packet.replyTo && this.replyCallbacks[packet.replyTo]) {
-        var cancel = false;
-        var done=function() {
-            cancel = true;
+    //Try and handle this packet as a reply message
+    if(packet.src === "$transport" || (packet.replyTo && this.promiseCallbacks[packet.replyTo])) {
+
+        var replyCancel = false;
+        var replyDone=function() {
+            replyCancel = true;
         };
-        this.replyCallbacks[packet.replyTo](packet,done);
-        if (cancel) {
-            this.cancelCallback(packet.replyTo);
+        this.promiseCallbacks[packet.replyTo](packet,replyDone);
 
+        if (replyCancel) {
+            this.cancelPromiseCallback(packet.replyTo);
+            handled = true;
+        }
+
+    }
+
+    //Try and handle this packet as callback message
+    if(!handled && packet.replyTo && this.registeredCallbacks[packet.replyTo]){
+        handled = true;
+
+        var watchCancel = false;
+        var watchDone=function() {
+            watchCancel = true;
+        };
+
+        this.registeredCallbacks[packet.replyTo](packet,watchDone);
+        if (watchCancel) {
             if(this.watchMsgMap[packet.replyTo].action === "watch") {
                 this.api(this.watchMsgMap[packet.replyTo].dst).unwatch(this.watchMsgMap[packet.replyTo].resource);
-                delete this.watchMsgMap[packet.replyTo];
             }
+            this.cancelRegisteredCallback(packet.replyTo);
         }
-    } else {
+    }
+
+    // Otherwise trigger "receive" for someone to handle it
+    if(!handled){
         /**
          * Fired when the client receives a packet.
          * @event #receive
@@ -3231,46 +3254,39 @@ ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromiseRes,pree
         packet[k]=fields[k];
     }
 
-    var packetResponse = false;
-    var callbackResponse = !!!callback;
+    var promiseResolved = false;
     var self = this;
-    this.replyCallbacks[id]=function (reply,done) {
 
-        function initialDone() {
-            if(callbackResponse){
-                done();
+    if(callback) {
+        this.registeredCallbacks[id] = function (reply, done) {
+            if(reply.entity && reply.entity.inFlightIntent) {
+                self.intentInvocationHandling(packet.resource,reply.entity.inFlightIntent,callback);
             } else {
-                packetResponse = true;
+                callback(reply, done);
             }
-        }
+        };
+    }
 
-        function callbackDone() {
-            if(packetResponse){
-                done();
-            } else {
-                callbackResponse = true;
-            }
-        }
-        if (reply.response === 'ok') {
-            initialDone();
+    this.promiseCallbacks[id]=function (reply,done) {
+        if (reply.src === "$transport" || /(ok).*/.test(reply.response)) {
+            done();
             promiseRes(reply);
         } else if (/(bad|no).*/.test(reply.response)) {
-            initialDone();
+            done();
             promiseRej(reply);
         } else {
-            if(reply.entity && reply.entity.inFlightIntent) {
-                self.intentInvocationHandling(packet.resource,reply.entity.inFlightIntent,callback,callbackDone);
-            } else {
-                promiseRes(reply, callbackDone);
-            }
+            // it was not a promise callback
         }
     };
+
     ozpIwc.util.safePostMessage(this.peer,packet,'*');
     this.sentBytes+=packet.length;
     this.sentPackets++;
 
     if(packet.action === "watch") {
         this.watchMsgMap[id] = packet;
+    } else if(packet.action === "unwatch" && packet.replyTo) {
+        this.cancelRegisteredCallback(packet.replyTo);
     }
     return promise;
 };
@@ -3285,16 +3301,33 @@ ozpIwc.Client.prototype.isConnected=function(){
 };
 
 /**
- * Cancel a callback registration.
- * @method cancelCallback
+ * Cancel a reply callback registration.
+ * @method cancelPromiseCallback
  * @param (String} msgId The packet replyTo ID for which the callback was registered.
  *
  * @return {Boolean} True if the cancel was successful, otherwise false.
  */
-ozpIwc.Client.prototype.cancelCallback=function(msgId) {
+ozpIwc.Client.prototype.cancelPromiseCallback=function(msgId) {
     var success=false;
     if (msgId) {
-        delete this.replyCallbacks[msgId];
+        delete this.promiseCallbacks[msgId];
+        success=true;
+    }
+    return success;
+};
+
+/**
+ * Cancel a watch callback registration.
+ * @method cancelRegisteredCallback
+ * @param (String} msgId The packet replyTo ID for which the callback was registered.
+ *
+ * @return {Boolean} True if the cancel was successful, otherwise false.
+ */
+ozpIwc.Client.prototype.cancelRegisteredCallback=function(msgId) {
+    var success=false;
+    if (msgId) {
+        delete this.registeredCallbacks[msgId];
+        delete this.watchMsgMap[msgId];
         success=true;
     }
     return success;
@@ -3331,7 +3364,8 @@ ozpIwc.Client.prototype.off=function(event,callback) {
  * @method disconnect
  */
 ozpIwc.Client.prototype.disconnect=function() {
-    this.replyCallbacks={};
+    this.promiseCallbacks={};
+    this.registeredCallbacks={};
     window.removeEventListener("message",this.postMessageHandler,false);
     if(this.iframe) {
         this.iframe.src = "about:blank";
@@ -3524,42 +3558,38 @@ ozpIwc.Client.prototype.createIframePeer=function() {
 
 ozpIwc.Client.prototype.intentInvocationHandling = function(resource,intentResource,callback) {
     var self = this;
-    return new Promise(function(resolve,reject) {
-        self.send({
+    var res;
+    return self.send({
+        dst: "intents.api",
+        action: "get",
+        resource: intentResource
+    }).then(function (response) {
+        response.entity.handler = {
+            address: self.address,
+            resource: resource
+        };
+        response.entity.state = "running";
+
+        res = response;
+        return self.send({
             dst: "intents.api",
-            action: "get",
-            resource: intentResource
-        }, function (response, done) {
-            response.entity.handler = {
-                address: self.address,
-                resource: resource
-            };
-            response.entity.state = "running";
-
-
-            self.send({
-                dst: "intents.api",
-                contentType: response.contentType,
-                action: "set",
-                resource: intentResource,
-                entity: response.entity
-            }, function (reply, done) {
-                //Now run the intent
-                response.entity.reply.entity = callback(response.entity) || {};
-                // then respond to the inflight resource
-                response.entity.state = "complete";
-                response.entity.reply.contentType = response.entity.intent.type;
-                self.send({
-                    dst: "intents.api",
-                    contentType: response.contentType,
-                    action: "set",
-                    resource: intentResource,
-                    entity: response.entity
-                });
-                done();
-                resolve(response);
-            });
-            done();
+            contentType: response.contentType,
+            action: "set",
+            resource: intentResource,
+            entity: response.entity
+        });
+    }).then(function (reply) {
+        //Now run the intent
+        res.entity.reply.entity = callback(res.entity) || {};
+        // then respond to the inflight resource
+        res.entity.state = "complete";
+        res.entity.reply.contentType = res.entity.intent.type;
+        return self.send({
+            dst: "intents.api",
+            contentType: res.contentType,
+            action: "set",
+            resource: intentResource,
+            entity: res.entity
         });
     });
 };
@@ -3591,30 +3621,25 @@ ozpIwc.Client.prototype.intentInvocationHandling = function(resource,intentResou
                 otherCallback = fragment;
                 fragment = {};
             }
-            var promise = new Promise(function (resolve, reject) {
-                var packet = {
-                    'dst': dst,
-                    'action': action,
-                    'resource': resource,
-                    'entity': {}
-                };
-                for (var k in fragment) {
-                    packet[k] = fragment[k];
-                }
-                client.send(packet,otherCallback,resolve,reject);
-
-                if(dst === "intents.api" && action === "register"){
-                    for(var i in client.launchedIntents){
-                        var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
-                        if(resource === loadedResource){
-                            client.intentInvocationHandling(resource,client.launchedIntents[i].resource,otherCallback);
-                            delete client.launchedIntents[i];
-                        }
+            var packet = {
+                'dst': dst,
+                'action': action,
+                'resource': resource,
+                'entity': {}
+            };
+            for (var k in fragment) {
+                packet[k] = fragment[k];
+            }
+            if(dst === "intents.api" && action === "register"){
+                for(var i in client.launchedIntents){
+                    var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
+                    if(resource === loadedResource){
+                        client.intentInvocationHandling(resource,client.launchedIntents[i].resource,otherCallback);
+                        delete client.launchedIntents[i];
                     }
                 }
-            });
-
-            return promise;
+            }
+            return client.send(packet,otherCallback);
         };
     };
 })();
