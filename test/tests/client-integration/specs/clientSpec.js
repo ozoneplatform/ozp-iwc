@@ -38,7 +38,7 @@ describe("IWC Client", function() {
             'dst': "data.api",
             'action': "get",
             'resource': ""
-        },function(response) {
+        }).then(function(response) {
             gate();
         });
         
