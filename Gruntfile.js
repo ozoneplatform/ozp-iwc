@@ -319,6 +319,17 @@ module.exports = function(grunt) {
                 push: false,
                 pushTo: 'origin'
             }
+        },
+        shell: {
+            buildVersionFile: {
+                command: [
+                    'echo "Version: <%= pkg.version %>" > dist/version.txt',
+                    'echo "Git hash: " >> dist/version.txt',
+                    'git rev-parse HEAD >> dist/version.txt',
+                    'echo Date: >> dist/version.txt',
+                    'git rev-parse HEAD | xargs git show -s --format=%ci >> dist/version.txt'
+                ].join('&&')
+            }
         }
 
     };
@@ -329,7 +340,7 @@ module.exports = function(grunt) {
     grunt.initConfig(config);
 
     // Default task(s).
-    grunt.registerTask('build', ['copy:hackBootstrap', 'jshint', 'concat_sourcemap', 'uglify', 'copy:dist']);
+    grunt.registerTask('build', ['copy:hackBootstrap', 'jshint', 'concat_sourcemap', 'uglify', 'copy:dist','shell:buildVersionFile']);
     grunt.registerTask('dist', ['build', 'yuidoc']);
     grunt.registerTask('testOnly', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
     grunt.registerTask('test', ['build','connect','watch']);
