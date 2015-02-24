@@ -14,9 +14,6 @@
     isUrl: function(str) {
       return str.match(urlRegex) || isCurie(str);
     },
-    isFollowableHeader: function(headerName) {
-      return headerName === 'Location' || headerName === 'Content-Location';
-    },
     truncateIfUrl: function(str) {
       var replaceRegex = /(http|https):\/\/([^\/]*)\//;
         return str.replace(replaceRegex, '.../');

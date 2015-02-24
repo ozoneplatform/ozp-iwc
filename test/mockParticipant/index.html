@@ -38,7 +38,7 @@
                             testAddress = message.address;
                             break;
                         case "send":
-                            client.send(event.data.packet, function (response) {
+                            client.send(event.data.packet).then(function (response) {
                                 sendToParent({
                                     'msgType': "return",
                                     'runId': message.runId,

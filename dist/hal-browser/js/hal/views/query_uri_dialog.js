@@ -34,7 +34,7 @@ HAL.Views.QueryUriDialog = Backbone.View.extend({
     } catch (err) {
       result = 'Invalid json input';
     }
-    this.$('.preview').text(result);
+    this.$('.preview').html(result);
   },
 
   extractExpressionNames: function (template) {

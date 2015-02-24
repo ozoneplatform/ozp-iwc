@@ -29,7 +29,9 @@ var Ball=function(ballRef,svgElement) {
         resource: ballRef
     };
     var self=this;
-    var packet=client.send(watchRequest,function(reply) {
+
+    client.send(watchRequest,function(reply) {
+        self.watchId=reply.replyTo;
         self.packets++;
         var now=ozpIwc.util.now();
         self.totalLatency+=now-reply.time;
@@ -68,7 +70,6 @@ var Ball=function(ballRef,svgElement) {
             self.label.setAttribute("class","svgHidden");
         }
     });
-    this.watchId=packet.msgId;
 };
 
 Ball.prototype.draw=function(info) {
@@ -259,11 +260,10 @@ client.on("connected",function() {
 		resource: "/balls"
 	};
 
-	client.send(listExistingBalls,function(reply,done) {
+	client.send(listExistingBalls).then(function(reply) {
 		for(var i=0; i<reply.entity.length;++i) {
 			balls[reply.entity[i]]=new Ball(reply.entity[i],viewPort);
 		}
-        done();
 	});
 
 	//=================================================================
@@ -275,7 +275,7 @@ client.on("connected",function() {
 		entity: {}
 	};
 
-	client.send(pushRequest,function(packet,done){
+	client.send(pushRequest).then(function(packet){
 		if(packet.response==="ok") {
 			ourBalls.push(new AnimatedBall({
 				resource:packet.entity.resource
@@ -284,6 +284,5 @@ client.on("connected",function() {
 		} else {
             ozpIwc.log.log("Failed to push our ball: " + JSON.stringify(packet,null,2));
 		}
-        done();
 	});
 });
