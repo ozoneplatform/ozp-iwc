@@ -62,6 +62,53 @@ describe("Common API Base class",function() {
             }));
 	});
 
+	it("responds to a bulk get with no data", function() {
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'resource': "/node",
+                'action': "bulkGet"
+            }
+        });
+        
+		apiBase.handleBulkGet(simpleNode,packetContext);
+
+		expect(packetContext.responses[0])
+            .toEqual(jasmine.objectContaining({
+                'response':"ok",
+                'entity': []
+            }));
+	});
+
+	it("responds to a bulk get with some data", function() {
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'resource': "/family",
+                'action': "bulkGet"
+            }
+        });
+        var packetOne={'resource': "/family", 'action': "set"};
+        var packetTwo={'resource': "/family_a",'action': "set"};
+        var packetThree={'resource': "/family_b",'action': "set"};
+        var packetFour={'resource': "/notfamily",'action': "set"};
+		
+		apiBase.findOrMakeValue(packetOne);
+		apiBase.findOrMakeValue(packetTwo);
+		apiBase.findOrMakeValue(packetThree);
+		apiBase.findOrMakeValue(packetFour);
+		
+		apiBase.handleBulkGet(simpleNode,packetContext);
+
+		expect(packetContext.responses[0])
+            .toEqual(jasmine.objectContaining({ 
+				"response": "ok", 
+				"entity": [
+					{ "contentType": undefined, "entity": undefined, "permissions": {}, "eTag": 0, "resource": "/family" }, 
+					{ "contentType": undefined, "entity": undefined, "permissions": {}, "eTag": 0, "resource": "/family_a" }, 
+					{ "contentType": undefined, "entity": undefined, "permissions": {}, "eTag": 0, "resource": "/family_b" }
+				]
+			}));
+	});
+	
 	it("sets data", function() {
         var packetContext=new TestPacketContext({
             'packet': {

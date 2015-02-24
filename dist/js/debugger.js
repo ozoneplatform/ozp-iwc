@@ -9205,6 +9205,32 @@ ozpIwc.CommonApiBase.prototype.handleGet=function(node,packetContext) {
 };
 
 /**
+ * Common handler for packet contexts with `bulkGet` actions.
+ *
+ * @method handleBulkGet
+ * @param {ozpIwc.CommonApiValue} node The api node to retrieve.  (Not used, bulk get searches the api's data object instead)
+ * @param {ozpIwc.TransportPacketContext} packetContext The packet context containing the bulk get action.
+ */
+ozpIwc.CommonApiBase.prototype.handleBulkGet=function(node,packetContext) {
+	// scan local data set for resource link(?) contains prefix
+	// return list of nodes of matches, using 'toPacket'(?)
+	var matchingNodes = [];
+	
+	if (this.data !== {}) {
+		for (var i in this.data) {
+			if (this.data[i].resource.indexOf(packetContext.packet.resource) === 0) {
+				matchingNodes.push(this.data[i].toPacket());
+			}
+		}
+	}
+	
+	packetContext.replyTo({
+		'response': 'ok',
+		'entity': matchingNodes
+	});
+};
+
+/**
  * Common handler for packet contexts with `set` actions.
  *
  * @method handleSet
@@ -10972,28 +10998,28 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function(config) {
     //temporary injector code. Remove when api loader is implemented
     var packet = {
         resource: '/api/data.api',
-        entity: {'actions': ['get', 'set', 'delete', 'watch', 'unwatch', 'addChild', 'removeChild', 'list']},
+        entity: {'actions': ['get', 'set', 'delete', 'watch', 'unwatch', 'addChild', 'removeChild', 'list', 'bulkGet']},
         contentType: 'application/vnd.ozp-iwc-api-v1+json'
     };
     var node=this.findOrMakeValue(packet);
     node.set(packet);
     packet = {
         resource: '/api/intents.api',
-        entity: {'actions': ['get','set','delete','watch','unwatch','register','invoke','broadcast', 'list']},
+        entity: {'actions': ['get','set','delete','watch','unwatch','register','invoke','broadcast', 'list', 'bulkGet']},
         contentType: 'application/vnd.ozp-iwc-api-v1+json'
     };
     node=this.findOrMakeValue(packet);
     node.set(packet);
     packet = {
         resource: '/api/names.api',
-        entity: {'actions': ['get','set','delete','watch','unwatch', 'list']},
+        entity: {'actions': ['get','set','delete','watch','unwatch', 'list', 'bulkGet']},
         contentType: 'application/vnd.ozp-iwc-api-v1+json'
     };
     node=this.findOrMakeValue(packet);
     node.set(packet);
     packet = {
         resource: '/api/system.api',
-        entity: { 'actions': ['get','set','delete','watch','unwatch', 'list', 'launch']},
+        entity: { 'actions': ['get','set','delete','watch','unwatch', 'list', 'launch', 'bulkGet']},
         contentType: 'application/vnd.ozp-iwc-api-v1+json'
     };
     node=this.findOrMakeValue(packet);

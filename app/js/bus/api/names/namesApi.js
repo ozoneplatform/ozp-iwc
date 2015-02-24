@@ -64,28 +64,28 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function(config) {
     //temporary injector code. Remove when api loader is implemented
     var packet = {
         resource: '/api/data.api',
-        entity: {'actions': ['get', 'set', 'delete', 'watch', 'unwatch', 'addChild', 'removeChild', 'list']},
+        entity: {'actions': ['get', 'set', 'delete', 'watch', 'unwatch', 'addChild', 'removeChild', 'list', 'bulkGet']},
         contentType: 'application/vnd.ozp-iwc-api-v1+json'
     };
     var node=this.findOrMakeValue(packet);
     node.set(packet);
     packet = {
         resource: '/api/intents.api',
-        entity: {'actions': ['get','set','delete','watch','unwatch','register','invoke','broadcast', 'list']},
+        entity: {'actions': ['get','set','delete','watch','unwatch','register','invoke','broadcast', 'list', 'bulkGet']},
         contentType: 'application/vnd.ozp-iwc-api-v1+json'
     };
     node=this.findOrMakeValue(packet);
     node.set(packet);
     packet = {
         resource: '/api/names.api',
-        entity: {'actions': ['get','set','delete','watch','unwatch', 'list']},
+        entity: {'actions': ['get','set','delete','watch','unwatch', 'list', 'bulkGet']},
         contentType: 'application/vnd.ozp-iwc-api-v1+json'
     };
     node=this.findOrMakeValue(packet);
     node.set(packet);
     packet = {
         resource: '/api/system.api',
-        entity: { 'actions': ['get','set','delete','watch','unwatch', 'list', 'launch']},
+        entity: { 'actions': ['get','set','delete','watch','unwatch', 'list', 'launch', 'bulkGet']},
         contentType: 'application/vnd.ozp-iwc-api-v1+json'
     };
     node=this.findOrMakeValue(packet);
