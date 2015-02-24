@@ -228,13 +228,13 @@ ozpIwc.Client.prototype.receive=function(packet) {
     if(!handled && packet.replyTo && this.registeredCallbacks[packet.replyTo]){
         handled = true;
 
-        var watchCancel = false;
-        var watchDone=function() {
-            watchCancel = true;
+        var registeredCancel = false;
+        var registeredDone=function() {
+            registeredCancel = true;
         };
 
-        this.registeredCallbacks[packet.replyTo](packet,watchDone);
-        if (watchCancel) {
+        this.registeredCallbacks[packet.replyTo](packet,registeredDone);
+        if (registeredCancel) {
             if(this.watchMsgMap[packet.replyTo].action === "watch") {
                 this.api(this.watchMsgMap[packet.replyTo].dst).unwatch(this.watchMsgMap[packet.replyTo].resource);
             }
@@ -295,7 +295,6 @@ ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromiseRes,pree
         packet[k]=fields[k];
     }
 
-    var promiseResolved = false;
     var self = this;
 
     if(callback) {

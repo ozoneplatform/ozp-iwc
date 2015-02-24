@@ -90182,7 +90182,7 @@ debuggerModule.service("apiSettingService",function(){
     };
 });
 
-
+/* global debuggerModule */
 debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","apiSettingService",function(scope, attrs, client, apiDat) {
     // IWC message parameters
     scope.msg = {

@@ -28,7 +28,6 @@ var Ball=function(ballRef,svgElement) {
         action: "watch",
         resource: ballRef
     };
-    this.doneWatching = null;
     var self=this;
 
     client.send(watchRequest,function(reply) {
