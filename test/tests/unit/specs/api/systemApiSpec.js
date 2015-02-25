@@ -148,7 +148,15 @@ describe("System API",function() {
                 'resource': "/application/abcApp",
                 'entity' : {
                     'foo': 1,
-                    'inFlightIntent': '/intents/invocation/123'
+                    'inFlightIntent': '/intents/invocation/123',
+                    'inFlightIntentEntity': {
+                        'entity': {
+                            'url': "http://localhost:15000/?color=blue",
+                            "applicationId": "/application/abcApp",
+                            "launchData": "Hello World"
+                        }
+                    }
+                      
                 }
             },
             action: 'invoke'
