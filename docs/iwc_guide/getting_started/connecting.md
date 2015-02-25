@@ -6,6 +6,7 @@ These clients connect to an IWC bus that is bound by the browser as well as the 
 var client = new ozpIwc.Client({
     peerUrl: "http://ozone-development.github.io/iwc"
 });
+
 client.connect().then(function(){
    /* client use goes here */
 });
@@ -25,6 +26,7 @@ Disconnecting an application from the IWC bus is as simple as calling `disconnec
 var client = new ozpIwc.Client({
     peerUrl: "http://ozone-development.github.io/iwc"
 });
+
 client.connect().then(function(){
     client.disconnect();
 });

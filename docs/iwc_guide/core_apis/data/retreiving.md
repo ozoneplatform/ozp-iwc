@@ -4,7 +4,9 @@ passed through the resolution of the action's promise.
 
 ```
 var dataApi = client.data();
+
 var foo;
+
 dataApi.get('/foo').then(function(res){
         foo = res.entity;
 });

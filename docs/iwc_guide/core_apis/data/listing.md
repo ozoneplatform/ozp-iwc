@@ -5,10 +5,9 @@ The list action without any resource specified returns **an array of resource ke
 
 ```
 var dataApi = client.data();
+
 dataApi.list().then(function(res){
     var dataResources = res.entity;
-}).catch(function(err){
-    //...
 });
 ```
 

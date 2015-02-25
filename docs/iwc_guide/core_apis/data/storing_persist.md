@@ -6,8 +6,11 @@ action needs to persist longer than the user's current session applying persiste
 
 ```
 var dataApi = client.data();
+
 var foo = { 'bar': 'buz' };
+
 foo.persist = true;
+
 dataApi.set('/foo',{ entity: foo });
 ```
 

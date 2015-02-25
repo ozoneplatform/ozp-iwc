@@ -6,7 +6,9 @@ To store a resource, the **set** action is used.
 
 ```
 var dataApi = client.data();
+
 var foo = { 'bar': 'buz' };
+
 dataApi.set('/foo',{ entity: foo }).;
 ```
 

@@ -8,9 +8,7 @@ To know what child to remove, the resource key returned in the
 ```
 var dataApi = client.data();
 
-var removeEntry = {
-    resource: "/shoppingCart/1234"
-};
+var removeEntry = { resource: "/shoppingCart/1234" };
 
 dataApi.removeChild('/shoppingCart',{ entity: removeEntry});
 ```

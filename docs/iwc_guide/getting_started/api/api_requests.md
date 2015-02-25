@@ -20,17 +20,17 @@ require callbacks, **the Value and Callback parameters are optional**.
 Since there are instances where callbacks may be used but no value needed, action calls can be also made using the
 following additional structures:
 
-    ```
-    client.${Api}().${Action}( ${Path} );
-    client.${Api}().${Action}( ${Path}, [Value] );
-    client.${Api}().${Action}( ${Path}, [Callback] );
+```
+client.${Api}().${Action}( ${Path} );
+client.${Api}().${Action}( ${Path}, [Value] );
+client.${Api}().${Action}( ${Path}, [Callback] );
     ```
 
 The one restriction is the following Api call structure is not allowed:
 
-    ```
-    client.${Api}().${Action}( ${Path}, [Callback], [Value] );
-    ```
+```
+client.${Api}().${Action}( ${Path}, [Callback], [Value] );
+```
 
 ***
 

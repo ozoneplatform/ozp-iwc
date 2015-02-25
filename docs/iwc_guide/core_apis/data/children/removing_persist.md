@@ -9,9 +9,9 @@ To know what child to remove, the resource key returned in the
 var dataApi = client.data();
 
 var removeEntry = {
-    resource: "/shoppingCart/1234"
+    resource: "/shoppingCart/1234",
+    persist: true,
 };
-removeEntry.persist = true;
 
 dataApi.removeChild('/shoppingCart',{ entity: removeEntry});
 ```

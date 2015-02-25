@@ -25,11 +25,12 @@ A simple key/value JSON store for sharing common resources amongst applications.
 ###Accessing the API
 To call functions on the Data API, reference `client.data()` on the connected client.
 
-    ```
-    var client = new ozpIwc.Client({
-        peerUrl: "http://ozone-development.github.io/iwc"
-    });
-    client.connect().then(function(){
-        var dataApi = client.data();
-    });
-    ```
+```
+var client = new ozpIwc.Client({
+    peerUrl: "http://ozone-development.github.io/iwc"
+});
+
+client.connect().then(function(){
+    var dataApi = client.data();
+});
+```
