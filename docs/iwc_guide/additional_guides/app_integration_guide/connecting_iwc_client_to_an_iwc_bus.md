@@ -10,15 +10,16 @@ var client = new ozpIwc.Client({
     peerUrl: http://ozone-development.github.io/iwc
 });
 ```
- On instantiation, the client will asynchronously connect. Operating using the connected client is done as a callback function in `client.connected(function(){...})`.
+ On instantiation, the client will asynchronously connect. Any client calls made prior to the client's connection will be queued and ran once connected.
+ To perform operations bound by the client connection, the `connect` promise can be called.
 
 ```
 var client = new ozpIwc.Client({
     peerUrl: http://ozone-development.github.io/iwc
 });
 
-client.connected(function(){
-   ... // IWC usage goes in here
+client.connect().then(function(){
+   ... // connection dependent code
 });
 ```
 
@@ -29,7 +30,7 @@ var client = new ozpIwc.Client({
     peerUrl: http://ozone-development.github.io/iwc
 });
 
-client.connected(function(){
+client.connect().then(function(){
     console.log("Client connected with an address of: ", client.address);
 });
 ```

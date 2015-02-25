@@ -1,6 +1,6 @@
 ## Adding an IWC Client to your application 
 
-An IWC client is an application's connection to an IWC bus. An IWC bus is always local to the user, but bound by the domain it is hosted from. For this example we will be using a predefined IWC bus hosted here on the ozp-iwc github page `http://ozone-development.github.io/iwc`.
+An IWC client is an application's connection to an IWC bus. An IWC bus is always local to the user, but bound by the domain it is hosted from. For this example we will be using a predefined IWC bus hosted on the ozp-iwc github page `http://ozone-development.github.io/iwc`.
 
 Our example application for this guide is a simple journal application. This application, when connected to an IWC bus, can store/share/edit entries with other applications.
 
