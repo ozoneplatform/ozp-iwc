@@ -90000,12 +90000,13 @@ debuggerModule.factory("iwcClient",function() {
                         dst: "names.api",
                         action: "get",
                         resource: "/api"
-                    },function(reply){
+                    },function(reply,done){
                         if(reply.response === 'ok'){
                             resolve(reply.entity);
                         } else{
                             reject(reply.response);
                         }
+                        done();
                     });
 
                 }).then(function(apis) {
@@ -90016,7 +90017,7 @@ debuggerModule.factory("iwcClient",function() {
                                 dst: "names.api",
                                 action: "get",
                                 resource: api
-                            }, function (res) {
+                            }, function (res,done) {
                                 if (res.response === 'ok') {
                                     var name = api.replace('/api/', '');
                                     self.apiMap[name] = {
@@ -90028,6 +90029,7 @@ debuggerModule.factory("iwcClient",function() {
                                 } else {
                                     reject(res.response);
                                 }
+                                done();
                             });
                         }));
                     });
@@ -90305,7 +90307,7 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
         client.send({
             'dst': scope.api,
             'action': "list"
-        },function(response) {
+        },function(response,done) {
             scope.keys=response.entity.map(function(k) {
                 var key={
                     'resource': k,
@@ -90315,6 +90317,7 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
                 scope.loadKey(key);
                 return key;
             });
+            done();
         });
 
         client.connect().then(function(){
@@ -90325,11 +90328,7 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
 
     scope.watchKey=function(key) {
         if(key.isWatched) {
-            client.send({
-                'dst': scope.api,
-                'action': "watch",
-                'resource': key.resource
-            },function(response) {
+            client.api(scope.api).watch(key.resource,function(response) {
                 if(response.response === 'changed') {
                     scope.$evalAsync(function() {
                         key.entity=response.entity.newValue;
@@ -90337,8 +90336,9 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
                         key.contentType=response.contentType;
                     });
                 }
-                return key.isWatched;
             });
+        } else {
+            client.api(scope.api).unwatch(key.resource);
         }
     };
 
@@ -90887,7 +90887,7 @@ debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(
         client.send({
             'dst': scope.api.address,
             'action': "list"
-        },function(response) {
+        },function(response,done) {
             scope.keys=response.entity.map(function(k) {
                 var key={
                     'resource': k,
@@ -90897,6 +90897,7 @@ debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(
                 scope.loadKey(key);
                 return key;
             });
+            done();
         });
     };
     
