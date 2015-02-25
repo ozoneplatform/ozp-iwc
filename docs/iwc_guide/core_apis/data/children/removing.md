@@ -3,7 +3,7 @@ To remove a child resource from the Data API, it should be removed via it's pare
 action.
 
 To know what child to remove, the resource key returned in the
-[`addChild` resolution](core_apis/data/children/storing.md) is passed in the entity's resource field.
+[`addChild` resolution](storing.md) is passed in the entity's resource field.
 
 ```
 var dataApi = client.data();

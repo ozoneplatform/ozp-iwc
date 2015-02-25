@@ -3,7 +3,7 @@ Just like with other persistence actions, adding `persist:true` to the resource 
 persist the child resource removal on the backend.
 
 To know what child to remove, the resource key returned in the
-[`addChild` resolution](core_apis/data/children/storing.md) is passed in the entity's resource field.
+[`addChild` resolution](storing_persist.md) is passed in the entity's resource field.
 
 ```
 var dataApi = client.data();

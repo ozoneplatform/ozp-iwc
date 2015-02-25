@@ -1,5 +1,5 @@
-##API Calls
-Making an api call uses the following structure:
+##API Requests
+Making an api request uses the following structure:
 
 `client.${Api}().${Action}( ${Path}, [Value], [Callback] );`
 
@@ -24,7 +24,7 @@ following additional structures:
 client.${Api}().${Action}( ${Path} );
 client.${Api}().${Action}( ${Path}, [Value] );
 client.${Api}().${Action}( ${Path}, [Callback] );
-    ```
+```
 
 The one restriction is the following Api call structure is not allowed:
 

@@ -34,12 +34,12 @@
 * Migration from OWF 7
     * Comparison of OWF 7 to IWC
 * Additional Guides
-    * [IWC App Integration Guide](app_integration_guide/README.md)
-        * [Adding an IWC Client to an Application](app_integration_guide/adding_an_iwc_client_to_an_application.md)
-        * [Connecting to the Bus](app_integration_guide/connecting_to_the_bus.md)
-        * [Making IWC API Calls](app_integration_guide/making_iwc_api_calls.md)
-        * [IWC Client Files](app_integration_guide/iwc_client_files.md)
-        * [Making IWC API Calls Recurring Asynchronous Responses](app_integration_guide/making_iwc_api_calls_asynchronous_responses.md)
+    * [IWC App Integration Guide](additional_guides/app_integration_guide/README.md)
+        * [Adding an IWC Client to an Application](additional_guides/app_integration_guide/adding_an_iwc_client_to_an_application.md)
+        * [Connecting to the Bus](additional_guides/app_integration_guide/connecting_to_the_bus.md)
+        * [Making IWC API Calls](additional_guides/app_integration_guide/making_iwc_api_calls.md)
+        * [IWC Client Files](additional_guides/app_integration_guide/iwc_client_files.md)
+        * [Making IWC API Calls Recurring Asynchronous Responses](additional_guides/app_integration_guide/making_iwc_api_calls_asynchronous_responses.md)
     * [IWC Backend Integration Guide](IWC Backend Integration Guide/README.md)
         * [Versioning Tool](IWC Backend Integration Guide/versioning_tool.md)
         * [IWC Components](IWC Backend Integration Guide/iwc_components.md)

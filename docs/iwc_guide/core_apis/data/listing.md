@@ -41,4 +41,4 @@ when called.
 name and is not stored in the Data API. Because of this, history of the version does not exist so it will always be `1`.
 
 
-The list action can also be used for [gathering children of a resource]().
+The list action can also be used for [gathering children of a resource](children/listing.md).

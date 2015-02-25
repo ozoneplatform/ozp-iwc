@@ -25,7 +25,7 @@ Actions: "get", "set", "delete", "watch", "unwatch", "addChild", "removeChild", 
 Function: data
 ```
 
-This means the developer could **get** a resource from the **data.api** by calling:
+This means the client can  **get** a resource from the **data.api** by calling:
 `client.data().get("/some/resource");`
 
 The purpose of this is to inform the developer of what functionality they have to work with given a particular bus.

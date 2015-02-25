@@ -55,9 +55,9 @@ value has changed.
 
 **entity.oldValue**: The old value of the resource.
 
-**removedChildren**: Children resources that were removed (see [Removing Children Resources]())
+**removedChildren**: Children resources that were removed (see [Removing Children Resources](children/removing.md))
 
-**removedChildren**: Children resources that were added (see [Adding Children Resources]())
+**addedChildren**: Children resources that were added (see [Adding Children Resources](storing.md))
 
 
 To stop watching the resource based on its state, calling the `done()` function passed to the callback will remove
