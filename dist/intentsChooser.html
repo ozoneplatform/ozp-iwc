@@ -45,9 +45,7 @@
                     reason: "user",
                     state: "choosing"
                 }
-            }).then(function() {
-                    window.close();
-            });
+            }).then(window.close);
         }
 
         function showHandlers(handlers,intentInvocation) {
@@ -85,9 +83,7 @@
                         },
                         state: "fail"
                     }
-                }).then(function() {
-                    window.close();
-                });
+                }).then(window.close;
             });
             document.getElementById("handlerList").appendChild(button);
         }

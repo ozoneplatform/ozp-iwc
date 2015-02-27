@@ -11186,15 +11186,12 @@ ozpIwc.SystemApi.prototype.loadFromServer=function() {
     return new Promise(function(resolve, reject) {
         self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":application", headers)
             .then(function() {
-                self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":user")
-                    .then(function() {
-                        self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":system")
-                            .then(function() {
-                                resolve("system.api load complete");
-                            });
-                    });
-            })
-            ['catch'](function(error) {
+                return self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":user");
+            }).then(function() {
+                return self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":system");
+            }).then(function() {
+                resolve("system.api load complete");
+            })['catch'](function(error) {
                 reject(error);
             });
     });
@@ -90533,8 +90530,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
     scope.appListings = [];
     return apps.reduce(function (previous, current) {
             return previous.then(function () {
-              var promise = saveAppData(current, scope.appListings);
-              return promise;
+              return saveAppData(current, scope.appListings);
             }).catch(function (error) {
               console.log('should not have happened: ' + error);
             });
@@ -90552,13 +90548,9 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
     return client.api(dst)
       .set(resource, {"entity": entity})
       .then(function (response) {
-        if (response) {
-          console.log('updated OK');
-          return true;
-        } else {
-          console.log('update failed');
-          return false;
-        }
+            console.log('updated OK');
+        }).catch(function(err) {
+          console.log('update failed',err);
       });
   }
 
@@ -90574,17 +90566,15 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
     console.log('getting dashboard json data...');
     http.get('data/dashboard-data.json').success(function(data) {
       console.log(data);
-      setData('data.api', dashboardDataResource, data).then(function() {
-        scope.refresh();
-      });
+      setData('data.api', dashboardDataResource, data)
+          .then(scope.refresh);
     });
   };
 
   scope.clearDashboardData = function() {
     var data = {};
-    setData('data.api', dashboardDataResource, data).then(function() {
-        scope.refresh();
-      });
+    setData('data.api', dashboardDataResource, data)
+        .then(scope.refresh);
   };
 
   // initialization
@@ -90625,33 +90615,27 @@ debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,clie
 
   function saveAppData(appResource) {
     return client.api("system.api").get(appResource).then(function(response) {
-      if (response.response === "ok") {
-          scope.appListings.push(response.entity);
-        } else {
-          console.log("Not Supported: " + response.response);
-        }
+        scope.appListings.push(response.entity);
+    }).catch(function(err){
+          console.log("Not Supported: " + err.response);
     });
   }
 
     function getApplicationResources() {
       return client.api('system.api').get('/application').then(function (response) {
-        if (response.response === "ok") {
           return response.entity;
-        } else {
-          return console.log("Not Supported: " + response.response);
-        }
+      }).catch(function(err){
+          return console.log("Not Supported: " + err.response);
       });
     }
 
     function getUserInfo() {
       return client.api('system.api').get('/user').then(function (response) {
-        if (response.response === "ok") {
           scope.username = response.entity.username;
           scope.userRole = response.entity.highestRole;
           return response.entity;
-        } else {
-          return console.log("Not Supported: " + response.response);
-        }
+      }).catch(function(err){
+          return console.log("Not Supported: " + err.response);
       });
     }
 
@@ -90662,8 +90646,7 @@ debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,clie
         scope.appListings = [];
         return apps.reduce(function (previous, current) {
           return previous.then(function () {
-            var promise = saveAppData(current);
-            return promise;
+            return saveAppData(current);
           }).catch(function (error) {
             console.log('should not have happened: ' + error);
           });
