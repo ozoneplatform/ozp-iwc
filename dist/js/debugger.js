@@ -5320,7 +5320,7 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
             self.prp.getPolicies(formattedRequest.policies)
                 .success(function(policies){
 
-                    var result = ozpIwc.policyAuth.PolicyCombining['deny-overrides'](policies,formattedRequest.category);
+                    var result = ozpIwc.policyAuth.PolicyCombining[formattedRequest.combiningAlgorithm](policies,formattedRequest.category);
                     var response = {
                         'result':result,
                         'request': request,
@@ -5530,6 +5530,7 @@ ozpIwc.policyAuth.PDP.prototype.formatRequest = function(request,pip){
     request.subject = request.subject || {};
     request.resource = request.resource || {};
     request.action = request.action || {};
+    request.combiningAlgorithm = request.combiningAlgorithm || this.defaultCombiningAlgorithm;
     var asyncs = [];
 
     var subjectAsync = this.formatAttribute(request.subject,pip);
