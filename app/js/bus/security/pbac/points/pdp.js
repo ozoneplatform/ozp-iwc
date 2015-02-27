@@ -59,7 +59,6 @@ ozpIwc.policyAuth.PDP = function(config){
  *      'result': <String>,
  *      'request': <Object> // a copy of the request passed in,
  *      'formattedRequest': <Object> // a copy of the formatted request (for PDP user caching)
- *      'formattedPolicies': <Object> // a copy of the formatted policies (for PDP user caching)
  *    }```
  */
 ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
@@ -73,9 +72,8 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
             });
     }
 
-    var formattedPolicies = [];
 
-    var onError = function(err){
+    var onError = function(response){
         asyncAction.resolve('failure',err);
     };
     //Format the request
@@ -90,8 +88,7 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
                     var response = {
                         'result':result,
                         'request': request,
-                        'formattedRequest': formattedRequest,
-                        'formattedPolicies': formattedPolicies
+                        'formattedRequest': formattedRequest
                     };
                     if(result === "Permit"){
                        asyncAction.resolve('success',response);

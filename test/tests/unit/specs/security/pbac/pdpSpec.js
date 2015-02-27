@@ -347,7 +347,6 @@ describe("Policy Decision Point",function() {
                 expect(response.result).toEqual("Permit");
                 expect(response.request).toEqual(request);
                 expect(response.formattedRequest).toBeDefined();
-                expect(response.formattedPolicies).toBeDefined();
             }).failure(function(response){
                 expect(false).toEqual(true);
             });
@@ -365,7 +364,6 @@ describe("Policy Decision Point",function() {
                     expect(response.result).toEqual("Deny");
                     expect(response.request).toEqual(request);
                     expect(response.formattedRequest).toBeDefined();
-                    expect(response.formattedPolicies).toBeDefined();
                 });
         });
     });
