@@ -29,13 +29,22 @@ ozpIwc.util=ozpIwc.util || {};
 ozpIwc.util.ajax = function (config) {
     return new Promise(function(resolve,reject) {
         var request = new XMLHttpRequest();
-        request.withCredentials = true;
         request.open(config.method, config.href, true);
+        request.withCredentials = true;
+        var setContentType = true;
         if (Array.isArray(config.headers)) {
             config.headers.forEach(function(header) {
+                if(header.name ==="Content-Type"){
+                    setContentType = false;
+                }
                 request.setRequestHeader(header.name, header.value);
             });
         }
+        if(config.method === "PUT" && setContentType){
+            request.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+        }
+
+        /*
         /*
          * Setting username and password as params to open() (and setting request.withCredentials = true)
          * per the API does not work in FF. setting them explicitly in the Authorization header works
