@@ -96,7 +96,7 @@ describe("Policy Decision Point",function() {
                     expect(subject['urn:subjectId:3']).toEqual(["string"]);
                     expect(subject['urn:subjectId:4']).toEqual(['a','r','r','a','y']);
 
-                })
+                });
             });
 
             it("formats a subject from an  array of objects", function(){
@@ -118,7 +118,7 @@ describe("Policy Decision Point",function() {
                     expect(subject['urn:subjectId:2']).toEqual([true]);
                     expect(subject['urn:subjectId:3']).toEqual(["string"]);
                     expect(subject['urn:subjectId:4']).toEqual(['a','r','r','a','y']);
-                })
+                });
             });
             it("formats a subject from a mixed array", function(){
                 pdp.formatRequest({
@@ -136,7 +136,7 @@ describe("Policy Decision Point",function() {
                     expect(subject['ozp:iwc:fakeAttribute3']).toEqual(['fakeVal']);
                     expect(subject['ozp:iwc:fakeAttributea']).toEqual(['afakeVal']);
 
-                })
+                });
             });
         });
 

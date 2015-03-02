@@ -24,8 +24,9 @@ var Ball=function(ballRef,svgElement) {
 		resource: ballRef
 	};
 	var self=this;
-	var packet=client.send(watchRequest,function(packet) {
-		if(packet.action==="changed") {
+	client.send(watchRequest,function(packet) {
+        self.watchId=packet.replyTo;
+        if(packet.action==="changed") {
 			self.draw(packet.entity.newValue);
 			self.label.textContent=packet.resource;
 		}
@@ -37,8 +38,7 @@ var Ball=function(ballRef,svgElement) {
 		}else {
 			self.label.setAttribute("class","svgHidden");
 		}
-	});	
-	this.watchId=packet.msgId;	
+	});
 };
 
 Ball.prototype.draw=function(info) {

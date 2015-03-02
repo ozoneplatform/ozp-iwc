@@ -2617,9 +2617,7 @@ define("promise/utils",
   });
 requireModule('promise/polyfill').polyfill();
 }());
-/** @namespace */
 var ozpIwc=ozpIwc || {};
-
 /**
  * Common classes used between both the Client and the Bus.
  * @module common
@@ -2751,8 +2749,6 @@ if(!(window.console && console.log)) {
         error: function(){}
     };
 }
-/** @namespace */
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule common
  */
@@ -4226,9 +4222,6 @@ ozpIwc.MetricsRegistry.prototype.allMetrics=function() {
 
 ozpIwc.metrics=new ozpIwc.MetricsRegistry();
 
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-
 /**
  * Utility methods used on the IWC bus.
  * @module bus
@@ -4335,8 +4328,6 @@ ozpIwc.util.ajaxResponseHeaderToJSON = function(header) {
     return obj;
 };
 
-/** @namespace */
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule bus.util
  */
@@ -4482,9 +4473,6 @@ ozpIwc.AsyncAction.all = function(asyncActions) {
 ozpIwc.AsyncAction.isAnAction = function(action){
     return ozpIwc.AsyncAction.prototype.isPrototypeOf(action);
 };
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.util
  */
@@ -4493,6 +4481,8 @@ var getStackTrace = function() {
     Error.captureStackTrace(obj, getStackTrace);
     return obj.stack;
 };
+
+
 /**
  * A logging wrapper for the ozpIwc namespace
  * @class log
@@ -4500,26 +4490,61 @@ var getStackTrace = function() {
  * @namespace ozpIwc
  */
 ozpIwc.log=ozpIwc.log || {
+    // syslog levels
+    ERROR: { logLevel: true, severity: 3, name: "ERROR"},
+    INFO: { logLevel: true, severity: 6, name: "INFO"},
+    DEBUG: { logLevel: true, severity: 7, name: "DEBUG"},
+    DEFAULT: { logLevel: true, severity: 0, name: "DEFAULT"},
+    
+    threshold: 3,
+    
     /**
      * A wrapper for log messages. Forwards to console.log if available.
      * @property log
      * @type Function
      */
-	log: function() {
-		if(window.console && typeof(window.console.log)==="function") {
-			window.console.log.apply(window.console,arguments);
-		}
+	log: function(level) {
+        if(level.logLevel === true && typeof(level.severity) === "number") {
+            ozpIwc.log.logMsg(level,Array.prototype.slice.call(arguments, 1));
+        } else {
+            ozpIwc.log.logMsg(ozpIwc.log.DEFAULT,Array.prototype.slice.call(arguments, 0));
+        }
 	},
+
+    logMsg: function(level,args) {
+        if(level.severity > ozpIwc.log.threshold) {
+            return;
+        }
+        window.console.log.apply(window.console,["["+level.name+"] "].concat(args));
+    },
+    
     /**
      * A wrapper for error messages. Forwards to console.error if available.
      * @property error
      * @type Function
      */
 	error: function() {
-		if(window.console && typeof(window.console.error)==="function") {
-			window.console.error.apply(window.console,arguments);
-		}
-	}
+        ozpIwc.log.logMsg(ozpIwc.log.ERROR,Array.prototype.slice.call(arguments, 0));
+	},
+
+    /**
+     * A wrapper for debug messages. Forwards to console.error if available.
+     * @property error
+     * @type Function
+     */
+    debug: function() {
+        ozpIwc.log.logMsg(ozpIwc.log.DEBUG,Array.prototype.slice.call(arguments, 0));
+//        window.console.log.apply(window.console,arguments);
+    },
+    /**
+     * A wrapper for debug messages. Forwards to console.error if available.
+     * @property error
+     * @type Function
+     */
+    info: function() {
+        ozpIwc.log.logMsg(ozpIwc.log.INFO,Array.prototype.slice.call(arguments, 0));
+//        window.console.log.apply(window.console,arguments);
+    }
 };
 
 (function (global, undefined) {
@@ -4698,8 +4723,6 @@ ozpIwc.log=ozpIwc.log || {
     attachTo.clearImmediate = clearImmediate;
 }(new Function("return this")()));
 
-/** @namespace */
-var ozpIwc=ozpIwc || {};
 /**
 * @submodule bus.util
 */
@@ -5074,7 +5097,6 @@ ozpIwc.policyAuth.PDP.prototype.formatAttributes = function(attributes,pip){
 ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
     var asyncAction = new ozpIwc.AsyncAction();
     pip = pip || this.pip;
-    var asyncs = [];
     if(!attribute){
         return asyncAction.resolve('success');
     }
@@ -5090,7 +5112,7 @@ ozpIwc.policyAuth.PDP.prototype.formatAttribute = function(attribute,pip){
             .success(function(attr){
                 //TODO check if is an array or string (APPLY RECURSION!)
                 asyncAction.resolve("success",attr);
-            })
+            });
 
     } else if(Array.isArray(attribute)){
         // If its an array, its multiple actions. Wrap as needed
@@ -5880,8 +5902,6 @@ ozpIwc.policyAuth.PRP.prototype.getDenyall = function(urn){
 };
 
 /** @namespace **/
-var ozpIwc = ozpIwc || {};
-
 
 /**
  * Classes related to security aspects of the IWC.
@@ -5942,7 +5962,16 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     this.selfId = config.selfId || this.peer.selfId;
 
     this.metricsPrefix="keyBroadcastLocalStorageLink."+this.selfId;
+    this.droppedFragmentsCounter=ozpIwc.metrics.counter(this.metricsPrefix,'fragmentsDropped');
+    this.fragmentsReceivedCounter=ozpIwc.metrics.counter(this.metricsPrefix,'fragmentsReceived');
+
+    this.packetsSentCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsSent');
+    this.packetsReceivedCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsReceived');
+    this.packetParseErrorCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsParseError');
+    this.packetsFailedCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsFailed');
     
+    this.latencyInTimer=ozpIwc.metrics.timer(this.metricsPrefix,'latencyIn');
+    this.latencyOutTimer=ozpIwc.metrics.timer(this.metricsPrefix,'latencyOut');
     /**
      * Milliseconds to wait before deleting this link's keys
      * @todo UNUSUED
@@ -6029,7 +6058,7 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
                 packet = JSON.parse(event.newValue);
             } catch (e) {
                 ozpIwc.log.log("Parse error on " + event.newValue);
-                ozpIwc.metrics.counter(self.metricsPrefix,'packets_parseError').inc();
+                self.packetParseErrorCounter.inc();
                 return;
             }
             if (packet.data.fragment) {
@@ -6053,9 +6082,9 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
 
 ozpIwc.KeyBroadcastLocalStorageLink.prototype.forwardToPeer=function(packet) {
     this.peer.receive(this.linkId, packet);
-    ozpIwc.metrics.counter(this.metricsPrefix,'packets_received').inc();
+    this.packetsReceivedCounter.inc();
     if(packet.data.time) {
-        ozpIwc.metrics.timer(this.metricsPrefix,'latencyIn').mark(ozpIwc.util.now() - packet.data.time);
+        this.latencyInTimer.mark(ozpIwc.util.now() - packet.data.time);
     }
 };
 
@@ -6132,7 +6161,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
 
         // Add a timeout to destroy the fragment should the whole message not be received.
         this.fragments[key].timeoutFunc = function () {
-            ozpIwc.metrics.meter(self.metricsPrefix,'fragments_dropped').mark(self.total);
+            self.droppedFragmentsCounter.inc(self.total);
             delete self.fragments[self.key];
         };
     }
@@ -6153,7 +6182,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
         this.fragments[key].srcPeer === undefined) {
         return null;
     } else {
-        ozpIwc.metrics.meter(this.metricsPrefix,'fragments_received').mark();
+        this.fragmentsReceivedCounter.inc();
         return true;
     }
 };
@@ -6196,7 +6225,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
     try {
        str = JSON.stringify(packet.data);
     } catch (e){
-        ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
+        this.packetsFailedCounter.inc();
         var msgId = packet.msgId || "unknown";
         ozpIwc.log.error("Failed to write packet(msgId=" + msgId+ "):" + e.message);
         return;
@@ -6248,7 +6277,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
             this.attemptSend(this.sendQueue.shift());
         }
     } else {
-        ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
+        this.packetsFailedCounter.inc();
         ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + " Send queue full.");
     }
 };
@@ -6277,7 +6306,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
                 self.attemptSend(packet, retryCount);
             }, timeOut);
         } else {
-            ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
+            this.packetsFailedCounter.inc();
             ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + sendStatus);
             return sendStatus;
         }
@@ -6297,9 +6326,9 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     try {
         var p = JSON.stringify(packet);
         localStorage.setItem("x", p);
-        ozpIwc.metrics.meter(this.metricsPrefix,'packets_sent').mark();
+        this.packetsSentCounter.inc();
         if(packet.data.time) {
-            ozpIwc.metrics.timer(this.metricsPrefix,'latencyOut').mark(ozpIwc.util.now() - packet.data.time);
+            this.latencyOutTimer.mark(ozpIwc.util.now() - packet.data.time);
         }
         localStorage.removeItem("x");
         sendStatus = null;
@@ -6321,8 +6350,6 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     }
 };
 
-/** @namespace **/
-var ozpIwc = ozpIwc || {};
 /**
  * @submodule bus.network
  */
@@ -6859,8 +6886,6 @@ ozpIwc.Peer.prototype.shutdown=function() {
  * @type Array[String]
  */
 
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.transport
  */
@@ -7322,8 +7347,6 @@ ozpIwc.InternalParticipant.prototype.cancelCallback=function(msgId) {
     return success;
 };
 
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.transport
  */
@@ -7768,8 +7791,6 @@ ozpIwc.Router.prototype.receiveFromPeer=function(packet) {
     }
 };
 
-
-var ozpIwc=ozpIwc || {};
 
 /**
  * @submodule bus.transport
@@ -8463,8 +8484,6 @@ ozpIwc.LeaderGroupParticipant.prototype._validateState = function(state){
         return false;
     }
 };
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.transport
  */
@@ -9493,6 +9512,8 @@ ozpIwc.CommonApiBase = function(config) {
      * @default 0
      */
     this.retrievedBranches = 0;
+
+    this.endpointUrls=[];
 };
 
 /**
@@ -9737,7 +9758,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                         var header = objectResource.header;
                         self.updateResourceFromServer(payload, href, endpoint, res,header);
                     })['catch'](function (error) {
-                        ozpIwc.log.error("unable to load " + object.href + " because: ", error);
+                        ozpIwc.log.info("unable to load " + object.href + " because: ", error);
                     });
                 });
             } else {
@@ -9747,7 +9768,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                     var header = objectResource.header;
                     self.updateResourceFromServer(payload, href, endpoint, res,header);
                 })['catch'](function (error) {
-                    ozpIwc.log.error("unable to load " + object.href + " because: ", error);
+                    ozpIwc.log.info("unable to load " + object.href + " because: ", error);
                 });
             }
         }
@@ -9935,7 +9956,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
             f.apply(self);
         } catch(e) {
             if(!e.errorAction) {
-                ozpIwc.log.log("Unexpected error:",e);
+                ozpIwc.log.error("Unexpected error:",e);
             }
             packetContext.replyTo({
                 'response': e.errorAction || "unknownError",
@@ -10435,7 +10456,7 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
                     recvFunc();
                 } else {
                     self.loadFromServer();
-                    ozpIwc.log.log(self.participant.name, "New leader(",self.participant.address, ") failed to retrieve state from previous leader(", self.participant.previousLeader, "), so is loading data from server.");
+                    ozpIwc.log.debug(self.participant.name, "New leader(",self.participant.address, ") failed to retrieve state from previous leader(", self.participant.previousLeader, "), so is loading data from server.");
                 }
 
                 self.participant.off("receivedState", recvFunc);
@@ -10444,14 +10465,12 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
 
         } else {
             // This is the first of the bus, winner doesn't obtain any previous state
-            ozpIwc.log.log(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
+            ozpIwc.log.debug(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
             self.loadFromServer().then(function (data) {
                 self.setToLeader();
             },function(err){
-                ozpIwc.log.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
+                ozpIwc.log.debug(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
                 self.setToLeader();
-            })['catch'](function(er){
-                ozpIwc.log.log(er);
             });
         }
     });
@@ -10465,8 +10484,6 @@ ozpIwc.CommonApiBase.prototype.persistNodes=function() {
 	// throw not implemented error
 	throw new ozpIwc.ApiError("noImplementation","Base class persistence call not implemented.  Use DataApi to persist nodes.");
 };
-
-var ozpIwc=ozpIwc || {};
 
 /**
  * @class Endpoint
@@ -10694,6 +10711,7 @@ ozpIwc.initEndpoints=function(apiRoot) {
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
     this.endpointUrl=ozpIwc.linkRelPrefix+":user-data";
+    this.endpointUrls.push(ozpIwc.linkRelPrefix+":user-data");
 });
 
 /**
@@ -11105,12 +11123,33 @@ ozpIwc.DataApiValue.prototype.serialize=function() {
  */
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
+    this.endpointUrls.push(ozpIwc.linkRelPrefix+":intent");
 
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/ozpIntents/invocations",
         pattern: /^\/ozpIntents\/invocations\/.*$/,
         contentType: "application/vnd.ozp-iwc-intent-invocation-list-v1+json"
     }));
+    
+    // Register default handlers for the bus
+    var systemIntents=[{ 
+        contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
+        resource: "/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",
+        entity: {
+            label: "Launch in New Window",
+            invokeIntent: {
+                dst: "system.api",
+                action: "invoke",
+                resource: null
+            }
+        }
+    }];
+    
+    for(var i=0; i < systemIntents.length; ++i) {
+        var n=this.makeValue(systemIntents[i]);
+        n.set(systemIntents[i]);
+        this.data[systemIntents[i].resource]=n;
+    }
 });
 
 /**
@@ -11164,7 +11203,8 @@ ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
         return new ozpIwc.IntentsApiHandlerValue({
             resource: resource,
             intentType: path[0] + "/" + path[1],
-            intentAction: path[2]
+            intentAction: path[2],
+            entity: packet.entity
         });
     };
     
@@ -11375,10 +11415,11 @@ ozpIwc.IntentsApi.prototype.handleDelete=function(node,packetContext) {
 ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (handlerNode, packetContext,inFlightIntent) {
     inFlightIntent = inFlightIntent || {};
 
-    var packet = handlerNode.entity.invokeIntent;
+    var packet = ozpIwc.util.clone(handlerNode.entity.invokeIntent);
     packet.entity = packet.entity || {};
     packet.entity.inFlightIntent = inFlightIntent.resource;
-
+    packet.entity.inFlightIntentEntity= inFlightIntent.entity;
+    packet.src=this.participant.name;
     var self = this;
     this.participant.send(packet,function(response,done) {
         var blacklist=['src','dst','msgId','replyTo'];
@@ -11753,9 +11794,12 @@ ozpIwc.IntentsApiHandlerValue.prototype.getHandlers=function(packetContext) {
  */
 ozpIwc.IntentsApiHandlerValue.prototype.set=function(packet) {
     ozpIwc.CommonApiValue.prototype.set.apply(this,arguments);
-    this.entity.invokeIntent = this.entity.invokeIntent  || {};
+    this.entity.invokeIntent = packet.entity.invokeIntent  || {};
     this.entity.invokeIntent.dst = this.entity.invokeIntent.dst || packet.src;
-    this.entity.invokeIntent.resource = this.entity.invokeIntent.resource || "/intents" + packet.resource;
+    // allow null or empty strings for a resource 
+    if(typeof(this.entity.invokeIntent.resource) === "undefined") {
+        this.entity.invokeIntent.resource = "/intents" + packet.resource;
+    }
     this.entity.invokeIntent.action = this.entity.invokeIntent.action || "invoke";
 };
 
@@ -11788,7 +11832,7 @@ ozpIwc.IntentsApiInFlightIntent = ozpIwc.util.extend(ozpIwc.CommonApiValue, func
     this.entity={
         'intent': {
             'type': config.type,
-            'action': config.action,
+            'action': config.action
         },
         'contentType' : config.contentType,
         'entity': config.entity,
@@ -12107,8 +12151,6 @@ ozpIwc.NamesApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config)
 	ozpIwc.CommonApiValue.apply(this,arguments);
 });
 
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.api.Type
  */
@@ -12130,14 +12172,19 @@ var ozpIwc=ozpIwc || {};
  */
 ozpIwc.SystemApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
+    this.endpointUrls.push(
+        ozpIwc.linkRelPrefix+":application",
+        ozpIwc.linkRelPrefix+":user",
+        ozpIwc.linkRelPrefix+":system");
+
 
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/application",
         pattern: /^\/application\/.*$/,
         contentType: "application/vnd.ozp-iwc-application-list-v1+json"
     }));
-
     this.on("changedNode",this.updateIntents,this);
+
 });
 
 /**
@@ -12228,27 +12275,6 @@ ozpIwc.SystemApi.prototype.makeValue = function(packet){
                     contentType: packet.contentType,
                     systemApi: this
                 });
-
-                this.participant.send({
-                    dst: "intents.api",
-                    action: "register",
-                    contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
-                    resource: launchDefinition,
-                    entity: {
-                        icon: (packet.entity.icons && packet.entity.icons.small) ? packet.entity.icons.small : "",
-                        label: packet.entity.name || "",
-                        contentType: "application/json",
-                        invokeIntent: {
-                            dst: "system.api",
-                            action: "invoke",
-                            resource: packet.resource
-                        }
-                    }
-                }, function (response, done) {
-                    app.entity.launchResource = response.entity.resource;
-                    done();
-                });
-
                 return app;
             default:
                 return new ozpIwc.CommonApiValue(packet);
@@ -12295,8 +12321,12 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
         dst: "intents.api",
         contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
         action: "invoke",
-        resource: node.entity.launchResource,
-        entity: packetContext.packet.entity
+        resource: "/application/vnd.ozp-iwc-launch-data-v1+json/run",
+        entity: {
+            "url": node.entity.launchUrls.default,
+            "applicationId": node.resource,
+            "launchData": packetContext.packet.entity
+        }
     });
     packetContext.replyTo({'response': "ok"});
 };
@@ -12306,9 +12336,15 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
  *
  * @method handleInvoke
  */
-ozpIwc.SystemApi.prototype.handleInvoke = function(node,packetContext) {
+ozpIwc.SystemApi.prototype.rootHandleInvoke = function(node,packetContext) {
     if(packetContext.packet.entity && packetContext.packet.entity.inFlightIntent){
-        this.launchApplication(node,packetContext.packet.entity.inFlightIntent);
+        var launchParams=[
+            "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),
+            "ozpIwc.inFlightIntent="+encodeURIComponent(packetContext.packet.entity.inFlightIntent)
+        ];
+
+        ozpIwc.util.openWindow(packetContext.packet.entity.inFlightIntentEntity.entity.url,launchParams.join("&"));
+//        this.launchApplication(node,packetContext.packet.entity.inFlightIntent);
         packetContext.replyTo({'response': "ok"});
     } else{
         packetContext.replyTo({'response': "badResource"});
@@ -12316,21 +12352,16 @@ ozpIwc.SystemApi.prototype.handleInvoke = function(node,packetContext) {
 
 };
 
-/**
- * Launches the specified node's application.
- *
- * @method launchApplication
- * @param {ozpIwc.SystemApiApplicationValue} node
- * @param {ozpIwc.SystemApiMailboxValue} mailboxNode
- */
-ozpIwc.SystemApi.prototype.launchApplication=function(node,intentResource) {
-    var launchParams=[
-            "ozpIwc.peer="+encodeURIComponent(ozpIwc.BUS_ROOT),
-            "ozpIwc.inFlightIntent="+encodeURIComponent(intentResource)
-    ];
-
-    ozpIwc.util.openWindow(node.entity.launchUrls.default,launchParams.join("&"));
-};
+///**
+// * Launches the specified node's application.
+// *
+// * @method launchApplication
+// * @param {ozpIwc.SystemApiApplicationValue} node
+// * @param {ozpIwc.SystemApiMailboxValue} mailboxNode
+// */
+//ozpIwc.SystemApi.prototype.launchApplication=function(node,intentResource) {
+//
+//};
 
 
 /**
@@ -12367,6 +12398,7 @@ ozpIwc.SystemApiApplicationValue.prototype.getIntentsRegistrations=function() {
     return this.entity.intents;
 };
 var ozpIwc=ozpIwc || {};
+ozpIwc.version = "0.2";
 ozpIwc.ELECTION_TIMEOUT = 1000;
 ozpIwc.apiRootUrl = ozpIwc.apiRootUrl || "/api";
 ozpIwc.policyRootUrl = ozpIwc.policyRootUrl || "/policy";

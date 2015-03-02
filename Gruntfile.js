@@ -62,18 +62,20 @@ module.exports = function(grunt) {
                 'bower_components/angular/angular.js',
                 'bower_components/vis/dist/vis.js',
                 'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
+                'bower_components/angular-ui-router/release/angular-ui-router.js',
                 'app/js/debugger/debugger.js',
                 'app/js/debugger/**/*.js'
             ],
             debuggerCss: [
                 'bower_components/bootstrap/dist/css/bootstrap.css',
                 'bower_components/vis/dist/vis.css',
-                'app/css/debugger.css'
+                'app/css/debugger/**/*.css'
             ],
             all: [
                 '<%= src.metrics %>',
                 '<%= src.bus %>',
-                '<%= src.client %>'
+                '<%= src.client %>',
+                '<%= src.debugger %>'
             ]
         },
         output: {
@@ -162,6 +164,32 @@ module.exports = function(grunt) {
                         src: ['*'],
                         dest: './dist/fonts',
                         cwd: 'bower_components/bootstrap/dist/fonts',
+                        expand: true,
+                        nonull:true
+                    },{
+                        src: ['**/*.tpl.html'],
+                        dest: './dist/templates',
+                        cwd: 'app/js/debugger',
+                        expand: true,
+                        flatten: true,
+                        nonull:true
+                    },{
+                        src: ['**/*.json'],
+                        dest: './dist/data',
+                        cwd: 'app/js/debugger',
+                        expand: true,
+                        flatten: true,
+                        nonull:true
+                    },{
+                        src: ['**'],
+                        dest: './dist/hal-browser',
+                        cwd: 'bower_components/hal-browser',
+                        expand: true,
+                        nonull:true
+                    },{
+                        src: ['favicon.ico'],
+                        dest: './dist/',
+                        cwd: 'app/js/debugger',
                         expand: true,
                         nonull:true
                     }
@@ -291,6 +319,17 @@ module.exports = function(grunt) {
                 push: false,
                 pushTo: 'origin'
             }
+        },
+        shell: {
+            buildVersionFile: {
+                command: [
+                    'echo "Version: <%= pkg.version %>" > dist/version.txt',
+                    'echo "Git hash: " >> dist/version.txt',
+                    'git rev-parse HEAD >> dist/version.txt',
+                    'echo Date: >> dist/version.txt',
+                    'git rev-parse HEAD | xargs git show -s --format=%ci >> dist/version.txt'
+                ].join('&&')
+            }
         }
 
     };
@@ -301,8 +340,8 @@ module.exports = function(grunt) {
     grunt.initConfig(config);
 
     // Default task(s).
-    grunt.registerTask('build', ['copy:hackBootstrap','concat_sourcemap', 'uglify', 'copy:dist']);
-    grunt.registerTask('dist', ['jshint','build', 'yuidoc']);
+    grunt.registerTask('build', ['copy:hackBootstrap', 'jshint', 'concat_sourcemap', 'uglify', 'copy:dist','shell:buildVersionFile']);
+    grunt.registerTask('dist', ['build', 'yuidoc']);
     grunt.registerTask('testOnly', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
     grunt.registerTask('test', ['build','connect','watch']);
     grunt.registerTask('default', ['dist']);

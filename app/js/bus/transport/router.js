@@ -1,5 +1,3 @@
-var ozpIwc=ozpIwc || {};
-
 /**
  * @submodule bus.transport
  */

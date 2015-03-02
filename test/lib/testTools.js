@@ -55,7 +55,22 @@ var customMatchers={
 				};
 			}
 		}
-	};}
+	};},
+    toNotHappen: function(util, customEqualityTesters) { return {
+        compare: function(actual) {
+            var m="";            
+            if(actual instanceof Error) {
+                m=actual.message;
+                m+=actual.stack?("\n"+actual.stack):"";
+            } else {
+                m="Did not expect this: " + JSON.stringify(actual);
+            }
+            return { 
+                pass: false,
+                message: m
+            };
+        }
+    };}
 };
 
 beforeEach(function() {

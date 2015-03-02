@@ -181,7 +181,8 @@ describe("KeyBroadcastLocalStorageLink", function () {
 
             var fragmentIndex = fragmentPacket.msgId;
 
-            var droppedPacketCount = ozpIwc.metrics.meter(link.metricsPrefix,'fragments_dropped').value;
+//            var droppedPacketCount = link.packetsFailedCounter.value;
+            var droppedFragmentCount = link.droppedFragmentsCounter.value;
 
             link.handleFragment(networkPacket);
             var expectedFragments = link.fragments[fragmentIndex].total;
@@ -191,7 +192,8 @@ describe("KeyBroadcastLocalStorageLink", function () {
 
             expect(link.fragments[fragmentIndex]).toBeUndefined();
 
-            expect(ozpIwc.metrics.meter(link.metricsPrefix,'fragments_dropped').value).toEqual(droppedPacketCount + expectedFragments);
+//            expect(link.packetsFailedCounter.value).toEqual(droppedPacketCount + 1);
+            expect(link.droppedFragmentsCounter.value).toEqual(droppedFragmentCount + expectedFragments);
         });
 
         it("converts fragments back into a TransportPacket", function() {

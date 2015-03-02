@@ -1,6 +1,4 @@
-/** @namespace */
 var ozpIwc=ozpIwc || {};
-
 /**
  * Common classes used between both the Client and the Bus.
  * @module common

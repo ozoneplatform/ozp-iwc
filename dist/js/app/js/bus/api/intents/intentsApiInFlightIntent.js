@@ -27,7 +27,7 @@ ozpIwc.IntentsApiInFlightIntent = ozpIwc.util.extend(ozpIwc.CommonApiValue, func
     this.entity={
         'intent': {
             'type': config.type,
-            'action': config.action,
+            'action': config.action
         },
         'contentType' : config.contentType,
         'entity': config.entity,

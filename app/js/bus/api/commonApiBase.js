@@ -70,6 +70,8 @@ ozpIwc.CommonApiBase = function(config) {
      * @default 0
      */
     this.retrievedBranches = 0;
+
+    this.endpointUrls=[];
 };
 
 /**
@@ -314,7 +316,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                         var header = objectResource.header;
                         self.updateResourceFromServer(payload, href, endpoint, res,header);
                     })['catch'](function (error) {
-                        ozpIwc.log.error("unable to load " + object.href + " because: ", error);
+                        ozpIwc.log.info("unable to load " + object.href + " because: ", error);
                     });
                 });
             } else {
@@ -324,7 +326,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                     var header = objectResource.header;
                     self.updateResourceFromServer(payload, href, endpoint, res,header);
                 })['catch'](function (error) {
-                    ozpIwc.log.error("unable to load " + object.href + " because: ", error);
+                    ozpIwc.log.info("unable to load " + object.href + " because: ", error);
                 });
             }
         }
@@ -512,7 +514,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
             f.apply(self);
         } catch(e) {
             if(!e.errorAction) {
-                ozpIwc.log.log("Unexpected error:",e);
+                ozpIwc.log.error("Unexpected error:",e);
             }
             packetContext.replyTo({
                 'response': e.errorAction || "unknownError",
@@ -1012,7 +1014,7 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
                     recvFunc();
                 } else {
                     self.loadFromServer();
-                    ozpIwc.log.log(self.participant.name, "New leader(",self.participant.address, ") failed to retrieve state from previous leader(", self.participant.previousLeader, "), so is loading data from server.");
+                    ozpIwc.log.debug(self.participant.name, "New leader(",self.participant.address, ") failed to retrieve state from previous leader(", self.participant.previousLeader, "), so is loading data from server.");
                 }
 
                 self.participant.off("receivedState", recvFunc);
@@ -1021,14 +1023,12 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
 
         } else {
             // This is the first of the bus, winner doesn't obtain any previous state
-            ozpIwc.log.log(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
+            ozpIwc.log.debug(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
             self.loadFromServer().then(function (data) {
                 self.setToLeader();
             },function(err){
-                ozpIwc.log.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
+                ozpIwc.log.debug(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
                 self.setToLeader();
-            })['catch'](function(er){
-                ozpIwc.log.log(er);
             });
         }
     });

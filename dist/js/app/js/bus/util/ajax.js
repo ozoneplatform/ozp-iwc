@@ -1,6 +1,3 @@
-/** @namespace */
-var ozpIwc=ozpIwc || {};
-
 /**
  * Utility methods used on the IWC bus.
  * @module bus

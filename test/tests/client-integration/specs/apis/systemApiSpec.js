@@ -1,30 +1,36 @@
 /**
  * Network Integration
  */
-
+function pit(desc,fn) {
+    it(desc,function(done) {
+        fn().then(done,function(error) {
+            expect(error).toNotHappen();
+            done();
+        });
+    });
+}
 
 describe("System API", function() {
     var client;
-    var participant;
-
+//    var participant;
     beforeEach(function(done) {
         client = new ozpIwc.Client({
             peerUrl: "http://" + window.location.hostname + ":14002"
         });
-        participant = new ozpIwc.test.MockParticipant({
-            clientUrl: "http://" + window.location.hostname + ":14001",
-            'client': client
-        });
-
-        var gate = doneSemaphore(2, done);
-
-        participant.on("connected", gate);
-        client.on("connected", gate);
+//        participant = new ozpIwc.test.MockParticipant({
+//            clientUrl: "http://" + window.location.hostname + ":14001",
+//            'client': client
+//        });
+//
+//        var gate = doneSemaphore(2, done);
+//
+//        participant.on("connected", gate);
+        client.on("connected", done);
     });
 
     afterEach(function() {
         client.disconnect();
-        participant.close();
+//        participant.close();
     });
 
     it("has pretty name and email in /user", function(done) {
@@ -89,6 +95,58 @@ describe("System API", function() {
                     expect(error.response).toEqual("badAction");
                     done();
                 });
+        });
+    });
+    
+    pit("registers for the intent run /application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",function() {
+       return client.api("intents.api").get("/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api")
+           .then(function(reply) {
+               console.log("Received Reply",reply);
+               expect(reply.response).toEqual("ok");
+               expect(reply.entity.invokeIntent).toBeDefined();
+               expect(reply.entity.invokeIntent.action).toEqual("invoke");
+               expect(reply.entity.invokeIntent.dst).toEqual("system.api");
+           });
+    });
+    pit("launch on system.api invokes the intent run /application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",function() {
+        // hijack the system.api's intent registration so that we get it
+       return client.api("intents.api").set("/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",{
+            contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
+            resource: "/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",
+            entity: {
+                label: "Launch in New Window",
+                invokeIntent: {
+                    dst: client.address,
+                    action: "invoke",
+                    resource: ""
+                }
+            }
+        }).then(function(reply) {
+            expect(reply.response).toEqual("ok");
+            return Promise.all([
+                client.api("system.api").launch("/application/8e8265bb-fef8-49ab-8b13-2356a1647b6b",{
+                    entity: { "foo": 123 }
+                }),
+                new Promise(function(resolve,reject) {
+                    client.on("receive",function(packet) {
+                        if(packet.src==="intents.api" && packet.resource==="") {
+                            resolve(packet);
+                        }
+                    });
+                })
+            ]);
+        }).then(function(replies) {
+            var intentsPacket=replies[1];
+            expect(intentsPacket.entity.inFlightIntent).toBeDefined();
+            return client.api("intents.api").get(intentsPacket.entity.inFlightIntent);
+        }).then(function(reply) {
+            expect(reply.entity).toEqual(jasmine.objectContaining({
+                "entity": { 
+                    "url": "http://localhost:15004/", 
+                    "applicationId": "/application/8e8265bb-fef8-49ab-8b13-2356a1647b6b", 
+                    "launchData": { "foo": 123 } 
+                }
+            }));
         });
     });
 });

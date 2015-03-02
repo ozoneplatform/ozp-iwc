@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <head>
     <title>Mock Participant for OZP IWC integration testing</title>
-    <script type="text/javascript" src="/js/0json2.js"></script>
-    <script type="text/javascript" src="/js/ie-console-shim.js"></script>
     <script type="text/javascript" src="/js/ozpIwc-client.js"></script>
-    <script type="text/javascript" src="/js/ozpIwc-bus.js"></script>
+    <!--script type="text/javascript" src="/js/ozpIwc-bus.js"></script-->
     <script type="text/javascript" src="/js/ozpIwc-metrics.js"></script>
     <script type="text/javascript">
         var client = new ozpIwc.Client({peerUrl: "http://" + window.location.hostname + ":14002"});
@@ -40,7 +38,7 @@
                             testAddress = message.address;
                             break;
                         case "send":
-                            client.send(event.data.packet, function (response) {
+                            client.send(event.data.packet).then(function (response) {
                                 sendToParent({
                                     'msgType': "return",
                                     'runId': message.runId,

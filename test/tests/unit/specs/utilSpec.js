@@ -254,7 +254,7 @@ describe("Async Action",function() {
                 })
                 .failure(function(err){
                     expect("this").toEqual("not happen.");
-                })
+                });
         });
         it("can reject an AsyncAction immediately if any action in a group of actions rejects",function() {
             var tempAction1 = new ozpIwc.AsyncAction().resolve('failure',"I dropped my ice cream.");
@@ -357,7 +357,7 @@ describe("Async Action",function() {
                 expect(val).toEqual({foo:1});
                 done();
             });
-        })
+        });
     });
 });
 

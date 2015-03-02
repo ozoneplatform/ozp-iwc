@@ -23,12 +23,33 @@
  */
 ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
+    this.endpointUrls.push(ozpIwc.linkRelPrefix+":intent");
 
     this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
         resource: "/ozpIntents/invocations",
         pattern: /^\/ozpIntents\/invocations\/.*$/,
         contentType: "application/vnd.ozp-iwc-intent-invocation-list-v1+json"
     }));
+    
+    // Register default handlers for the bus
+    var systemIntents=[{ 
+        contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
+        resource: "/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",
+        entity: {
+            label: "Launch in New Window",
+            invokeIntent: {
+                dst: "system.api",
+                action: "invoke",
+                resource: null
+            }
+        }
+    }];
+    
+    for(var i=0; i < systemIntents.length; ++i) {
+        var n=this.makeValue(systemIntents[i]);
+        n.set(systemIntents[i]);
+        this.data[systemIntents[i].resource]=n;
+    }
 });
 
 /**
@@ -82,7 +103,8 @@ ozpIwc.IntentsApi.prototype.makeValue = function (packet) {
         return new ozpIwc.IntentsApiHandlerValue({
             resource: resource,
             intentType: path[0] + "/" + path[1],
-            intentAction: path[2]
+            intentAction: path[2],
+            entity: packet.entity
         });
     };
     
@@ -293,10 +315,11 @@ ozpIwc.IntentsApi.prototype.handleDelete=function(node,packetContext) {
 ozpIwc.IntentsApi.prototype.invokeIntentHandler = function (handlerNode, packetContext,inFlightIntent) {
     inFlightIntent = inFlightIntent || {};
 
-    var packet = handlerNode.entity.invokeIntent;
+    var packet = ozpIwc.util.clone(handlerNode.entity.invokeIntent);
     packet.entity = packet.entity || {};
     packet.entity.inFlightIntent = inFlightIntent.resource;
-
+    packet.entity.inFlightIntentEntity= inFlightIntent.entity;
+    packet.src=this.participant.name;
     var self = this;
     this.participant.send(packet,function(response,done) {
         var blacklist=['src','dst','msgId','replyTo'];

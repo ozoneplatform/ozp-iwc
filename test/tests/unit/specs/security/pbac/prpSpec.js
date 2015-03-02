@@ -17,7 +17,7 @@ describe("Policy Repository Point",function() {
                 .success(function(policies){
                     expect(policies[0]()).toEqual("Deny");
                     done();
-                })
+                });
         });
 
         it('handles no policies in the check',function(){
@@ -64,7 +64,7 @@ describe("Policy Repository Point",function() {
                 .success(function(policy){
                     expect(typeof policy).toEqual("function");
                     done();
-                })
+                });
         });
 
 

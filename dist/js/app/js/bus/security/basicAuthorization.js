@@ -1,4 +1,3 @@
-var ozpIwc=ozpIwc || {};
 /**
  * @submodule bus.security
  */
@@ -35,9 +34,9 @@ ozpIwc.BasicAuthorization=function(config) {
      * @type {auth.policies|*|*[]|ozpIwc.BasicAuthorization.policies|BasicAuthorization.policies}
      */
     this.policies= config.policies || [
-//        ozpIwc.ozpIwcPolicies.permitAll
-        ozpIwc.ozpIwcPolicies.permitWhenObjectHasNoAttributes,
-        ozpIwc.ozpIwcPolicies.subjectHasAllObjectAttributes
+//        ozpIwc.abacPolicies.permitAll
+        ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes,
+        ozpIwc.abacPolicies.subjectHasAllObjectAttributes
     ];
 
     var self = this;
@@ -115,4 +114,4 @@ ozpIwc.BasicAuthorization.prototype.isPermitted=function(request) {
  * @type {ozpIwc.BasicAuthorization}
  * @todo Should this be with defaultWiring?
  */
-//ozpIwc.authorization=new ozpIwc.BasicAuthorization();
+ozpIwc.authorization=new ozpIwc.BasicAuthorization();
