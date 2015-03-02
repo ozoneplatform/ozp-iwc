@@ -51,12 +51,17 @@ ozpIwc.util.ajax = function (config) {
                 });
             }
             catch (e) {
-                if(this.status === 204 && !this.responseText){
+                if(this.status === 200 && this.responseXML){
                     resolve({
-                        "response": {},
+                        "response": this.responseXML,
                         "header":  ozpIwc.util.ajaxResponseHeaderToJSON(this.getAllResponseHeaders())
                     });
-                } else {
+                } else if(this.status === 204 && !this.responseText) {
+                    resolve({
+                        "response": {},
+                        "header": ozpIwc.util.ajaxResponseHeaderToJSON(this.getAllResponseHeaders())
+                    });
+                }  else {
                     reject(this);
                 }
             }

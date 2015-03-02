@@ -40,7 +40,7 @@ ozpIwc.test.MockParticipant.prototype.postMessageHandler=function(event) {
         if (typeof(message) === 'string') {
             message = JSON.parse(event.data);
         }
-        console.log(JSON.stringify(message));
+        //console.log(JSON.stringify(message));
         switch (message.msgType) {
             case "address":
                 this.address = message.address;
