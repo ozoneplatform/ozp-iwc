@@ -4,7 +4,7 @@ debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,clie
   function saveAppData(appResource) {
     return client.api("system.api").get(appResource).then(function(response) {
         scope.appListings.push(response.entity);
-    }).catch(function(err){
+    })["catch"](function(err){
           console.log("Not Supported: " + err.response);
     });
   }
@@ -12,7 +12,7 @@ debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,clie
     function getApplicationResources() {
       return client.api('system.api').get('/application').then(function (response) {
           return response.entity;
-      }).catch(function(err){
+      })["catch"](function(err){
           return console.log("Not Supported: " + err.response);
       });
     }
@@ -22,7 +22,7 @@ debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,clie
           scope.username = response.entity.username;
           scope.userRole = response.entity.highestRole;
           return response.entity;
-      }).catch(function(err){
+      })["catch"](function(err){
           return console.log("Not Supported: " + err.response);
       });
     }
@@ -35,7 +35,7 @@ debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,clie
         return apps.reduce(function (previous, current) {
           return previous.then(function () {
             return saveAppData(current);
-          }).catch(function (error) {
+          })["catch"](function (error) {
             console.log('should not have happened: ' + error);
           });
         }, Promise.resolve()).then(function () {

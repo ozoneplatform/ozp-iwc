@@ -90283,13 +90283,13 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
                         key.children = "Not Supported: " + response.response;
                     }
                     if(!scope.$$phase) { scope.$apply(); }
-                }).catch(function (error) {
+                })["catch"](function (error) {
                     console.log('Error in loadKey: ' + JSON.stringify(error));
                 });
             } else {
                 if(!scope.$$phase) { scope.$apply(); }
             }
-        }).catch(function (error) {
+        })["catch"](function (error) {
             console.log('Error in loadKey: ' + JSON.stringify(error));
         });
     };
@@ -90383,7 +90383,7 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
                 scope.msg.response = reply;
                 scope.msg.response.entity = JSON.stringify(reply.entity, null, 2);
                 scope.$apply();
-            }).catch(function (error) {
+            })["catch"](function (error) {
                 console.log('error: ' + JSON.stringify(error));
             });
         }
@@ -90531,7 +90531,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
     return apps.reduce(function (previous, current) {
             return previous.then(function () {
               return saveAppData(current, scope.appListings);
-            }).catch(function (error) {
+            })["catch"](function (error) {
               console.log('should not have happened: ' + error);
             });
           }, Promise.resolve()).then(function () {
@@ -90549,7 +90549,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
       .set(resource, {"entity": entity})
       .then(function (response) {
             console.log('updated OK');
-        }).catch(function(err) {
+        })["catch"](function(err) {
           console.log('update failed',err);
       });
   }
@@ -90616,7 +90616,7 @@ debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,clie
   function saveAppData(appResource) {
     return client.api("system.api").get(appResource).then(function(response) {
         scope.appListings.push(response.entity);
-    }).catch(function(err){
+    })["catch"](function(err){
           console.log("Not Supported: " + err.response);
     });
   }
@@ -90624,7 +90624,7 @@ debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,clie
     function getApplicationResources() {
       return client.api('system.api').get('/application').then(function (response) {
           return response.entity;
-      }).catch(function(err){
+      })["catch"](function(err){
           return console.log("Not Supported: " + err.response);
       });
     }
@@ -90634,7 +90634,7 @@ debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,clie
           scope.username = response.entity.username;
           scope.userRole = response.entity.highestRole;
           return response.entity;
-      }).catch(function(err){
+      })["catch"](function(err){
           return console.log("Not Supported: " + err.response);
       });
     }
@@ -90647,7 +90647,7 @@ debuggerModule.controller("MyAppsCtrl",["$scope","iwcClient",function(scope,clie
         return apps.reduce(function (previous, current) {
           return previous.then(function () {
             return saveAppData(current);
-          }).catch(function (error) {
+          })["catch"](function (error) {
             console.log('should not have happened: ' + error);
           });
         }, Promise.resolve()).then(function () {

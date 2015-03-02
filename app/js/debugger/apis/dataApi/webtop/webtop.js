@@ -76,7 +76,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
     return apps.reduce(function (previous, current) {
             return previous.then(function () {
               return saveAppData(current, scope.appListings);
-            }).catch(function (error) {
+            })["catch"](function (error) {
               console.log('should not have happened: ' + error);
             });
           }, Promise.resolve()).then(function () {
@@ -94,7 +94,7 @@ debuggerModule.controller('WebtopCtrl', ["$scope", "$http", "iwcClient", functio
       .set(resource, {"entity": entity})
       .then(function (response) {
             console.log('updated OK');
-        }).catch(function(err) {
+        })["catch"](function(err) {
           console.log('update failed',err);
       });
   }
