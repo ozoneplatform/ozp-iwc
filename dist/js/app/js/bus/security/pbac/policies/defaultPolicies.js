@@ -8,28 +8,11 @@ ozpIwc.policyAuth.defaultPolicies = {};
  * @param request
  * @returns {string}
  */
-ozpIwc.policyAuth.defaultPolicies['/policy/connect'] = function(request){
+ozpIwc.policyAuth.defaultPolicies['policy://ozpIwc/connect'] = function(request){
     var policyActions = ['connect'];
-    var whiteListedOrigins = [
-        "http://localhost:13000",
-        "http://localhost:14000",
-        "http://localhost:14001",
-        "http://localhost:14002",
-        "http://localhost:15000",
-        "http://localhost:15001",
-        "http://localhost:15002",
-        "http://localhost:15003",
-        "http://localhost:15004",
-        "http://localhost:15005",
-        "http://localhost:15006",
-        "http://localhost:15007",
-        "http://ozone-development.github.io"
-    ];
 
     if(!ozpIwc.util.arrayContainsAll(policyActions,request.action['ozp:iwc:action'])){
         return "NotApplicable";
-    } else if(!ozpIwc.util.arrayContainsAll(whiteListedOrigins,request.subject['ozp:iwc:origin'])){
-        return "Deny";
     } else {
         return "Permit";
     }
@@ -44,7 +27,7 @@ ozpIwc.policyAuth.defaultPolicies['/policy/connect'] = function(request){
  * @returns {string}
  */
 ozpIwc.policyAuth.defaultPolicies['/policy/sendAs'] = function(request){
-    return ozpIwc.abacPolicies.defaultPolicy(request,'sendAs');
+    return ozpIwc.ozpIwcPolicies.defaultPolicy(request,'sendAs');
 };
 
 /**
@@ -56,7 +39,7 @@ ozpIwc.policyAuth.defaultPolicies['/policy/sendAs'] = function(request){
  * @returns {string}
  */
 ozpIwc.policyAuth.defaultPolicies['/policy/receiveAs'] = function(request){
-    return ozpIwc.abacPolicies.defaultPolicy(request,'receiveAs');
+    return ozpIwc.ozpIwcPolicies.defaultPolicy(request,'receiveAs');
 };
 
 /**
@@ -68,7 +51,7 @@ ozpIwc.policyAuth.defaultPolicies['/policy/receiveAs'] = function(request){
  * @returns {string}
  */
 ozpIwc.policyAuth.defaultPolicies['/policy/read'] = function(request){
-    return ozpIwc.abacPolicies.defaultPolicy(request,'read');
+    return ozpIwc.ozpIwcPolicies.defaultPolicy(request,'read');
 };
 
 /**
@@ -80,5 +63,5 @@ ozpIwc.policyAuth.defaultPolicies['/policy/read'] = function(request){
  * @returns {string}
  */
 ozpIwc.policyAuth.defaultPolicies['/policy/apiNode'] = function(request){
-    return ozpIwc.abacPolicies.defaultPolicy(request,'access');
+    return ozpIwc.ozpIwcPolicies.defaultPolicy(request,'access');
 };

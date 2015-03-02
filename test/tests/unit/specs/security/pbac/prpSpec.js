@@ -51,7 +51,7 @@ describe("Policy Repository Point",function() {
             spyOn(ozpIwc.util,"ajax").and.callFake(function(){
                 return new Promise(function(resolve,reject){
                     resolve({
-                        'response': prp.policyCache['/policy/connect']
+                        'response': prp.policyCache['policy://policy/connect']
                     });
                 });
             });
@@ -60,7 +60,7 @@ describe("Policy Repository Point",function() {
         });
 
         xit("fetches desired policies.",function(done){
-            prp.fetchPolicy("/policy/connect")
+            prp.fetchPolicy("policy://policy/connect")
                 .success(function(policy){
                     expect(typeof policy).toEqual("function");
                     done();
@@ -69,7 +69,7 @@ describe("Policy Repository Point",function() {
 
 
         it("returns a promise chain with policy evaluation call for the PDP",function(done){
-            prp.getPolicies("/policy/connect")
+            prp.getPolicies("policy://policy/connect")
                 .success(function(policies){
                     expect(Array.isArray(policies)).toEqual(true);
                     expect(policies.length).toEqual(1);

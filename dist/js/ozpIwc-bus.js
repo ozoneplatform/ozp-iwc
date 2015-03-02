@@ -4845,316 +4845,6 @@ ozpIwc.util.alert = function (message, errorObject) {
     }
 };
 
-var ozpIwc=ozpIwc || {};
-/**
- * @submodule bus.security
- */
-
-/** @typedef {string} ozpIwc.security.Role */
-
-/** @typedef {string} ozpIwc.security.Permission */
-
-/** @typedef { ozpIwc.security.Role[] } ozpIwc.security.Subject */
-
-/** 
- * @typedef {object} ozpIwc.security.Actor 
- * @property {ozpIwc.security.Subject} securityAttributes
- */
-
-
-/**
- * @TODO (DOC)
- * @class BasicAuthentication
- * @constructor
- * @namespace ozpIwc
- */
-ozpIwc.BasicAuthentication=function() {
-
-    /**
-     * @property roles
-     * @type Object
-     * @default {}
-     */
-	this.roles={};
-    var self = this;
-    ozpIwc.metrics.gauge('security.authentication.roles').set(function() {
-        return self.getRoleCount();
-    });
-};
-
-/**
- * Returns the number of roles currently defined.
- *
- * @method getRoleCount
- *
- * @returns {number} the number of roles defined
- */
-ozpIwc.BasicAuthentication.prototype.getRoleCount=function() {
-    if (!this.roles || !Object.keys(this.roles)) {
-        return 0;
-    }
-    return Object.keys(this.roles).length;
-};
-
-/**
- * Returns the authenticated subject for the given credentials.
- * 
- * <p>The preAuthenticatedSubject allows an existing subject to augment their
- * roles using credentials.  For example, PostMessageParticipants are
- * assigned a role equal to their origin, since the browser authoritatively
- * determines that.  The security module can then add additional roles based
- * upon configuration.
- *
- * @method login
- * @param {ozpIwc.security.Credentials} credentials
- * @param {ozpIwc.security.Subject} [preAuthenticatedSubject] The pre-authenticated
- *   subject that is presenting these credentials.
- *
- * @returns {ozpIwc.AsyncAction} If the credentials are authenticated, the success handler receives
- *     the subject.
- */
-ozpIwc.BasicAuthentication.prototype.login=function(credentials,preAuthenticatedSubject) {
-	if(!credentials) {
-		throw "Must supply credentials for login";
-	}
-	var action=new ozpIwc.AsyncAction();
-	
-	preAuthenticatedSubject=preAuthenticatedSubject || [];
-	return action.resolve("success",preAuthenticatedSubject);
-};
-
-
-var ozpIwc=ozpIwc || {};
-/**
- * @submodule bus.security
- */
-
-/** @typedef {String} ozpIwc.security.Role */
-/** @typedef {String} ozpIwc.security.Permission */
-/** @typedef { ozpIwc.security.Role[] } ozpIwc.security.Subject */
-/** 
- * @typedef {object} ozpIwc.security.Actor 
- * @property {ozpIwc.security.Subject} securityAttributes
- */
-
-
-/** 
- * A simple Attribute-Based Access Control implementation
- * @todo Permissions are local to each peer.  Does this need to be synced?
- * 
- * @class BasicAuthorization
- * @constructor
- *
- * @namespace ozpIwc
- */
-ozpIwc.BasicAuthorization=function(config) {
-    config=config || {};
-
-    /**
-     * @property roles
-     * @type Object
-     */
-	this.roles={};
-
-    /**
-     * @property policies
-     * @type {auth.policies|*|*[]|ozpIwc.BasicAuthorization.policies|BasicAuthorization.policies}
-     */
-    this.policies= config.policies || [
-//        ozpIwc.abacPolicies.permitAll
-        ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes,
-        ozpIwc.abacPolicies.subjectHasAllObjectAttributes
-    ];
-
-    var self = this;
-    ozpIwc.metrics.gauge('security.authorization.roles').set(function() {
-        return self.getRoleCount();
-    });
-};
-/**
- * Returns the number of roles currently defined.
- *
- * @method getRoleCount
- *
- * @returns {Number} the number of roles defined
- */
-ozpIwc.BasicAuthorization.prototype.getRoleCount=function() {
-    if (!this.roles || !Object.keys(this.roles)) {
-        return 0;
-    }
-    return Object.keys(this.roles).length;
-};
-
-/**
- *
- * @method implies
- * @param {Array} subjectVal
- * @param {Array} objectVal
- *
- * @returns {Boolean}
- */
-ozpIwc.BasicAuthorization.prototype.implies=function(subjectVal,objectVal) {
-    // no object value is trivially true
-    if(objectVal===undefined || objectVal === null) {
-        return true;
-    }
-    // no subject value when there is an object value is trivially false
-    if(subjectVal===undefined || subjectVal === null) {
-        return false;
-    }
-    
-    // convert both to arrays, if necessary
-    subjectVal=Array.isArray(subjectVal)?subjectVal:[subjectVal];
-    objectVal=Array.isArray(objectVal)?objectVal:[objectVal];
-
-    // confirm that every element in objectVal is also in subjectVal
-    return ozpIwc.util.arrayContainsAll(subjectVal,objectVal);
-};
-
-
-/**
- * Confirms that the subject has all of the permissions requested.
- *
- * @method isPermitted
- * @param {object} request
- *
- * @returns {ozpIwc.AsyncAction}
- */
-ozpIwc.BasicAuthorization.prototype.isPermitted=function(request) {
-	var action=new ozpIwc.AsyncAction();
-	
-    var result=this.policies.some(function(policy) {
-        return policy.call(this,request)==="permit";
-    },this);
-    
-    
-    if(result) {
-        return action.resolve("success");
-    } else {
-		return action.resolve('failure');
-    }
-};
-
-
-/**
- * The instantiated authorization object.
- * @type {ozpIwc.BasicAuthorization}
- * @todo Should this be with defaultWiring?
- */
-//ozpIwc.authorization=new ozpIwc.BasicAuthorization();
-ozpIwc = ozpIwc || {};
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-ozpIwc.policyAuth.PolicyCombining = ozpIwc.policyAuth.PolicyCombining || {};
-
-
-/**
- *
- *
- * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides
- */
-ozpIwc.policyAuth.PolicyCombining['deny-overrides'] =
-        function(policies,request){
-    var atLeastOneErrorD,
-        atLeastOneErrorP,
-        atLeastOneErrorDP,
-        atLeastOnePermit = false;
-
-    for(var i in policies){
-        var decision = policies[i](request);
-        switch(decision){
-            case "Deny":
-                return "Deny";
-            case "Permit":
-                atLeastOnePermit = true;
-                break;
-            case "NotApplicable":
-                continue;
-            case "Indeterminate{D}":
-                atLeastOneErrorD = true;
-                break;
-            case "Indeterminate{P}":
-                atLeastOneErrorP = true;
-                break;
-            case "Indeterminate{DP}":
-                atLeastOneErrorDP = true;
-                break;
-            default:
-                continue;
-        }
-    }
-
-    if(atLeastOneErrorDP){
-        return "Indeterminate{DP}";
-    } else if(atLeastOneErrorD && (atLeastOneErrorP || atLeastOnePermit)){
-        return "Indeterminate{DP}";
-    } else if(atLeastOneErrorD){
-        return "Indeterminate{D}";
-    } else if(atLeastOnePermit) {
-        return "Permit";
-    } else if(atLeastOneErrorP){
-        return "Indeterminate{P}";
-    }
-
-    return "NotApplicable";
-
-};
-
-
-/**
- * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides
- */
-ozpIwc.policyAuth.PolicyCombining['permit-overrides'] =
-        function(){
-
-};
-
-/**
- * @method urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable
- */
-ozpIwc.policyAuth.PolicyCombining['first-applicable'] =
-        function(){
-
-};
-
-/**
- * @method urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable
- */
-ozpIwc.policyAuth.PolicyCombining['only-one-applicable'] =
-        function(){
-
-};
-
-/**
- * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
- */
-ozpIwc.policyAuth.PolicyCombining['ordered-deny-overrides'] =
-        function(){
-
-};
-
-/**
- * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides
- */
-ozpIwc.policyAuth.PolicyCombining['ordered-permit-overrides'] =
-        function(){
-
-};
-
-/**
- * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit
- */
-ozpIwc.policyAuth.PolicyCombining['deny-unless-permit'] =
-        function(){
-
-};
-
-/**
- * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-unless-deny
- */
-ozpIwc.policyAuth.PolicyCombining['permit-unless-deny'] =
-        function(){
-
-};
 ozpIwc = ozpIwc || {};
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 
@@ -5270,11 +4960,11 @@ ozpIwc.policyAuth.PDP = function(config){
 
     this.policySets = config.policySets ||
     {
-        'connectSet': ["/policy/connect"],
-        'apiSet': ["/policy/apiNode"],
-        'readSet': ["/policy/read"],
-        'receiveAsSet': ["/policy/receiveAs"],
-        'sendAsSet': ["/policy/sendAs"]
+        'connectSet': ["policy://ozpIwc/connect"],
+        'apiSet': ["policy://policy/apiNode"],
+        'readSet': ["policy://policy/read"],
+        'receiveAsSet': ["policy://policy/receiveAs"],
+        'sendAsSet': ["policy://policy/sendAs"]
     };
 };
 
@@ -5309,7 +4999,7 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
     }
 
 
-    var onError = function(response){
+    var onError = function(err){
         asyncAction.resolve('failure',err);
     };
     //Format the request
@@ -5772,6 +5462,306 @@ ozpIwc.policyAuth.PIP.prototype.grantParent = function (subjectId,parentId){
         return asyncAction;
     }
 };
+
+/**
+ * Classes related to security aspects of the IWC.
+ * @module bus
+ * @submodule bus.security
+ */
+
+/**
+ * Attribute Based Access Control policies.
+ * @class ozpIwcPolicies
+ * @static
+ */
+ozpIwc.ozpIwcPolicies={};
+
+/**
+ * Returns `permit` when the request's object exists and is empty.
+ *
+ * @static
+ * @method permitWhenObjectHasNoAttributes
+ * @param request
+ *
+ * @returns {String}
+ */
+ozpIwc.ozpIwcPolicies.permitWhenObjectHasNoAttributes=function(request) {
+    if(request.object && Object.keys(request.object).length===0) {
+        return "Permit";
+    }
+    return "Undetermined";
+};
+/**
+ * Returns `permit` when the request's subject contains all of the request's object.
+ *
+ * @static
+ * @method subjectHasAllObjectAttributes
+ * @param request
+ *
+ * @returns {String}
+ */
+ozpIwc.ozpIwcPolicies.subjectHasAllObjectAttributes=function(request) {
+    // if no object permissions, then it's trivially true
+    if(!request.object) {
+        return "Permit";
+    }
+    var subject = request.subject || {};
+    if(ozpIwc.util.objectContainsAll(subject,request.object,this.implies)) {
+        return "Permit";
+    }
+    return "Deny";
+};
+
+/**
+ * Returns `permit` for any scenario.
+ *
+ * @static
+ * @method permitAll
+ * @returns {String}
+ */
+ozpIwc.ozpIwcPolicies.permitAll=function() {
+    return "Permit";
+};
+
+
+/**
+ * Returns `Deny` for any scenario.
+ *
+ * @static
+ * @method denyAll
+ * @returns {String}
+ */
+ozpIwc.ozpIwcPolicies.denyAll=function() {
+    return "Deny";
+};
+
+
+
+/**
+ * Applies trivial logic to determing a subject's containing of object values
+ * @static
+ * @method implies
+ * @param {Array} subjectVal
+ * @param {Array} objectVal
+ *
+ * @returns {Boolean}
+ */
+ozpIwc.ozpIwcPolicies.implies=function(subjectVal,objectVal) {
+    // no object value is trivially true
+    if(objectVal===undefined || objectVal === null) {
+        return true;
+    }
+    // no subject value when there is an object value is trivially false
+    if(subjectVal===undefined || subjectVal === null) {
+        return false;
+    }
+
+    // convert both to arrays, if necessary
+    subjectVal=Array.isArray(subjectVal)?subjectVal:[subjectVal];
+    objectVal=Array.isArray(objectVal)?objectVal:[objectVal];
+
+    // confirm that every element in objectVal is also in subjectVal
+    return ozpIwc.util.arrayContainsAll(subjectVal,objectVal);
+};
+
+/**
+ * Determines if a request should be permitted by comparing its action to the requested policies action. Then testing
+ * if the request subject passes all of the request resources.
+ * @method defaultPolicy
+ * @param request
+ * @param action
+ * @returns {string} NotApplicable, Deny, or Permit
+ */
+ozpIwc.ozpIwcPolicies.defaultPolicy = function(request,action){
+    action = Array.isArray(action) ? action : [action];
+    if(!ozpIwc.util.arrayContainsAll(action,request.action['ozp:iwc:action'])) {
+        return "NotApplicable";
+    } else if(!ozpIwc.util.objectContainsAll(request.subject,request.resource,ozpIwc.ozpIwcPolicies.implies)) {
+        return "Deny";
+    } else {
+        return "Permit";
+    }
+};
+
+ozpIwc.ozpIwcPolicies.defaultPolicies = {};
+
+/**
+ * Allows origins to connect that are included in the hard coded whitelist.
+ * @method '/policy/connect'
+ * @param request
+ * @returns {string}
+ */
+ozpIwc.ozpIwcPolicies.defaultPolicies['policy://ozpIwc/connect'] = function(request){
+    var policyActions = ['connect'];
+
+    if(!ozpIwc.util.arrayContainsAll(policyActions,request.action['ozp:iwc:action'])){
+        return "NotApplicable";
+    } else {
+        return "Permit";
+    }
+};
+
+/**
+ * Applies the sendAs policy requirements to a default policy. The given request must have an action of 'sendAs'.
+ * @method '/policy/sendAs'
+ * @param request
+ * @param {Object} request.subject
+ * @param {Object} request.resource
+ * @returns {string}
+ */
+ozpIwc.ozpIwcPolicies.defaultPolicies['policy://policy/sendAs'] = function(request){
+    return ozpIwc.ozpIwcPolicies.defaultPolicy(request,'sendAs');
+};
+
+/**
+ * Applies the receiveAs policy requirements to a default policy. The given request must have an action of 'receiveAs'.
+ * @method '/policy/sendAs'
+ * @param request
+ * @param {Object} request.subject
+ * @param {Object} request.resource
+ * @returns {string}
+ */
+ozpIwc.ozpIwcPolicies.defaultPolicies['policy://policy/receiveAs'] = function(request){
+    return ozpIwc.ozpIwcPolicies.defaultPolicy(request,'receiveAs');
+};
+
+/**
+ * Applies the read policy requirements to a default policy. The given request must have an action of 'read'.
+ * @method '/policy/sendAs'
+ * @param request
+ * @param {Object} request.subject
+ * @param {Object} request.resource
+ * @returns {string}
+ */
+ozpIwc.ozpIwcPolicies.defaultPolicies['policy://policy/read'] = function(request){
+    return ozpIwc.ozpIwcPolicies.defaultPolicy(request,'read');
+};
+
+/**
+ * Applies the api access policy requirements to a default policy. The given request must have an action of 'access'.
+ * @method '/policy/sendAs'
+ * @param request
+ * @param {Object} request.subject
+ * @param {Object} request.resource
+ * @returns {string}
+ */
+ozpIwc.ozpIwcPolicies.defaultPolicies['policy://policy/apiNode'] = function(request){
+    return ozpIwc.ozpIwcPolicies.defaultPolicy(request,'access');
+};
+
+ozpIwc = ozpIwc || {};
+ozpIwc.policyAuth = ozpIwc.policyAuth || {};
+ozpIwc.policyAuth.PolicyCombining = ozpIwc.policyAuth.PolicyCombining || {};
+
+
+/**
+ *
+ *
+ * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides
+ */
+ozpIwc.policyAuth.PolicyCombining['deny-overrides'] =
+        function(policies,request){
+    var atLeastOneErrorD,
+        atLeastOneErrorP,
+        atLeastOneErrorDP,
+        atLeastOnePermit = false;
+
+    for(var i in policies){
+        var decision = policies[i](request);
+        switch(decision){
+            case "Deny":
+                return "Deny";
+            case "Permit":
+                atLeastOnePermit = true;
+                break;
+            case "NotApplicable":
+                continue;
+            case "Indeterminate{D}":
+                atLeastOneErrorD = true;
+                break;
+            case "Indeterminate{P}":
+                atLeastOneErrorP = true;
+                break;
+            case "Indeterminate{DP}":
+                atLeastOneErrorDP = true;
+                break;
+            default:
+                continue;
+        }
+    }
+
+    if(atLeastOneErrorDP){
+        return "Indeterminate{DP}";
+    } else if(atLeastOneErrorD && (atLeastOneErrorP || atLeastOnePermit)){
+        return "Indeterminate{DP}";
+    } else if(atLeastOneErrorD){
+        return "Indeterminate{D}";
+    } else if(atLeastOnePermit) {
+        return "Permit";
+    } else if(atLeastOneErrorP){
+        return "Indeterminate{P}";
+    }
+
+    return "NotApplicable";
+
+};
+
+
+/**
+ * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides
+ */
+ozpIwc.policyAuth.PolicyCombining['permit-overrides'] =
+        function(){
+
+};
+
+/**
+ * @method urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable
+ */
+ozpIwc.policyAuth.PolicyCombining['first-applicable'] =
+        function(){
+
+};
+
+/**
+ * @method urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable
+ */
+ozpIwc.policyAuth.PolicyCombining['only-one-applicable'] =
+        function(){
+
+};
+
+/**
+ * @method urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides
+ */
+ozpIwc.policyAuth.PolicyCombining['ordered-deny-overrides'] =
+        function(){
+
+};
+
+/**
+ * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides
+ */
+ozpIwc.policyAuth.PolicyCombining['ordered-permit-overrides'] =
+        function(){
+
+};
+
+/**
+ * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit
+ */
+ozpIwc.policyAuth.PolicyCombining['deny-unless-permit'] =
+        function(){
+
+};
+
+/**
+ * @method urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-unless-deny
+ */
+ozpIwc.policyAuth.PolicyCombining['permit-unless-deny'] =
+        function(){
+
+};
 ozpIwc = ozpIwc || {};
 
 
@@ -5788,7 +5778,7 @@ ozpIwc.policyAuth.PRP = function(config){
     config = config || {};
 
     this.persistentPolicies = config.persistentPolicies || [];
-    this.policyCache = config.policyCache || ozpIwc.policyAuth.defaultPolicies;
+    this.policyCache = config.policyCache || ozpIwc.ozpIwcPolicies.defaultPolicies;
 
 
 };
@@ -5825,7 +5815,7 @@ ozpIwc.policyAuth.PRP.prototype.getPolicies = function(policyURIs){
 
     // If there are no policies to check against, assume trivial and permit
     if(policies.length === 0){
-        return asyncAction.resolve('success',[ozpIwc.abacPolicies.permitAll]);
+        return asyncAction.resolve('success',[ozpIwc.ozpIwcPolicies.permitAll]);
     }
 
     return ozpIwc.AsyncAction.all(policies);
@@ -5884,216 +5874,9 @@ ozpIwc.policyAuth.PRP.prototype.getDenyall = function(urn){
     if(this.policyCache[urn]){
         return this.policyCache[urn];
     } else {
-        this.policyCache[urn] = ozpIwc.abacPolicies.denyAll;
+        this.policyCache[urn] = ozpIwc.ozpIwcPolicies.denyAll;
         return this.policyCache[urn];
     }
-};
-
-
-/**
- * Classes related to security aspects of the IWC.
- * @module bus
- * @submodule bus.security
- */
-
-/**
- * Attribute Based Access Control policies.
- * @class abacPolicies
- * @static
- */
-ozpIwc.abacPolicies={};
-
-/**
- * Returns `permit` when the request's object exists and is empty.
- *
- * @static
- * @method permitWhenObjectHasNoAttributes
- * @param request
- *
- * @returns {String}
- */
-ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes=function(request) {
-    if(request.object && Object.keys(request.object).length===0) {
-        return "Permit";
-    }
-    return "Undetermined";
-};
-/**
- * Returns `permit` when the request's subject contains all of the request's object.
- *
- * @static
- * @method subjectHasAllObjectAttributes
- * @param request
- *
- * @returns {String}
- */
-ozpIwc.abacPolicies.subjectHasAllObjectAttributes=function(request) {
-    // if no object permissions, then it's trivially true
-    if(!request.object) {
-        return "Permit";
-    }
-    var subject = request.subject || {};
-    if(ozpIwc.util.objectContainsAll(subject,request.object,this.implies)) {
-        return "Permit";
-    }
-    return "Deny";
-};
-
-/**
- * Returns `permit` for any scenario.
- *
- * @static
- * @method permitAll
- * @returns {String}
- */
-ozpIwc.abacPolicies.permitAll=function() {
-    return "Permit";
-};
-
-
-/**
- * Returns `Deny` for any scenario.
- *
- * @static
- * @method denyAll
- * @returns {String}
- */
-ozpIwc.abacPolicies.denyAll=function() {
-    return "Deny";
-};
-
-
-
-/**
- * Applies trivial logic to determing a subject's containing of object values
- * @static
- * @method implies
- * @param {Array} subjectVal
- * @param {Array} objectVal
- *
- * @returns {Boolean}
- */
-ozpIwc.abacPolicies.implies=function(subjectVal,objectVal) {
-    // no object value is trivially true
-    if(objectVal===undefined || objectVal === null) {
-        return true;
-    }
-    // no subject value when there is an object value is trivially false
-    if(subjectVal===undefined || subjectVal === null) {
-        return false;
-    }
-
-    // convert both to arrays, if necessary
-    subjectVal=Array.isArray(subjectVal)?subjectVal:[subjectVal];
-    objectVal=Array.isArray(objectVal)?objectVal:[objectVal];
-
-    // confirm that every element in objectVal is also in subjectVal
-    return ozpIwc.util.arrayContainsAll(subjectVal,objectVal);
-};
-
-/**
- * Determines if a request should be permitted by comparing its action to the requested policies action. Then testing
- * if the request subject passes all of the request resources.
- * @method defaultPolicy
- * @param request
- * @param action
- * @returns {string} NotApplicable, Deny, or Permit
- */
-ozpIwc.abacPolicies.defaultPolicy = function(request,action){
-    action = Array.isArray(action) ? action : [action];
-    if(!ozpIwc.util.arrayContainsAll(action,request.action['ozp:iwc:action'])) {
-        return "NotApplicable";
-    } else if(!ozpIwc.util.objectContainsAll(request.subject,request.resource,ozpIwc.abacPolicies.implies)) {
-        return "Deny";
-    } else {
-        return "Permit";
-    }
-};
-
-
-ozpIwc = ozpIwc || {};
-ozpIwc.policyAuth = ozpIwc.policyAuth || {};
-ozpIwc.policyAuth.defaultPolicies = {};
-
-/**
- * Allows origins to connect that are included in the hard coded whitelist.
- * @method '/policy/connect'
- * @param request
- * @returns {string}
- */
-ozpIwc.policyAuth.defaultPolicies['/policy/connect'] = function(request){
-    var policyActions = ['connect'];
-    var whiteListedOrigins = [
-        "http://localhost:13000",
-        "http://localhost:14000",
-        "http://localhost:14001",
-        "http://localhost:14002",
-        "http://localhost:15000",
-        "http://localhost:15001",
-        "http://localhost:15002",
-        "http://localhost:15003",
-        "http://localhost:15004",
-        "http://localhost:15005",
-        "http://localhost:15006",
-        "http://localhost:15007",
-        "http://ozone-development.github.io"
-    ];
-
-    if(!ozpIwc.util.arrayContainsAll(policyActions,request.action['ozp:iwc:action'])){
-        return "NotApplicable";
-    } else if(!ozpIwc.util.arrayContainsAll(whiteListedOrigins,request.subject['ozp:iwc:origin'])){
-        return "Deny";
-    } else {
-        return "Permit";
-    }
-};
-
-/**
- * Applies the sendAs policy requirements to a default policy. The given request must have an action of 'sendAs'.
- * @method '/policy/sendAs'
- * @param request
- * @param {Object} request.subject
- * @param {Object} request.resource
- * @returns {string}
- */
-ozpIwc.policyAuth.defaultPolicies['/policy/sendAs'] = function(request){
-    return ozpIwc.abacPolicies.defaultPolicy(request,'sendAs');
-};
-
-/**
- * Applies the receiveAs policy requirements to a default policy. The given request must have an action of 'receiveAs'.
- * @method '/policy/sendAs'
- * @param request
- * @param {Object} request.subject
- * @param {Object} request.resource
- * @returns {string}
- */
-ozpIwc.policyAuth.defaultPolicies['/policy/receiveAs'] = function(request){
-    return ozpIwc.abacPolicies.defaultPolicy(request,'receiveAs');
-};
-
-/**
- * Applies the read policy requirements to a default policy. The given request must have an action of 'read'.
- * @method '/policy/sendAs'
- * @param request
- * @param {Object} request.subject
- * @param {Object} request.resource
- * @returns {string}
- */
-ozpIwc.policyAuth.defaultPolicies['/policy/read'] = function(request){
-    return ozpIwc.abacPolicies.defaultPolicy(request,'read');
-};
-
-/**
- * Applies the api access policy requirements to a default policy. The given request must have an action of 'access'.
- * @method '/policy/sendAs'
- * @param request
- * @param {Object} request.subject
- * @param {Object} request.resource
- * @returns {string}
- */
-ozpIwc.policyAuth.defaultPolicies['/policy/apiNode'] = function(request){
-    return ozpIwc.abacPolicies.defaultPolicy(request,'access');
 };
 
 /** @namespace **/
@@ -9582,7 +9365,7 @@ ozpIwc.CommonApiCollectionValue.prototype.serialize=function() {
     serverData.entity=this.entity;
     serverData.pattern=this.pattern;
     serverData.contentType=this.contentType;
-    serverData.permissions=this.permissions;
+    serverData.permissions=this.permissions.getAll();
     serverData.version=this.version;
     serverData.watchers=this.watchers;
     return serverData;
@@ -11289,7 +11072,7 @@ ozpIwc.DataApiValue.prototype.serialize=function() {
 	serverData.entity=this.entity;
     serverData.children = this.children;
 	serverData.contentType=this.contentType;
-	serverData.permissions=this.permissions;
+	serverData.permissions=this.permissions.getAll();
 	serverData.version=this.version;
 	serverData.self=this.self;
     serverData.watchers =this.watchers;
@@ -11901,7 +11684,9 @@ ozpIwc.IntentsApiDefinitionValue.prototype.deserialize=function(serverData) {
     this.pattern.toJSON = RegExp.prototype.toString;
 
     this.contentType=clone.contentType || this.contentType;
-    this.permissions=clone.permissions || this.permissions;
+    for(var i in clone.permissions){
+        this.permissions.pushIfNotExist(i, clone.permissions[i]);
+    }
     this.version=clone.version || this.version;
     this.watchers = clone.watchers || this.watchers;
 };
@@ -11917,7 +11702,7 @@ ozpIwc.IntentsApiDefinitionValue.prototype.serialize=function() {
     serverData.entity=this.entity;
     serverData.pattern=this.pattern;
     serverData.contentType=this.contentType;
-    serverData.permissions=this.permissions;
+    serverData.permissions=this.permissions.getAll();
     serverData.version=this.version;
     serverData.watchers=this.watchers;
     return serverData;

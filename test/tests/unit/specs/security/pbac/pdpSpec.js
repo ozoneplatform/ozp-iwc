@@ -335,12 +335,12 @@ describe("Policy Decision Point",function() {
             subject: "urn:subjectId:fake",
             resource: "urn:resourceId:fake",
             action: "write",
-            policies: ['/policy/fake']
+            policies: ['policy://policy/fake']
         };
 
         it("permits",function(){
             pdp.prp.getPolicies = function(){
-                return new ozpIwc.AsyncAction().resolve("success", [ozpIwc.abacPolicies.permitAll]);
+                return new ozpIwc.AsyncAction().resolve("success", [ozpIwc.ozpIwcPolicies.permitAll]);
             };
 
             pdp.isPermitted(request).success(function(response){
@@ -354,7 +354,7 @@ describe("Policy Decision Point",function() {
 
         it("denies",function(){
             pdp.prp.getPolicies = function(){
-                return new ozpIwc.AsyncAction().resolve("success", [ozpIwc.abacPolicies.denyAll]);
+                return new ozpIwc.AsyncAction().resolve("success", [ozpIwc.ozpIwcPolicies.denyAll]);
             };
 
             pdp.isPermitted(request)

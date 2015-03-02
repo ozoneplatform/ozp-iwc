@@ -35,9 +35,9 @@ ozpIwc.BasicAuthorization=function(config) {
      * @type {auth.policies|*|*[]|ozpIwc.BasicAuthorization.policies|BasicAuthorization.policies}
      */
     this.policies= config.policies || [
-//        ozpIwc.abacPolicies.permitAll
-        ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes,
-        ozpIwc.abacPolicies.subjectHasAllObjectAttributes
+//        ozpIwc.ozpIwcPolicies.permitAll
+        ozpIwc.ozpIwcPolicies.permitWhenObjectHasNoAttributes,
+        ozpIwc.ozpIwcPolicies.subjectHasAllObjectAttributes
     ];
 
     var self = this;

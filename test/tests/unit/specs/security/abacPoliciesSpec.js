@@ -5,7 +5,7 @@ describe("Supplied ABAC policies",function() {
                 'subject': {},
                 'object': {}
             };
-            expect(ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes(request)).toEqual("Permit");
+            expect(ozpIwc.ozpIwcPolicies.permitWhenObjectHasNoAttributes(request)).toEqual("Permit");
         });
         it("permits when the subject has an attribute",function() {
             var request={
@@ -14,7 +14,7 @@ describe("Supplied ABAC policies",function() {
                 },
                 'object': {}
             };
-            expect(ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes(request)).toEqual("Permit");
+            expect(ozpIwc.ozpIwcPolicies.permitWhenObjectHasNoAttributes(request)).toEqual("Permit");
         });
         it("defers when the object has an attribute",function() {
             var request={
@@ -25,7 +25,7 @@ describe("Supplied ABAC policies",function() {
                     'a':1
                 }
             };
-            expect(ozpIwc.abacPolicies.permitWhenObjectHasNoAttributes(request)).toEqual("Undetermined");
+            expect(ozpIwc.ozpIwcPolicies.permitWhenObjectHasNoAttributes(request)).toEqual("Undetermined");
         });
     });
     
@@ -35,7 +35,7 @@ describe("Supplied ABAC policies",function() {
                 'subject': {},
                 'object': {}
             };
-            expect(ozpIwc.abacPolicies.subjectHasAllObjectAttributes(request)).toEqual("Permit");
+            expect(ozpIwc.ozpIwcPolicies.subjectHasAllObjectAttributes(request)).toEqual("Permit");
         });
         it("permits when the object has no attributes",function() {
             var request={
@@ -44,7 +44,7 @@ describe("Supplied ABAC policies",function() {
                 },
                 'object': {}
             };
-            expect(ozpIwc.abacPolicies.subjectHasAllObjectAttributes(request)).toEqual("Permit");
+            expect(ozpIwc.ozpIwcPolicies.subjectHasAllObjectAttributes(request)).toEqual("Permit");
         });
         it("permits when the attributes match",function() {
             var request={
@@ -55,7 +55,7 @@ describe("Supplied ABAC policies",function() {
                     'a':1
                 }
             };
-            expect(ozpIwc.abacPolicies.subjectHasAllObjectAttributes(request)).toEqual("Permit");
+            expect(ozpIwc.ozpIwcPolicies.subjectHasAllObjectAttributes(request)).toEqual("Permit");
         });
         it("denies when the attributes don't match",function() {
             var request={
@@ -66,7 +66,7 @@ describe("Supplied ABAC policies",function() {
                     'a':2
                 }
             };
-            expect(ozpIwc.abacPolicies.subjectHasAllObjectAttributes(request)).toEqual("Deny");
+            expect(ozpIwc.ozpIwcPolicies.subjectHasAllObjectAttributes(request)).toEqual("Deny");
         });
         it("permits when subject has all object attributes",function() {
             var request={
@@ -78,7 +78,7 @@ describe("Supplied ABAC policies",function() {
                     'a':1
                 }
             };
-            expect(ozpIwc.abacPolicies.subjectHasAllObjectAttributes(request)).toEqual("Permit");
+            expect(ozpIwc.ozpIwcPolicies.subjectHasAllObjectAttributes(request)).toEqual("Permit");
         });
         it("denies when subject has a subset of object attributes",function() {
             var request={
@@ -90,7 +90,7 @@ describe("Supplied ABAC policies",function() {
                     'b':2
                 }
             };
-            expect(ozpIwc.abacPolicies.subjectHasAllObjectAttributes(request)).toEqual("Deny");
+            expect(ozpIwc.ozpIwcPolicies.subjectHasAllObjectAttributes(request)).toEqual("Deny");
         });
     });
 });

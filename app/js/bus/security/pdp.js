@@ -34,11 +34,11 @@ ozpIwc.policyAuth.PDP = function(config){
 
     this.policySets = config.policySets ||
     {
-        'connectSet': ["/policy/connect"],
-        'apiSet': ["/policy/apiNode"],
-        'readSet': ["/policy/read"],
-        'receiveAsSet': ["/policy/receiveAs"],
-        'sendAsSet': ["/policy/sendAs"]
+        'connectSet': ["policy://ozpIwc/connect"],
+        'apiSet': ["policy://policy/apiNode"],
+        'readSet': ["policy://policy/read"],
+        'receiveAsSet': ["policy://policy/receiveAs"],
+        'sendAsSet': ["policy://policy/sendAs"]
     };
 };
 
@@ -73,7 +73,7 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
     }
 
 
-    var onError = function(response){
+    var onError = function(err){
         asyncAction.resolve('failure',err);
     };
     //Format the request

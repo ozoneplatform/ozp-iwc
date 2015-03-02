@@ -51,7 +51,7 @@ ozpIwc.policyAuth.PRP.prototype.getPolicies = function(policyURIs){
 
     // If there are no policies to check against, assume trivial and permit
     if(policies.length === 0){
-        return asyncAction.resolve('success',[ozpIwc.abacPolicies.permitAll]);
+        return asyncAction.resolve('success',[ozpIwc.ozpIwcPolicies.permitAll]);
     }
 
     return ozpIwc.AsyncAction.all(policies);
@@ -110,7 +110,7 @@ ozpIwc.policyAuth.PRP.prototype.getDenyall = function(urn){
     if(this.policyCache[urn]){
         return this.policyCache[urn];
     } else {
-        this.policyCache[urn] = ozpIwc.abacPolicies.denyAll;
+        this.policyCache[urn] = ozpIwc.ozpIwcPolicies.denyAll;
         return this.policyCache[urn];
     }
 };
