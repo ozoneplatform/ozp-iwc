@@ -155,15 +155,15 @@ ozpIwc.KeyBroadcastLocalStorageLink = function(config) {
                 return;
             }
 
-            if (typeof packet === 'array') {
-                for (packit in packet) {
-                    self.forwardToPeer(packit);
+            if (packet.data.fragment) {
+                self.handleFragment(packet);
+            } else {
+                if (typeof packet === 'array') {
+                    for (packit in packet) {
+                        self.forwardToPeer(packit);
+                    }
                 }
-            }
-            else {
-                if (packet.data.fragment) {
-                    self.handleFragment(packet);
-                } else {
+                else {
                     self.forwardToPeer(packet);
                 }
             }
@@ -428,6 +428,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function(packet) {
 
     var immediateSend = function() {
         window.clearTimeout(that.deferredTimer);
+        var toSend = JSON.stringify(that.deferredPackets);
         that.deferredPackets = [];
         return toSend;
     };
@@ -448,7 +449,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function(packet) {
             sendIt = immediateSend();
         }
         else {
-            if (!packet.data.fragment && !packet.data.time) {
+            if (!packet.data.fragment && !packet.data.nodelay) {
                 // We do a lot of stringifying and whatnot at various points in
                 // the call chain.  A better approach might be to stringify
                 // immediately (at the top of the chain) and store a length

@@ -27,6 +27,7 @@ describe("IWC LocalStorage Key Broadcast", function() {
 
         it("transfers messages through the browser storage event", function (done) {
             var referencePacket = ozpIwc.testUtil.testPacket(linkA, 10);
+            referencePacket.nodelay = true;
 
             spyOn(linkA.peer,'receive').and.callFake(function(linkId,packet){
                 expect(packet).toEqual(referencePacket);
