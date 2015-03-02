@@ -85,10 +85,10 @@ describe("Data API Class",function() {
 		
         dataApi.routePacket(packetContext);
 
-        expect(dataApi.participant.sentPackets.length).toEqual(1);
-        var changePacket=dataApi.participant.sentPackets[0];
-        expect(changePacket.response).toEqual("changed");
-        expect(changePacket.entity.addedChildren[0]).toMatch(/\/node\/[0-9a-f]+/);
+            expect(dataApi.participant.sentPackets.length).toEqual(1);
+            var changePacket=dataApi.participant.sentPackets[0];
+            expect(changePacket.response).toEqual("changed");
+            expect(changePacket.entity.addedChildren[0]).toMatch(/\/node\/[0-9a-f]+/);
     });
     it("generates changes for removed children",function() {
         dataApi.data['/node']=node;
@@ -109,10 +109,10 @@ describe("Data API Class",function() {
 		
         dataApi.routePacket(packetContext);
 
-        expect(dataApi.participant.sentPackets.length).toEqual(1);
-        var changePacket=dataApi.participant.sentPackets[0];
-        expect(changePacket.response).toEqual("changed");
-        expect(changePacket.entity.removedChildren[0]).toEqual("child1");
+            expect(dataApi.participant.sentPackets.length).toEqual(1);
+            var changePacket=dataApi.participant.sentPackets[0];
+            expect(changePacket.response).toEqual("changed");
+            expect(changePacket.entity.removedChildren[0]).toEqual("child1");
     });
     it("writes dirty nodes to server",function() {
         var nodeVerifier=[(new ozpIwc.DataApiValue({

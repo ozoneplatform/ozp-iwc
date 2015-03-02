@@ -10,7 +10,7 @@ describe("IWC Router",function(){
         this.routerB = new ozpIwc.Router({
             peer: this.peerB
         });
-        this.partB = new ozpIwc.Participant();
+        this.partB = new ozpIwc.InternalParticipant();
         this.routerB.registerParticipant(this.partB);
     };
 
@@ -29,7 +29,7 @@ describe("IWC Router",function(){
                 scope.partB.send(message);
             }
         });
-        partA = new ozpIwc.Participant();
+        partA = new ozpIwc.InternalParticipant();
         routerA.registerParticipant(partA);
     });
 

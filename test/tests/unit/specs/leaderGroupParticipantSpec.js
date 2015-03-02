@@ -1,6 +1,6 @@
 describe("Leader Group Participant",function() {
 	var fakeRouter;
-    
+
     /* 
      * @todo This test doesn't work with postMessage trick for setImmediate.
      * I believe this is due to the way Jasmine hooks the setTimeout and setInterval functions
@@ -9,13 +9,13 @@ describe("Leader Group Participant",function() {
      */
     
 	var oldSetImmediate=ozpIwc.util.setImmediate;
-    
+
 	var tick=function(t) {
 		fakeRouter.pump();
 		jasmine.clock().tick(t);
 		fakeRouter.pump();
 	};
-	
+
 	var moveTime=function(step) {
 		var elected=false;
 		var round=0;
@@ -63,7 +63,7 @@ describe("Leader Group Participant",function() {
             l.changeState("member");
             l.events.trigger("newLeader");
         });
-		
+
 		l.nonElectionTestPackets=[];
 		l.on("receive",function(packet) {
 			l.nonElectionTestPackets.push(packet);
@@ -141,20 +141,20 @@ describe("Leader Group Participant",function() {
 
 		expect(leader.isLeader()).toEqual(true);
 		expect(member.isLeader()).toEqual(false);
-	});	
+	});
 	
 	it("higher priority will take over",function() {
 		var member=makeLeader(1);
 		member.startElection();
         tick(ozpIwc.ELECTION_TIMEOUT * 2);
-		
+
 		expect(member.isLeader()).toEqual(true);
 
 
 		var leader=makeLeader(2);
 		leader.startElection();
         tick(ozpIwc.ELECTION_TIMEOUT * 2);
-		
+
 		expect(leader.isLeader()).toEqual(true);
 		expect(member.isLeader()).toEqual(false);
 	});
@@ -165,17 +165,17 @@ describe("Leader Group Participant",function() {
 			makeLeader(i);
 		}
 		var leader=makeLeader(100);
-		
+
 		lowbie.startElection();
 
         tick(ozpIwc.ELECTION_TIMEOUT * 2);
-		
+
 		for(i=0; i< fakeRouter.participants.length-1; ++i) {
 			expect(fakeRouter.participants[i].isLeader()).toEqual(false);
 		}
-		
+
 		expect(leader.isLeader()).toEqual(true);
-		
+
 	});
 
 
@@ -189,7 +189,7 @@ describe("Leader Group Participant",function() {
 				leader.leaderState="leader";
 				leader.receiveFromRouter({ packet:{
 					src: "foo",
-					dst: "bar",
+					dst: "1.fake",
 					msgId: 1,
 					ver: 1,
 					entity: { foo: "bar" }

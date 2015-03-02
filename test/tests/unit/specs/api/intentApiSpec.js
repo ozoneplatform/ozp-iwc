@@ -7,10 +7,12 @@ describe("Intent API Class", function () {
         ozpIwc.endpoint=function() {
             return {
                 get: function() { return Promise.resolve(); }
-            };            
+            };
         };
         apiBase = new ozpIwc.IntentsApi({
-            'participant': new TestParticipant()
+            'participant': new TestParticipant({
+                'staticAddress': 'test.address'
+            })
         });
     });
 
@@ -18,7 +20,7 @@ describe("Intent API Class", function () {
         ozpIwc.endpoint=oldEndpoints;
         apiBase = null;
     });
-    
+
     it("Sets data types",function() {
         var testPacket=new TestPacketContext({
             'packet': {
@@ -34,7 +36,7 @@ describe("Intent API Class", function () {
         apiBase.routePacket(testPacket);
         expect(testPacket.responses[0].response).toEqual("ok");
     });
-    
+
     it("Sets intent definitions",function() {
         var testPacket=new TestPacketContext({
             'packet': {
@@ -74,7 +76,7 @@ describe("Intent API Class", function () {
         expect(testPacket.responses[0].response).toEqual("ok");
         expect(testPacket.responses[0].entity.actions).toContain("/text/plain/view");
     });
-    
+
     it("Registers handlers",function() {
         var testPacket=new TestPacketContext({
             'packet': {
@@ -91,7 +93,7 @@ describe("Intent API Class", function () {
         expect(testPacket.responses[0].response).toEqual("ok");
         expect(testPacket.responses[0].entity.resource).toMatch(/text\/plain\/view\/.*/);
     });
-    
+
     describe("Invoking handlers",function() {
         var handlerResource;
         var registerPacket;
@@ -155,10 +157,11 @@ describe("Intent API Class", function () {
             apiBase.routePacket(testPacket);
 
             var invokePacket=apiBase.participant.sentPackets[0];
-            
+
             apiBase.participant.receiveFromRouter(new TestPacketContext({
                 'packet': {
                     'src': "fakeHandler",
+                    'dst': 'test.address',
                     'response': "ok",
                     'replyTo': invokePacket.msgId,
                     'contentType' : "text/winnar",
@@ -166,7 +169,7 @@ describe("Intent API Class", function () {
                 },
                 'leaderState': "leader"
             }));
-            
+
             var fowardedPacket=testPacket.responses[0];
             expect(fowardedPacket.contentType).toEqual("text/winnar");
             expect(fowardedPacket.entity).toEqual("You won!");

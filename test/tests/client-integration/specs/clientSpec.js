@@ -1,6 +1,6 @@
 /*jshint noarg:false */
 describe("IWC Client", function() {
-    jasmine.getEnv().defaultTimeoutInterval = 200000;// e.g. 15000 milliseconds
+    jasmine.getEnv().defaultTimeoutInterval = 3000;// e.g. 15000 milliseconds
 
     var client;
     var participant;

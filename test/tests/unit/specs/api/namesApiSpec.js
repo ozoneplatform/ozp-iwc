@@ -22,7 +22,7 @@ describe("Names API",function() {
                 'src' : "srcParticipant"
             }
         });
-        namesApi.routePacket(context);            
+        namesApi.routePacket(context);
         expect(context.responses[0].response).toEqual("badResource");
     });
     [ {
@@ -106,7 +106,7 @@ describe("Names API",function() {
                         'entity' : { 'foo' : 1 }
                     }
                 });
-                namesApi.routePacket(context);            
+                namesApi.routePacket(context);
                 expect(context.responses[0].response).toEqual("noPermission");
             });
             it("allows  " + r.contentType + " when setting a value in the tree",function() {
@@ -121,7 +121,7 @@ describe("Names API",function() {
                         'entity' : { 'foo' : 1 }
                     }
                 });
-                namesApi.routePacket(context);            
+                namesApi.routePacket(context);
                 expect(context.responses[0].response).toEqual("ok");
             });
             it("updates the collection  when setting a value in the tree",function() {
@@ -145,11 +145,11 @@ describe("Names API",function() {
                         'src' : "srcParticipant"
                     }
                 });
-                namesApi.routePacket(context);            
+                namesApi.routePacket(context);
                 expect(context.responses[0].response).toEqual("ok");
                 expect(context.responses[0].entity).toContain(r.resource + "/testValue");
                 expect(context.responses[0].contentType).toEqual(r.listContentType);
-                
+
             });
             it("responds with badContent when missing the contentType",function() {
                 var context=new TestPacketContext({
@@ -162,7 +162,7 @@ describe("Names API",function() {
                         'entity' : { 'foo' : 1 }
                     }
                 });
-                namesApi.routePacket(context);            
+                namesApi.routePacket(context);
                 expect(context.responses[0].response).toEqual("badContent");
             });
 
@@ -178,7 +178,7 @@ describe("Names API",function() {
                         'entity' : { 'foo' : 1 }
                     }
                 });
-                namesApi.routePacket(context);            
+                namesApi.routePacket(context);
                 expect(context.responses[0].response).toEqual("badContent");
             });
 
