@@ -302,23 +302,15 @@ module.exports = function(grunt) {
 
         },
         bump: {
-            options: {
-                files: [
-                    'package.json',
-                    'bower.json'
-                ],
-                commit: true,
-                commitMessage: 'chore(release): v%VERSION%',
-                commitFiles: [
-                    'package.json',
-                    'bower.json'
-                ],
-                createTag: true,
-                tagName: 'v%VERSION%',
-                tagMessage: 'Version %VERSION%',
-                push: false,
-                pushTo: 'origin'
-            }
+                options: {
+                    files: [
+                        'package.json',
+                        'bower.json'
+                    ],
+                    commit: false,
+                    createTag: false,
+                    push: false
+                }
         },
         shell: {
             buildVersionFile: {
@@ -328,6 +320,17 @@ module.exports = function(grunt) {
                     'git rev-parse HEAD >> dist/version.txt',
                     'echo Date: >> dist/version.txt',
                     'git rev-parse HEAD | xargs git show -s --format=%ci >> dist/version.txt'
+                ].join('&&')
+            },
+            releaseGit: {
+                command: [
+                    'git checkout --detach',
+                    'grunt dist',
+                    'git add -f dist',
+                    'git commit -m "chore(release): <%= pkg.version %>"',
+                    'git tag -a "chore(release): <%= pkg.version %>" <%= pkg.version %>',
+                    'git push origin <% pkg.version %>',
+                    'git checkout master'
                 ].join('&&')
             }
         }
@@ -342,7 +345,10 @@ module.exports = function(grunt) {
     // Default task(s).
     grunt.registerTask('build', ['copy:hackBootstrap', 'jshint', 'concat_sourcemap', 'uglify', 'copy:dist','shell:buildVersionFile']);
     grunt.registerTask('dist', ['build', 'yuidoc']);
-    grunt.registerTask('testOnly', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
+    grunt.registerTask('testOnly', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch', 'shell:copyToRest']);
+    grunt.registerTask('releasePatch', ['bump:patch', 'shell:releaseGit']);
+    grunt.registerTask('releaseMinor', ['bump:minor', 'shell:releaseGit']);
+    grunt.registerTask('releaseMajor', ['bump:major', 'shell:releaseGit']);
     grunt.registerTask('test', ['build','connect','watch']);
     grunt.registerTask('default', ['dist']);
 
