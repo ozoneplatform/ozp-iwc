@@ -4949,7 +4949,7 @@ var ozpIwc = ozpIwc || {};
  * @param {Number} [config.fragmentTime] Time in milliseconds after a fragment is received and additional expected
  * fragments are not received that the message is dropped.
  */
-ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
+ozpIwc.KeyBroadcastLocalStorageLink = function(config) {
     config = config || {};
 
     /**
@@ -4976,8 +4976,8 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
      */
     this.selfId = config.selfId || this.peer.selfId;
 
-    this.metricsPrefix="keyBroadcastLocalStorageLink."+this.selfId;
-    
+    this.metricsPrefix = "keyBroadcastLocalStorageLink." + this.selfId;
+
     /**
      * Milliseconds to wait before deleting this link's keys
      * @todo UNUSUED
@@ -5046,8 +5046,11 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
      */
     this.fragmentTimeout = config.fragmentTimeout || 1000; // 1 second
 
+    this.deferredPackets = [];
+    this.deferredTimer;
+
     //Add fragmenting capabilities
-    String.prototype.chunk = function (size) {
+    String.prototype.chunk = function(size) {
         var res = [];
         for (var i = 0; i < this.length; i += size) {
             res.push(this.slice(i, i + size));
@@ -5058,39 +5061,44 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     // Hook into the system
     var self = this;
     var packet;
-    var receiveStorageEvent = function (event) {
-        if(event.newValue) {
+    var receiveStorageEvent = function(event) {
+        if (event.newValue) {
             try {
                 packet = JSON.parse(event.newValue);
             } catch (e) {
                 ozpIwc.log.log("Parse error on " + event.newValue);
-                ozpIwc.metrics.counter(self.metricsPrefix,'packets_parseError').inc();
+                ozpIwc.metrics.counter(self.metricsPrefix, 'packets_parseError').inc();
                 return;
             }
-            if (packet.data.fragment) {
+
+            if (Array.isArray(packet)) {
+                packet.forEach(function(p) {
+                    self.forwardToPeer(p);
+                });
+            } else if(packet.data.fragment) {
                 self.handleFragment(packet);
             } else {
-                self.forwardToPeer(packet);
+                    self.forwardToPeer(packet);
             }
         }
     };
     window.addEventListener('storage', receiveStorageEvent, false);
 
-    this.peer.on("send", function (event) {
+    this.peer.on("send", function(event) {
         self.send(event.packet);
     });
 
-    this.peer.on("beforeShutdown", function () {
+    this.peer.on("beforeShutdown", function() {
         window.removeEventListener('storage', receiveStorageEvent);
     }, this);
 
 };
 
-ozpIwc.KeyBroadcastLocalStorageLink.prototype.forwardToPeer=function(packet) {
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.forwardToPeer = function(packet) {
     this.peer.receive(this.linkId, packet);
-    ozpIwc.metrics.counter(this.metricsPrefix,'packets_received').inc();
-    if(packet.data.time) {
-        ozpIwc.metrics.timer(this.metricsPrefix,'latencyIn').mark(ozpIwc.util.now() - packet.data.time);
+    ozpIwc.metrics.counter(this.metricsPrefix, 'packets_received').inc();
+    if (packet.data.time) {
+        ozpIwc.metrics.timer(this.metricsPrefix, 'latencyIn').mark(ozpIwc.util.now() - packet.data.time);
     }
 };
 
@@ -5102,7 +5110,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.forwardToPeer=function(packet) {
  * @method handleFragment
  * @param {ozpIwc.NetworkPacket} packet NetworkPacket containing an ozpIwc.FragmentPacket as its data property
  */
-ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet) {
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function(packet) {
     // Check to make sure the packet is a fragment and we haven't seen it
     if (this.peer.haveSeen(packet)) {
         return;
@@ -5138,7 +5146,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet)
  *
  * @returns {Boolean} result true if successful.
  */
-ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) {
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function(packet) {
     if (!packet.data.fragment) {
         return null;
     }
@@ -5163,11 +5171,11 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
 
         var self = this;
         self.key = key;
-        self.total = total ;
+        self.total = total;
 
         // Add a timeout to destroy the fragment should the whole message not be received.
-        this.fragments[key].timeoutFunc = function () {
-            ozpIwc.metrics.meter(self.metricsPrefix,'fragments_dropped').mark(self.total);
+        this.fragments[key].timeoutFunc = function() {
+            ozpIwc.metrics.meter(self.metricsPrefix, 'fragments_dropped').mark(self.total);
             delete self.fragments[self.key];
         };
     }
@@ -5178,17 +5186,17 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
 
     // keep a copy of properties needed for defragmenting, the last sequence & srcPeer received will be
     // reused in the defragmented packet
-    this.fragments[key].total = total || this.fragments[key].total ;
+    this.fragments[key].total = total || this.fragments[key].total;
     this.fragments[key].sequence = (sequence !== undefined) ? sequence : this.fragments[key].sequence;
     this.fragments[key].srcPeer = srcPeer || this.fragments[key].srcPeer;
     this.fragments[key].chunks[id] = chunk;
 
     // If the necessary properties for defragmenting aren't set the storage fails
     if (this.fragments[key].total === undefined || this.fragments[key].sequence === undefined ||
-        this.fragments[key].srcPeer === undefined) {
+            this.fragments[key].srcPeer === undefined) {
         return null;
     } else {
-        ozpIwc.metrics.meter(this.metricsPrefix,'fragments_received').mark();
+        ozpIwc.metrics.meter(this.metricsPrefix, 'fragments_received').mark();
         return true;
     }
 };
@@ -5201,7 +5209,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
  *
  * @returns {ozpIwc.NetworkPacket} result the reconstructed NetworkPacket with TransportPacket as its data property.
  */
-ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragments) {
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function(fragments) {
     if (fragments.total !== fragments.chunks.length) {
         return null;
     }
@@ -5226,14 +5234,14 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.defragmentPacket = function (fragm
  * @method send
  * @param {ozpIwc.NetworkPacket} packet
  */
-ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function(packet) {
     var str;
     try {
-       str = JSON.stringify(packet.data);
-    } catch (e){
-        ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
+        str = JSON.stringify(packet.data);
+    } catch (e) {
+        ozpIwc.metrics.meter(this.metricsPrefix, 'packets_failed').mark();
         var msgId = packet.msgId || "unknown";
-        ozpIwc.log.error("Failed to write packet(msgId=" + msgId+ "):" + e.message);
+        ozpIwc.log.error("Failed to write packet(msgId=" + msgId + "):" + e.message);
         return;
     }
 
@@ -5245,10 +5253,10 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
         // Use the original packet as a template, delete the data and
         // generate new packets.
         var self = this;
-        self.data= packet.data;
+        self.data = packet.data;
         delete packet.data;
 
-        var fragmentGen = function (chunk, template) {
+        var fragmentGen = function(chunk, template) {
 
             template.sequence = self.peer.sequenceCounter++;
             template.data = {
@@ -5276,14 +5284,14 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
  * @method queueSend
  * @param packet
  */
-ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function(packet) {
     if (this.sendQueue.length < this.queueSize) {
         this.sendQueue = this.sendQueue.concat(packet);
         while (this.sendQueue.length > 0) {
             this.attemptSend(this.sendQueue.shift());
         }
     } else {
-        ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
+        ozpIwc.metrics.meter(this.metricsPrefix, 'packets_failed').mark();
         ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + " Send queue full.");
     }
 };
@@ -5295,9 +5303,9 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
  *
  * @method attemptSend
  * @param {ozpIwc.NetworkPacket} packet
- * @param {Number} [attemptCount] number of times attempted to send packet.
+ * @param {Number} [retryCount] number of times attempted to send packet.
  */
-ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, retryCount) {
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function(packet, retryCount) {
 
     var sendStatus = this.sendImpl(packet);
     if (sendStatus) {
@@ -5308,11 +5316,11 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
         if (retryCount < self.maxRetries) {
             retryCount++;
             // Call again but back off for an exponential amount of time.
-            window.setTimeout(function () {
+            window.setTimeout(function() {
                 self.attemptSend(packet, retryCount);
             }, timeOut);
         } else {
-            ozpIwc.metrics.meter(this.metricsPrefix,'packets_failed').mark();
+            ozpIwc.metrics.meter(this.metricsPrefix, 'packets_failed').mark();
             ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + sendStatus);
             return sendStatus;
         }
@@ -5320,30 +5328,80 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
 };
 
 /**
- * Implementation of publishing packets to peers through localStorage. If the localStorage is full or a write collision
- * occurs, the send will not occur. Returns status of localStorage write, null if success.
+ * Implementation of publishing packets to peers through localStorage. If the
+ * localStorage is full or a write collision occurs, the send will not occur.
+ * Returns status of localStorage write, null if success.
  *
- * @todo move counter.inc() out of the impl and handle in attemptSend?
  * @method sendImpl
  * @param {ozpIwc.NetworkPacket} packet
  */
-ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function(packet) {
     var sendStatus;
-    try {
-        var p = JSON.stringify(packet);
-        localStorage.setItem("x", p);
-        ozpIwc.metrics.meter(this.metricsPrefix,'packets_sent').mark();
-        if(packet.data.time) {
-            ozpIwc.metrics.timer(this.metricsPrefix,'latencyOut').mark(ozpIwc.util.now() - packet.data.time);
+    var that = this;
+
+    var immediateSend = function() {
+        window.clearTimeout(that.deferredTimer);
+        var toSend = JSON.stringify(that.deferredPackets);
+        that.deferredPackets = [];
+        return toSend;
+    };
+
+    var deferThePacket = function(pkt) {
+        that.deferredPackets.push(pkt);
+        if (!that.deferredTimer) {
+            that.deferredTimer = window.setTimeout(function() {
+                that.sendImpl(null);
+            }, that.fragmentTimeout);
         }
-        localStorage.removeItem("x");
-        sendStatus = null;
+    };
+
+    try {
+        var sendIt;
+        if (!packet) {
+            // Got here on a timeout.  Send the whole deferred immediately.
+            sendIt = immediateSend();
+        }
+        else {
+            if (!packet.data.fragment && !packet.data.nodelay) {
+                // We do a lot of stringifying and whatnot at various points in
+                // the call chain.  A better approach might be to stringify
+                // immediately (at the top of the chain) and store a length
+                // inside 'this'.
+                var locDeferred = this.deferredPackets.slice(0);
+                locDeferred.concat(packet);
+                if (JSON.stringify(locDeferred).length < this.fragmentSize) {
+                    // Defer the work since we're not over-budget.
+                    deferThePacket(packet);
+                }
+                else {
+                    // Send what we already have and defer the incoming packet
+                    // for later.
+                    sendIt = immediateSend();
+                    deferThePacket(packet);
+                }
+            }
+            else {
+                // Can't wait -- either we're dealing with a fragment or we're
+                // dealing with something time-critical.
+                sendIt = JSON.stringify(packet);
+            }
+        }
+
+        if (sendIt) {
+            localStorage.setItem("x", sendIt);
+            ozpIwc.metrics.meter(this.metricsPrefix, 'packets_sent').mark();
+            if (packet.data.time) {
+                ozpIwc.metrics.timer(this.metricsPrefix, 'latencyOut').mark(ozpIwc.util.now() - packet.data.time);
+            }
+            localStorage.removeItem("x");
+            sendStatus = null;
+        }
     }
     catch (e) {
-        if(e.message === "localStorage is null"){
+        if (e.message === "localStorage is null") {
             // Firefox about:config dom.storage.enabled = false : no mitigation with current links
             ozpIwc.util.alert("Cannot locate localStorage. Contact your system administrator.", e);
-        } else if(e.code === 18){
+        } else if (e.code === 18) {
             // cookies disabled : no mitigation with current links
             ozpIwc.util.alert("Ozone requires your browser to accept cookies. Contact your system administrator.", e);
         } else {

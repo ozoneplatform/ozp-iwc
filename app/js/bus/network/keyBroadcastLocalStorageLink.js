@@ -155,17 +155,14 @@ ozpIwc.KeyBroadcastLocalStorageLink = function(config) {
                 return;
             }
 
-            if (packet.data.fragment) {
+            if (Array.isArray(packet)) {
+                packet.forEach(function(p) {
+                    self.forwardToPeer(p);
+                });
+            } else if(packet.data.fragment) {
                 self.handleFragment(packet);
             } else {
-                if (typeof packet === 'array') {
-                    for (packit in packet) {
-                        self.forwardToPeer(packit);
-                    }
-                }
-                else {
                     self.forwardToPeer(packet);
-                }
             }
         }
     };
@@ -434,7 +431,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function(packet) {
     };
 
     var deferThePacket = function(pkt) {
-        that.deferredPackets.concat(pkt);
+        that.deferredPackets.push(pkt);
         if (!that.deferredTimer) {
             that.deferredTimer = window.setTimeout(function() {
                 that.sendImpl(null);
