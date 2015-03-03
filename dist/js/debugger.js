@@ -4252,10 +4252,12 @@ ozpIwc.util=ozpIwc.util || {};
  */
 ozpIwc.util.ajax = function (config) {
     return new Promise(function(resolve,reject) {
+        var writeMethods = ["PUT", "POST", "PATCH"];
         var request = new XMLHttpRequest();
         request.open(config.method, config.href, true);
         request.withCredentials = true;
         var setContentType = true;
+
         if (Array.isArray(config.headers)) {
             config.headers.forEach(function(header) {
                 if(header.name ==="Content-Type"){
@@ -4264,7 +4266,8 @@ ozpIwc.util.ajax = function (config) {
                 request.setRequestHeader(header.name, header.value);
             });
         }
-        if(config.method === "PUT" && setContentType){
+        //IE9 does not default the Content-Type. Set it if it wasn't passed in.
+        if(writeMethods.indexOf(config.method) >= 0 && setContentType){
             request.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
         }
 
