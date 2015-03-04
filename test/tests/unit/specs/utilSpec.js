@@ -508,4 +508,21 @@ describe("General Utilities", function() {
            });
        });        
     });
+    
+    describe("ozpIwc.util.determineOrigin",function() {
+        var cases={
+            "http://example.com" : "http://example.com",
+            "http://example.com:80" : "http://example.com",
+            "http://example.com:443" : "http://example.com:443",
+            "https://example.com" : "https://example.com",
+            "https://example.com:80" : "https://example.com:80",
+            "https://example.com:443" : "https://example.com"
+        };
+       Object.keys(cases).forEach(function(c) {
+           it("for " + c, function() {
+               expect(ozpIwc.util.determineOrigin(c)).toEqual(cases[c]);
+           });
+       });
+    });     
+    
 });
