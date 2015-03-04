@@ -760,13 +760,13 @@ ozpIwc.CommonApiBase.prototype.handleGet=function(node,packetContext) {
 /**
  * Common handler for packet contexts with `bulkGet` actions.
  *
- * @method handleBulkGet
+ * @method handleBulkget
  * @param {ozpIwc.CommonApiValue} node The api node to retrieve.  (Not used, bulk get searches the api's data object instead)
  * @param {ozpIwc.TransportPacketContext} packetContext The packet context containing the bulk get action.
  */
-ozpIwc.CommonApiBase.prototype.handleBulkGet=function(node,packetContext) {
+ozpIwc.CommonApiBase.prototype.handleBulkget=function(node,packetContext) {
 	// scan local data set for resource link(?) contains prefix
-	// return list of nodes of matches, using 'toPacket'(?)
+	// return list of nodes of matches
 	var matchingNodes = [];
 	
 	if (this.data !== {}) {

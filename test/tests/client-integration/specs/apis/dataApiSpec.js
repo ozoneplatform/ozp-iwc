@@ -22,6 +22,34 @@ describe("Data API", function () {
         participant.close();
     });
 
+	it("responds to a bulk get with matching entities", function(done) {
+		var packetOne={'resource': "/family", 'entity': "value1"};
+		var packetTwo={'resource': "/family_a", 'entity': "value2", 'contentType':"application/fake+b+json"};
+        var packetThree={'resource': "/family_b", 'entity': "value3"};
+        var packetFour={'resource': "/notfamily", 'entity': "value4"};
+
+		client.api('data.api').set(packetOne.resource,{entity:packetOne.entity})
+			.then(function() {
+				return client.api('data.api').set(packetTwo.resource,{'entity':packetTwo.entity,'contentType':packetTwo.contentType});
+			}).then(function() {
+				return client.api('data.api').set(packetThree.resource,{'entity':packetThree.entity});
+			}).then(function() {
+				return client.api('data.api').set(packetFour.resource,{'entity':packetFour.entity});
+			}).then(function() {
+				return client.api('data.api').bulkGet("/family");
+			}).then(function(reply) {
+				expect(reply.response).toEqual("ok");
+				expect(reply.entity.length).toEqual(3);
+				expect(reply.entity[0]).toEqual(jasmine.objectContaining(packetOne));
+				expect(reply.entity[1]).toEqual(jasmine.objectContaining(packetTwo));
+				expect(reply.entity[2]).toEqual(jasmine.objectContaining(packetThree));
+				done();
+			})['catch'](function(error) {
+				expect(error).toEqual('not have happened');
+				done();
+			});
+	});
+
     it('sets a value visible to other clients',function(done) {
         var packet={
             'dst': "data.api",

@@ -14,9 +14,10 @@ To Build
 5.  git submodule init
 6.  git submodule update
 7.  npm install
-8.  bower install
-9.  grunt test
-10. Browse to http://localhost:14000 for an index of samples and tests!
+8.  npm install -g bower
+9.  bower install
+10. grunt test
+11. Browse to http://localhost:14000 for an index of samples and tests!
 
 Demo
 ---------------
