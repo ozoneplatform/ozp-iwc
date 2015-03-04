@@ -91,32 +91,37 @@ describe("Data API", function () {
         });
 
     });
-
+    it('can get a value set by another participant',function(done){
+        participant.send({
+            'dst': "data.api",
+                'resource': "/test",
+                'action' : "set",
+                'entity' : { 'foo' : 2 }
+        },function(response){
+            client.data().get('/test').then(function(reply){
+                expect(reply.entity).toEqual({"foo":2});
+                done();
+            });
+        });
+    });
     it("can delete a value set by someone else",function(done) {
-        var packet={
+        participant.send({
             'dst': "data.api",
             'resource': "/test",
-            'action' : "set",
-            'entity' : { 'foo' : 1 }
-        };
-        participant.send(packet,function() {
-            client.api('data.api').delete(packet.resource)
-                .then(function(reply) {
+            'action': "set",
+            'entity': {'foo': 2}
+        }, function (response) {
+            client.data().get('/test').then(function (reply) {
+                expect(reply.entity).toEqual({"foo": 2});
+                client.data().delete('/test').then(function (reply) {
                     expect(reply.response).toEqual("ok");
-                    client.api('data.api').get(packet.resource)
-                        .then(function(reply) {
-                            expect(reply.entity).toBeUndefined();
-                            done();
-                        })
-                        ['catch'](function(error) {
-                            expect(error).toEqual('');
-                        });
-                })
-                ['catch'](function(error) {
-                    expect(error).toEqual('');
+                    client.data().get('/test').then(function (reply) {
+                        expect(reply.entity).toBeUndefined();
+                        done();
+                    });
                 });
+            });
         });
-
     });
 
     it('Integration bus cleans up after every run',function(done) {

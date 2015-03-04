@@ -22,6 +22,7 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
     ozpIwc.InternalParticipant.apply(this, arguments);
     config = config || {};
     this.origin = config.origin || "foo.com";
+    this.address = config.staticAddress;
     this.packets = [];
     this.sentPackets = [];
     // since we aren't connecting to a router, mock these out, too
@@ -29,6 +30,9 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
     this.sentPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "sentPackets");
     this.receivedPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "receivedPackets");
     this.forbiddenPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "forbiddenPackets");
+
+    // mock common permission attributes (that would be assigned on router/multicast connections)
+    this.events.trigger('connectedToRouter');
 
 
     this.router = {
@@ -100,6 +104,8 @@ var TestPacketContext = ozpIwc.util.extend(ozpIwc.TransportPacketContext, functi
 
 var FakeRouter = function() {
     this.jitter = 0;
+    this.events = new ozpIwc.Event();
+    this.events.mixinOnOff(this);
     this.packetQueue=[];
     this.participants=[];
     this.send = function(packet) {
@@ -131,12 +137,16 @@ var FakeRouter = function() {
             var packet = this.packetQueue.shift();
 //				console.log("PACKET(" + packet.src + "): ",packet);
             recvFn(this.participants,packet);
-        }
+            }
         return processed;
     };
     this.createMessage = function(m) {
         return m;
     };
-    this.registerMulticast = function() {
+    this.registerMulticast = function(participant,groups) {
+        groups.forEach(function(groupName){
+            participant.permissions.pushIfNotExist('ozp:iwc:sendAs', groupName);
+            participant.permissions.pushIfNotExist('ozp:iwc:receiveAs', groupName);
+        });
     };
 };

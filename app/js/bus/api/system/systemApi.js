@@ -48,15 +48,12 @@ ozpIwc.SystemApi.prototype.loadFromServer=function() {
     return new Promise(function(resolve, reject) {
         self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":application", headers)
             .then(function() {
-                self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":user")
-                    .then(function() {
-                        self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":system")
-                            .then(function() {
-                                resolve("system.api load complete");
-                            });
-                    });
-            })
-            ['catch'](function(error) {
+                return self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":user");
+            }).then(function() {
+                return self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":system");
+            }).then(function() {
+                resolve("system.api load complete");
+            })['catch'](function(error) {
                 reject(error);
             });
     });
@@ -191,7 +188,7 @@ ozpIwc.SystemApi.prototype.rootHandleInvoke = function(node,packetContext) {
         ];
 
         ozpIwc.util.openWindow(packetContext.packet.entity.inFlightIntentEntity.entity.url,launchParams.join("&"));
-        this.launchApplication(node,packetContext.packet.entity.inFlightIntent);
+//        this.launchApplication(node,packetContext.packet.entity.inFlightIntent);
         packetContext.replyTo({'response': "ok"});
     } else{
         packetContext.replyTo({'response': "badResource"});

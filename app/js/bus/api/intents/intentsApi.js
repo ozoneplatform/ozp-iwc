@@ -53,6 +53,14 @@ ozpIwc.IntentsApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function (config) {
 });
 
 /**
+ * Loads data from the server.
+ *
+ * @method loadFromServer
+ */
+ozpIwc.IntentsApi.prototype.loadFromServer=function() {
+    return this.loadFromEndpoint(ozpIwc.linkRelPrefix + ":intent");
+};
+/**
  * Takes the resource of the given packet and creates an empty value in the IntentsApi. Chaining of creation is
  * accounted for (A handler requires a definition, which requires a capability).
  *
@@ -145,7 +153,7 @@ ozpIwc.IntentsApi.prototype.handleRegister = function (node, packetContext) {
     // save the new child
     var childNode=this.findOrMakeValue({'resource':key});
     var clone = ozpIwc.util.clone(childNode);
-
+    clone.permissions = childNode.permissions.getAll();
     packetContext.packet.entity.invokeIntent = packetContext.packet.entity.invokeIntent || {};
     packetContext.packet.entity.invokeIntent.dst = packetContext.packet.src;
     packetContext.packet.entity.invokeIntent.replyTo = packetContext.packet.msgId;
@@ -182,7 +190,7 @@ ozpIwc.IntentsApi.prototype.handleBroadcast = function (node, packetContext) {
 
         var inflightPacket = self.makeIntentInvocation(node,packetContext);
 
-        var updateInFlightEntity = ozpIwc.util.clone(inflightPacket);
+        var updateInFlightEntity =inflightPacket.toPacket();
         updateInFlightEntity.entity.handlerChosen = {
             'resource' : handler.resource,
             'reason' : "broadcast"
@@ -218,7 +226,7 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
     var inflightPacket = this.makeIntentInvocation(node,packetContext);
 
     if(handlerNodes.length === 1) {
-        var updateInFlightEntity = ozpIwc.util.clone(inflightPacket);
+        var updateInFlightEntity = inflightPacket.toPacket();
         updateInFlightEntity.entity.handlerChosen = {
             'resource' : handlerNodes[0].resource,
             'reason' : "onlyOne"

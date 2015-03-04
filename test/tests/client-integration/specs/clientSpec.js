@@ -1,6 +1,6 @@
 /*jshint noarg:false */
 describe("IWC Client", function() {
-    jasmine.getEnv().defaultTimeoutInterval = 200000;// e.g. 15000 milliseconds
+    jasmine.getEnv().defaultTimeoutInterval = 3000;// e.g. 15000 milliseconds
 
     var client;
     var participant;
@@ -38,7 +38,7 @@ describe("IWC Client", function() {
             'dst': "data.api",
             'action': "get",
             'resource': ""
-        },function(response) {
+        }).then(function(response) {
             gate();
         });
         
@@ -234,7 +234,7 @@ describe("IWC Client", function() {
                     'dst': "intents.api",
                     'resource' : "/ozpIntents/invocations/123",
                     'action' : "get"
-                }),jasmine.any(Function));
+                }));
                  done();
              })['catch'](function(error) {
                  console.log("Error " ,error);

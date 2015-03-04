@@ -1,17 +1,17 @@
 module.exports = function(grunt) {
     /* jshint camelcase: false */
     var sampleDataBase={
-                            "path":"data-schemas/mock",
-                            options: {
-                                directory: false,
-                                index: "index.json"
-                            }
-                        };
+        "path":"data-schemas/mock",
+        options: {
+            directory: false,
+            index: "index.json"
+        }
+    };
 
     // Project configuration.
     var config = {
         pkg: grunt.file.readJSON('package.json'),
-        
+
         src: {
             common: [
                 'bower_components/es5-shim/es5-shim.js',
@@ -84,7 +84,7 @@ module.exports = function(grunt) {
             metricsJs: 'dist/js/<%= pkg.name %>-metrics.js',
             debuggerJs: 'dist/js/debugger.js',
             debuggerCss: 'dist/css/debugger.css',
-            
+
             busJsMin: 'dist/js/<%= pkg.name %>-bus.min.js',
             clientJsMin: 'dist/js/<%= pkg.name %>-client.min.js',
             metricsJsMin: 'dist/js/<%= pkg.name %>-metrics.min.js',
@@ -210,7 +210,7 @@ module.exports = function(grunt) {
             }
         },
         clean: {
-          dist: ['./dist/']
+            dist: ['./dist/']
         },
         yuidoc: {
             compile: {
@@ -235,7 +235,7 @@ module.exports = function(grunt) {
                     interrupt: true,
                     spawn: false
                 }
-                
+
             },
             test: {
                 files: ['Gruntfile.js', 'dist/**/*', '<%= src.test %>'],
@@ -307,17 +307,32 @@ module.exports = function(grunt) {
                     'package.json',
                     'bower.json'
                 ],
-                commit: true,
-                commitMessage: 'chore(release): v%VERSION%',
-                commitFiles: [
-                    'package.json',
-                    'bower.json'
-                ],
-                createTag: true,
-                tagName: 'v%VERSION%',
-                tagMessage: 'Version %VERSION%',
-                push: false,
-                pushTo: 'origin'
+                commit: false,
+                createTag: false,
+                push: false
+            }
+        },
+        shell: {
+            buildVersionFile: {
+                command: [
+                    'echo "Version: <%= pkg.version %>" > dist/version.txt',
+                    'echo "Git hash: " >> dist/version.txt',
+                    'git rev-parse HEAD >> dist/version.txt',
+                    'echo Date: >> dist/version.txt',
+                    'git rev-parse HEAD | xargs git show -s --format=%ci >> dist/version.txt'
+                ].join('&&')
+            },
+            releaseGit: {
+                command: [
+                    'git checkout --detach',
+                    'grunt dist',
+                    'git add bower.json package.json',
+                    'git add -f dist',
+                    'git commit -m "chore(release): <%= pkg.version %>"',
+                    'git tag -a "<%= pkg.version %>" -m "chore(release): <%= pkg.version %>"',
+                    'git push origin <% pkg.version %> --tags',
+                    'git checkout master'
+                ].join('&&')
             }
         }
 
@@ -328,11 +343,19 @@ module.exports = function(grunt) {
 
     grunt.initConfig(config);
 
+    grunt.registerTask('readpkg', 'Read in the package.json file', function() {
+
+        grunt.config.set('pkg', grunt.file.readJSON('./package.json'));
+
+    });
     // Default task(s).
-    grunt.registerTask('build', ['copy:hackBootstrap', 'jshint', 'concat_sourcemap', 'uglify', 'copy:dist']);
+    grunt.registerTask('build', ['copy:hackBootstrap', 'jshint', 'concat_sourcemap', 'uglify', 'copy:dist','shell:buildVersionFile']);
     grunt.registerTask('dist', ['build', 'yuidoc']);
     grunt.registerTask('testOnly', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
     grunt.registerTask('test', ['build','connect','watch']);
+    grunt.registerTask('releasePatch', ['bump:patch','readpkg','shell:releaseGit']);
+    grunt.registerTask('releaseMinor', ['bump:minor','readpkg', 'shell:releaseGit']);
+    grunt.registerTask('releaseMajor', ['bump:major','readpkg', 'shell:releaseGit']);
     grunt.registerTask('default', ['dist']);
 
 };

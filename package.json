@@ -1,7 +1,7 @@
 {
   "author": "Ozone Developers",
   "name": "ozpIwc",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": "https://github.com/ozone-development/ozp-iwc",
   "devDependencies": {
     "grunt": "0.4.x",
@@ -15,6 +15,7 @@
     "grunt-contrib-yuidoc": "^0.5.2",
     "grunt-bump": "0.0.6",
     "grunt-jsdoc": "*",
+    "grunt-shell": "^1.1.1",
     "jshint-stylish": "*",
     "load-grunt-tasks": "~0.6.0"
   }

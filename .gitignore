@@ -3,5 +3,5 @@
 doc
 app/js/ozpIwc-*.js
 .idea/
-hal-browser
 bower_components
+dist

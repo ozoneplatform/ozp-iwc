@@ -27,15 +27,15 @@
       <div id="cancelButton"></div>
 
       <script type="text/javascript">
-        var client=new ozpIwc.InternalParticipant({'name':"intentsChooser"});
-        ozpIwc.defaultRouter.registerParticipant(client);
+        var participant=new ozpIwc.InternalParticipant({'name':"intentsChooser"});
+        ozpIwc.defaultRouter.registerParticipant(participant);
 
         function failure(msg) {
             document.getElementById("handlerList").textContent=msg;
         }
 
         function handleSelection(handler,intentInvocation){
-            client.send({
+            participant.send({
                 dst: "intents.api",
                 action: "set",
                 contentType: intentInvocation.contentType,
@@ -45,11 +45,8 @@
                     reason: "user",
                     state: "choosing"
                 }
-            },function(reply,done) {
-                if(reply.response === "ok"){
-                    window.close();
-                }
-                done();
+            },function(reply){
+                window.close();
             });
         }
 
@@ -76,7 +73,7 @@
             button.appendChild(document.createTextNode("Cancel"));
             button.addEventListener("click",function(evt) {
                 evt.preventDefault();
-                client.send({
+                participant.send({
                     dst: "intents.api",
                     action: "set",
                     contentType: intentInvocation.contentType,
@@ -88,11 +85,8 @@
                         },
                         state: "fail"
                     }
-                },function(reply,done) {
-                    if(reply.response === "ok"){
-                        window.close();
-                    }
-                    done();
+                },function(reply){
+                    window.close();
                 });
             });
             document.getElementById("handlerList").appendChild(button);
@@ -105,17 +99,14 @@
         }
         var loc=ozpIwc.util.parseOzpUrl(m[1]);
 
-        client.send(loc,function(reply,done) {
-            if(reply.response!=="ok") {
+        participant.send(loc,function(reply) {
+            if (/(ok).*/.test(reply.response)) {
+                showHandlers(reply.entity.handlerChoices|| [], reply);
+                showCancel(reply);
+            } else {
                 failure();
-                done();
-                return;
             }
-            showHandlers(reply.entity.handlerChoices,reply);
-            showCancel(reply);
-            done();
         });
-        
     </script>
   </body>
 </html>

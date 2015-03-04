@@ -34,13 +34,13 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
                         key.children = "Not Supported: " + response.response;
                     }
                     if(!scope.$$phase) { scope.$apply(); }
-                }).catch(function (error) {
+                })["catch"](function (error) {
                     console.log('Error in loadKey: ' + JSON.stringify(error));
                 });
             } else {
                 if(!scope.$$phase) { scope.$apply(); }
             }
-        }).catch(function (error) {
+        })["catch"](function (error) {
             console.log('Error in loadKey: ' + JSON.stringify(error));
         });
     };
@@ -71,7 +71,7 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
         client.send({
             'dst': scope.api,
             'action': "list"
-        },function(response) {
+        },function(response,done) {
             scope.keys=response.entity.map(function(k) {
                 var key={
                     'resource': k,
@@ -81,6 +81,7 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
                 scope.loadKey(key);
                 return key;
             });
+            done();
         });
 
         client.connect().then(function(){
@@ -91,11 +92,7 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
 
     scope.watchKey=function(key) {
         if(key.isWatched) {
-            client.send({
-                'dst': scope.api,
-                'action': "watch",
-                'resource': key.resource
-            },function(response) {
+            client.api(scope.api).watch(key.resource,function(response) {
                 if(response.response === 'changed') {
                     scope.$evalAsync(function() {
                         key.entity=response.entity.newValue;
@@ -103,8 +100,9 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
                         key.contentType=response.contentType;
                     });
                 }
-                return key.isWatched;
             });
+        } else {
+            client.api(scope.api).unwatch(key.resource);
         }
     };
 
@@ -136,7 +134,7 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
                 scope.msg.response = reply;
                 scope.msg.response.entity = JSON.stringify(reply.entity, null, 2);
                 scope.$apply();
-            }).catch(function (error) {
+            })["catch"](function (error) {
                 console.log('error: ' + JSON.stringify(error));
             });
         }
