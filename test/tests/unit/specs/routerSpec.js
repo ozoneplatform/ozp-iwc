@@ -11,7 +11,7 @@ describe("Router", function() {
         };
 
         router = new ozpIwc.Router({peer: fakePeer});
-    });
+        });
 
     afterEach(function() {
         router.shutdown();
@@ -103,31 +103,32 @@ describe("Router", function() {
 
             router.registerParticipant(participant);
             router.registerParticipant(participant2);
+            participant.permissions.pushIfNotExist("ozp:iwc:perm",'shared');
+            participant2.permissions.pushIfNotExist("ozp:iwc:perm",'shared');
 
-            participant.securityAttributes.perm = 'shared';
-            participant2.securityAttributes.perm = 'shared';
-
-            participant.securityAttributes.color = 'blue';
-            participant2.securityAttributes.color = 'red';
+            participant.permissions.pushIfNotExist("ozp:iwc:color",'blue');
+            participant2.permissions.pushIfNotExist("ozp:iwc:color",'red');
         });
 
         it("allows receipt of shared permissions", function(done) {
-            participant2.on("receive", function() {
-                expect(participant2.packets[participant2.packets.length - 1].packet.entity).toEqual({foo: "bar"});
+            participant2.on("receive", function(packetContext) {
+                expect(packetContext.packet.entity).toEqual({foo: "bar"});
                 done();
             });
             participant.send({
                 dst: participant2.address,
-                permissions: {'perm': "shared"},
+                permissions: {
+                    'ozp:iwc:perm': "shared"
+                },
                 entity: {foo: "bar"}
             });
         });
 
         it("denies receipt of unshared permissions", function() {
             participant.send({
-                dst: participant2.address,
-                permissions: {'color': "blue"},
-                entity: {foo: "bar"}
+                    dst: participant2.address,
+                    permissions: {'ozp:iwc:color': "blue"},
+                    entity: {foo: "bar"}
             });
 
             expect(participant2.packets.length).toEqual(0);
@@ -136,7 +137,7 @@ describe("Router", function() {
         it("denies if the recipient doesn't have all permissions", function() {
             participant.send({
                 dst: participant2.address,
-                permissions: {'perm': "shared", 'color': "blue"},
+                permissions: {'ozp:iwc:perm': "shared", 'ozp:iwc:color': "blue"},
                 entity: {foo: "bar"}
             });
 
@@ -150,7 +151,7 @@ describe("Router", function() {
             });
             participant.send({
                 dst: participant2.address,
-                permissions: {'color': "red"},
+                permissions: {'ozp:iwc:color': "red"},
                 entity: {'foo': "bar"}
             });
 

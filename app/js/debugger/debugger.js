@@ -1,475 +1,300 @@
-
 var debuggerModule=angular.module("ozpIwc.debugger",[
-    'ui.bootstrap'
-]);
-        
-        
+    'ui.bootstrap',
+    'ui.router'
+]).config(function($stateProvider, $urlRouterProvider) {
+      // For any unmatched url, redirect to General
+      $urlRouterProvider.otherwise("/general");
+
+      $stateProvider
+        .state('general', {
+            url: "/general",
+            templateUrl: "templates/generalState.tpl.html"
+        })
+        .state('metrics', {
+            url: "/metrics",
+            templateUrl: "templates/metricsState.tpl.html"
+        })
+        .state('traffic-snooper', {
+            url: "/traffic-snooper",
+            templateUrl: "templates/trafficSnooperState.tpl.html"
+        })
+        .state('elections', {
+            url: "/elections",
+            templateUrl: "templates/electionsState.tpl.html"
+        })
+        .state('system-api', {
+            url: "/system-api",
+            templateUrl: "templates/systemApiState.tpl.html"
+        })
+        .state('data-api', {
+            url: "/data-api",
+            templateUrl: "templates/dataApiState.tpl.html"
+        })
+        .state('intents-api', {
+            url: "/intents-api",
+            templateUrl: "templates/intentsApiState.tpl.html"
+        })
+        .state('names-api', {
+            url: "/names-api",
+            templateUrl: "templates/namesApiState.tpl.html"
+        })
+        .state('hal-browser', {
+            url: "/hal-browser/:url",
+            templateUrl: "templates/halBrowserState.tpl.html"
+        });
+});
+
+
 debuggerModule.factory("iwcClient",function() {
     var client=new ozpIwc.InternalParticipant({name: "debuggerClient"});
     ozpIwc.defaultRouter.registerParticipant(client);
+
+    client.connect=function() {
+        if(!this.connectPromise) {
+            var self=this;
+            this.apiMap = {};
+
+            /**
+             * Promise to chain off of for client connection asynchronous actions.
+             * @property connectPromise
+             * @type Promise
+             */
+            this.connectPromise=new Promise(function(resolve, reject) {
+
+                    self.send({
+                        dst: "names.api",
+                        action: "get",
+                        resource: "/api"
+                    },function(reply,done){
+                        if(reply.response === 'ok'){
+                            resolve(reply.entity);
+                        } else{
+                            reject(reply.response);
+                        }
+                        done();
+                    });
+
+                }).then(function(apis) {
+                    var promiseArray = [];
+                    apis.forEach(function (api) {
+                        promiseArray.push(new Promise(function (resolve, reject) {
+                            self.send({
+                                dst: "names.api",
+                                action: "get",
+                                resource: api
+                            }, function (res,done) {
+                                if (res.response === 'ok') {
+                                    var name = api.replace('/api/', '');
+                                    self.apiMap[name] = {
+                                        'address': name,
+                                        'actions': res.entity.actions
+                                    };
+
+                                    resolve();
+                                } else {
+                                    reject(res.response);
+                                }
+                                done();
+                            });
+                        }));
+                    });
+                    return Promise.all(promiseArray);
+                }).then(function(){
+                    for(var api in self.apiMap){
+                        var apiObj = self.apiMap[api];
+                        var apiFuncName = apiObj.address.replace('.api','');
+
+                        //prevent overriding client constructed fields
+                        if(!self.hasOwnProperty(apiFuncName)){
+                            // wrap this in a function to break the closure
+                            // on apiObj.address that would otherwise register
+                            // everything for the last api in the list
+                            /*jshint loopfunc:true*/
+                            (function(addr){
+                                self[apiFuncName] = function(){
+                                    return self.api(addr);
+                                };
+                                self.apiMap[addr] = self.apiMap[addr] || {};
+                                self.apiMap[addr].functionName = apiFuncName;
+                            })(apiObj.address);
+                        }
+                    }
+                }).then(function() {
+                    /**
+                     * Fired when the client is connected to the IWC bus.
+                     * @event #connected
+                     */
+                    self.events.trigger("connected");
+                })['catch'](function(error) {
+                ozpIwc.log.log("Failed to connect to bus ",error);
+            });
+        }
+        return this.connectPromise;
+    };
+
+
+    client.intentInvocationHandling = function(resource,intentResource,callback) {
+        var self = this;
+        return new Promise(function(resolve,reject) {
+            self.send({
+                dst: "intents.api",
+                action: "get",
+                resource: intentResource
+            }, function (response, done) {
+                response.entity.handler = {
+                    address: self.address,
+                    resource: resource
+                };
+                response.entity.state = "running";
+
+
+                self.send({
+                    dst: "intents.api",
+                    contentType: response.contentType,
+                    action: "set",
+                    resource: intentResource,
+                    entity: response.entity
+                }, function (reply, done) {
+                    //Now run the intent
+                    response.entity.reply.entity = callback(response.entity) || {};
+                    // then respond to the inflight resource
+                    response.entity.state = "complete";
+                    response.entity.reply.contentType = response.entity.intent.type;
+                    self.send({
+                        dst: "intents.api",
+                        contentType: response.contentType,
+                        action: "set",
+                        resource: intentResource,
+                        entity: response.entity
+                    });
+                    done();
+                    resolve(response);
+                });
+                done();
+            });
+        });
+    };
+
+    client.augment = function (dst,action) {
+        var self = this;
+        return function (resource, fragment, otherCallback) {
+            // If a fragment isn't supplied argument #2 should be a callback (if supplied)
+            if(typeof fragment === "function"){
+                otherCallback = fragment;
+                fragment = {};
+            }
+            return new Promise(function (resolve, reject) {
+                var packet = {
+                    'dst': dst,
+                    'action': action,
+                    'resource': resource,
+                    'entity': {}
+                };
+                for (var k in fragment) {
+                    packet[k] = fragment[k];
+                }
+                var packetResponse = false;
+                var callbackResponse = !!!otherCallback;
+                self.send(packet, function (reply,done) {
+
+                    function initialDone() {
+                        if(callbackResponse){
+                            done();
+                        } else {
+                            packetResponse = true;
+                        }
+                    }
+
+                    function callbackDone() {
+                        if(packetResponse){
+                            done();
+                        } else {
+                            callbackResponse = true;
+                        }
+                    }
+                    if (reply.response === 'ok') {
+                        resolve(reply);
+                        initialDone();
+                    } else if (/(bad|no).*/.test(reply.response)) {
+                        reject(reply);
+                        initialDone();
+                    }
+                    else if (otherCallback) {
+                        if(reply.entity && reply.entity.inFlightIntent) {
+                            self.intentInvocationHandling(resource,reply.entity.inFlightIntent,otherCallback,callbackDone);
+                        } else {
+                            otherCallback(reply, callbackDone);
+                        }
+                    }
+                });
+                if(dst === "intents.api" && action === "register"){
+                    for(var i in self.launchedIntents){
+                        var loadedResource = '/' + self.launchedIntents[i].entity.intent.type + '/' + self.launchedIntents[i].entity.intent.action;
+                        if(resource === loadedResource){
+                            self.intentInvocationHandling(resource,self.launchedIntents[i].resource,otherCallback);
+                            delete self.launchedIntents[i];
+                        }
+                    }
+                }
+            });
+        };
+    };
+
+    client.api=function(apiName) {
+        this.wrapperMap = this.wrapperMap || {};
+        var wrapper = this.wrapperMap[apiName];
+        if (!wrapper) {
+            if(this.apiMap.hasOwnProperty(apiName)) {
+                var api = this.apiMap[apiName];
+                wrapper = {};
+                for (var i = 0; i < api.actions.length; ++i) {
+                    var action = api.actions[i];
+                    wrapper[action] = this.augment(api.address, action);
+                }
+
+                this.wrapperMap[apiName] = wrapper;
+            }
+        }
+        wrapper.apiName=apiName;
+        return wrapper;
+    };
+    client.connect();
     return client;
 });
         
         
 debuggerModule.controller("debuggerController",["$scope","iwcClient",function(scope,client) {
-    scope.client=client;
-    scope.apis=[
-        {'address': "data.api",'hasChildren':true},
-        {'address': "intents.api"},
-        {'address': "system.api"},
-        {'address': "names.api"}
-    ];
+    scope.ozpIwc = ozpIwc;
+    scope.apiRootUrl = ozpIwc.apiRootUrl;
+    scope.tab = 'general';
 }]);
-        
-        
-debuggerModule.controller("packetLogController",["$scope",function(scope) {
-    scope.logging=false;
-    scope.viewFilter="";
-    scope.packets=[];
-    scope.maxShown=50;
-    
-    function logPacket(msg) {        
-        if(!scope.logging) {
-            return;
-        }
-              
-        var packet=msg.packet;
-        scope.$apply(function() {
-           scope.packets.push(packet);
-        });
-    };
-    
-    ozpIwc.defaultPeer.on("receive",logPacket);
-    ozpIwc.defaultPeer.on("send",logPacket);
-
-}]);
-        
-        
-debuggerModule.controller("apiDisplayController",["$scope","iwcClient",function(scope,client) {
-    scope.keys=[];
-    scope.query = function() {
-        scope.loadKey = function (key) {
-            client.send({
-                'dst': scope.api.address,
-                'action': "get",
-                'resource': key.resource
-            }, function (response, done) {
-                for (i in response) {
-                    key[i] = response[i];
-                }
-                key.isLoaded = true;
-                done();
-            });
-            client.send({
-                'dst': scope.api.address,
-                'action': "list",
-                'resource': key.resource
-            }, function (response, done) {
-                if (response.response === "ok") {
-                    key.children = response.entity;
-                } else {
-                    key.children = "Not Supported: " + response.response;
-                }
-                done();
-            });
-        };
-        scope.refresh();
-    };
-
-    scope.refresh=function() {
-        client.send({
-            'dst': scope.api.address,
-            'action': "list"
-        },function(response) {
-            scope.keys=response.entity.map(function(k) {
-                var key={
-                    'resource': k,
-                    'isLoaded':false,
-                    'isWatched':false
-                };
-                scope.loadKey(key);
-                return key;
-            });
-        });
-    };
-    
-
-    
-    scope.watchKey=function(key) {
-        if(key.isWatched) {
-            client.send({
-                'dst': scope.api.address,
-                'action': "watch",
-                'resource': key.resource
-            },function(response) {
-                if(response.response === 'changed') {
-                    scope.$evalAsync(function() {
-                        key.entity=response.entity.newValue;
-                        key.permissions=response.permissions;
-                        key.contentType=response.contentType;
-                    });
-                }
-                return key.isWatched;
-            });
-        }
-    };
-    scope.refresh();
-}]);
-
-        
-debuggerModule.controller("metricsController",['$scope','$interval',function(scope,$interval) {
-    scope.updateFrequency=1000;
-    scope.updateActive=true;
-        
-    scope.refresh=function() {
-        scope.metrics=ozpIwc.metrics.allMetrics().map(function(m) {
-            return {
-                'name' :m.name,
-                'unit' : m.unit(),
-                'value' : m.get()
-            };
-        });
-    };
-    
-    scope.refresh();
-    
-    var timer=null;
-    var updateTimer=function() {
-        if(timer) {
-            $interval.cancel(timer);
-        }
-        if(scope.updateActive) {
-            timer=$interval(scope.refresh,scope.updateFrequency);
-        }
-    };
-    
-    
-    scope.$watch('updateActive', updateTimer);
-    scope.$watch('updateFrequency', updateTimer);
-}]);
-
-debuggerModule.controller('electionController',['$scope',function($scope){
-    $scope.ELECTION_TIME = ozpIwc.ELECTION_TIMEOUT;
-    $scope.onElectionSelect = function(election){
-        $scope.selectedElection = election;
-    };
-    function isNewestPacket(packet,api){
-        { return api.lastElectionTS < packet.time; }
-    }
-    function outOfElectionWindow(packet,api){
-        { return api.lastElectionTS +  $scope.ELECTION_TIME < Date.now(); }
-
-    }
-
-    $scope.apis = [
-        {
-            value: 'data.api',
-            title: 'Data Api',
-            elections: new vis.DataSet(),
-            electionGroups: new vis.DataSet(),
-            packets: {},
-            storageEvents: {},
-            lastElectionTS: -Number.MAX_VALUE
+debuggerModule.service("apiSettingService",function(){
+    this.apis={
+        'data.api' : {
+            'address': "data.api",
+            'hasChildren':true
         },
-        {
-            value: 'names.api',
-            title: 'Names Api',
-            elections: new vis.DataSet(),
-            electionGroups: new vis.DataSet(),
-            packets: {},
-            storageEvents: {},
-            lastElectionTS: -Number.MAX_VALUE
+        'intents.api': {
+            'address': "intents.api",
+            'actions': [{
+                action: "invoke",
+                contentTypes: ['application/vnd.ozp-iwc-intent-definition-v1+json',
+                    'application/vnd.ozp-iwc-intent-handler-v1+json']
+            },{
+                action: "broadcast",
+                contentTypes: ['application/vnd.ozp-iwc-intent-definition-v1+json',
+                    'application/vnd.ozp-iwc-intent-handler-v1+json']
+            }]
         },
-        {
-            value: 'system.api',
-            title: 'System Api',
-            elections: new vis.DataSet(),
-            electionGroups: new vis.DataSet(),
-            packets: {},
-            storageEvents: {},
-            lastElectionTS: -Number.MAX_VALUE
+        'system.api': {
+            'address': "system.api",
+            'actions': [{
+                action: "launch",
+                contentTypes: ['application/vnd.ozp-application-v1+json']
+            }]
         },
-        {
-            value: 'intents.api',
-            title: 'Intents Api',
-            elections: new vis.DataSet(),
-            electionGroups: new vis.DataSet(),
-            packets: {},
-            storageEvents: {},
-            lastElectionTS: -Number.MAX_VALUE
-        }
-    ];
-
-    $scope.clear = function(){
-        for(var i in $scope.apis){
-            $scope.apis[i].elections = new vis.DataSet();
-            $scope.apis[i].electionGroups = new vis.DataSet();
-            $scope.apis[i].packets = {};
-            $scope.apis[i].storageEvents = {};
-        }
-        $scope.selectedElection = null;
-    };
-
-    function genTimelineDelta(packet){
-        var delta = packet.debuggerTime - packet.time;
-        var content = 'delta: ' + delta + ' ms';
-        return {
-            id: packet.time + "_delay",
-            content: content,
-            start: new Date(packet.time),
-            end: new Date(packet.debuggerTime),
-            style: "background-color: lightgray",
-            group: packet.src,
-            subgroup: "delay"
-        }
-    }
-    function genTimelineData(packet){
-        var state = (packet.action === "election" && typeof(packet.entity.state) !== 'undefined' && Object.keys(packet.entity.state).length > 0);
-        var timelineData = {
-            id: packet.time,
-            content: 'Election',
-            start: new Date(packet.debuggerTime),
-            end: new Date(packet.time + $scope.ELECTION_TIME),
-            group: packet.src,
-            subgroup: "actual"
-        };
-
-        if (packet.entity.priority === -Number.MAX_VALUE){
-            timelineData.style = "background-color: gray";
-            timelineData.content += '<label> Quitting </label> ';
-        }
-
-        switch(packet.action){
-            case "leaderQuery":
-                timelineData.style = "background-color: purple";
-                timelineData.content = "<label>Leader Query</label>";
-                break;
-            case "leaderResponse":
-                timelineData.style = "background-color: purple";
-                timelineData.content = "<label>Leader Response</label>";
-                timelineData.end = null;
-                break;
-            case "victory":
-                timelineData.style = "background-color: green";
-                timelineData.content = "<label> Victory </label>";
-                break;
-        }
-
-        if(state){
-            timelineData.style = "background-color: orange";
-            timelineData.content += '</br><label> Contains State </label>';
-        }
-        if(packet.src === packet.entity.previousLeader){
-            timelineData.content += '</br><label> Was Leader </label>';
-
-        }
-        return timelineData;
-    }
-
-    function genTimelineOOS(packet){
-        return {
-            id: packet.time,
-            content: ' Out of Sync',
-            start: new Date(packet.debuggerTime),
-            end: new Date(packet.time + $scope.ELECTION_TIME),
-            group: packet.src,
-            style: "background-color: yellow",
-            subgroup: "actual"
-        };
-    }
-    function genTimelineDrop(packet){
-        return {
-            id: packet.time,
-            content: ' Out of Election Window',
-            start: new Date(packet.debuggerTime),
-            end: new Date(packet.time + $scope.ELECTION_TIME),
-            group: packet.src,
-            style: "background-color: red",
-            subgroup: "actual"
-        };
-    }
-
-    function updateApiTimeline(packet,api){
-        var timelineGroup = {
-            id: packet.src,
-            content: packet.src
-        };
-
-
-        var packetData = {
-            id: packet.time,
-            data: packet
-        };
-
-        api.electionGroups.update(timelineGroup);
-
-        if(isNewestPacket(packet,api)) {
-            api.elections.add(genTimelineDelta(packet));
-            api.elections.add(genTimelineData(packet));
-        } else if(outOfElectionWindow(packet,api)){
-            api.elections.add(genTimelineDelta(packet));
-            api.elections.add(genTimelineDrop(packet));
-        } else {
-            api.elections.add(genTimelineDelta(packet));
-            api.elections.add(genTimelineOOS(packet));
-        }
-        if(packet.action === 'victory'){
-            api.lastElectionTS = packet.time;
-        }
-        api.packets[packetData.id] = packetData.data;
-    }
-
-    function logPacket(msg) {
-        if($scope.enableOrNot === "disabled") return;
-        var packet = msg.packet.data;
-        packet.debuggerTime = Date.now();
-        var actions = ['election','victory','leaderQuery','leaderResponse'];
-        if(actions.indexOf(packet.action) < 0) return;
-
-        switch (packet.dst) {
-            case "data.api.election":
-                $scope.$apply(function() {
-                    updateApiTimeline(packet,$scope.apis[0]);
-                });
-                break;
-
-            case "names.api.election":
-                $scope.$apply(function() {
-                    updateApiTimeline(packet,$scope.apis[1]);
-                });
-                break;
-
-            case "system.api.election":
-                $scope.$apply(function() {
-                    updateApiTimeline(packet,$scope.apis[2]);
-                });
-                break;
-
-            case "intents.api.election":
-                $scope.$apply(function() {
-                    updateApiTimeline(packet,$scope.apis[3]);
-                });
-                break;
-
-            default:
-                switch (packet.src) {
-                    case "data.api.election":
-                        $scope.$apply(function() {
-                            updateApiTimeline(packet,$scope.apis[0]);
-                        });
-                        break;
-
-                    case "names.api.election":
-                        $scope.$apply(function() {
-                            updateApiTimeline(packet,$scope.apis[1]);
-                        });
-                        break;
-
-                    case "system.api.election":
-                        $scope.$apply(function() {
-                            updateApiTimeline(packet,$scope.apis[2]);
-                        });
-                        break;
-
-                    case "intents.api.election":
-                        $scope.$apply(function() {
-                            updateApiTimeline(packet,$scope.apis[3]);
-                        });
-                        break;
-
-                    default:
-                        break;
-                }
-                break;
-        }
-    }
-
-    var storeEvt =  function(event){
-        if(event.newValue && $scope.recvToggle && $scope.enableOrNot === "enabled"){
-            var date = Date.now();
-            var id = date +'_'+ Math.floor(Math.random() * 10000);
-            var packet = JSON.parse(event.key);
-            for(var i in $scope.apis) {
-                $scope.apis[i].electionGroups.update({
-                    id: 'storageEvent',
-                    content: 'storageEvent'
-                });
-                $scope.apis[i].elections.add({
-                    id: id,
-                    content: packet.data.action || packet.data.response,
-                    style: (packet.data.action) ? "" : "background-color: yellow",
-                    start: date,
-                    group: 'storageEvent'
-                });
-                $scope.apis[i].storageEvents[id] =packet;
-            }
+        'names.api': {
+            'address': "names.api"
         }
     };
-
-    $scope.evtListener = null;
-    $scope.enableOrNot = "disabled";
-
-    $scope.toggle = function(){
-        if ($scope.enableOrNot === "disabled"){
-            $scope.enableOrNot = "enabled";
-            $scope.evtListener = window.addEventListener("storage",storeEvt);
-        } else {
-            $scope.enableOrNot = "disabled";
-            window.removeEventListener("storage",$scope.evtListener);
-        }
-        ozpIwc.defaultPeer.on("receive",logPacket);
-        ozpIwc.defaultPeer.on("send",logPacket);
-    };
-}]).directive('visTimeline', function() {
-        return {
-            restrict : 'EA',
-            replace : true,
-            scope: {
-                timelineId: '='
-            },
-            link: function($scope,element){
-                $scope.container = element[0];
-                // Create a DataSet with data (enables two way data binding)
-                $scope.data = new vis.DataSet();
-
-                // Configuration for the Timeline
-                $scope.options = {
-                    stack:false,
-                    maxHeight: "900px",
-                    groupOrder: 'content'
-                };
-
-                // Create a Timeline
-                $scope.timeline = new vis.Timeline($scope.container, $scope.data, $scope.options);
-
-                $scope.timeline.on('select', function (properties) {
-
-                    if(properties.items.length > 0){
-
-                            var electionMsg = $scope.$parent.selectedElection.packets[properties.items[0]];
-                            if(electionMsg){
-                                $scope.$parent.packetContents = JSON.stringify(electionMsg,null,2);
-                            } else{
-                                var storageEvent = $scope.$parent.selectedElection.storageEvents[properties.items[0]];
-                                $scope.$parent.packetContents = JSON.stringify(storageEvent,null,2);
-                            }
-
-                    } else {
-                        $scope.$parent.packetContents = "";
-                    }
-
-                });
-            },
-            controller: function($scope){
-                $scope.$watch('$parent.selectedElection',function(newVal){
-                    if(newVal) {
-                        $scope.timeline.setGroups(newVal.electionGroups);
-                        $scope.timeline.setItems(newVal.elections);
-                        $scope.timeline.fit();
-                    } else {
-                        $scope.timeline.clear({items:true,groups:true});
-                    }
-                })
-            }
-        };
-    });
+});

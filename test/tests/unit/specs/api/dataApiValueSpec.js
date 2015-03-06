@@ -11,7 +11,7 @@ function dataApiValueContractTests(ClassUnderTest,baseConfig) {
             'resource': "testResource",
             'entity': {'foo': 1},
             'contentType': "testContentType",
-            'permissions': ['perms'],
+            'permissions': {'perms': true},
             'version': 1
         };
         value = new ClassUnderTest(config);

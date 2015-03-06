@@ -1,6 +1,4 @@
 /** @namespace **/
-var ozpIwc = ozpIwc || {};
-
 
 /**
  * Classes related to security aspects of the IWC.
@@ -60,6 +58,17 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
      */
     this.selfId = config.selfId || this.peer.selfId;
 
+    this.metricsPrefix="keyBroadcastLocalStorageLink."+this.selfId;
+    this.droppedFragmentsCounter=ozpIwc.metrics.counter(this.metricsPrefix,'fragmentsDropped');
+    this.fragmentsReceivedCounter=ozpIwc.metrics.counter(this.metricsPrefix,'fragmentsReceived');
+
+    this.packetsSentCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsSent');
+    this.packetsReceivedCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsReceived');
+    this.packetParseErrorCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsParseError');
+    this.packetsFailedCounter=ozpIwc.metrics.counter(this.metricsPrefix,'packetsFailed');
+    
+    this.latencyInTimer=ozpIwc.metrics.timer(this.metricsPrefix,'latencyIn');
+    this.latencyOutTimer=ozpIwc.metrics.timer(this.metricsPrefix,'latencyOut');
     /**
      * Milliseconds to wait before deleting this link's keys
      * @todo UNUSUED
@@ -143,17 +152,16 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     var receiveStorageEvent = function (event) {
         if(event.newValue) {
             try {
-                packet = JSON.parse(event.key);
+                packet = JSON.parse(event.newValue);
             } catch (e) {
-                ozpIwc.log.log("Parse error on " + event.key);
-                ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.parseError').inc();
+                ozpIwc.log.log("Parse error on " + event.newValue);
+                self.packetParseErrorCounter.inc();
                 return;
             }
             if (packet.data.fragment) {
                 self.handleFragment(packet);
             } else {
-                self.peer.receive(self.linkId, packet);
-                ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
+                self.forwardToPeer(packet);
             }
         }
     };
@@ -167,6 +175,14 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
         window.removeEventListener('storage', receiveStorageEvent);
     }, this);
 
+};
+
+ozpIwc.KeyBroadcastLocalStorageLink.prototype.forwardToPeer=function(packet) {
+    this.peer.receive(this.linkId, packet);
+    this.packetsReceivedCounter.inc();
+    if(packet.data.time) {
+        this.latencyInTimer.mark(ozpIwc.util.now() - packet.data.time);
+    }
 };
 
 /**
@@ -198,8 +214,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.handleFragment = function (packet)
         var packetIndex = this.peer.packetsSeen[defragmentedPacket.srcPeer].indexOf(defragmentedPacket.sequence);
         delete this.peer.packetsSeen[defragmentedPacket.srcPeer][packetIndex];
 
-        this.peer.receive(this.linkId, defragmentedPacket);
-        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.received').inc();
+        this.forwardToPeer(defragmentedPacket);
 
         delete this.fragments[key];
     }
@@ -243,8 +258,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
 
         // Add a timeout to destroy the fragment should the whole message not be received.
         this.fragments[key].timeoutFunc = function () {
-            ozpIwc.metrics.counter('network.packets.dropped').inc();
-            ozpIwc.metrics.counter('network.fragments.dropped').inc(self.total );
+            self.droppedFragmentsCounter.inc(self.total);
             delete self.fragments[self.key];
         };
     }
@@ -265,7 +279,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.storeFragment = function (packet) 
         this.fragments[key].srcPeer === undefined) {
         return null;
     } else {
-        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.fragments.received').inc();
+        this.fragmentsReceivedCounter.inc();
         return true;
     }
 };
@@ -308,6 +322,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.send = function (packet) {
     try {
        str = JSON.stringify(packet.data);
     } catch (e){
+        this.packetsFailedCounter.inc();
         var msgId = packet.msgId || "unknown";
         ozpIwc.log.error("Failed to write packet(msgId=" + msgId+ "):" + e.message);
         return;
@@ -359,7 +374,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.queueSend = function (packet) {
             this.attemptSend(this.sendQueue.shift());
         }
     } else {
-        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
+        this.packetsFailedCounter.inc();
         ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + " Send queue full.");
     }
 };
@@ -388,7 +403,7 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.attemptSend = function (packet, re
                 self.attemptSend(packet, retryCount);
             }, timeOut);
         } else {
-            ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.failed').inc();
+            this.packetsFailedCounter.inc();
             ozpIwc.log.error("Failed to write packet(len=" + packet.length + "):" + sendStatus);
             return sendStatus;
         }
@@ -407,9 +422,12 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     var sendStatus;
     try {
         var p = JSON.stringify(packet);
-        localStorage.setItem(p, "x");
-        ozpIwc.metrics.counter('links.keyBroadcastLocalStorage.packets.sent').inc();
-        localStorage.removeItem(p);
+        localStorage.setItem("x", p);
+        this.packetsSentCounter.inc();
+        if(packet.data.time) {
+            this.latencyOutTimer.mark(ozpIwc.util.now() - packet.data.time);
+        }
+        localStorage.removeItem("x");
         sendStatus = null;
     }
     catch (e) {

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Performance Tester</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width">
+    </head>
+    <body>
+        <div>
+            <h3>Rate Test</h3>
+            <label>Packets Per Second:
+                <input id="lsRate" type="text" value="10"></input>
+            </label>
+            <button id="runLocalStorageTest">Start</button>
+            <button id="stopLocalStorageTest">Stop</button>
+        </div>
+        <div>
+            <h3>Ping Test</h3>
+            <button id="runLocalStoragePingPongTest">Start</button>
+            <button id="stopLocalStoragePingPongTest">Stop</button>
+        </div>
+        
+        <div>Sent <span id="localStorageCount"> </span> local storage modifications</div>
+        
+        <iframe src="receiver.html" style="width: 100%; height: 600px">
+        </iframe>
+        
+        <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
+        <script type="text/javascript" src="js/tester.js"></script>
+    </body>
+</html>

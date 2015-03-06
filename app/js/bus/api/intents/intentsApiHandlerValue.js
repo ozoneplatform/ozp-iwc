@@ -43,8 +43,11 @@ ozpIwc.IntentsApiHandlerValue.prototype.getHandlers=function(packetContext) {
  */
 ozpIwc.IntentsApiHandlerValue.prototype.set=function(packet) {
     ozpIwc.CommonApiValue.prototype.set.apply(this,arguments);
-    this.entity.invokeIntent = this.entity.invokeIntent  || {};
+    this.entity.invokeIntent = packet.entity.invokeIntent  || {};
     this.entity.invokeIntent.dst = this.entity.invokeIntent.dst || packet.src;
-    this.entity.invokeIntent.resource = this.entity.invokeIntent.resource || "/intents" + packet.resource;
+    // allow null or empty strings for a resource 
+    if(typeof(this.entity.invokeIntent.resource) === "undefined") {
+        this.entity.invokeIntent.resource = "/intents" + packet.resource;
+    }
     this.entity.invokeIntent.action = this.entity.invokeIntent.action || "invoke";
 };

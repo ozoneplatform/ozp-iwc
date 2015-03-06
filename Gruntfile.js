@@ -1,22 +1,24 @@
 module.exports = function(grunt) {
     /* jshint camelcase: false */
     var sampleDataBase={
-                            "path":"data-schemas/mock",
-                            options: {
-                                directory: false,
-                                index: "index.json"
-                            }
-                        };
+        "path":"data-schemas/mock",
+        options: {
+            directory: false,
+            index: "index.json"
+        }
+    };
 
     // Project configuration.
     var config = {
         pkg: grunt.file.readJSON('package.json'),
-        
+
         src: {
             common: [
+                'bower_components/es5-shim/es5-shim.js',
+                'bower_components/es5-shim/es5-sham.js',
+                'bower_components/es6-promise/promise.js',
                 'app/js/common/event.js',
-                'app/js/common/**/*.js',
-                'bower_components/es6-promise/promise.js'
+                'app/js/common/**/*.js'
             ],
             metrics: [
                 '<%= src.common %>',
@@ -60,17 +62,20 @@ module.exports = function(grunt) {
                 'bower_components/angular/angular.js',
                 'bower_components/vis/dist/vis.js',
                 'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
+                'bower_components/angular-ui-router/release/angular-ui-router.js',
+                'app/js/debugger/debugger.js',
                 'app/js/debugger/**/*.js'
             ],
             debuggerCss: [
                 'bower_components/bootstrap/dist/css/bootstrap.css',
                 'bower_components/vis/dist/vis.css',
-                'app/css/debugger.css'
+                'app/css/debugger/**/*.css'
             ],
             all: [
                 '<%= src.metrics %>',
                 '<%= src.bus %>',
-                '<%= src.client %>'
+                '<%= src.client %>',
+                '<%= src.debugger %>'
             ]
         },
         output: {
@@ -79,7 +84,7 @@ module.exports = function(grunt) {
             metricsJs: 'dist/js/<%= pkg.name %>-metrics.js',
             debuggerJs: 'dist/js/debugger.js',
             debuggerCss: 'dist/css/debugger.css',
-            
+
             busJsMin: 'dist/js/<%= pkg.name %>-bus.min.js',
             clientJsMin: 'dist/js/<%= pkg.name %>-client.min.js',
             metricsJsMin: 'dist/js/<%= pkg.name %>-metrics.min.js',
@@ -150,9 +155,41 @@ module.exports = function(grunt) {
                         expand: true,
                         nonull:true
                     },{
+                        src: ['**/*'],
+                        dest: './dist/js/app/js',
+                        cwd: 'app/js',
+                        expand: true,
+                        nonull:true
+                    },{
                         src: ['*'],
                         dest: './dist/fonts',
                         cwd: 'bower_components/bootstrap/dist/fonts',
+                        expand: true,
+                        nonull:true
+                    },{
+                        src: ['**/*.tpl.html'],
+                        dest: './dist/templates',
+                        cwd: 'app/js/debugger',
+                        expand: true,
+                        flatten: true,
+                        nonull:true
+                    },{
+                        src: ['**/*.json'],
+                        dest: './dist/data',
+                        cwd: 'app/js/debugger',
+                        expand: true,
+                        flatten: true,
+                        nonull:true
+                    },{
+                        src: ['**'],
+                        dest: './dist/hal-browser',
+                        cwd: 'bower_components/hal-browser',
+                        expand: true,
+                        nonull:true
+                    },{
+                        src: ['favicon.ico'],
+                        dest: './dist/',
+                        cwd: 'app/js/debugger',
                         expand: true,
                         nonull:true
                     }
@@ -173,7 +210,7 @@ module.exports = function(grunt) {
             }
         },
         clean: {
-          dist: ['./dist/']
+            dist: ['./dist/']
         },
         yuidoc: {
             compile: {
@@ -198,7 +235,7 @@ module.exports = function(grunt) {
                     interrupt: true,
                     spawn: false
                 }
-                
+
             },
             test: {
                 files: ['Gruntfile.js', 'dist/**/*', '<%= src.test %>'],
@@ -217,10 +254,7 @@ module.exports = function(grunt) {
             all: [
                 'Gruntfile.js',
                 '<%= src.all %>',
-                '!app/js/common/es5-sham.min.js',
-                '!app/js/common/es5-shim.min.js',
-                '!app/js/common/promise-1.0.0.js'
-                
+                '!bower_components/**/*'
             ],
             test: {
                 src: ['<%= src.test %>']
@@ -259,6 +293,9 @@ module.exports = function(grunt) {
             },
             intentsDemo: {
                 options:{	port: 15006, base: ["dist","demo/intentDemo","test/tests/unit"]}
+            },
+            performanceTester: {
+                options:{	port: 15007, base: ["dist","demo/performanceTester"]}
             }
         },
         dist: {
@@ -270,17 +307,32 @@ module.exports = function(grunt) {
                     'package.json',
                     'bower.json'
                 ],
-                commit: true,
-                commitMessage: 'chore(release): v%VERSION%',
-                commitFiles: [
-                    'package.json',
-                    'bower.json'
-                ],
-                createTag: true,
-                tagName: 'v%VERSION%',
-                tagMessage: 'Version %VERSION%',
-                push: false,
-                pushTo: 'origin'
+                commit: false,
+                createTag: false,
+                push: false
+            }
+        },
+        shell: {
+            buildVersionFile: {
+                command: [
+                    'echo "Version: <%= pkg.version %>" > dist/version.txt',
+                    'echo "Git hash: " >> dist/version.txt',
+                    'git rev-parse HEAD >> dist/version.txt',
+                    'echo Date: >> dist/version.txt',
+                    'git rev-parse HEAD | xargs git show -s --format=%ci >> dist/version.txt'
+                ].join('&&')
+            },
+            releaseGit: {
+                command: [
+                    'git checkout --detach',
+                    'grunt dist',
+                    'git add bower.json package.json',
+                    'git add -f dist',
+                    'git commit -m "chore(release): <%= pkg.version %>"',
+                    'git tag -a "<%= pkg.version %>" -m "chore(release): <%= pkg.version %>"',
+                    'git push origin <% pkg.version %> --tags',
+                    'git checkout master'
+                ].join('&&')
             }
         }
 
@@ -291,11 +343,19 @@ module.exports = function(grunt) {
 
     grunt.initConfig(config);
 
+    grunt.registerTask('readpkg', 'Read in the package.json file', function() {
+
+        grunt.config.set('pkg', grunt.file.readJSON('./package.json'));
+
+    });
     // Default task(s).
-    grunt.registerTask('build', ['copy:hackBootstrap','concat_sourcemap', 'uglify', 'copy:dist']);
-    grunt.registerTask('dist', ['jshint','build', 'yuidoc']);
+    grunt.registerTask('build', ['copy:hackBootstrap', 'jshint', 'concat_sourcemap', 'uglify', 'copy:dist','shell:buildVersionFile']);
+    grunt.registerTask('dist', ['build', 'yuidoc']);
     grunt.registerTask('testOnly', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
     grunt.registerTask('test', ['build','connect','watch']);
+    grunt.registerTask('releasePatch', ['bump:patch','readpkg','shell:releaseGit']);
+    grunt.registerTask('releaseMinor', ['bump:minor','readpkg', 'shell:releaseGit']);
+    grunt.registerTask('releaseMajor', ['bump:major','readpkg', 'shell:releaseGit']);
     grunt.registerTask('default', ['dist']);
 
 };

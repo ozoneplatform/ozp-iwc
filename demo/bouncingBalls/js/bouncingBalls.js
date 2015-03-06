@@ -29,7 +29,9 @@ var Ball=function(ballRef,svgElement) {
         resource: ballRef
     };
     var self=this;
-    var packet=client.send(watchRequest,function(reply) {
+
+    client.send(watchRequest,function(reply) {
+        self.watchId=reply.replyTo;
         self.packets++;
         var now=ozpIwc.util.now();
         self.totalLatency+=now-reply.time;
@@ -68,7 +70,6 @@ var Ball=function(ballRef,svgElement) {
             self.label.setAttribute("class","svgHidden");
         }
     });
-    this.watchId=packet.msgId;
 };
 
 Ball.prototype.draw=function(info) {
@@ -189,16 +190,14 @@ $(document).ready(function(){
     });
 
 
-//	window.setInterval(function() {
-//		var elapsed=(ozpIwc.util.now()-client.startTime)/1000;
-//
-//		$('#averageLatencies').text(
-//			"Sent [Pkt/sec: " + (client.sentPackets/elapsed).toFixed(1) + ", " +
-//			"Bytes/sec: " + Math.floor(client.sentBytes/elapsed) + "], Received [" +
-//			"Pkt/sec: " + (client.receivedPackets/elapsed).toFixed(1) + ", " +
-//			"Bytes/sec: " + Math.floor(client.receivedBytes/elapsed) + "]"
-//		);
-//	},500);
+	window.setInterval(function() {
+		var elapsed=(ozpIwc.util.now()-client.startTime)/1000;
+
+		$('#averageLatencies').text(
+			"Pkt/sec [sent: " + (client.sentPackets/elapsed).toFixed(1) + ", " +
+			"received: " + (client.receivedPackets/elapsed).toFixed(1) + "]"
+		);
+	},500);
 });
 
 var client=new ozpIwc.Client({peerUrl:"http://" + window.location.hostname + ":13000"});
@@ -206,9 +205,9 @@ var client=new ozpIwc.Client({peerUrl:"http://" + window.location.hostname + ":1
 client.on("connected",function() {
 	// setup
 	var viewPort=$('#viewport');
-
+    var fps=20;
     $('#myAddress').text(client.address);
-
+    $('#fps').text(""+fps);
 	//=================================================================
 	// cleanup when we are done
 	window.addEventListener("beforeunload",function() {
@@ -229,7 +228,7 @@ client.on("connected",function() {
 		lastUpdate=now;
 	};
 
-	window.setInterval(animate,500);
+	window.setInterval(animate,1000/fps);
 
 
 	//=================================================================
@@ -261,11 +260,10 @@ client.on("connected",function() {
 		resource: "/balls"
 	};
 
-	client.send(listExistingBalls,function(reply,done) {
+	client.send(listExistingBalls).then(function(reply) {
 		for(var i=0; i<reply.entity.length;++i) {
 			balls[reply.entity[i]]=new Ball(reply.entity[i],viewPort);
 		}
-        done();
 	});
 
 	//=================================================================
@@ -277,7 +275,7 @@ client.on("connected",function() {
 		entity: {}
 	};
 
-	client.send(pushRequest,function(packet,done){
+	client.send(pushRequest).then(function(packet){
 		if(packet.response==="ok") {
 			ourBalls.push(new AnimatedBall({
 				resource:packet.entity.resource
@@ -286,6 +284,5 @@ client.on("connected",function() {
 		} else {
             ozpIwc.log.log("Failed to push our ball: " + JSON.stringify(packet,null,2));
 		}
-        done();
 	});
 });

@@ -1,5 +1,6 @@
+/*jshint noarg:false */
 describe("IWC Client", function() {
-    jasmine.getEnv().defaultTimeoutInterval = 200000;// e.g. 15000 milliseconds
+    jasmine.getEnv().defaultTimeoutInterval = 3000;// e.g. 15000 milliseconds
 
     var client;
     var participant;
@@ -37,7 +38,7 @@ describe("IWC Client", function() {
             'dst': "data.api",
             'action': "get",
             'resource': ""
-        },function(response) {
+        }).then(function(response) {
             gate();
         });
         
@@ -79,10 +80,10 @@ describe("IWC Client", function() {
             // use the called flag to prevent this
             var called = false;
             client.on("receive", function(packet) {
-                console.log("client received:", JSON.stringify(packet));
                 if (packet.entity.tick && !called) {
                     done();
                     called = true;
+                    client.off(arguments.callee);
                 }
             });
         });
@@ -101,6 +102,7 @@ describe("IWC Client", function() {
                     expect(packet.entity.tick).toBeGreaterThan(lastPing);
                     lastPing = packet.entity.tick;
                     if (callCount-- === 0) {
+                        client.off(arguments.callee);
                         done();
                     }
                 }
@@ -114,6 +116,7 @@ describe("IWC Client", function() {
             client.on("receive", function(packet) {
                 if (packet.entity.bulkyData) {
                     expect(packet.entity.bulkyData.length).toEqual(19131876);
+                    client.off(arguments.callee);
                     done();
                 }
             });
@@ -182,7 +185,7 @@ describe("IWC Client", function() {
                 expect(client.intents()).toEqual(client.api('intents.api'));
                 done();
             });
-        })
+        });
     });
 
     describe("launch parameters",function() {
@@ -231,7 +234,7 @@ describe("IWC Client", function() {
                     'dst': "intents.api",
                     'resource' : "/ozpIntents/invocations/123",
                     'action' : "get"
-                }),jasmine.any(Function));
+                }));
                  done();
              })['catch'](function(error) {
                  console.log("Error " ,error);

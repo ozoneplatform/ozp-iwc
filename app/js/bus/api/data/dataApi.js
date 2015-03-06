@@ -20,6 +20,7 @@
 ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
     ozpIwc.CommonApiBase.apply(this,arguments);
     this.endpointUrl=ozpIwc.linkRelPrefix+":user-data";
+    this.endpointUrls.push(ozpIwc.linkRelPrefix+":user-data");
 });
 
 /**

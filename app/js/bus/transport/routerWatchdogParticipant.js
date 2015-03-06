@@ -102,6 +102,7 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
             var participant=self.router.participants[k];
             participant.heartBeatStatus.time = ozpIwc.util.now();
             if(participant instanceof ozpIwc.MulticastParticipant) {
+                /*jshint loopfunc:true*/
                 participant.members.forEach(function(member){
                     self.send({
                         'dst': "names.api",

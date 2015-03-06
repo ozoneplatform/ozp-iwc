@@ -70,6 +70,8 @@ ozpIwc.CommonApiBase = function(config) {
      * @default 0
      */
     this.retrievedBranches = 0;
+
+    this.endpointUrls=[];
 };
 
 /**
@@ -423,7 +425,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                         var header = objectResource.header;
                         self.updateResourceFromServer(payload, href, endpoint, res,header);
                     })['catch'](function (error) {
-                        ozpIwc.log.error("unable to load " + object.href + " because: ", error);
+                        ozpIwc.log.info("unable to load " + object.href + " because: ", error);
                     });
                 });
             } else {
@@ -433,7 +435,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
                     var header = objectResource.header;
                     self.updateResourceFromServer(payload, href, endpoint, res,header);
                 })['catch'](function (error) {
-                    ozpIwc.log.error("unable to load " + object.href + " because: ", error);
+                    ozpIwc.log.info("unable to load " + object.href + " because: ", error);
                 });
             }
         }
@@ -464,8 +466,8 @@ ozpIwc.CommonApiBase.prototype.makeValue=function(/*packet*/) {
  * @todo make the packetContext have the srcSubject inside of it
  *
  * @method isPermitted
- * @param {ozpIwc.CommonApiValue} node The node of the api that permission is being checked against
  * @param {ozpIwc.TransportPacketContext} packetContext The packet of which permission is in question.
+ * @param {ozpIwc.CommonApiValue} node The node of the api that permission is being checked against
  *
  * @returns {ozpIwc.AsyncAction} An asynchronous response, the response will call either success or failure depending on
  * the result of the check.
@@ -480,16 +482,31 @@ ozpIwc.CommonApiBase.prototype.makeValue=function(/*packet*/) {
  *      });
  * ```
  */
-ozpIwc.CommonApiBase.prototype.isPermitted=function(node,packetContext) {
-    var subject=packetContext.srcSubject || {
-        'rawAddress':packetContext.packet.src
-    };
+ozpIwc.CommonApiBase.prototype.isPermitted=function(packetContext,node) {
+    var asyncAction = new ozpIwc.AsyncAction();
 
-    return ozpIwc.authorization.isPermitted({
-        'subject': subject,
-        'object': node.permissions,
-        'action': {'action':packetContext.action}
-    });
+    ozpIwc.authorization.formatCategory(packetContext.packet.permissions)
+        .success(function(permissions) {
+            var request = {
+                'subject': node.permissions.getAll(),
+                'resource': permissions || {},
+                'action': {'ozp:iwc:action': 'access'},
+                'policies': ozpIwc.authorization.policySets.apiSet
+            };
+
+            ozpIwc.authorization.isPermitted(request, node)
+                .success(function (resolution) {
+                        asyncAction.resolve("success",resolution);
+                }).failure(function (err) {
+                    console.error("Api could not perform action:", err);
+                    asyncAction.resolve("failure",err);
+                });
+        }).failure(function(err){
+            console.error("Api could not format permission check on packet", err);
+            asyncAction.resolve("failure",err);
+        });
+
+    return asyncAction;
 };
 
 
@@ -513,7 +530,7 @@ ozpIwc.CommonApiBase.prototype.notifyWatchers=function(node,changes) {
             'replyTo' : watcher.msgId,
             'response': 'changed',
             'resource': node.resource,
-            'permissions': node.permissions,
+            'permissions': node.permissions.getAll(),
             'entity': changes
         };
 
@@ -606,7 +623,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
             f.apply(self);
         } catch(e) {
             if(!e.errorAction) {
-                ozpIwc.log.log("Unexpected error:",e);
+                ozpIwc.log.error("Unexpected error:",e);
             }
             packetContext.replyTo({
                 'response': e.errorAction || "unknownError",
@@ -633,7 +650,7 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
         this.validateResource(node,packetContext);
         node=this.findOrMakeValue(packetContext.packet);
 
-        this.isPermitted(node,packetContext)
+        this.isPermitted(packetContext,node)
             .success(function() {
                 errorWrap(function() {
                     this.validatePreconditions(node,packetContext);
@@ -641,14 +658,15 @@ ozpIwc.CommonApiBase.prototype.routePacket=function(packetContext) {
                     handler.call(this,node,packetContext);
                     this.notifyWatchers(node, node.changesSince(snapshot));
 
-                    // update all the collection values
+                // update all the collection values
                     this.dynamicNodes.forEach(function(resource) {
                         this.updateDynamicNode(this.data[resource]);
                     },this);
                 });
             },this)
-            .failure(function() {
+            .failure(function(err) {
                 packetContext.replyTo({'response':'noPerm'});
+                console.log("failure");
             });
     });
 };
@@ -1105,7 +1123,7 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
                     recvFunc();
                 } else {
                     self.loadFromServer();
-                    ozpIwc.log.log(self.participant.name, "New leader(",self.participant.address, ") failed to retrieve state from previous leader(", self.participant.previousLeader, "), so is loading data from server.");
+                    ozpIwc.log.debug(self.participant.name, "New leader(",self.participant.address, ") failed to retrieve state from previous leader(", self.participant.previousLeader, "), so is loading data from server.");
                 }
 
                 self.participant.off("receivedState", recvFunc);
@@ -1114,14 +1132,12 @@ ozpIwc.CommonApiBase.prototype.leaderSync = function () {
 
         } else {
             // This is the first of the bus, winner doesn't obtain any previous state
-            ozpIwc.log.log(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
+            ozpIwc.log.debug(self.participant.name, "New leader(",self.participant.address, ") is loading data from server.");
             self.loadFromServer().then(function (data) {
                 self.setToLeader();
             },function(err){
-                ozpIwc.log.error(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
+                ozpIwc.log.debug(self.participant.name, "New leader(",self.participant.address, ") could not load data from server. Error:", err);
                 self.setToLeader();
-            })['catch'](function(er){
-                ozpIwc.log.log(er);
             });
         }
     });

@@ -1,5 +1,3 @@
-var ozpIwc=ozpIwc || {};
-
 /**
  * @class Endpoint
  * @namespace ozpIwc
@@ -87,8 +85,7 @@ ozpIwc.Endpoint.prototype.delete=function(resource, data, requestHeaders) {
 
     return this.endpointRegistry.loadPromise.then(function() {
         if(!self.baseUrl) {
-            throw Error("The server did not define a relation of type " 
-                + this.name + " for retrivieving " + resource);
+            throw Error("The server did not define a relation of type " + this.name + " for retrivieving " + resource);
         }
         if(resource.indexOf(self.baseUrl)!==0) {
             resource=self.baseUrl + resource;

@@ -180,6 +180,6 @@ describe("Intents API", function () {
                 entity: "This is some text"
             });
         });
-    })
+    });
     
 });

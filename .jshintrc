@@ -20,30 +20,32 @@
   "smarttabs": true,
   "globals": {
     "angular": false,
-    "ozpIwc": false,
+    "ozpIwc": true,
+    "File" : false,
+    "vis": false,
 
     // jasmine globals
-      "describe": false,
-      "xdescribe": false,
-      "beforeEach": false,
-      "afterEach": false,
-      "inject": false,
-      "it": false,
-      "xit": false,
-      "expect": false,
-      "jasmine": false,
-      "done": false,
-      "alert": false,
-      "spyOn": false,
+    "describe": false,
+    "xdescribe": false,
+    "beforeEach": false,
+    "afterEach": false,
+    "inject": false,
+    "it": false,
+    "xit": false,
+    "expect": false,
+    "jasmine": false,
+    "done": false,
+    "alert": false,
+    "spyOn": false,
 
-      //Test globals
-      "tick": true,
-      "doneSemaphore": true,
-      "TestParticipant": true,
-      "TestPacketContext": true,
-      "FakeRouter": true,
-      "commonApiValueContractTests": true,
-      "customMatchers": true,
-      "ozpIwc": true
+    //Test globals
+    // TODO: refactor these into the ozpIwc namespace or use jshint globals in the right places
+    "tick": true,
+    "doneSemaphore": true,
+    "TestParticipant": true,
+    "TestPacketContext": true,
+    "FakeRouter": true,
+    "commonApiValueContractTests": true,
+    "customMatchers": true
   }
 }

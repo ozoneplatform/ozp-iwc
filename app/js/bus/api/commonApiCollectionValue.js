@@ -72,7 +72,7 @@ ozpIwc.CommonApiCollectionValue.prototype.deserialize=function(serverData) {
     ozpIwc.CommonApiValue.prototype.deserialize.apply(this,arguments);
     var clone = ozpIwc.util.clone(serverData);
 
-    this.pattern = (typeof clone.pattern == "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
+    this.pattern = (typeof clone.pattern === "string") ? new RegExp(clone.pattern.replace(/^\/|\/$/g, '')) : this.pattern;
     this.pattern.toJSON = RegExp.prototype.toString;
 };
 
@@ -87,7 +87,7 @@ ozpIwc.CommonApiCollectionValue.prototype.serialize=function() {
     serverData.entity=this.entity;
     serverData.pattern=this.pattern;
     serverData.contentType=this.contentType;
-    serverData.permissions=this.permissions;
+    serverData.permissions=this.permissions.getAll();
     serverData.version=this.version;
     serverData.watchers=this.watchers;
     return serverData;
