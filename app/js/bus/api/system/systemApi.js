@@ -49,11 +49,7 @@ ozpIwc.SystemApi.prototype.loadFromServer=function() {
 	loadEndpoints.push((self.loadFromEndpointIterative(ozpIwc.linkRelPrefix + ":application", headers)).then("system.api:application load complete"));
 	loadEndpoints.push((self.loadFromEndpointIterative(ozpIwc.linkRelPrefix + ":user", headers)).then("system.api:user load complete"));
 	loadEndpoints.push((self.loadFromEndpointIterative(ozpIwc.linkRelPrefix + ":system", headers)).then("system.api:system load complete"));
-	return Promise.all(loadEndpoints)
-			.then("system.api load complete")
-			['catch'](function(error) {
-                reject(error);
-            });
+	return Promise.all(loadEndpoints).then("system.api load complete");
 };
 
 /**

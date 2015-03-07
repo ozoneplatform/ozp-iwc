@@ -207,16 +207,16 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpointIterative=function(endpointName, 
 	var self=this;
     return endpoint.get("/")
         .then(function(data) {
-			var embeddedList = [];
+			var embeddedList = {};
 			var unresolvedLinks = [];
 			// if any embedded items exist, convert them to a list (primarily to cover the single element case
 			if (data.response._embedded && data.response._embedded.item) {
-				if (Object.prototype.toString.call(data.response._embedded.item) === '[object Array]' ) {
+				if (Array.isArray(data.response._embedded.item)) {
 					for (var i in data.response._embedded.item) {
-						embeddedList.push(data.response._embedded.item[i]);
+						embeddedList.push(data.response._embedded.item[i]._links.self.href, data.response._embedded.item[i]);
 					}
 				} else {
-					embeddedList.push(data.response._embedded.item);
+					embeddedList.push(data.response._embedded.item._links.self.href, data.response._embedded.item);
 				}
 				
 				embeddedList.forEach(function(item) {
@@ -228,20 +228,17 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpointIterative=function(endpointName, 
 			// At end, return promise.all to activate when all outstanding loads are completed.
 			if (data.response._links && data.response._links.item) {
 				var links = [];
-				if (Object.prototype.toString.call(data.response._links.item) === '[object Array]' ) {
-					for (var i in data.response._links.item) {
-						links.push(data.response._links.item[i]);
-					}
+				if (Array.isArray(data.response._links.item)) {
+					links=data.response._links.item;
 				} else {
 					links.push(data.response._links.item);
 				}
 				
 				// scan the list of links.  If there is no href match to an embedded item, push a promise to load the link into the list
 				links.forEach(function(link) {
-					if (!embeddedList.some(
-							function(embeddedItem) { return link.href === embeddedItem._links.self.href }
-						))
+					if (embeddedList[link.href]) {
 						unresolvedLinks.push(endpoint.get(link.href, requestHeaders));
+					}
 				});
 			}
 			return Promise.all(unresolvedLinks);
@@ -254,8 +251,6 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpointIterative=function(endpointName, 
 			self.dynamicNodes.forEach(function(resource) {
 				self.updateDynamicNode(self.data[resource]);
 			});
-		})['catch'](function(e) {
-			ozpIwc.log.error("Could not load from api (" + endpointName + "): " + e.message, e);
 		});
 };
 					
@@ -305,8 +300,8 @@ ozpIwc.CommonApiBase.prototype.updateResourceFromServerIterative=function(item,p
  */
 ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint,res,header) {
     //TODO where should we get content-type?
-    var header = header || {};
-    object.contentType = object.contentType || header['Content-Type'] || 'application/json';
+    var lheader = header || {};
+    object.contentType = object.contentType || lheader['Content-Type'] || 'application/json';
 
     var parseEntity;
     if(typeof object.entity === "string"){
@@ -371,7 +366,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
     if(data._embedded && data._embedded.item) {
         data._embedded.item = Array.isArray(data._embedded.item) ? data._embedded.item : [data._embedded.item];
         noEmbedded = false;
-        if (Object.prototype.toString.call(data._embedded.item) === '[object Array]' ) {
+        if (Array.isArray(data._embedded.item)) {
             itemLength=data._embedded.item.length;
         } else {
             itemLength=1;
@@ -382,7 +377,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
     if(data._links && data._links.item) {
         data._links.item = Array.isArray(data._links.item) ? data._links.item : [data._links.item];
         noLinks = false;
-        if (Object.prototype.toString.call(data._links.item) === '[object Array]' ) {
+        if (Array.isArray(data._links.item)) {
             itemLength=data._links.item.length;
         } else {
             itemLength=1;
@@ -404,7 +399,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
         if(data._embedded && data._embedded.item) {
             var object = {};
 
-            if( Object.prototype.toString.call(data._embedded.item) === '[object Array]' ) {
+            if (Array.isArray(data._embedded.item)) {
                 for (var i in data._embedded.item) {
                     object = data._embedded.item[i];
                     this.updateResourceFromServer(object, object._links.self.href, endpoint, res);
@@ -417,7 +412,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
 
         if(data._links && data._links.item) {
 
-            if( Object.prototype.toString.call(data._links.item) === '[object Array]' ) {
+            if (Array.isArray(data._links.item)) {
                 data._links.item.forEach(function (object) {
                     var href = object.href;
                     endpoint.get(href, requestHeaders).then(function (objectResource) {

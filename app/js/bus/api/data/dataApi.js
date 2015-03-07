@@ -29,7 +29,8 @@ ozpIwc.DataApi = ozpIwc.util.extend(ozpIwc.CommonApiBase,function(config) {
  * @method loadFromServer
  */
 ozpIwc.DataApi.prototype.loadFromServer=function() {
-	return this.loadFromEndpointIterative(this.endpointUrl).then("data.api load complete");
+	return this.loadFromEndpointIterative(this.endpointUrl)
+			.then("Load complete from " + this.endpointUrl);
 };
 
 /**
