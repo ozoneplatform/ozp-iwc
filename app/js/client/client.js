@@ -133,8 +133,13 @@ ozpIwc.Client=function(config) {
      * @property apiMap
      * @type Object
      */
-    this.apiMap={};
+    this.apiMap= ozpIwc.apiMap || {};
 
+    /**
+     * A boolean flag to specify if apis should update with names.api-stored actions on connect.
+     * @type {Boolean}
+     */
+    this.buildApisOnConnect = config.buildApisOnConnect || false;
     /**
      * @property wrapperMap
      * @type Object
@@ -166,6 +171,7 @@ ozpIwc.Client=function(config) {
      */
     this.launchedIntents = [];
 
+    this.constructApiFunctions();
     if(this.autoConnect) {
         this.connect();
     }
@@ -257,7 +263,7 @@ ozpIwc.Client.prototype.receive=function(packet) {
  * @method send
  * @param {String} dst Where to send the packet.
  * @param {Object} entity  The payload of the packet.
- * @param {Function} callback The Callback for any replies. The callback will be persisted if it returns a truth-like
+ * @param {Function} callback The Callback for any replies. The callback will be persisted if it $  returns a truth-like
  * value, canceled if it returns a false-like value.
  */
 ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromiseRes,preexistingPromiseRej) {
@@ -329,6 +335,70 @@ ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromiseRes,pree
         this.cancelRegisteredCallback(packet.replyTo);
     }
     return promise;
+};
+
+/**
+ * Builds the client api calls from the values in client.apiMap
+ * @method constructApiFunctions
+ */
+ozpIwc.Client.prototype.constructApiFunctions = function(){
+    for (var api in this.apiMap) {
+        var apiObj = this.apiMap[api];
+        var apiFuncName = apiObj.address.replace('.api', '');
+
+        //prevent overriding client constructed fields, but allow updating of constructed APIs
+        if (!this.hasOwnProperty(apiFuncName) || this.apiMap[api].functionName === apiFuncName) {
+            // wrap this in a function to break the closure
+            // on apiObj.address that would otherwise register
+            // everything for the last api in the list
+            /*jshint loopfunc:true*/
+            (function (self,addr) {
+                self[apiFuncName] = function () {
+                    return self.api(addr);
+                };
+                self.apiMap[addr] = self.apiMap[addr] || {};
+                self.apiMap[addr].functionName = apiFuncName;
+                self.updateApi(addr);
+            })(this,apiObj.address);
+        }
+    }
+};
+
+
+ozpIwc.Client.prototype.gatherApiInformation = function(){
+    var self = this;
+    // gather api information
+    return this.send({
+        dst: "names.api",
+        action: "get",
+        resource: "/api"
+    }).then(function(reply){
+        if(reply.response === 'ok'){
+            return reply.entity;
+        } else {
+            throw reply.response;
+        }
+    }).then(function(apis) {
+        var promiseArray = [];
+        apis.forEach(function (api) {
+            var promise = self.send({
+                dst: "names.api",
+                action: "get",
+                resource: api
+            }).then(function (res) {
+                if (res.response === 'ok') {
+                    var name = api.replace('/api/', '');
+                    self.apiMap[name] = self.apiMap[name] || {};
+                    self.apiMap[name].address =  name;
+                    self.apiMap[name].actions = res.entity.actions;
+                } else {
+                    throw res.response;
+                }
+            });
+            promiseArray.push(promise);
+        });
+        return Promise.all(promiseArray);
+    });
 };
 
 /**
@@ -471,61 +541,15 @@ ozpIwc.Client.prototype.connect=function() {
              * @event #gotAddress
              */
             self.events.trigger("gotAddress", self);
-            // gather api information
-            return self.send({
-                dst: "names.api",
-                action: "get",
-                resource: "/api"
-            });
-        }).then(function(reply){
-            if(reply.response === 'ok'){
-               return reply.entity;
-            } else {
-                throw reply.response;
-            }
-        }).then(function(apis) {
-            var promiseArray = [];
-            apis.forEach(function (api) {
-                var promise = self.send({
-                    dst: "names.api",
-                    action: "get",
-                    resource: api
-                }).then(function (res) {
-                    if (res.response === 'ok') {
-                        var name = api.replace('/api/', '');
-                        self.apiMap[name] = {
-                            'address': name,
-                            'actions': res.entity.actions
-                        };
 
-                        return;
-                    } else {
-                        throw res.response;
-                    }
+            if(self.buildApisOnConnect) {
+                // gather api information
+                // Add any bus specific api functionality.
+                return self.gatherApiInformation().then(function(){
+                    return self.constructApiFunctions();
                 });
-                promiseArray.push(promise);
-            });
-            return Promise.all(promiseArray);
-        }).then(function() {
-            for (var api in self.apiMap) {
-                var apiObj = self.apiMap[api];
-                var apiFuncName = apiObj.address.replace('.api', '');
-
-                //prevent overriding client constructed fields
-                if (!self.hasOwnProperty(apiFuncName)) {
-                    // wrap this in a function to break the closure
-                    // on apiObj.address that would otherwise register
-                    // everything for the last api in the list
-                    /*jshint loopfunc:true*/
-                    (function (addr) {
-                        self[apiFuncName] = function () {
-                            return self.api(addr);
-                        };
-                        self.apiMap[addr] = self.apiMap[addr] || {};
-                        self.apiMap[addr].functionName = apiFuncName;
-                    })(apiObj.address);
-                }
             }
+        }).then(function() {
             // dump any queued sends, trigger that we are fully connected
             self.preconnectionQueue.forEach(function (p) {
                 self.send(p.fields, p.callback, p.promiseRes, p.promiseRej);
@@ -634,26 +658,12 @@ ozpIwc.Client.prototype.intentInvocationHandling = function(resource,intentResou
     });
 };
 
-(function() {
-    ozpIwc.Client.prototype.api=function(apiName) {
-        var wrapper=this.wrapperMap[apiName];
-        if (!wrapper) {
-            if(this.apiMap.hasOwnProperty(apiName)) {
-                var api = this.apiMap[apiName];
-                wrapper = {};
-                for (var i = 0; i < api.actions.length; ++i) {
-                    var action = api.actions[i];
-                    wrapper[action] = augment(api.address, action, this);
-                }
-
-                this.wrapperMap[apiName] = wrapper;
-            }
-        }
-        wrapper.apiName=apiName;
-        return wrapper;
-    };
+ozpIwc.Client.prototype.api=function(apiName) {
+    return this.wrapperMap[apiName] || this.updateApi(apiName);
+};
 
 
+ozpIwc.Client.prototype.updateApi = function(apiName){
     var augment = function (dst,action,client) {
         return function (resource, fragment, otherCallback) {
             // If a fragment isn't supplied argument #2 should be a callback (if supplied)
@@ -682,4 +692,18 @@ ozpIwc.Client.prototype.intentInvocationHandling = function(resource,intentResou
             return client.send(packet,otherCallback);
         };
     };
-})();
+
+    var wrapper=this.wrapperMap[apiName] || {};
+    if(this.apiMap.hasOwnProperty(apiName)) {
+        var api = this.apiMap[apiName];
+        wrapper = {};
+        for (var i = 0; i < api.actions.length; ++i) {
+            var action = api.actions[i];
+            wrapper[action] = augment(api.address, action, this);
+        }
+
+        this.wrapperMap[apiName] = wrapper;
+    }
+    wrapper.apiName=apiName;
+    return wrapper;
+};
