@@ -43,6 +43,8 @@ ozpIwc.PacketRouter=function() {
     this.defaultSelf=this;
 };
 
+
+
 ozpIwc.PacketRouter.prototype.declareRoute=function(config,handler,handlerSelf) {
     if(!config || !config.action || !config.resource) {
         throw new Error("Bad route declaration: "+JSON.stringify(config,null,2));
@@ -74,4 +76,8 @@ ozpIwc.PacketRouter.prototype.routePacket=function(packet,context) {
     }
     return this.defaultRoute(packet,context,{});
     
+};
+
+ozpIwc.PacketRouter.prototype.declareDefaultRoute=function(handler) {
+    this.defaultRoute=handler;
 };

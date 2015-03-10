@@ -362,4 +362,29 @@ describe("Packet Routing", function() {
             })).toEqual({foo:1});
        });    
     });
+    describe("default route",function() {
+        beforeEach(function() {
+            router.declareRoute({
+                action: "get",
+                resource: "/{id}"
+            },function(packet,context,params) {
+                return "paramRoute";
+            });
+            router.declareDefaultRoute(function(packet,context,params) {
+                return "defaultRoute";
+            });
+        });
+       it("does not affect properly declared routes",function() {
+            expect(router.routePacket({
+                action: "get",
+                resource: "/1234"
+            })).toEqual("paramRoute");
+       });
+        it("handles packets that aren't caught by a route",function() {
+            expect(router.routePacket({
+                action: "get",
+                resource: "/foo/bar"
+            })).toEqual("defaultRoute");
+       });    
+    });
 });
