@@ -39,8 +39,7 @@ ozpIwc.PacketRouter=function() {
     //    uriTemplate: uriTemplate function
     //    
     this.routes={};
-    this.events=new ozpIwc.Event();
-    this.events.mixinOnOff(this);
+    this.defaultRoute=function() { return false;};
 };
 
 ozpIwc.PacketRouter.prototype.declareRoute=function(config,callback) {
@@ -58,19 +57,19 @@ ozpIwc.PacketRouter.prototype.declareRoute=function(config,callback) {
     return this;
 };
 
-ozpIwc.PacketRouter.prototype.routePacket=function(packet) {
-    var actionRoute=this.routes[packet.action];
-    if(!actionRoute) {
+ozpIwc.PacketRouter.prototype.routePacket=function(packet,context) {
+    context=context || {};
+    var actionRoutes=this.routes[packet.action];
+    if(!actionRoutes) {
         return false;
     }
-    return actionRoute.some(function(route) {
-       var params=route.uriTemplate(packet.resource);
-       if(params) {
-           route.handler(packet,params);
-           return true;
-       } else {
-           return false;
-       }
-    });
+    for(var i=0;i<actionRoutes.length;++i) {
+        var route=actionRoutes[i];
+        var pathParams=route.uriTemplate(packet.resource);
+        if(pathParams) {
+            return route.handler(packet,context,pathParams);
+        }
+    }
+    return this.defaultRoute(packet,context,{});
     
 };

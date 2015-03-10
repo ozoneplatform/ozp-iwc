@@ -45,7 +45,6 @@ describe("Packet Routing", function() {
     beforeEach(function() {
         router=new ozpIwc.PacketRouter();
     });
-    
     describe("basic, single routes",function() {
         var receivedPacket=false;
         
@@ -56,6 +55,7 @@ describe("Packet Routing", function() {
                 resource: "/"
             }, function(packet) {
                 receivedPacket=packet;
+                return true;
             });
         });
         
@@ -98,23 +98,26 @@ describe("Packet Routing", function() {
             router.declareRoute({
                 action: "get",
                 resource: "/"
-            }, function(packet,params) {
+            }, function(packet,context,params) {
                 rootPacket=packet;
                 pathParameters=params;
+                return true;
             });
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            }, function(packet,params) {
+            }, function(packet,context,params) {
                 idPacket=packet;
                 pathParameters=params;
+                return true;
             });
             router.declareRoute({
                 action: "get",
                 resource: "/{id}/{subId}"
-            }, function(packet,params) {
+            }, function(packet,context,params) {
                 doublePathPacket=packet;
                 pathParameters=params;
+                return true;
             });
         });
         
@@ -157,7 +160,8 @@ describe("Packet Routing", function() {
             router.declareRoute({
                 action: "get",
                 resource: "/{id:\\d+}"
-            },function(packet,params) {
+            },function(packet,context,params) {
+                return true;
             });
             
             expect(router.routePacket({
@@ -173,8 +177,9 @@ describe("Packet Routing", function() {
             router.declareRoute({
                 action: "get",
                 resource: "/{id:\\d+/\\d+}/bar"
-            },function(packet,params) {
+            },function(packet,context,params) {
                 expect(params).toEqual({id:"1234/5678"});
+                return true;
             });
             
             expect(router.routePacket({
@@ -193,33 +198,30 @@ describe("Packet Routing", function() {
     });
     
     describe("multiple routes with multiple actions, same templated non-regex resource",function() {
-        var handler;
-        
         var pathParameters;
         beforeEach(function() {
-            handler=undefined;
             pathParameters=undefined;
             
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            }, function(packet,params) {
-                handler="get";
+            }, function(packet,context,params) {
                 pathParameters=params;
+                return "get";
             });
             router.declareRoute({
                 action: "set",
                 resource: "/{id}"
-            }, function(packet,params) {
-                handler="set";
+            }, function(packet,context,params) {
                 pathParameters=params;
+                return "set";
             });
             router.declareRoute({
                 action: "delete",
                 resource: "/{id}"
-            }, function(packet,params) {
-                handler="delete";
+            }, function(packet,context,params) {
                 pathParameters=params;
+                return "delete";
             });
         });
         
@@ -227,8 +229,7 @@ describe("Packet Routing", function() {
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234"
-            })).toEqual(true);
-            expect(handler).toEqual("get");
+            })).toEqual("get");
             expect(pathParameters).toEqual({'id':"1234"});
         });
         
@@ -236,8 +237,7 @@ describe("Packet Routing", function() {
             expect(router.routePacket({
                 action: "set",
                 resource: "/1234"
-            })).toEqual(true);
-            expect(handler).toEqual("set");
+            })).toEqual("set");
             expect(pathParameters).toEqual({'id':"1234"});
         });
         
@@ -245,8 +245,7 @@ describe("Packet Routing", function() {
             expect(router.routePacket({
                 action: "delete",
                 resource: "/1234"
-            })).toEqual(true);
-            expect(handler).toEqual("delete");
+            })).toEqual("delete");
             expect(pathParameters).toEqual({'id':"1234"});
         });
     });
@@ -255,35 +254,37 @@ describe("Packet Routing", function() {
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            },function(packet,params) {
+            },function(packet,context,params) {
+                return "paramRoute";
             });
             router.declareRoute({
                 action: "get",
                 resource: "/1234"
-            },function(packet,params) {
-                expect(packet).toEqual("sent to other handler");
+            },function(packet,context,params) {
+                return "staticRoute";
             });
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234"
-            })).toEqual(true);
+            })).toEqual("paramRoute");
         });
         it("static path declared before template",function(){
             router.declareRoute({
                 action: "get",
                 resource: "/1234"
-            },function(packet,params) {
+            },function(packet,context,params) {
+                return "staticRoute";
             });
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            },function(packet,params) {
-                expect(packet).toEqual("sent to other handler");
+            },function(packet,context,params) {
+                return "paramRoute";
             });
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234"
-            })).toEqual(true);
+            })).toEqual("staticRoute");
         });
     });
 });
