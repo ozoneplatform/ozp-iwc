@@ -136,11 +136,6 @@ ozpIwc.Client=function(config) {
     this.apiMap= ozpIwc.apiMap || {};
 
     /**
-     * A boolean flag to specify if apis should update with names.api-stored actions on connect.
-     * @type {Boolean}
-     */
-    this.buildApisOnConnect = config.buildApisOnConnect || false;
-    /**
      * @property wrapperMap
      * @type Object
      * @default {}
@@ -554,13 +549,6 @@ ozpIwc.Client.prototype.connect=function() {
              */
             self.events.trigger("gotAddress", self);
 
-            if(self.buildApisOnConnect) {
-                // gather api information then add any bus specific api functionality.
-                return self.gatherApiInformation().then(function(){
-                    return self.constructApiFunctions();
-                });
-            }
-        }).then(function() {
             // dump any queued sends, trigger that we are fully connected
             self.preconnectionQueue.forEach(function (p) {
                 self.send(p.fields, p.callback, p.promiseRes, p.promiseRej);
