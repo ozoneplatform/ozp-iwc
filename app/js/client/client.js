@@ -158,7 +158,7 @@ ozpIwc.Client=function(config) {
     /**
      * @property watchMsgMap
      * @type Object
-     * @defualt {}
+     * @default {}
      */
     this.watchMsgMap = {};
     this.registeredCallbacks = {};
@@ -167,7 +167,7 @@ ozpIwc.Client=function(config) {
     /**
      * @property launchedIntents
      * @type Array
-     * @defualt []
+     * @default []
      */
     this.launchedIntents = [];
 
@@ -181,7 +181,8 @@ ozpIwc.Client=function(config) {
 
 /**
  * Parses launch parameters based on the raw string input it receives.
- * @property readLaunchParams
+ *
+ * @method readLaunchParams
  * @param {String} rawString
  */
 ozpIwc.Client.prototype.readLaunchParams=function(rawString) {
@@ -263,7 +264,7 @@ ozpIwc.Client.prototype.receive=function(packet) {
  * @method send
  * @param {String} dst Where to send the packet.
  * @param {Object} entity  The payload of the packet.
- * @param {Function} callback The Callback for any replies. The callback will be persisted if it $  returns a truth-like
+ * @param {Function} callback The Callback for any replies. The callback will be persisted if it returns a truth-like
  * value, canceled if it returns a false-like value.
  */
 ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromiseRes,preexistingPromiseRej) {
@@ -339,6 +340,7 @@ ozpIwc.Client.prototype.send=function(fields,callback,preexistingPromiseRes,pree
 
 /**
  * Builds the client api calls from the values in client.apiMap
+ *
  * @method constructApiFunctions
  */
 ozpIwc.Client.prototype.constructApiFunctions = function(){
@@ -364,7 +366,12 @@ ozpIwc.Client.prototype.constructApiFunctions = function(){
     }
 };
 
-
+/**
+ * Calls the names.api to gather the /api/* resources to gain knowledge of available api actions of the current bus.
+ *
+ * @method gatherApiInformation
+ * @returns {Promise}
+ */
 ozpIwc.Client.prototype.gatherApiInformation = function(){
     var self = this;
     // gather api information
@@ -403,6 +410,7 @@ ozpIwc.Client.prototype.gatherApiInformation = function(){
 
 /**
  * Returns whether or not the Client is connected to the IWC bus.
+ *
  * @method isConnected
  * @returns {Boolean}
  */
@@ -428,6 +436,7 @@ ozpIwc.Client.prototype.cancelPromiseCallback=function(msgId) {
 
 /**
  * Cancel a watch callback registration.
+ *
  * @method cancelRegisteredCallback
  * @param (String} msgId The packet replyTo ID for which the callback was registered.
  *
@@ -445,6 +454,7 @@ ozpIwc.Client.prototype.cancelRegisteredCallback=function(msgId) {
 
 /**
  * Registers callbacks
+ *
  * @method on
  * @param {String} event The event to call the callback on.
  * @param {Function} callback The function to be called.
@@ -460,6 +470,7 @@ ozpIwc.Client.prototype.on=function(event,callback) {
 
 /**
  * De-registers callbacks
+ *
  * @method off
  * @param {String} event The event to call the callback on.
  * @param {Function} callback The function to be called.
@@ -471,6 +482,7 @@ ozpIwc.Client.prototype.off=function(event,callback) {
 
 /**
  * Disconnects the client from the IWC bus.
+ *
  * @method disconnect
  */
 ozpIwc.Client.prototype.disconnect=function() {
@@ -543,8 +555,7 @@ ozpIwc.Client.prototype.connect=function() {
             self.events.trigger("gotAddress", self);
 
             if(self.buildApisOnConnect) {
-                // gather api information
-                // Add any bus specific api functionality.
+                // gather api information then add any bus specific api functionality.
                 return self.gatherApiInformation().then(function(){
                     return self.constructApiFunctions();
                 });
@@ -590,6 +601,7 @@ ozpIwc.Client.prototype.connect=function() {
 
 /**
  * Creates an invisible iFrame Peer for IWC bus communication.
+ *
  * @method createIframePeer
  */
 ozpIwc.Client.prototype.createIframePeer=function() {
@@ -620,6 +632,16 @@ ozpIwc.Client.prototype.createIframePeer=function() {
     });
 };
 
+/**
+ * Handles intent invocation packets. Communicates back with the intents.api to operate the in flight intent state
+ * machine.
+ *
+ * @method intentInvocationHandling
+ * @param resource {String} The resource of the packet that sent the intent invocation
+ * @param intentResource {String} The in flight intent resource, used internally to operate the in flight intent state machine
+ * @param callback {Function} The intent handler's callback function
+ * @returns {Promise}
+ */
 ozpIwc.Client.prototype.intentInvocationHandling = function(resource,intentResource,callback) {
     var self = this;
     var res;
@@ -658,11 +680,27 @@ ozpIwc.Client.prototype.intentInvocationHandling = function(resource,intentResou
     });
 };
 
+/**
+ * Calls the specific api wrapper given an api name specified.
+ * If the wrapper does not exist it is created.
+ *
+ * @method api
+ * @param apiName {String} The name of the api.
+ * @returns {Function} returns the wrapper call for the given api.
+ */
 ozpIwc.Client.prototype.api=function(apiName) {
     return this.wrapperMap[apiName] || this.updateApi(apiName);
 };
 
 
+/**
+ * Updates the wrapper map for api use. Whenever functionality is added or removed from the apiMap the
+ * updateApi must be called to reflect said changes on the wrapper map.
+ *
+ * @method updateApi
+ * @param apiName {String} The name of the api
+ * @returns {Function} returns the wrapper call for the given api.
+ */
 ozpIwc.Client.prototype.updateApi = function(apiName){
     var augment = function (dst,action,client) {
         return function (resource, fragment, otherCallback) {

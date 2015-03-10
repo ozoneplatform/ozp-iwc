@@ -230,14 +230,14 @@ describe("IWC Client", function() {
                 buildApisOnConnect: true
             });
 
-            expect(client.data).not.toBeUndefined();
-            expect(client.data().get).not.toBeUndefined();
+            expect(client.data).toBeDefined();
+            expect(client.data().get).toBeDefined();
             expect(client.apiMap['data.api'].actions.length).toEqual(1);
             expect(client.data().set).toBeUndefined();
             client.connect().then(function() {
-                expect(client.data).not.toBeUndefined();
-                expect(client.data().get).not.toBeUndefined();
-                expect(client.data().set).not.toBeUndefined();
+                expect(client.data).toBeDefined();
+                expect(client.data().get).toBeDefined();
+                expect(client.data().set).toBeDefined();
                 expect(client.apiMap['data.api'].actions.length).toBeGreaterThan(1);
                 done();
             });
