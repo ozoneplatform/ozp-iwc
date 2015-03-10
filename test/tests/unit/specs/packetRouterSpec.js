@@ -338,4 +338,28 @@ describe("Packet Routing", function() {
             expect(selfObject.route).toEqual("paramRoute");
         });
     });
+    describe("context parameter",function() {
+        beforeEach(function() {
+            router.declareRoute({
+                action: "get",
+                resource: "/{id}"
+            },function(packet,context,params) {
+                return context;
+            });
+        });
+       it("passes {} as the context parameter by default",function() {
+            expect(router.routePacket({
+                action: "get",
+                resource: "/1234"
+            })).toEqual({});
+       });
+        it("passes the context paramater provided to routePacket",function() {
+            expect(router.routePacket({
+                action: "get",
+                resource: "/1234"
+            },{
+                foo:1
+            })).toEqual({foo:1});
+       });    
+    });
 });
