@@ -40,9 +40,10 @@ ozpIwc.PacketRouter=function() {
     //    
     this.routes={};
     this.defaultRoute=function() { return false;};
+    this.defaultSelf=this;
 };
 
-ozpIwc.PacketRouter.prototype.declareRoute=function(config,callback) {
+ozpIwc.PacketRouter.prototype.declareRoute=function(config,handler,handlerSelf) {
     if(!config || !config.action || !config.resource) {
         throw new Error("Bad route declaration: "+JSON.stringify(config,null,2));
     }
@@ -51,7 +52,8 @@ ozpIwc.PacketRouter.prototype.declareRoute=function(config,callback) {
         actionRoute=this.routes[config.action]=[];
     }
     
-    config.handler=callback;
+    config.handler=handler;
+    config.handlerSelf=handlerSelf || this.defaultSelf;
     config.uriTemplate=ozpIwc.packetRouter.uriTemplate(config.resource);
     actionRoute.push(config);
     return this;
@@ -67,7 +69,7 @@ ozpIwc.PacketRouter.prototype.routePacket=function(packet,context) {
         var route=actionRoutes[i];
         var pathParams=route.uriTemplate(packet.resource);
         if(pathParams) {
-            return route.handler(packet,context,pathParams);
+            return route.handler.call(route.handlerSelf,packet,context,pathParams);
         }
     }
     return this.defaultRoute(packet,context,{});

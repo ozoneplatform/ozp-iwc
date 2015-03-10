@@ -287,4 +287,55 @@ describe("Packet Routing", function() {
             })).toEqual("staticRoute");
         });
     });
+    describe("sets the proper this when invoking the handler",function() {
+        it("without a self paramter",function() {
+            router.declareRoute({
+                action: "get",
+                resource: "/{id}"
+            },function(packet,context,params) {
+                this.route="paramRoute";
+                return "paramRoute";
+            });
+            router.routePacket({
+                action: "get",
+                resource: "/1234"
+            });
+
+            expect(router.route).toEqual("paramRoute");
+        });
+        it("with a self parameter",function() {
+            var selfObject={};
+            router.declareRoute({
+                action: "get",
+                resource: "/{id}"
+            },function(packet,context,params) {
+                this.route="paramRoute";
+                return "paramRoute";
+            },selfObject);
+            router.routePacket({
+                action: "get",
+                resource: "/1234"
+            });
+
+            expect(selfObject.route).toEqual("paramRoute");
+        });
+        it("when the default self is overriden",function() {
+            var selfObject={};
+            router.defaultSelf=selfObject;
+            router.declareRoute({
+                action: "get",
+                resource: "/{id}"
+            },function(packet,context,params) {
+                this.route="paramRoute";
+                return "paramRoute";
+            });
+            
+            router.routePacket({
+                action: "get",
+                resource: "/1234"
+            });
+
+            expect(selfObject.route).toEqual("paramRoute");
+        });
+    });
 });
