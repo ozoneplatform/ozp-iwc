@@ -55,10 +55,22 @@ ozpIwc.PacketRouter.prototype.declareRoute=function(config,handler,handlerSelf) 
     }
     
     config.handler=handler;
+    config.filters=config.filters || [];
     config.handlerSelf=handlerSelf || this.defaultSelf;
     config.uriTemplate=ozpIwc.packetRouter.uriTemplate(config.resource);
     actionRoute.push(config);
     return this;
+};
+
+ozpIwc.PacketRouter.prototype.filterChain=function(packet,context,pathParams,routeSpec,filters) {
+  if(!filters.length) {
+    return routeSpec.handler.call(routeSpec.handlerSelf,packet,context,pathParams);
+  };
+  var f=filters.shift();
+  var self=this;
+  return f(packet,context,pathParams,function() {
+    return self.filterChain(packet,context,pathParams,routeSpec,filters);
+  });
 };
 
 ozpIwc.PacketRouter.prototype.routePacket=function(packet,context) {
@@ -71,7 +83,8 @@ ozpIwc.PacketRouter.prototype.routePacket=function(packet,context) {
         var route=actionRoutes[i];
         var pathParams=route.uriTemplate(packet.resource);
         if(pathParams) {
-            return route.handler.call(route.handlerSelf,packet,context,pathParams);
+            var filterList=route.filters.slice();
+            return this.filterChain(packet,context,pathParams,route,filterList);
         }
     }
     return this.defaultRoute(packet,context,{});

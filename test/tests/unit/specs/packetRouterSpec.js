@@ -387,4 +387,148 @@ describe("Packet Routing", function() {
             })).toEqual("defaultRoute");
        });    
     });
+    
+    describe("Filters",function() {
+        var testFilter=function(name) {
+            return function(packet,context,pathParams,next) {
+                console.log("Filter: "+name);
+                context.filters=context.filters || [];
+                context.filters.push(name);
+                return next();
+            };
+        };
+        var promiseFilter=function(name) {
+            return function(packet,context,pathParams,next) {
+                console.log("Filter: "+name);
+                context.filters=context.filters || [];
+                context.filters.push(name);
+                return new Promise(function(resolve,reject) {
+                    resolve(next());
+                });
+            };
+        };
+        var handler=function(packet,context,params) {
+            console.log("Handler context: ",context);
+            return context;
+        };
+       
+        it("invokes a filter on the handler function",function() {
+            router.declareRoute({
+                action: "get",
+                resource: "/{id}",
+                filters: [testFilter("1")]
+            },handler);
+            
+            expect(router.routePacket({
+                action: "get",
+                resource: "/1234"
+            })).toEqual({filters:["1"]});
+       });
+
+        it("invokes several filters on the handler function",function() {
+            router.declareRoute({
+                action: "get",
+                resource: "/{id}",
+                filters: [testFilter("1"),testFilter("2")]
+            },handler);
+            
+            expect(router.routePacket({
+                action: "get",
+                resource: "/1234"
+            })).toEqual({filters:["1","2"]});
+       });
+
+        it("allows the handler to return a promise",promises(function() {
+            router.declareRoute({
+                action: "get",
+                resource: "/{id}",
+                filters: [testFilter("1")]
+            },function(packet,context,pathParams) {
+                return new Promise(function(resolve,reject) {
+                   resolve(context); 
+                });
+            });
+            
+            return router.routePacket({
+                action: "get",
+                resource: "/1234"
+            }).then(function(val) {
+                expect(val).toEqual({filters:["1"]});
+            });
+        }));
+        
+        it("allows filters to return promises",promises(function() {
+            var promiseFilter=function(name) {
+                return function(packet,context,pathParams,next) {
+                    console.log("Filter: "+name);
+                    context.filters=context.filters || [];
+                    context.filters.push(name);
+                    return new Promise(function(resolve,reject) {
+                        resolve(next());
+                    });
+                };
+            };
+            
+            router.declareRoute({
+                action: "get",
+                resource: "/{id}",
+                filters: [promiseFilter("1"),promiseFilter("2")]
+            },function(packet,context,pathParams) {
+                return new Promise(function(resolve,reject) {
+                   resolve(context); 
+                });
+            });
+            
+            return router.routePacket({
+                action: "get",
+                resource: "/1234"
+            }).then(function(val) {
+                expect(val).toEqual({filters:["1","2"]});
+            });
+       }));
+
+       var promiseChainTest=function(filterChain) {
+            router.declareRoute({
+                action: "get",
+                resource: "/{id}",
+                filters: filterChain
+            },function(packet,context,pathParams) {
+                return new Promise(function(resolve,reject) {
+                    context.filters.push("handler");
+                   resolve(context); 
+                });
+            });
+
+            return router.routePacket({
+                action: "get",
+                resource: "/1234"
+            });
+       };
+        
+       it("allows immediate filters to follow promise filters",promises(function() {
+            return promiseChainTest([promiseFilter("1"),testFilter("2")])
+                .then(function(val) {
+                    expect(val).toEqual({filters:["1","2","handler"]});
+                });
+       }));
+       it("allows promise filters to follow immediate filters",promises(function() {
+            return promiseChainTest([testFilter("1"),promiseFilter("2")])
+                .then(function(val) {
+                    expect(val).toEqual({filters:["1","2","handler"]});
+                });
+       }));
+       it("allows a series of mixed promise/immediate filters",promises(function() {
+            return promiseChainTest([
+                testFilter("1"),
+                promiseFilter("2"),
+                testFilter("3"),
+                promiseFilter("4"),
+                testFilter("5")
+            ]).then(function(val) {
+                expect(val).toEqual({filters:["1","2","3","4","5","handler"]});
+            });
+       }));
+       
+    });
+    
 });

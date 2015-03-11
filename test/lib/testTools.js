@@ -2,6 +2,29 @@
 /* jshint unused:false */
 var ozpIwc = ozpIwc || {};
 
+function promises(fn) {
+  return function(done) {
+        fn().then(
+            done,
+            function(error) {
+                expect(error).toNotHappen();
+                done();
+            }
+        );
+    };
+};
+
+function pit(desc,fn) {
+    return it(desc,promises(fn));
+}
+
+function pBeforeEach(desc,fn) {
+    return beforeEach(desc,promises(fn));
+}
+
+function pAfterEach(desc,fn) {
+    return afterEach(desc,promises(fn));
+}
 // doneSemaphore & tick aren't used locally.
 
 var customMatchers={
