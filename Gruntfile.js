@@ -324,9 +324,11 @@ module.exports = function(grunt) {
             },
             releaseGit: {
                 command: [
+                    'git add bower.json package.json',
+                    'git commit -m "chore(release): <%= pkg.version %>"',
+                    'git push origin master',
                     'git checkout --detach',
                     'grunt dist',
-                    'git add bower.json package.json',
                     'git add -f dist',
                     'git commit -m "chore(release): <%= pkg.version %>"',
                     'git tag -a "<%= pkg.version %>" -m "chore(release): <%= pkg.version %>"',
