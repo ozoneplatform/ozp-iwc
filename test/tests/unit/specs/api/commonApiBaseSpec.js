@@ -9,7 +9,7 @@ describe("Common API Base class",function() {
 			'participant': new TestParticipant()
 		});
 		apiBase.makeValue=function(packet) {
-			return new ozpIwc.CommonApiValue({resource: packet.resource});
+			return new ozpIwc.CommonApiValue(packet);
 		};
         simpleNode=new ozpIwc.CommonApiValue({
             'resource': "/node",
@@ -61,6 +61,94 @@ describe("Common API Base class",function() {
             }));
 	});
 
+	it("responds to a bulk get with no data", function() {
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'resource': "/node",
+                'action': "bulkGet"
+            }
+        });
+        
+		apiBase.handleBulkget(simpleNode,packetContext);
+
+		expect(packetContext.responses[0])
+            .toEqual(jasmine.objectContaining({
+                'response':"ok",
+                'entity': []
+            }));
+	});
+
+	it("responds to a bulk get with no matching entities", function() {
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'resource': "/nomatch",
+                'action': "bulkGet"
+            }
+        });
+        var packetOne={'resource': "/family", 'action': "set", 'entity': "value1"};
+		
+		apiBase.findOrMakeValue(packetOne);
+		
+		apiBase.handleBulkget(simpleNode,packetContext);
+
+		expect(packetContext.responses[0])
+            .toEqual(jasmine.objectContaining({ 
+				"response": "ok", 
+				"entity": []
+			}));
+	});
+
+	it("responds to a bulk get with correctly matching entities", function() {
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'resource': "/family",
+                'action': "bulkGet"
+            }
+        });
+        var packetOne={'resource': "/family", 'entity': "value1"};
+        var packetTwo={'resource': "/family_a", 'entity': "value2"};
+        var packetThree={'resource': "/family_b", 'entity': "value3"};
+        var packetFour={'resource': "/notfamily", 'entity': "value4"};
+		
+		apiBase.findOrMakeValue(packetOne);
+		apiBase.findOrMakeValue(packetTwo);
+		apiBase.findOrMakeValue(packetThree);
+		apiBase.findOrMakeValue(packetFour);
+		
+		apiBase.handleBulkget(simpleNode,packetContext);
+
+		expect(packetContext.responses[0].response).toEqual("ok");
+		expect(packetContext.responses[0].entity.length).toEqual(3);
+		expect(packetContext.responses[0].entity[0]).toEqual(jasmine.objectContaining(packetOne));
+		expect(packetContext.responses[0].entity[1]).toEqual(jasmine.objectContaining(packetTwo));
+		expect(packetContext.responses[0].entity[2]).toEqual(jasmine.objectContaining(packetThree));
+	});
+	
+	it("responds to a bulk get with varied content types", function() {
+        var packetContext=new TestPacketContext({
+            'packet': {
+                'resource': "/family",
+                'action': "bulkGet"
+            }
+        });
+		
+		var packetOne={'resource': "/familyOne", 'entity': "value1", 'contentType':"application/fake+a+json"};
+        var packetTwo={'resource': "/familyTwo", 'entity': "value2", 'contentType':"application/fake+b+json"};
+        var packetThree={'resource': "/familyThree", 'entity': "value3", 'contentType':"application/fake+c+json"};
+		
+		apiBase.findOrMakeValue(packetOne);
+		apiBase.findOrMakeValue(packetTwo);
+		apiBase.findOrMakeValue(packetThree);
+		
+        apiBase.handleBulkget(simpleNode,packetContext);
+
+		expect(packetContext.responses[0].response).toEqual("ok");
+		expect(packetContext.responses[0].entity.length).toEqual(3);
+		expect(packetContext.responses[0].entity[0]).toEqual(jasmine.objectContaining(packetOne));
+		expect(packetContext.responses[0].entity[1]).toEqual(jasmine.objectContaining(packetTwo));
+		expect(packetContext.responses[0].entity[2]).toEqual(jasmine.objectContaining(packetThree));
+	});
+	
 	it("sets data", function() {
         var packetContext=new TestPacketContext({
             'packet': {
