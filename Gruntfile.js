@@ -48,7 +48,8 @@ module.exports = function(grunt) {
                 'app/js/defaultWiring.js'
             ],
             client: [
-                '<%= src.common %>'
+                '<%= src.common %>',
+                'app/js/client/**/*.js'
             ],
             test: [
                 'test/**/*'
