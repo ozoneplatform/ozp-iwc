@@ -12,7 +12,7 @@ function promises(fn) {
             }
         );
     };
-};
+}
 
 function pit(desc,fn) {
     return it(desc,promises(fn));

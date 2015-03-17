@@ -125,7 +125,7 @@ ozpIwc.PacketRouter.prototype.declareRoute=function(config,handler,handlerSelf) 
 ozpIwc.PacketRouter.prototype.filterChain=function(packet,context,pathParams,routeSpec,filters) {
   if(!filters.length) {
     return routeSpec.handler.call(routeSpec.handlerSelf,packet,context,pathParams);
-  };
+  }
   var f=filters.shift();
   var self=this;
   return f(packet,context,pathParams,function() {

@@ -46,6 +46,8 @@
     "TestPacketContext": true,
     "FakeRouter": true,
     "commonApiValueContractTests": true,
-    "customMatchers": true
+    "customMatchers": true,
+    "promises": true,
+    "pit": true
   }
 }
