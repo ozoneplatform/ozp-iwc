@@ -45,6 +45,7 @@ module.exports = function(grunt) {
                 'app/js/bus/api/*.js',
                 'app/js/bus/api/**/*.js',
                 'app/js/bus/*/**/*.js',
+                'app/js/services/**/*.js',
                 'app/js/defaultWiring.js'
             ],
             client: [
@@ -229,7 +230,7 @@ module.exports = function(grunt) {
         watch: {
             concatFiles: {
                 files: ['Gruntfile.js', '<%= src.all %>','app/**/*'],
-                tasks: ['concat_sourcemap', 'copy:dist'],
+                tasks: ['jshint','concat_sourcemap', 'copy:dist'],
                 options: {
                     interrupt: true,
                     spawn: false
