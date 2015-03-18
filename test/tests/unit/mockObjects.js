@@ -46,8 +46,8 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
     };
 
     this.send = function(packet, callback) {
-        packet = ozpIwc.InternalParticipant.prototype.send.call(this, packet, callback);
         this.sentPackets.push(packet);
+        packet = ozpIwc.InternalParticipant.prototype.send.call(this, packet, callback);
         // tick to trigger the async send
         tick(0);
         return packet;

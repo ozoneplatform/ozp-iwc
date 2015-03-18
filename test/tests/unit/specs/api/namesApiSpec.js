@@ -71,7 +71,8 @@ describe("Names API",function() {
                     "/api/data.api",
                     "/api/intents.api",
                     "/api/names.api",
-                    "/api/system.api"
+                    "/api/system.api",
+                    "/api/locks.api"
                 ]);
                 expect(context.responses[0].contentType).toEqual("application/vnd.ozp-iwc-api-list-v1+json");
             });
