@@ -17,7 +17,6 @@ module.exports = function(grunt) {
                 'bower_components/es5-shim/es5-shim.js',
                 'bower_components/es5-shim/es5-sham.js',
                 'bower_components/es6-promise/promise.js',
-                'app/js/common/event.js',
                 'app/js/common/**/*.js'
             ],
             metrics: [
@@ -46,6 +45,7 @@ module.exports = function(grunt) {
                 'app/js/bus/api/*.js',
                 'app/js/bus/api/**/*.js',
                 'app/js/bus/*/**/*.js',
+                'app/js/services/**/*.js',
                 'app/js/defaultWiring.js'
             ],
             client: [
@@ -230,7 +230,7 @@ module.exports = function(grunt) {
         watch: {
             concatFiles: {
                 files: ['Gruntfile.js', '<%= src.all %>','app/**/*'],
-                tasks: ['concat_sourcemap', 'copy:dist'],
+                tasks: ['jshint','concat_sourcemap', 'copy:dist'],
                 options: {
                     interrupt: true,
                     spawn: false
@@ -324,9 +324,11 @@ module.exports = function(grunt) {
             },
             releaseGit: {
                 command: [
+                    'git add bower.json package.json',
+                    'git commit -m "chore(release): <%= pkg.version %>"',
+                    'git push origin master',
                     'git checkout --detach',
                     'grunt dist',
-                    'git add bower.json package.json',
                     'git add -f dist',
                     'git commit -m "chore(release): <%= pkg.version %>"',
                     'git tag -a "<%= pkg.version %>" -m "chore(release): <%= pkg.version %>"',

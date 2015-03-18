@@ -1,14 +1,7 @@
 /**
  * Network Integration
  */
-function pit(desc,fn) {
-    it(desc,function(done) {
-        fn().then(done,function(error) {
-            expect(error).toNotHappen();
-            done();
-        });
-    });
-}
+
 
 describe("System API", function() {
     var client;
@@ -98,7 +91,7 @@ describe("System API", function() {
         });
     });
     
-    pit("registers for the intent run /application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",function() {
+    it("registers for the intent run /application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",promises(function() {
        return client.api("intents.api").get("/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api")
            .then(function(reply) {
                console.log("Received Reply",reply);
@@ -107,8 +100,8 @@ describe("System API", function() {
                expect(reply.entity.invokeIntent.action).toEqual("invoke");
                expect(reply.entity.invokeIntent.dst).toEqual("system.api");
            });
-    });
-    pit("launch on system.api invokes the intent run /application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",function() {
+    }));
+    it("launch on system.api invokes the intent run /application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",promises(function() {
         // hijack the system.api's intent registration so that we get it
        return client.api("intents.api").set("/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",{
             contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
@@ -148,5 +141,5 @@ describe("System API", function() {
                 }
             }));
         });
-    });
+    }));
 });

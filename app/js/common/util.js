@@ -198,7 +198,7 @@ ozpIwc.util.determineOrigin=function(url) {
      * Other browsers seem to drop the port if it's the default, so we'll do the same.
     */
    
-    if(ozpIwc.util.protocolPorts[a.protocol] !== a.port) {
+    if(a.port && ozpIwc.util.protocolPorts[a.protocol] !== a.port) {
         origin+= ":" + a.port;
     }
     return origin;
@@ -357,4 +357,22 @@ ozpIwc.util.rejectWith = function(obj){
     return new Promise(function(resolve,reject){
         reject(obj);
     });
+};
+
+/**
+ * Returns the version of Internet Explorer or a -1
+ * (indicating the use of another browser).
+ * @returns {number}
+ */
+ozpIwc.util.getInternetExplorerVersion= function() {
+    var rv = -1; // Return value assumes failure.
+    if (navigator.appName === 'Microsoft Internet Explorer')
+    {
+        var ua = navigator.userAgent;
+        var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+        if (re.exec(ua) !== null) {
+            rv = parseFloat(RegExp.$1);
+        }
+    }
+    return rv;
 };
