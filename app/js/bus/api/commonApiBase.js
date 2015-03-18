@@ -213,15 +213,15 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpointIterative=function(endpointName, 
 			if (data.response._embedded && data.response._embedded.item) {
 				if (Array.isArray(data.response._embedded.item)) {
 					for (var i in data.response._embedded.item) {
-						embeddedList.push(data.response._embedded.item[i]._links.self.href, data.response._embedded.item[i]);
+						embeddedList[data.response._embedded.item[i]._links.self.href]= data.response._embedded.item[i];
 					}
 				} else {
-					embeddedList.push(data.response._embedded.item._links.self.href, data.response._embedded.item);
+					embeddedList[data.response._embedded.item._links.self.href]= data.response._embedded.item;
 				}
 				
-				embeddedList.forEach(function(item) {
-					self.updateResourceFromServerIterative(item, item._links.self.href, endpoint, requestHeaders);
-				});
+				for (var path in embeddedList) {
+					self.updateResourceFromServerIterative(embeddedList[path], path, endpoint, requestHeaders);
+				}
 			}
 			
 			// Follow up here with loop on _links section, creating a promise to load each link if it is not in the _embedded section
@@ -243,9 +243,9 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpointIterative=function(endpointName, 
 			}
 			return Promise.all(unresolvedLinks);
 		}).then(function(unresolvedLinks) {
-			unresolvedLinks.forEach(function(item) {
+			for (var item in unresolvedLinks) {
 				self.updateResourceFromServerIterative(item, item._links.self.href, endpoint, requestHeaders);
-			});
+			}
 
 			// update all the collection values
 			self.dynamicNodes.forEach(function(resource) {

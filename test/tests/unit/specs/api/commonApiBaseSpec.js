@@ -154,6 +154,141 @@ describe("Common API Base class",function() {
         expect(simpleNode.watchers.length).toEqual(0);
     });
 
+    describe("Endpoint",function() {
+		var apiBase;
+
+		beforeEach(function() {
+
+			apiBase = new ozpIwc.CommonApiBase({
+				'participant': new TestParticipant()
+			});
+			apiBase.makeValue = function(packet) {
+				return new ozpIwc.CommonApiValue({resource: packet.resource});
+			};
+		});
+
+		afterEach(function() {
+			apiBase = null;
+		});
+       
+        it("initializes with both embedded and links",function(done) {
+			var originalEndpoint = ozpIwc.endpoint;
+			var originalEndpointGet = ozpIwc.Endpoint.prototype.get;
+			
+            ozpIwc.endpoint = function(name) {
+				return new ozpIwc.Endpoint(name);
+			};
+			ozpIwc.Endpoint.prototype.get = function(resource) {
+				return new Promise(function(resolve, reject) {
+					resolve({
+						header: {'Content-Type': "application/json"},
+						response: {
+							"_links": {
+								"self": {"href": "/api/profile/v1/exampleUser/data"},
+								"curies": [{
+										"name": "ozp",
+										"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+										"templated": true
+									}],
+								"item": [
+									{"href": "/api/profile/v1/exampleUser/data/bigData.json"},
+									{"href": "/api/profile/v1/exampleUser/data/dashboards/12345"},
+									{"href": "/api/profile/v1/exampleUser/data/dashboards/23456"},
+									{"href": "/api/profile/v1/exampleUser/data/toolbars/12345"},
+									{"href": "/api/profile/v1/exampleUser/data/toolbars/23456"}
+								]
+							},
+							"_embedded": {
+								"item": [
+									{
+										"_links": {
+											"self": {"href": "/api/profile/v1/exampleUser/data/someResource"}
+										},
+										"contentType": "application/vnd.ozp-data-object-v1+json",
+										"key": "someResource",
+										"entity": {
+											"entity": {
+												"some": "data"
+											}
+										}
+									},
+									{
+										"_links": {
+											"self": {"href": "/api/profile/v1/exampleUser/data/pizza"}
+										},
+										"contentType": "application/vnd.ozp-data-object-v1+json",
+										"key": "pizza",
+										"entity": {
+											"entity": "pepperoni"
+										}
+									},
+									{
+										"_links": {
+											"self": {"href": "/api/profile/v1/exampleUser/data/theme"}
+										},
+										"contentType": "application/vnd.ozp-data-object-v1+json",
+										"key": "theme",
+										"entity": {
+											"entity": "dark"
+										}
+									},
+									{
+										"_links": {
+											"self": {"href": "/api/profile/v1/exampleUser/data/parent"}
+										},
+										"contentType": "application/vnd.ozp-data-object-v1+json",
+										"key": "parent",
+										"entity": {
+											"children": ["/parent/1234", "/parent/5678"]
+										}
+									},
+									{
+										"_links": {
+											"self": {"href": "/api/profile/v1/exampleUser/data/parent/1234"}
+										},
+										"contentType": "application/vnd.ozp-data-object-v1+json",
+										"key": "parent/1234",
+										"entity": {
+											"entity": "I am child 1234 of parent."
+										}
+									},
+									{
+										"_links": {
+											"self": {"href": "/api/profile/v1/exampleUser/data/parent/5678"}
+										},
+										"contentType": "application/vnd.ozp-data-object-v1+json",
+										"key": "parent/5678",
+										"entity": {
+											"entity": "I am child 5678 of parent."
+										}
+									}
+								]
+							}
+						}
+					});
+
+				});
+			};
+			
+			var requestHandlers = "";
+			
+			spyOn(apiBase,"makeValue");
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			apiBase.loadFromEndpointIterative("fakeEndpoint", requestHandlers)
+					.then (function() {
+						// basic checks, should add detail value queries
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(6);
+						expect(apiBase.makeValue.calls.count()).toEqual(6);
+						
+						// reset and cleanup parts of the endpoint api we clobbered for this test
+						ozpIwc.endpoint = originalEndpoint;
+						ozpIwc.Endpoint.prototype.get = originalEndpointGet;
+						done();
+					});
+        });
+	});
+
     describe("CommonAPI Packet Routing",function() {
         beforeEach(function() {
             apiBase.data['/node']=simpleNode;
