@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html ng-app="ozpIwc.debugger">
+
+    <head>
+        <title>OZP IWC Debugger</title>
+        <link rel="stylesheet" type="text/css" href="css/debugger.css">
+        <link rel="shortcut icon" href="favicon.ico?v=2" />
+
+        <script type="text/javascript">
+            var ozpIwc = ozpIwc || {};
+            ozpIwc.apiRootUrl="/api";
+            ozpIwc.basicAuthUsername=null;
+            ozpIwc.basicAuthPassword=null;
+            ozpIwc.runApis=true;
+            ozpIwc.acceptPostMessageParticipants=false;
+            
+            // for resizing the height of an iframe (hal-browser)
+            function resizeIframe(obj) {
+                obj.style.height = window.innerHeight + 'px';
+            }
+        </script>
+        <script src="js/debugger.js"></script>
+    </head>
+    <body ng-controller="debuggerController">
+    <!-- Sidenav -->
+    <div id="side-wrap">
+        <ul class="side-nav">
+            <li>
+                <a ui-sref="general" ui-sref-active="selected">General</a>
+            </li>
+            <hr />
+            <li>
+                <a ui-sref="traffic-snooper" ui-sref-active="selected">Traffic Snooper </a>
+            </li>
+            <li>
+                <a ui-sref="metrics" ui-sref-active="selected">Metrics </a>
+            </li>
+            <li>
+                <a ui-sref="elections" ui-sref-active="selected">Elections</a>
+            </li>
+            <hr />
+            <li>
+                <a ui-sref="system-api" ui-sref-active="selected">System API</a>
+            </li>
+            <li>
+                <a ui-sref="data-api" ui-sref-active="selected">Data API</a>
+            </li>
+            <li>
+                <a ui-sref="intents-api" ui-sref-active="selected">Intents API</a>
+            </li>
+            <li>
+                <a ui-sref="names-api" ui-sref-active="selected">Names API</a>
+            </li>
+            <hr />
+            <li>
+                <a ui-sref="hal-browser({url: ozpIwc.apiRootUrl})" ui-sref-active="selected">HAL Browser</a>
+            </li>
+            <hr />
+            <li> {{::client.address}}</li>
+        </ul>
+    </div>
+    <!-- Apps -->
+    <div class="app-pane">
+        <div ui-view></div>
+    </div>
+    </body>
+</html>
