@@ -69,7 +69,7 @@ ozpIwc.PacketRouter=function() {
      * @property defaultRoute
      * @returns {*}
      */
-    this.defaultRoute=function() { return false;};
+    this.defaultRoute=function() { return false; };
 
     /**
      * The default scope of the router.
@@ -145,19 +145,17 @@ ozpIwc.PacketRouter.prototype.filterChain=function(packet,context,pathParams,rou
 ozpIwc.PacketRouter.prototype.routePacket=function(packet,context) {
     context=context || {};
     var actionRoutes=this.routes[packet.action];
-    if(!actionRoutes) {
-        return false;
-    }
-    for(var i=0;i<actionRoutes.length;++i) {
-        var route=actionRoutes[i];
-        var pathParams=route.uriTemplate(packet.resource);
-        if(pathParams) {
-            var filterList=route.filters.slice();
-            return this.filterChain(packet,context,pathParams,route,filterList);
+    if(actionRoutes) {
+        for(var i=0;i<actionRoutes.length;++i) {
+            var route=actionRoutes[i];
+            var pathParams=route.uriTemplate(packet.resource);
+            if(pathParams) {
+                var filterList=route.filters.slice();
+                return this.filterChain(packet,context,pathParams,route,filterList);
+            }
         }
     }
     return this.defaultRoute(packet,context,{});
-    
 };
 
 /**
@@ -167,4 +165,43 @@ ozpIwc.PacketRouter.prototype.routePacket=function(packet,context) {
  */
 ozpIwc.PacketRouter.prototype.declareDefaultRoute=function(handler) {
     this.defaultRoute=handler;
+};
+
+
+
+ozpIwc.PacketRouter.mixin=function(classToAugment) {
+    var packetRouter=new ozpIwc.PacketRouter();
+    
+    var superClass=Object.getPrototypeOf(classToAugment.prototype);
+    if(superClass && superClass.routePacket) {
+        packetRouter.defaultRoute=function(packet,context) {
+            var self=context.$$PacketRouterInstance;
+            return superClass.routePacket.apply(self,arguments);
+        };
+    } else {
+        packetRouter.defaultRoute=function(packet,context) {
+            var self=context.$$PacketRouterInstance;
+            if(self.defaultRoute) {
+                return self.defaultRoute.apply(self,arguments);
+            } else {
+                return false;
+            }
+        };
+    }
+    classToAugment.declareRoute=function(config,handler) {
+        if(config.handlerSelf) {
+            throw new Error("Class-level route declaration does not allow handlerSelf parameter" + JSON.stringify(config));
+        }
+        
+        packetRouter.declareRoute(config,function(packet,context,pathParams) {
+            var self=context.$$PacketRouterInstance;
+            return handler.apply(self,arguments);
+        });
+    };
+    
+    classToAugment.prototype.routePacket=function(packet,context) {
+        context=context || {};
+        context.$$PacketRouterInstance=this;
+        return packetRouter.routePacket(packet,context);  
+    };
 };

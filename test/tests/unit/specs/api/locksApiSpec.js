@@ -35,7 +35,6 @@ describe("Locks API",function() {
     var lockPacket=function(src,msgId,resource) { return testPacket(src,"lock",msgId,resource);};
     var unlockPacket=function(src,msgId,resource) { return testPacket(src,"unlock",msgId,resource);};
     var getPacket=function(src,msgId,resource) { return testPacket(src,"get",msgId,resource);};
-    var setPacket=function(src,msgId,resource) { return testPacket(src,"set",msgId,resource);};
     
     var ownerNotification=function(src,msgId) {
         msgId=msgId || "i:1";
