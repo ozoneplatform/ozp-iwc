@@ -242,30 +242,231 @@ describe("Common API Base class",function() {
         expect(simpleNode.watchers.length).toEqual(0);
     });
 
-    describe("Endpoint",function() {
+    describe("Endpoint loads ",function() {
 		var apiBase;
+		var originalEndpoint;
+		var originalEndpointGet;
 
 		beforeEach(function() {
-
 			apiBase = new ozpIwc.CommonApiBase({
 				'participant': new TestParticipant()
 			});
 			apiBase.makeValue = function(packet) {
 				return new ozpIwc.CommonApiValue({resource: packet.resource});
 			};
+			originalEndpoint = ozpIwc.endpoint;
+			originalEndpointGet = ozpIwc.Endpoint.prototype.get;
+            ozpIwc.endpoint = function(name) {
+				var newEndpoint = new ozpIwc.Endpoint(null);
+				newEndpoint.name = name;
+				return newEndpoint;
+			};
 		});
 
 		afterEach(function() {
+			// reset and cleanup parts of the endpoint api we clobbered for this test
+			ozpIwc.endpoint = originalEndpoint;
+			ozpIwc.Endpoint.prototype.get = originalEndpointGet;
 			apiBase = null;
 		});
        
-        it("initializes with both embedded and links",function(done) {
-			var originalEndpoint = ozpIwc.endpoint;
-			var originalEndpointGet = ozpIwc.Endpoint.prototype.get;
-			
-            ozpIwc.endpoint = function(name) {
-				return new ozpIwc.Endpoint(name);
+        it("with both links and embedded", function(done) {
+			ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}],
+									"item": [
+										{"href": "/api/profile/v1/exampleUser/data/bigData.json"},
+										{"href": "/api/profile/v1/exampleUser/data/pizza"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem/2222"},
+										{"href": "/api/profile/v1/exampleUser/data/parent/5678"}
+									]
+								},
+								"_embedded": {
+									"item": [
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/someResource"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "someResource",
+											"entity": {
+												"entity": {
+													"some": "data"
+												}
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/pizza"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "pizza",
+											"entity": {
+												"entity": "pepperoni"
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/theme"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "theme",
+											"entity": {
+												"entity": "dark"
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/parent"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "parent",
+											"entity": {
+												"children": ["/parent/1234", "/parent/5678"]
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/parent/1234"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "parent/1234",
+											"entity": {
+												"entity": "I am child 1234 of parent."
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/parent/5678"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "parent/5678",
+											"entity": {
+												"entity": "I am child 5678 of parent."
+											}
+										}
+									]
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/bigData.json") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/bigData.json"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "bigData.json",
+								"entity": {
+									"entity": {
+										"some": "data for bigData"
+									}
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem"
+									}
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem/2222") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem/2222",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem/2222"
+									}
+								}
+							}
+						});
+					});
+				}
 			};
+			
+			spyOn(apiBase,"makeValue").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:user-data", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(9);
+						expect(apiBase.makeValue.calls.count()).toEqual(9);
+						// verify a representative collection of the embedded data
+						expect(apiBase.data["/pizza"].entity.entity.entity).toBe("pepperoni");
+						expect(apiBase.data["/theme"].resource).toBe("/theme");
+						expect(apiBase.data["/parent"].entity.entity.children[1]).toBe("/parent/5678");
+						expect(apiBase.data["/parent"].entity.contentType).toBe("application/vnd.ozp-data-object-v1+json");
+						expect(apiBase.data["/someResource"].entity.key).toBe("someResource");
+						expect(apiBase.data["/theme"]).toEqual(jasmine.objectContaining({
+							"resource":"/theme",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"theme",
+								"entity":{"entity":"dark"}
+							}
+						}));
+						// verify some link data nodes
+						expect(apiBase.data["/bigData.json"]).toEqual(jasmine.objectContaining({
+							"resource":"/bigData.json",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"bigData.json",
+								"entity":{"entity":{"some": "data for bigData"}}
+							}
+						}));
+						expect(apiBase.data["/linkItem/2222"]).toEqual(jasmine.objectContaining({
+							"resource":"/linkItem/2222",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"linkItem/2222",
+								"entity":{"entity":{"some": "data for linkItem/2222"}}
+							}
+						}));
+
+						done();
+					});
+        });
+		
+		it("with no links or embedded",function(done) {
 			ozpIwc.Endpoint.prototype.get = function(resource) {
 				return new Promise(function(resolve, reject) {
 					resolve({
@@ -279,38 +480,111 @@ describe("Common API Base class",function() {
 										"templated": true
 									}],
 								"item": [
-									{"href": "/api/profile/v1/exampleUser/data/bigData.json"},
-									{"href": "/api/profile/v1/exampleUser/data/dashboards/12345"},
-									{"href": "/api/profile/v1/exampleUser/data/dashboards/23456"},
-									{"href": "/api/profile/v1/exampleUser/data/toolbars/12345"},
-									{"href": "/api/profile/v1/exampleUser/data/toolbars/23456"}
 								]
 							},
 							"_embedded": {
-								"item": [
-									{
-										"_links": {
-											"self": {"href": "/api/profile/v1/exampleUser/data/someResource"}
-										},
-										"contentType": "application/vnd.ozp-data-object-v1+json",
-										"key": "someResource",
-										"entity": {
-											"entity": {
-												"some": "data"
-											}
-										}
-									},
-									{
-										"_links": {
-											"self": {"href": "/api/profile/v1/exampleUser/data/pizza"}
-										},
-										"contentType": "application/vnd.ozp-data-object-v1+json",
-										"key": "pizza",
-										"entity": {
-											"entity": "pepperoni"
-										}
-									},
-									{
+							}
+						}
+					});
+				});
+			};
+			
+			spyOn(apiBase,"loadFromEndpointIterative").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:user-data", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(0);
+						expect(apiBase.loadFromEndpointIterative).toHaveBeenCalled();
+						expect(apiBase.loadFromEndpointIterative).not.toThrow();
+						done();
+					});
+        });
+		
+		it("with one link and no embedded",function(done) {
+			ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}],
+									"item": {"href": "/api/profile/v1/exampleUser/data/bigData.json"}
+								},
+								"_embedded": {
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/bigData.json") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/bigData.json"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "bigData.json",
+								"entity": {
+									"entity": {
+										"some": "data for bigData"
+									}
+								}
+							}
+						});
+					});
+				}
+			};
+			
+			spyOn(apiBase,"makeValue").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:user-data", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(1);
+						expect(apiBase.makeValue.calls.count()).toEqual(1);
+						// verify some link data nodes
+						expect(apiBase.data["/bigData.json"]).toEqual(jasmine.objectContaining({
+							"resource":"/bigData.json",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"bigData.json",
+								"entity":{"entity":{"some": "data for bigData"}}
+							}
+						}));
+						done();
+					});
+        });
+		
+		it("with no link and one embedded",function(done) {
+			ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}]
+								},
+								"_embedded": {
+									"item": {
 										"_links": {
 											"self": {"href": "/api/profile/v1/exampleUser/data/theme"}
 										},
@@ -319,62 +593,1165 @@ describe("Common API Base class",function() {
 										"entity": {
 											"entity": "dark"
 										}
-									},
-									{
-										"_links": {
-											"self": {"href": "/api/profile/v1/exampleUser/data/parent"}
-										},
-										"contentType": "application/vnd.ozp-data-object-v1+json",
-										"key": "parent",
-										"entity": {
-											"children": ["/parent/1234", "/parent/5678"]
-										}
-									},
-									{
-										"_links": {
-											"self": {"href": "/api/profile/v1/exampleUser/data/parent/1234"}
-										},
-										"contentType": "application/vnd.ozp-data-object-v1+json",
-										"key": "parent/1234",
-										"entity": {
-											"entity": "I am child 1234 of parent."
-										}
-									},
-									{
-										"_links": {
-											"self": {"href": "/api/profile/v1/exampleUser/data/parent/5678"}
-										},
-										"contentType": "application/vnd.ozp-data-object-v1+json",
-										"key": "parent/5678",
-										"entity": {
-											"entity": "I am child 5678 of parent."
-										}
 									}
-								]
+								}
 							}
-						}
+						});
+					});
+				}
+			};
+			
+			spyOn(apiBase,"makeValue").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:user-data", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(1);
+						expect(apiBase.makeValue.calls.count()).toEqual(1);
+						// verify a representative collection of the embedded data
+						expect(apiBase.data["/theme"]).toEqual(jasmine.objectContaining({
+							"resource":"/theme",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"theme",
+								"entity":{"entity":"dark"}
+							}
+						}));
+						done();
+					});
+		});
+		
+		it("with no link and many embedded",function(done) {
+						ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}]
+								},
+								"_embedded": {
+									"item": [
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/someResource"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "someResource",
+											"entity": {
+												"entity": {
+													"some": "data"
+												}
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/pizza"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "pizza",
+											"entity": {
+												"entity": "pepperoni"
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/theme"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "theme",
+											"entity": {
+												"entity": "dark"
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/parent"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "parent",
+											"entity": {
+												"children": ["/parent/1234", "/parent/5678"]
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/parent/1234"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "parent/1234",
+											"entity": {
+												"entity": "I am child 1234 of parent."
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/parent/5678"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "parent/5678",
+											"entity": {
+												"entity": "I am child 5678 of parent."
+											}
+										}
+									]
+								}
+							}
+						});
+					});
+				}
+			};
+			
+			spyOn(apiBase,"makeValue").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:user-data", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(6);
+						expect(apiBase.makeValue.calls.count()).toEqual(6);
+						// verify a representative collection of the embedded data
+						expect(apiBase.data["/pizza"].entity.entity.entity).toBe("pepperoni");
+						expect(apiBase.data["/theme"].resource).toBe("/theme");
+						expect(apiBase.data["/parent"].entity.entity.children[1]).toBe("/parent/5678");
+						expect(apiBase.data["/parent"].entity.contentType).toBe("application/vnd.ozp-data-object-v1+json");
+						expect(apiBase.data["/someResource"].entity.key).toBe("someResource");
+						expect(apiBase.data["/theme"]).toEqual(jasmine.objectContaining({
+							"resource":"/theme",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"theme",
+								"entity":{"entity":"dark"}
+							}
+						}));
+						done();
 					});
 
+		});
+		
+		it("with many links and no embedded",function(done) {
+						ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}],
+									"item": [
+										{"href": "/api/profile/v1/exampleUser/data/bigData.json"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+									]
+								},
+								"_embedded": {
+									"item": [
+									]
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/bigData.json") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/bigData.json"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "bigData.json",
+								"entity": {
+									"entity": {
+										"some": "data for bigData"
+									}
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem"
+									}
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem/2222") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem/2222",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem/2222"
+									}
+								}
+							}
+						});
+					});
+				}
+			};
+			
+			spyOn(apiBase,"makeValue").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:user-data", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(3);
+						expect(apiBase.makeValue.calls.count()).toEqual(3);
+						// verify some link data nodes
+						expect(apiBase.data["/bigData.json"]).toEqual(jasmine.objectContaining({
+							"resource":"/bigData.json",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"bigData.json",
+								"entity":{"entity":{"some": "data for bigData"}}
+							}
+						}));
+						expect(apiBase.data["/linkItem/2222"]).toEqual(jasmine.objectContaining({
+							"resource":"/linkItem/2222",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"linkItem/2222",
+								"entity":{"entity":{"some": "data for linkItem/2222"}}
+							}
+						}));
+
+						done();
+					});
+		});
+		
+		it("with one link and many embedded",function(done) {
+			ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}],
+									"item": [
+										{"href": "/api/profile/v1/exampleUser/data/bigData.json"},
+										{"href": "/api/profile/v1/exampleUser/data/pizza"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem/2222"},
+										{"href": "/api/profile/v1/exampleUser/data/parent/5678"}
+									]
+								},
+								"_embedded": {
+									"item": [
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/someResource"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "someResource",
+											"entity": {
+												"entity": {
+													"some": "data"
+												}
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/pizza"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "pizza",
+											"entity": {
+												"entity": "pepperoni"
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/theme"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "theme",
+											"entity": {
+												"entity": "dark"
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/parent"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "parent",
+											"entity": {
+												"children": ["/parent/1234", "/parent/5678"]
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/parent/1234"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "parent/1234",
+											"entity": {
+												"entity": "I am child 1234 of parent."
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/parent/5678"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "parent/5678",
+											"entity": {
+												"entity": "I am child 5678 of parent."
+											}
+										}
+									]
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem/2222") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem/2222",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem/2222"
+									}
+								}
+							}
+						});
+					});
+				}
+				return new Promise(function(resolve, reject) {
+					resolve();
 				});
 			};
 			
-			var requestHandlers = "";
-			
-			spyOn(apiBase,"makeValue");
+			spyOn(apiBase,"makeValue").and.callThrough();
 			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
 			
-			apiBase.loadFromEndpointIterative("fakeEndpoint", requestHandlers)
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:user-data", requestHandlers)
 					.then (function() {
-						// basic checks, should add detail value queries
-						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(6);
-						expect(apiBase.makeValue.calls.count()).toEqual(6);
-						
-						// reset and cleanup parts of the endpoint api we clobbered for this test
-						ozpIwc.endpoint = originalEndpoint;
-						ozpIwc.Endpoint.prototype.get = originalEndpointGet;
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(7);
+						expect(apiBase.makeValue.calls.count()).toEqual(7);
+						// verify a representative collection of the embedded data
+						expect(apiBase.data["/pizza"].entity.entity.entity).toBe("pepperoni");
+						expect(apiBase.data["/theme"].resource).toBe("/theme");
+						expect(apiBase.data["/parent"].entity.entity.children[1]).toBe("/parent/5678");
+						expect(apiBase.data["/parent"].entity.contentType).toBe("application/vnd.ozp-data-object-v1+json");
+						expect(apiBase.data["/someResource"].entity.key).toBe("someResource");
+						expect(apiBase.data["/theme"]).toEqual(jasmine.objectContaining({
+							"resource":"/theme",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"theme",
+								"entity":{"entity":"dark"}
+							}
+						}));
+						// verify some link data nodes
+						expect(apiBase.data["/linkItem/2222"]).toEqual(jasmine.objectContaining({
+							"resource":"/linkItem/2222",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"linkItem/2222",
+								"entity":{"entity":{"some": "data for linkItem/2222"}}
+							}
+						}));
 						done();
 					});
-        });
+		});
+		
+		it("with bad links",function(done) {
+			ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}],
+									"item": [
+										{"href": "/api/profile/v1/exampleUser/data/bigData.json"},
+										{"href": "/api/profile/v1/exampleUser/data/pizza"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem/2222"},
+										{"href": "/api/profile/v1/exampleUser/data/parent/5678"}
+									]
+								},
+								"_embedded": {
+									"item": [
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/someResource"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "someResource",
+											"entity": {
+												"entity": {
+													"some": "data"
+												}
+											}
+										}
+									]
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem/2222") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem/2222",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem/2222"
+									}
+								}
+							}
+						});
+					});
+				}
+				return new Promise(function(resolve, reject) {
+					resolve();
+				});
+			};
+			
+			spyOn(apiBase,"makeValue").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:user-data", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(2);
+						expect(apiBase.makeValue.calls.count()).toEqual(2);
+						// verify a representative collection of the embedded data
+						expect(apiBase.data["/someResource"].entity.key).toBe("someResource");
+						// verify some link data nodes
+						expect(apiBase.data["/linkItem/2222"]).toEqual(jasmine.objectContaining({
+							"resource":"/linkItem/2222",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"linkItem/2222",
+								"entity":{"entity":{"some": "data for linkItem/2222"}}
+							}
+						}));
+						done();
+					});
+		});
+
+		it("with many links and one embedded",function(done) {
+			ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}],
+									"item": [
+										{"href": "/api/profile/v1/exampleUser/data/bigData.json"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+									]
+								},
+								"_embedded": {
+									"item": [
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/parent"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "parent",
+											"entity": {
+												"children": ["/parent/1234", "/parent/5678"]
+											}
+										}
+									]
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/bigData.json") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/bigData.json"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "bigData.json",
+								"entity": {
+									"entity": {
+										"some": "data for bigData"
+									}
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem"
+									}
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem/2222") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem/2222",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem/2222"
+									}
+								}
+							}
+						});
+					});
+				}
+			};
+			
+			spyOn(apiBase,"makeValue").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:user-data", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(4);
+						expect(apiBase.makeValue.calls.count()).toEqual(4);
+						// verify a representative collection of the embedded data
+						expect(apiBase.data["/parent"].entity.entity.children[1]).toBe("/parent/5678");
+						expect(apiBase.data["/parent"].entity.contentType).toBe("application/vnd.ozp-data-object-v1+json");
+						// verify some link data nodes
+						expect(apiBase.data["/bigData.json"]).toEqual(jasmine.objectContaining({
+							"resource":"/bigData.json",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"bigData.json",
+								"entity":{"entity":{"some": "data for bigData"}}
+							}
+						}));
+						expect(apiBase.data["/linkItem/2222"]).toEqual(jasmine.objectContaining({
+							"resource":"/linkItem/2222",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"linkItem/2222",
+								"entity":{"entity":{"some": "data for linkItem/2222"}}
+							}
+						}));
+						done();
+					});
+		});
+
+		it("despite missing header data",function(done) {
+			ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							//header: {},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}],
+									"item": [
+										{"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+									]
+								},
+								"_embedded": {
+									"item": [
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/parent"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "parent",
+											"entity": {
+												"children": ["/parent/1234", "/parent/5678"]
+											}
+										}
+									]
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem/2222") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem/2222",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem/2222"
+									}
+								}
+							}
+						});
+					});
+				}
+			};
+			
+			spyOn(apiBase,"makeValue").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:user-data", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(2);
+						expect(apiBase.makeValue.calls.count()).toEqual(2);
+						// verify a representative collection of the embedded data
+						expect(apiBase.data["/parent"].entity.entity.children[1]).toBe("/parent/5678");
+						expect(apiBase.data["/parent"].entity.contentType).toBe("application/vnd.ozp-data-object-v1+json");
+						// verify some link data nodes
+						expect(apiBase.data["/linkItem/2222"]).toEqual(jasmine.objectContaining({
+							"resource":"/linkItem/2222",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"linkItem/2222",
+								"entity":{"entity":{"some": "data for linkItem/2222"}}
+							}
+						}));
+						done();
+					});
+		});
+
+		it("with bad data in embedded",function(done) {
+			ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}],
+									"item": [
+										{"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+									]
+								},
+								"_embedded": {
+									"item": [
+										{
+											"_links": "bad data here",
+											"contentType": {"not":"valid contenttype"},
+											//"key": "parent",  // key missing
+											"entity": "blah"
+										}
+									]
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem/2222") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem/2222",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem/2222"
+									}
+								}
+							}
+						});
+					});
+				}
+			};
+			
+			spyOn(apiBase,"makeValue").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:user-data", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(1);
+						expect(apiBase.makeValue.calls.count()).toEqual(1);
+						// verify a representative collection of the embedded data
+						// verify some link data nodes
+						expect(apiBase.data["/linkItem/2222"]).toEqual(jasmine.objectContaining({
+							"resource":"/linkItem/2222",
+							"entity":{
+								"contentType":"application/vnd.ozp-data-object-v1+json",
+								"key":"linkItem/2222",
+								"entity":{"entity":{"some": "data for linkItem/2222"}}
+							}
+						}));
+						done();
+					});
+		});
+
+		it("with system api data",function(done) {
+			ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}],
+									"item": [
+										{"href": "/api/profile/v1/exampleUser/data/bigData.json"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem"}
+									]
+								},
+								"_embedded": {
+									"item": [
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/someResource"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "someResource",
+											"entity": {
+												"entity": {
+													"some": "data"
+												}
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/theme"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "theme",
+											"entity": {
+												"entity": "dark"
+											}
+										}
+									]
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/bigData.json") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/bigData.json"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "bigData.json",
+								"entity": {
+									"entity": {
+										"some": "data for bigData"
+									}
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem"
+									}
+								}
+							}
+						});
+					});
+				}
+			};
+			
+			spyOn(apiBase,"makeValue").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:system", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(4);
+						expect(apiBase.makeValue.calls.count()).toEqual(1);
+						// verify a representative collection of the embedded data
+						expect(apiBase.data["/pizza"]).not.toBeDefined();
+						expect(apiBase.data["/someResource"]).not.toBeDefined();
+						// verify some link data nodes
+						expect(apiBase.data["/bigData.json"]).not.toBeDefined();
+						expect(apiBase.data["/linkItem"]).not.toBeDefined();
+						
+						expect(apiBase.data["/system"]).toBeDefined();
+
+						done();
+					});
+		});
+
+		it("with intent api data",function(done) {
+			ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}],
+									"item": [
+										{"href": "/api/profile/v1/exampleUser/data/bigData.json"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem"}
+									]
+								},
+								"_embedded": {
+									"item": [
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/someResource"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "someResource",
+											"entity": {
+												"entity": {
+													"some": "data"
+												}
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/pizza"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "pizza",
+											"entity": {
+												"entity": "pepperoni"
+											}
+										}
+									]
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/bigData.json") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/bigData.json"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "bigData.json",
+								"entity": {
+									"entity": {
+										"some": "data for bigData"
+									}
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem"
+									}
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem/2222") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem/2222",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem/2222"
+									}
+								}
+							}
+						});
+					});
+				}
+			};
+			
+			spyOn(apiBase,"makeValue").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:intent", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(4);
+						expect(apiBase.makeValue.calls.count()).toEqual(0);
+						// verify a representative collection of the embedded data
+						expect(apiBase.data["/pizza"]).not.toBeDefined();
+						expect(apiBase.data["/someResource"]).not.toBeDefined();
+						// verify some link data nodes
+						expect(apiBase.data["/bigData.json"]).not.toBeDefined();
+						expect(apiBase.data["/linkItem"]).not.toBeDefined();
+
+						done();
+					});
+		});
+		
+		it("with application api data",function(done) {
+			ozpIwc.Endpoint.prototype.get = function(resource) {
+				if (resource === "/") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data"},
+									"curies": [{
+											"name": "ozp",
+											"href": "/api/profile/v1/exampleUser/data/rels/{rel}",
+											"templated": true
+										}],
+									"item": [
+										{"href": "/api/profile/v1/exampleUser/data/bigData.json"},
+										{"href": "/api/profile/v1/exampleUser/data/linkItem"}
+									]
+								},
+								"_embedded": {
+									"item": [
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/someResource"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "someResource",
+											"entity": {
+												"entity": {
+													"some": "data"
+												}
+											}
+										},
+										{
+											"_links": {
+												"self": {"href": "/api/profile/v1/exampleUser/data/pizza"}
+											},
+											"contentType": "application/vnd.ozp-data-object-v1+json",
+											"key": "pizza",
+											"entity": {
+												"entity": "pepperoni"
+											}
+										}
+									]
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/bigData.json") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/bigData.json"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "bigData.json",
+								"entity": {
+									"entity": {
+										"some": "data for bigData"
+									}
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem"
+									}
+								}
+							}
+						});
+					});
+				}
+				if (resource === "/api/profile/v1/exampleUser/data/linkItem/2222") {
+					return new Promise(function(resolve, reject) {
+						resolve({
+							header: {'Content-Type': "application/json"},
+							response: {
+								"_links": {
+									"self": {"href": "/api/profile/v1/exampleUser/data/linkItem/2222"}
+								},
+								"contentType": "application/vnd.ozp-data-object-v1+json",
+								"key": "linkItem/2222",
+								"entity": {
+									"entity": {
+										"some": "data for linkItem/2222"
+									}
+								}
+							}
+						});
+					});
+				}
+			};
+			
+			spyOn(apiBase,"makeValue").and.callThrough();
+			spyOn(apiBase,"updateResourceFromServerIterative").and.callThrough();
+			
+			var requestHandlers = "";
+			apiBase.loadFromEndpointIterative("ozp:application", requestHandlers)
+					.then (function() {
+						// check correct number of calls for given data set
+						expect(apiBase.updateResourceFromServerIterative.calls.count()).toEqual(4);
+						expect(apiBase.makeValue.calls.count()).toEqual(0);
+						// verify a representative collection of the embedded data
+						expect(apiBase.data["/pizza"]).not.toBeDefined();
+						expect(apiBase.data["/someResource"]).not.toBeDefined();
+						// verify some link data nodes
+						expect(apiBase.data["/bigData.json"]).not.toBeDefined();
+						expect(apiBase.data["/linkItem"]).not.toBeDefined();
+
+						done();
+					});
+		});
 	});
 
     describe("CommonAPI Packet Routing",function() {

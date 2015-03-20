@@ -213,10 +213,18 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpointIterative=function(endpointName, 
 			if (data.response._embedded && data.response._embedded.item) {
 				if (Array.isArray(data.response._embedded.item)) {
 					for (var i in data.response._embedded.item) {
-						embeddedList[data.response._embedded.item[i]._links.self.href]= data.response._embedded.item[i];
+						if (data.response._embedded.item[i]._links && data.response._embedded.item[i]._links.self && data.response._embedded.item[i]._links.self.href) {
+							embeddedList[data.response._embedded.item[i]._links.self.href]= data.response._embedded.item[i];
+						} else {
+							ozpIwc.log.info("Unable to load embedded item " + JSON.stringify(data.response._embedded.item[i]));
+						}
 					}
 				} else {
-					embeddedList[data.response._embedded.item._links.self.href]= data.response._embedded.item;
+						if (data.response._embedded.item._links && data.response._embedded.item._links.self && data.response._embedded.item._links.self.href) {
+							embeddedList[data.response._embedded.item._links.self.href]= data.response._embedded.item;
+						} else {
+							ozpIwc.log.info("Unable to load embedded item " + JSON.stringify(data.response._embedded.item));
+						}
 				}
 				
 				for (var path in embeddedList) {
@@ -236,16 +244,29 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpointIterative=function(endpointName, 
 				
 				// scan the list of links.  If there is no href match to an embedded item, push a promise to load the link into the list
 				links.forEach(function(link) {
-					if (embeddedList[link.href]) {
-						unresolvedLinks.push(endpoint.get(link.href, requestHeaders));
+					if (embeddedList[link.href] === undefined) {  // if undefined
+						unresolvedLinks.push(
+							endpoint.get(link.href, requestHeaders)
+								.then(function(data){
+									if (!data || !data.header || !data.response) {
+										ozpIwc.log.info("Unable to load link item " + link.href);
+										return null;
+									}
+									return data;
+								})
+						);
 					}
 				});
 			}
 			return Promise.all(unresolvedLinks);
 		}).then(function(unresolvedLinks) {
-			for (var item in unresolvedLinks) {
-				self.updateResourceFromServerIterative(item, item._links.self.href, endpoint, requestHeaders);
-			}
+			unresolvedLinks.forEach(function(payload) {
+				if (payload !== null) {
+					var header = payload.header;
+					var response = payload.response;
+					self.updateResourceFromServerIterative(response, response._links.self.href, endpoint, header);
+				}
+			});
 
 			// update all the collection values
 			self.dynamicNodes.forEach(function(resource) {
