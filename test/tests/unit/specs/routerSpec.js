@@ -16,7 +16,10 @@ describe("Router", function() {
     afterEach(function() {
         router.shutdown();
         router = null;
-        fakePeer = null;
+        fakePeer = {
+            packets: [],
+            send : function(){}
+        };
     });
 
     describe("Participant registration", function() {
