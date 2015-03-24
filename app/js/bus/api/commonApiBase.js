@@ -211,20 +211,13 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpointIterative=function(endpointName, 
 			var unresolvedLinks = [];
 			// if any embedded items exist, convert them to a list (primarily to cover the single element case
 			if (data.response._embedded && data.response._embedded.item) {
-				if (Array.isArray(data.response._embedded.item)) {
-					for (var i in data.response._embedded.item) {
-						if (data.response._embedded.item[i]._links && data.response._embedded.item[i]._links.self && data.response._embedded.item[i]._links.self.href) {
-							embeddedList[data.response._embedded.item[i]._links.self.href]= data.response._embedded.item[i];
-						} else {
-							ozpIwc.log.info("Unable to load embedded item " + JSON.stringify(data.response._embedded.item[i]));
-						}
+				var items = ozpIwc.util.ensureArray(data.response._embedded.item);
+				for (var i in items) {
+					if (items[i]._links && items[i]._links.self && items[i]._links.self.href) {
+						embeddedList[items[i]._links.self.href] = items[i];
+					} else {
+						ozpIwc.log.info("Unable to load embedded item " + JSON.stringify(items[i]));
 					}
-				} else {
-						if (data.response._embedded.item._links && data.response._embedded.item._links.self && data.response._embedded.item._links.self.href) {
-							embeddedList[data.response._embedded.item._links.self.href]= data.response._embedded.item;
-						} else {
-							ozpIwc.log.info("Unable to load embedded item " + JSON.stringify(data.response._embedded.item));
-						}
 				}
 				
 				for (var path in embeddedList) {
@@ -235,13 +228,7 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpointIterative=function(endpointName, 
 			// Follow up here with loop on _links section, creating a promise to load each link if it is not in the _embedded section
 			// At end, return promise.all to activate when all outstanding loads are completed.
 			if (data.response._links && data.response._links.item) {
-				var links = [];
-				if (Array.isArray(data.response._links.item)) {
-					links=data.response._links.item;
-				} else {
-					links.push(data.response._links.item);
-				}
-				
+				var links = ozpIwc.util.ensureArray(data.response._links.item);
 				// scan the list of links.  If there is no href match to an embedded item, push a promise to load the link into the list
 				links.forEach(function(link) {
 					if (embeddedList[link.href] === undefined) {  // if undefined
