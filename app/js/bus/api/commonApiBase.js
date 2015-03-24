@@ -145,6 +145,7 @@ ozpIwc.CommonApiBase.prototype.loadFromServer=function() {
 };
 
 /**
+ * TO BE DEPRECATED - This is the recursive tree scanning approach.  Replaced by iterative loadFromEndpointIterative.
  * Loads api data from a specific endpoint.
  *
  * @method loadFromEndpoint
@@ -186,6 +187,117 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHe
     return p;
 };
 
+/*
+ * REPLACES loadFromEndpoint with an iterative approach
+ * 
+ * Loads api data from a specific endpoint.
+ *
+ * @method loadFromEndpointIterative
+ * @param {String} endpointName The name of the endpoint to load from the server.
+ * @param [Object] requestHeaders
+ * @param {String} requestHeaders.name
+ * @param {String} requestHeaders.value
+ *
+ */
+ozpIwc.CommonApiBase.prototype.loadFromEndpointIterative=function(endpointName, requestHeaders) {
+    // fetch the base endpoint. it should be a HAL Json object with all of the
+    // resources and keys in it
+    var endpoint=ozpIwc.endpoint(endpointName);
+
+	var self=this;
+    return endpoint.get("/")
+        .then(function(data) {
+			var embeddedList = {};
+			var unresolvedLinks = [];
+			// if any embedded items exist, convert them to a list (primarily to cover the single element case
+			if (data.response._embedded && data.response._embedded.item) {
+				var items = ozpIwc.util.ensureArray(data.response._embedded.item);
+				for (var i in items) {
+					if (items[i]._links && items[i]._links.self && items[i]._links.self.href) {
+						embeddedList[items[i]._links.self.href] = items[i];
+					} else {
+						ozpIwc.log.info("Unable to load embedded item " + JSON.stringify(items[i]));
+					}
+				}
+				
+				for (var path in embeddedList) {
+					self.updateResourceFromServerIterative(embeddedList[path], path, endpoint, requestHeaders);
+				}
+			}
+			
+			// Follow up here with loop on _links section, creating a promise to load each link if it is not in the _embedded section
+			// At end, return promise.all to activate when all outstanding loads are completed.
+			if (data.response._links && data.response._links.item) {
+				var links = ozpIwc.util.ensureArray(data.response._links.item);
+				// scan the list of links.  If there is no href match to an embedded item, push a promise to load the link into the list
+				links.forEach(function(link) {
+					if (embeddedList[link.href] === undefined) {  // if undefined
+						unresolvedLinks.push(
+							endpoint.get(link.href, requestHeaders)
+								.then(function(data){
+									if (!data || !data.header || !data.response) {
+										ozpIwc.log.info("Unable to load link item " + link.href);
+										return null;
+									}
+									return data;
+								})
+						);
+					}
+				});
+			}
+			return Promise.all(unresolvedLinks);
+		}).then(function(unresolvedLinks) {
+			unresolvedLinks.forEach(function(payload) {
+				if (payload !== null) {
+					var header = payload.header;
+					var response = payload.response;
+					self.updateResourceFromServerIterative(response, response._links.self.href, endpoint, header);
+				}
+			});
+
+			// update all the collection values
+			self.dynamicNodes.forEach(function(resource) {
+				self.updateDynamicNode(self.data[resource]);
+			});
+		});
+};
+					
+/**
+ * Updates an Api node with server loaded HAL data.  (Was updateResourceFromServer, modified to be iterative, not recursive)
+ *
+ * @method updateResourceFromServerIterative
+ * @param {ozpIwc.TransportPacket} object The object retrieved from the server to store.
+ * @param {String} path The path of the resource retrieved.
+ * @param {ozpIwc.Endpoint} endpoint the endpoint of the HAL data.
+ */
+ozpIwc.CommonApiBase.prototype.updateResourceFromServerIterative=function(item,path,endpoint,requestHeaders) {
+    //TODO where should we get content-type?
+    var header = requestHeaders || {};
+    item.contentType = item.contentType || header['Content-Type'] || 'application/json';
+
+    var parseEntity;
+    if(typeof item.entity === "string"){
+        try{
+            parseEntity = JSON.parse(item.entity);
+            item.entity = parseEntity;
+        }catch(e){
+            // fail silently for now
+        }
+    }
+    var node = this.findNodeForServerResource(item,path,endpoint);
+
+    if (node) {
+        var snapshot = node.snapshot();
+
+        var halLess = ozpIwc.util.clone(item);
+        delete halLess._links;
+        delete halLess._embedded;
+        node.deserialize(this.formatServerData(halLess));
+
+        this.notifyWatchers(node, node.changesSince(snapshot));
+    }
+};
+
 /**
  * Updates an Api node with server loaded HAL data.
  *
@@ -196,8 +308,8 @@ ozpIwc.CommonApiBase.prototype.loadFromEndpoint=function(endpointName, requestHe
  */
 ozpIwc.CommonApiBase.prototype.updateResourceFromServer=function(object,path,endpoint,res,header) {
     //TODO where should we get content-type?
-    header = header || {};
-    object.contentType = object.contentType || header['Content-Type'] || 'application/json';
+    var lheader = header || {};
+    object.contentType = object.contentType || lheader['Content-Type'] || 'application/json';
 
     var parseEntity;
     if(typeof object.entity === "string"){
@@ -262,7 +374,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
     if(data._embedded && data._embedded.item) {
         data._embedded.item = Array.isArray(data._embedded.item) ? data._embedded.item : [data._embedded.item];
         noEmbedded = false;
-        if (Object.prototype.toString.call(data._embedded.item) === '[object Array]' ) {
+        if (Array.isArray(data._embedded.item)) {
             itemLength=data._embedded.item.length;
         } else {
             itemLength=1;
@@ -273,7 +385,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
     if(data._links && data._links.item) {
         data._links.item = Array.isArray(data._links.item) ? data._links.item : [data._links.item];
         noLinks = false;
-        if (Object.prototype.toString.call(data._links.item) === '[object Array]' ) {
+        if (Array.isArray(data._links.item)) {
             itemLength=data._links.item.length;
         } else {
             itemLength=1;
@@ -295,7 +407,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
         if(data._embedded && data._embedded.item) {
             var object = {};
 
-            if( Object.prototype.toString.call(data._embedded.item) === '[object Array]' ) {
+            if (Array.isArray(data._embedded.item)) {
                 for (var i in data._embedded.item) {
                     object = data._embedded.item[i];
                     this.updateResourceFromServer(object, object._links.self.href, endpoint, res);
@@ -308,7 +420,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
 
         if(data._links && data._links.item) {
 
-            if( Object.prototype.toString.call(data._links.item) === '[object Array]' ) {
+            if (Array.isArray(data._links.item)) {
                 data._links.item.forEach(function (object) {
                     var href = object.href;
                     endpoint.get(href, requestHeaders).then(function (objectResource) {
