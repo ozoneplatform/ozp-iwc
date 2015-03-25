@@ -98,16 +98,16 @@ ozpIwc.PacketRouter.prototype.declareRoute=function(config,handler,handlerSelf) 
     if(!config || !config.action || !config.resource) {
         throw new Error("Bad route declaration: "+JSON.stringify(config,null,2));
     }
-    var actionRoute=this.routes[config.action];
-    if(!actionRoute) {
-        actionRoute=this.routes[config.action]=[];
-    }
-    
     config.handler=handler;
     config.filters=config.filters || [];
-    config.handlerSelf=handlerSelf || this.defaultSelf;
+    config.handlerSelf=handlerSelf;
     config.uriTemplate=ozpIwc.packetRouter.uriTemplate(config.resource);
-    actionRoute.push(config);
+    
+    if(!this.routes.hasOwnProperty(config.action)) {
+        this.routes[config.action]=[];
+    }
+    
+    this.routes[config.action].push(config);
     return this;
 };
 
@@ -122,15 +122,25 @@ ozpIwc.PacketRouter.prototype.declareRoute=function(config,handler,handlerSelf) 
  * @param {Array} filters
  * @returns {Function|null} The handler function should all filters pass.
  */
-ozpIwc.PacketRouter.prototype.filterChain=function(packet,context,pathParams,routeSpec,filters) {
+ozpIwc.PacketRouter.prototype.filterChain=function(packet,context,pathParams,routeSpec,thisPointer,filters) {
+  // if there's no more filters to call, just short-circuit the filter chain
   if(!filters.length) {
-    return routeSpec.handler.call(routeSpec.handlerSelf,packet,context,pathParams);
+    return routeSpec.handler.call(thisPointer,packet,context,pathParams);
   }
-  var f=filters.shift();
+  // otherwise, chop off the next filter in queue and return it.
+  var currentFilter=filters.shift();
   var self=this;
-  return f(packet,context,pathParams,function() {
-    return self.filterChain(packet,context,pathParams,routeSpec,filters);
+  var filterCalled=false;
+  var returnValue=currentFilter.call(thisPointer,packet,context,pathParams,function() {
+      filterCalled=true;
+      return self.filterChain(packet,context,pathParams,routeSpec,thisPointer,filters);
   });
+  if(!filterCalled) {
+      ozpIwc.log.info("Filter did not call next() and did not throw an exception",currentFilter);
+  } else {
+      ozpIwc.log.debug("Filter returned ", returnValue);
+  }
+  return returnValue;  
 };
 
 /**
@@ -142,20 +152,30 @@ ozpIwc.PacketRouter.prototype.filterChain=function(packet,context,pathParams,rou
  * @returns {*|false} The output of the route's handler. If the specified action does not have any routes false is
  *                    returned. If the specified action does not have a matching route the default route is applied
  */
-ozpIwc.PacketRouter.prototype.routePacket=function(packet,context) {
+ozpIwc.PacketRouter.prototype.routePacket=function(packet,context,thisPointer) {
     context=context || {};
+    thisPointer=thisPointer || this.defaultSelf;
+    if(!this.routes.hasOwnProperty(packet.action)) {
+        context.defaultRouteCause="noAction";
+        return this.defaultRoute.call(thisPointer,packet,context,{});
+    }
     var actionRoutes=this.routes[packet.action];
-    if(actionRoutes) {
-        for(var i=0;i<actionRoutes.length;++i) {
-            var route=actionRoutes[i];
-            var pathParams=route.uriTemplate(packet.resource);
-            if(pathParams) {
-                var filterList=route.filters.slice();
-                return this.filterChain(packet,context,pathParams,route,filterList);
-            }
+    for(var i=0;i<actionRoutes.length;++i) {
+        var route=actionRoutes[i];
+        if(!route) {
+            continue;
+        }
+        var pathParams=route.uriTemplate(packet.resource);
+        if(pathParams) {
+            thisPointer=route.handlerSelf || thisPointer;
+            var filterList=route.filters.slice();
+            return this.filterChain(packet,context,pathParams,route,thisPointer,filterList);
         }
     }
-    return this.defaultRoute(packet,context,{});
+    // if we made it this far, then we know about the action, but there are no resources for it
+    context.defaultRouteCause="noResource";
+    return this.defaultRoute.call(thisPointer,packet,context,{});        
+    
 };
 
 /**
@@ -175,33 +195,22 @@ ozpIwc.PacketRouter.mixin=function(classToAugment) {
     var superClass=Object.getPrototypeOf(classToAugment.prototype);
     if(superClass && superClass.routePacket) {
         packetRouter.defaultRoute=function(packet,context) {
-            var self=context.$$PacketRouterInstance;
-            return superClass.routePacket.apply(self,arguments);
+            return superClass.routePacket.apply(this,arguments);
         };
     } else {
         packetRouter.defaultRoute=function(packet,context) {
-            var self=context.$$PacketRouterInstance;
-            if(self.defaultRoute) {
-                return self.defaultRoute.apply(self,arguments);
+            if(this.defaultRoute) {
+                return this.defaultRoute.apply(this,arguments);
             } else {
                 return false;
             }
         };
     }
     classToAugment.declareRoute=function(config,handler) {
-        if(config.handlerSelf) {
-            throw new Error("Class-level route declaration does not allow handlerSelf parameter" + JSON.stringify(config));
-        }
-        
-        packetRouter.declareRoute(config,function(packet,context,pathParams) {
-            var self=context.$$PacketRouterInstance;
-            return handler.apply(self,arguments);
-        });
+        packetRouter.declareRoute(config,handler);
     };
     
     classToAugment.prototype.routePacket=function(packet,context) {
-        context=context || {};
-        context.$$PacketRouterInstance=this;
-        return packetRouter.routePacket(packet,context);  
+        return packetRouter.routePacket(packet,context,this);  
     };
 };

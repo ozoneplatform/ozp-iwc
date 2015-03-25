@@ -150,3 +150,26 @@ var FakeRouter = function() {
         });
     };
 };
+
+beforeEach(function() {
+    jasmine.addMatchers({
+        toHaveSent: function(util, customEqualityTesters) { return {
+		compare: function(participant,expected) {
+            if(!(participant instanceof TestParticipant)) {
+                return {
+					pass: false,
+					message: "Expected " + participant + " to be a TestParticipant"
+				};
+            }
+            var contains=util.contains(participant.sentPackets,jasmine.objectContaining(expected),customEqualityTesters);
+            return {
+                pass: contains,
+                message: "Expected the participant to " + (contains?"NOT ":"") + "have sent " +
+                    JSON.stringify(expected) +
+                    ", but it sent " +
+                    JSON.stringify(participant.sentPackets,null,2)
+            };
+		}
+	};}
+    });
+});

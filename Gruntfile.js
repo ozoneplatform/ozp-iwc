@@ -45,6 +45,9 @@ module.exports = function(grunt) {
                 'app/js/bus/api/*.js',
                 'app/js/bus/api/**/*.js',
                 'app/js/bus/*/**/*.js',
+                'app/js/services/apiFilters.js',
+                'app/js/services/apiNode.js',
+                'app/js/services/apiBase.js',
                 'app/js/services/**/*.js',
                 'app/js/defaultWiring.js'
             ],

@@ -15,7 +15,7 @@
  *
  * @type {Function}
  */
-ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function(config) {
+ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.ApiBase, function(config) {
     ozpIwc.CommonApiBase.apply(this, arguments);
 
     /**
@@ -45,38 +45,24 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function(config) {
         }
     });
 
-    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
-        resource: "/address",
-        pattern: /^\/address\/.*$/,
-        contentType: "application/vnd.ozp-iwc-address-list-v1+json"
-    }));
-    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
-        resource: "/multicast",
-        pattern: /^\/multicast\/[^\/\n]*$/,
-        contentType: "application/vnd.ozp-iwc-multicast-list-v1+json"
-    }));
-    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
-        resource: "/router",
-        pattern: /^\/router\/.*$/,
-        contentType: "application/vnd.ozp-iwc-router-list-v1+json"
-    }));
-    this.addDynamicNode(new ozpIwc.CommonApiCollectionValue({
-        resource: "/api",
-        pattern: /^\/api\/.*$/,
-        contentType: "application/vnd.ozp-iwc-api-list-v1+json"
-    }));
+    this.addresses={
+        "router": {
+            contentType: "application/vnd.ozp-iwc-router-v1+json",
+            listContentType: "application/vnd.ozp-iwc-router-list-v1+json",
+            entries: {}
+        },
+        "address": {
+            contentType: "application/vnd.ozp-iwc-address-v1+json",
+            listContentType: "application/vnd.ozp-iwc-address-list-v1+json",
+            entries: {}
 
-    for(var key in this.apiMap){
-        var api = this.apiMap[key];
-        var packet = {
-            resource: '/api/' + api.address,
-            entity: {'actions': api.actions},
-            contentType: 'application/vnd.ozp-iwc-api-v1+json'
-        };
-        var node=this.findOrMakeValue(packet);
-        node.set(packet);
-    }
-
+        },
+        "multicast": {
+            contentType: "application/vnd.ozp-iwc-multicast-v1+json",
+            listContentType: "application/vnd.ozp-iwc-multicast-list-v1+json",
+            entries: {}
+        }
+    };
     var self = this;
     this.dynamicNodes.forEach(function(resource) {
         self.updateDynamicNode(self.data[resource]);
@@ -85,6 +71,7 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.CommonApiBase, function(config) {
         self.removeDeadNodes();
     },this.heartbeatFrequency);
 });
+ozpIwc.PacketRouter.mixin(ozpIwc.NamesApi);
 
 ozpIwc.NamesApi.prototype.removeDeadNodes = function(){
     for(var key in this.data){

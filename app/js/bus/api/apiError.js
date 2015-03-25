@@ -48,3 +48,17 @@ ozpIwc.ApiError=ozpIwc.util.extend(Error,function(action,message) {
     this.errorAction=action;
     this.message=message;
 });
+
+ozpIwc.ApiError.subclass=function(response) {
+    return ozpIwc.util.extend(ozpIwc.ApiError,function(message) {
+        ozpIwc.ApiError.call(this,response,message);
+        this.name=response+"Error";
+    });
+};
+
+ozpIwc.NoResourceError=ozpIwc.ApiError.subclass("noResource");
+ozpIwc.NoMatchError=ozpIwc.ApiError.subclass("noMatch");
+
+ozpIwc.BadResourceError=ozpIwc.ApiError.subclass("badResource");
+ozpIwc.BadActionError=ozpIwc.ApiError.subclass("badAction");
+ozpIwc.BadRequestError=ozpIwc.ApiError.subclass("badRequest");

@@ -22,7 +22,7 @@ describe("Names API",function() {
                 'src' : "srcParticipant"
             }
         });
-        namesApi.routePacket(context);
+        namesApi.participant.events.trigger("receive",context);
         expect(context.responses[0].response).toEqual("badResource");
     });
     [ {
@@ -47,7 +47,7 @@ describe("Names API",function() {
                             'src': "srcParticipant"
                         }
                     });
-                    namesApi.routePacket(context);
+                    namesApi.participant.events.trigger("receive",context);
                     expect(context.responses[0].response).toEqual("ok");
                     expect(context.responses[0].entity).toEqual([]);
                     expect(context.responses[0].contentType).toEqual(r.contentType);
@@ -65,7 +65,7 @@ describe("Names API",function() {
                         'src': "srcParticipant"
                     }
                 });
-                namesApi.routePacket(context);
+                namesApi.participant.events.trigger("receive",context);
                 expect(context.responses[0].response).toEqual("ok");
                 expect(context.responses[0].entity).toEqual([
                     "/api/data.api",
@@ -107,7 +107,7 @@ describe("Names API",function() {
                         'entity' : { 'foo' : 1 }
                     }
                 });
-                namesApi.routePacket(context);
+                namesApi.participant.events.trigger("receive",context);
                 expect(context.responses[0].response).toEqual("noPermission");
             });
             it("allows  " + r.contentType + " when setting a value in the tree",function() {
@@ -122,7 +122,7 @@ describe("Names API",function() {
                         'entity' : { 'foo' : 1 }
                     }
                 });
-                namesApi.routePacket(context);
+                namesApi.participant.events.trigger("receive",context);
                 expect(context.responses[0].response).toEqual("ok");
             });
             it("updates the collection  when setting a value in the tree",function() {
@@ -146,7 +146,7 @@ describe("Names API",function() {
                         'src' : "srcParticipant"
                     }
                 });
-                namesApi.routePacket(context);
+                namesApi.participant.events.trigger("receive",context);
                 expect(context.responses[0].response).toEqual("ok");
                 expect(context.responses[0].entity).toContain(r.resource + "/testValue");
                 expect(context.responses[0].contentType).toEqual(r.listContentType);
@@ -163,7 +163,7 @@ describe("Names API",function() {
                         'entity' : { 'foo' : 1 }
                     }
                 });
-                namesApi.routePacket(context);
+                namesApi.participant.events.trigger("receive",context);
                 expect(context.responses[0].response).toEqual("badContent");
             });
 
@@ -179,7 +179,7 @@ describe("Names API",function() {
                         'entity' : { 'foo' : 1 }
                     }
                 });
-                namesApi.routePacket(context);
+                namesApi.participant.events.trigger("receive",context);
                 expect(context.responses[0].response).toEqual("badContent");
             });
 
