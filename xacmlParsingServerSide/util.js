@@ -12,7 +12,7 @@ ozpIwc.policyAuth.util.generateEmptyTarget = function(){
 
 ozpIwc.policyAuth.util.generateAttributeSubjects = function(config){
     config = config || [];
-    config = Array.isArray(config) ? config : [config];
+    config = ozpIwc.util.ensureArray(config);
 
     var attributes = [];
     for (var i in config) {
@@ -33,7 +33,7 @@ ozpIwc.policyAuth.util.generateAttributeSubjects = function(config){
 
 ozpIwc.policyAuth.util.generateAttributeResources = function(config){
     config = config || [];
-    config = Array.isArray(config) ? config : [config];
+    config = ozpIwc.util.ensureArray(config);
 
     var attributes = [];
     for (var i in config){
@@ -55,7 +55,7 @@ ozpIwc.policyAuth.util.generateAttributeResources = function(config){
 
 ozpIwc.policyAuth.util.generateAttributeActions = function(config){
     config = config || [];
-    config = Array.isArray(config) ? config : [config];
+    config = ozpIwc.util.ensureArray(config);
 
     var attributes = [];
     for (var i in config) {

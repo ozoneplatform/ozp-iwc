@@ -372,7 +372,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
     var itemLength = 0;
 
     if(data._embedded && data._embedded.item) {
-        data._embedded.item = Array.isArray(data._embedded.item) ? data._embedded.item : [data._embedded.item];
+        data._embedded.item = ozpIwc.util.ensureArray(data._embedded.item);
         noEmbedded = false;
         if (Array.isArray(data._embedded.item)) {
             itemLength=data._embedded.item.length;
@@ -383,7 +383,7 @@ ozpIwc.CommonApiBase.prototype.loadLinkedObjectsFromServer=function(endpoint,dat
     }
 
     if(data._links && data._links.item) {
-        data._links.item = Array.isArray(data._links.item) ? data._links.item : [data._links.item];
+        data._links.item = ozpIwc.util.ensureArray(data._links.item);
         noLinks = false;
         if (Array.isArray(data._links.item)) {
             itemLength=data._links.item.length;
