@@ -149,23 +149,28 @@ ozpIwc.PacketRouter.prototype.filterChain=function(packet,context,pathParams,rou
  * @method routePacket
  * @param {Object} packet
  * @param {Object} context
- * @returns {*|false} The output of the route's handler. If the specified action does not have any routes false is
+ * @param {Object} routeOverrides - if it exists, this to determine the route instead of the packet
+ * @returns {*} The output of the route's handler. If the specified action does not have any routes false is
  *                    returned. If the specified action does not have a matching route the default route is applied
  */
-ozpIwc.PacketRouter.prototype.routePacket=function(packet,context,thisPointer) {
+ozpIwc.PacketRouter.prototype.routePacket=function(packet,context,thisPointer,routeOverrides) {
+    routeOverrides = routeOverrides || {};    
+    var action=routeOverrides.action || packet.action;
+    var resource=routeOverrides.resource || packet.resource;
+    
     context=context || {};
     thisPointer=thisPointer || this.defaultSelf;
-    if(!this.routes.hasOwnProperty(packet.action)) {
+    if(!this.routes.hasOwnProperty(action)) {
         context.defaultRouteCause="noAction";
         return this.defaultRoute.call(thisPointer,packet,context,{});
     }
-    var actionRoutes=this.routes[packet.action];
+    var actionRoutes=this.routes[action];
     for(var i=0;i<actionRoutes.length;++i) {
         var route=actionRoutes[i];
         if(!route) {
             continue;
         }
-        var pathParams=route.uriTemplate(packet.resource);
+        var pathParams=route.uriTemplate(resource);
         if(pathParams) {
             thisPointer=route.handlerSelf || thisPointer;
             var filterList=route.filters.slice();

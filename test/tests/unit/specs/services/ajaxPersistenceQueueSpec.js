@@ -12,6 +12,7 @@ describe("with one pool", function() {
 
     pit("enqueues a persistence request",function() {
         var exampleNode=new ozpIwc.ApiNode({
+            resource: "/foo/bar",
             self: "https://example.com/data/api/foo/bar"
         });
         return queue.queueNode("data.api/foo/bar",exampleNode).then(function() {
@@ -27,6 +28,7 @@ describe("with one pool", function() {
     pit("saves nodes in the order that they are enqueued",function() {
         for(var i=0;i<10;++i) {
             queue.queueNode("data.api/"+i,new ozpIwc.ApiNode({
+                resource: "/foo/bar",
                 self: "https://example.com/"+i
             }));
         }
@@ -42,9 +44,11 @@ describe("with one pool", function() {
     pit("only saves a node once, even if queued multiple times",function() {
         for(var i=0;i<10;++i) {
             queue.queueNode("data.api/"+i,new ozpIwc.ApiNode({
+                resource: "/foo/bar",
                 self: "https://example.com/"+i
             }));
             queue.queueNode("data.api/"+i,new ozpIwc.ApiNode({
+                resource: "/foo/bar",
                 self: "https://example.com/"+i
             }));
         }
@@ -61,6 +65,7 @@ describe("with one pool", function() {
     pit("intermingles saves and deletes",function() {
         for(var i=0;i<10;++i) {
             var n=new ozpIwc.ApiNode({
+                resource: "/foo/bar",
                 self: "https://example.com/"+i
             });
             n.deleted=(i%2===0);
@@ -83,6 +88,7 @@ it("requeues a node to be saved if queue is called while the node is in-flight",
     var queue=new ozpIwc.AjaxPersistenceQueue({poolSize:1});
     var firstCall=true;
     var exampleNode=new ozpIwc.ApiNode({
+        resource: "/foo/bar",
         self: "https://example.com/data/api/foo/bar"
     });
     spyOn(ozpIwc.util,"ajax").and.callFake(function() {
@@ -121,9 +127,11 @@ describe("with multiple pools", function() {
         for(var i=min;i<max;++i) {
             expectedUrls.push("https://example.com/"+i);
             queue.queueNode("data.api/"+i,new ozpIwc.ApiNode({
+                resource: "/foo/bar",
                 self: "https://example.com/"+i
             }));
             queue.queueNode("data.api/"+i,new ozpIwc.ApiNode({
+                resource: "/foo/bar",
                 self: "https://example.com/"+i
             }));
         }

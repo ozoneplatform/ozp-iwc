@@ -9,9 +9,9 @@ ozpIwc.ApiBase=function(config) {
     
     this.data={};
     
-    this.watchers={
-        
-    };
+    this.watchers={};
+    
+    this.changeList={};
     
     var self=this;
     this.participant.on("receive",function(packetContext) {
@@ -27,74 +27,110 @@ ozpIwc.PacketRouter.mixin(ozpIwc.ApiBase);
 ozpIwc.ApiBase.prototype.checkAuthorization=function(node,context,packet,action) {
   return true;
 };
-ozpIwc.ApiBase.prototype.watchForChange=function(node,fn) {
-    var watcherList=this.watchers[node.resource];
-    
-    // if no watchers, don't bother checking
-    if(!watcherList) { 
-        return fn();
+
+ozpIwc.ApiBase.prototype.markForChange=function(/*varargs*/) {
+    for(var i=0;i<arguments.length;++i) {
+        if(Array.isArray(arguments[i])) {
+            this.markForChange(arguments[i]);
+        } else {
+            var resource=arguments[i].resource || ""+arguments[i];
+            // if it's already marked, skip it
+            if(this.changeList.hasOwnProperty(resource)) {
+                continue;
+            }
+            
+            var n=this.data[resource];
+
+            this.changeList[resource]=n?n.snapshot():{};
+        }
     }
-    
-    var snapshot=node.snapshot();        
+};
 
-    var returnValue=fn();
-
-    var changes=node.changesSince(snapshot);
-    
-    if(changes) {
-        var permissions=ozpIwc.authorization.pip.attributeUnion(
-                    changes.oldValue.permissions,
-                    changes.newValue.permissions
-                );
-        var entity={
-            oldValue: changes.oldValue.entity,
-            newValue: changes.newValue.entity
-        };
+ozpIwc.ApiBase.prototype.resolveChangedNodes=function() {
+    ozpIwc.object.eachEntry(this.changeList,function(resource,snapshot) {
+        var node=this.data[resource];
         
-        watcherList.forEach(function(watcher) {
-            // @TODO allow watchers to changes notifications if they have permission to either the old or new, not just both
-            var reply={
-                'src'   : this.participant.name,
-                'dst'   : watcher.src,
-                'replyTo' : watcher.replyTo,
-                'response': 'changed',
-                'resource': node.resource,
-                'permissions': permissions,
-                'entity': entity
-            };
+        if(!node) {
+            return;
+        }
+        var changes=node.changesSince(snapshot);
 
-            this.participant.send(reply);
-        },this);
+        this.notifyWatchers(node,changes);
+        
+    },this);
+    this.changeList={};
+};
+
+ozpIwc.ApiBase.prototype.notifyWatchers=function(node,changes) {
+    var watcherList=this.watchers[node.resource];
+
+    if(!changes || !watcherList) {
+        return;
     }
-    return returnValue;
+
+    var permissions=ozpIwc.authorization.pip.attributeUnion(
+        changes.oldValue.permissions,
+        changes.newValue.permissions
+    );
+    
+    var entity={
+        oldValue: changes.oldValue.entity,
+        newValue: changes.newValue.entity
+    };
+
+    watcherList.forEach(function(watcher) {
+        // @TODO allow watchers to changes notifications if they have permission to either the old or new, not just both
+        var reply={
+            'src'   : this.participant.name,
+            'dst'   : watcher.src,
+            'replyTo' : watcher.replyTo,
+            'response': 'changed',
+            'resource': node.resource,
+            'permissions': permissions,
+            'entity': entity
+        };
+
+        this.participant.send(reply);
+    },this);
+    
+};
+
+ozpIwc.ApiBase.prototype.matchingNodes=function(prefix) {
+    return ozpIwc.object.values(this.data, function(k,node) { 
+        return node.resource.indexOf(prefix) >=0;
+    });
 };
 
 //===============================================================
 // Packet Routing
 //===============================================================
 ozpIwc.ApiBase.prototype.receivePacketContext=function(packetContext) {
-    console.log("Routing action="+packetContext.packet.action+
-        " resource=" + packetContext.packet.resource,
-        " packet=" + packetContext.packet);
+    var packet=packetContext.packet;
+    var routeName="Routing["+packet.action+" "+packet.resource+"] ";
+    
+    console.log(routeName+"packet=" + packetContext.packet);
     var self=this;
     return new Promise(function(resolve,reject) {
         try {
+            packetContext.node=self.data[packetContext.packet.resource];
             resolve(self.routePacket(packetContext.packet,packetContext));
         } catch(e) {
             reject(e);
         }
     }).then(function(packetFragment) {
-        console.log("Route completed successfully with ",packetFragment);
+//        console.log("Route completed successfully with ",packetFragment);
         if(packetFragment) {
             packetFragment.response = packetFragment.response || "ok";
             packetContext.replyTo(packetFragment);
         }
     },function(e) {
-        console.log("Route failed with ",e);
+        console.log(routeName+"failed with ",e);
         packetContext.replyTo({
-            'response': e.errorAction || "errorUnknownException",
+            'response': e.errorAction || "errorUnknown",
             'entity': e.message
         });
+    }).then(function() {
+        self.resolveChangedNodes();    
     });
 
 };
@@ -133,7 +169,7 @@ ozpIwc.ApiBase.declareRoute({
         ozpIwc.apiFilter.createResource(),
         ozpIwc.apiFilter.checkAuthorization(),
         ozpIwc.apiFilter.checkVersion(),
-        ozpIwc.apiFilter.notifyWatchers()
+        ozpIwc.apiFilter.markResourceAsChanged()
     ]
 },function(packet,context,pathParams) {
     context.node.set(packet);
@@ -145,10 +181,9 @@ ozpIwc.ApiBase.declareRoute({
     action: "delete",
     resource: "{resource:.*}",
     filters: [
-        ozpIwc.apiFilter.loadResource(),
         ozpIwc.apiFilter.checkAuthorization(),
         ozpIwc.apiFilter.checkVersion(),
-        ozpIwc.apiFilter.notifyWatchers()
+        ozpIwc.apiFilter.markResourceAsChanged()
     ]
 },function(packet,context,pathParams) {
     if(context.node) {
@@ -158,6 +193,7 @@ ozpIwc.ApiBase.declareRoute({
     return { response: "ok" };
 });
 
+
 ozpIwc.ApiBase.declareRoute({
     action: "list",
     resource: "{resource:.*}",
@@ -165,9 +201,7 @@ ozpIwc.ApiBase.declareRoute({
         
     ]
 },function(packet,context,pathParams) {
-    var entity=ozpIwc.object.values(this.data, function(k,node) { 
-        return node.resource.indexOf(pathParams.resource) >=0;
-    }).map(function(node) {
+    var entity=this.matchingNodes(pathParams.resource).map(function(node) {
         return node.resource;
     });
     return {
@@ -183,9 +217,7 @@ ozpIwc.ApiBase.declareRoute({
         
     ]
 },function(packet,context,pathParams) {
-    var entity=ozpIwc.object.values(this.data, function(k,node) { 
-        return node.resource.indexOf(pathParams.resource) >=0;
-    }).map(function(node) {
+    var entity=this.matchingNodes(pathParams.resource).map(function(node) {
         return node.toPacket();
     });
     // TODO: roll up the permissions of the nodes, as well
@@ -199,7 +231,6 @@ ozpIwc.ApiBase.declareRoute({
     action: "watch",
     resource: "{resource:.*}",
     filters: [
-        ozpIwc.apiFilter.loadResource()
     ]
 },function(packet,context,pathParams) {
     var watchList=this.watchers[packet.resource];
