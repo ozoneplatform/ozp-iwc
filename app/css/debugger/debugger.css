@@ -3,70 +3,8 @@ html,body {
     height: 100%;
 }
 
-.traffic-snooper-table {
-  border-collapse: collapse;
-  border: 1px solid black;
-}
-
-
-table {
-  /*padding-top: 15px;*/
-  margin-top: 15px;
-  /*border-collapse: collapse;*/
-  /*border: 1px solid black;*/
-  width: 100%;
-  max-width: 100%;
-}
-table td {
-  /*border: 1px solid black;*/
-  box-sizing: content-box;
-}
-
-.td-compact td {
-    border-collapse: collapse;
-    white-space: nowrap;
-    margin-right: 5px;
-    font-size: 0.9em;
-}
-
-
-table.hidden-rows tr:nth-child(4n+1),table#messages tr:nth-child(4n+2) {
-	background-color: #F3F5F7;
-}
-
-td pre {
-    box-sizing: content-box;
-    white-space: pre-wrap;
-/*    overflow: scroll;*/
-    margin: 0px;
-    height: 100%;
-    max-height: 20em;
-    width: 95%;
-    max-width: 60em;
-    padding: 4px;
-}
-table#keyValueTable tr:nth-child(2n+1) {
-	background-color: #F3F5F7;
-}
-
-.scrollable {
-	height: 50%;
-	width: 100%;
-	overflow: scroll;
-}
-
-.expander {
-	font-weight: bold;
-	font-size: large;
-	border: 1px solid blue;
-}
-
-tr.packet {
-	display:none;
-}
-
-.hidden {
-	display: none;
+.link-cursor {
+    cursor: pointer;
 }
 
 span.address {
@@ -108,7 +46,6 @@ text-align:left;
    display:none;
 }
 
-
 .side-nav li {
     color: #EEEEEF;
     margin-top: 5px;
@@ -126,6 +63,7 @@ text-align:left;
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* IE10+ */
 }
+
 .side-nav li a:hover,
 .side-nav .selected {
     text-decoration: none;
@@ -135,8 +73,8 @@ text-align:left;
     -moz-border-radius-bottomleft: 50px;
     border-top-left-radius: 50px;
     border-bottom-left-radius: 50px;
-
 }
+
 .side-nav li a:hover {
     background: #3b4246;
 }
@@ -147,31 +85,75 @@ text-align:left;
     color: #2b3036;
 }
 
-.app-pane {
-    padding:25px;
-    margin-left:120px;
-    background-color: #FFFFFF;
+.tabset, .tab-content, .tab-pane, .tabbable {
+    height:100%;
 }
 
-.tab-content {
+.tab-pane {
     border-left: 1px solid #ddd;
     border-right: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
-    padding: 10px;
+    max-height:80vh;
 }
 
-.nav-tabs {
-    margin-bottom: 0;
+.ui-grid-viewport {
+    overflow-x: auto !important;
 }
 
-.appView, .scrollOver {
-    margin-top:20px;
-    height: 75vh;
-}
-.scrollOver {
-    overflow-y:auto;
+.ui-grid-cell-contents{
+    height: auto !important;
+    white-space: normal;
+    overflow: auto;
 }
 
-.link-cursor {
-    cursor: pointer;
+.grid {
+    max-height:80vh;
+}
+
+.grid-cell-tmpl{
+    padding:5px;
+}
+
+.app-pane {
+    margin-left:120px;
+    background-color: #FFFFFF;
+    height: 100%;
+    padding: 25px;
+}
+
+.app-toolbar, .app-content, .app-details, .app-tab {
+    padding:10px;
+}
+
+.app-content {
+    max-height: 40vh;
+    height:100%;
+    margin-bottom: 20px;
+}
+
+.app-details {
+    height: 30vh;
+}
+
+.packet-pre, .preWrap {
+    box-sizing: content-box;
+    white-space: pre-wrap;
+    font-size: 0.8em;
+}
+
+.packet-pre {
+    height: 100%;
+}
+
+.preWrap {
+    margin: 3px;
+    height: 90%;
+    padding: 2px;
+}
+
+#metricList{
+    height:100%;
+    font-size: 0.8em;
+    overflow-y:scroll;
+    border: 1px solid #ddd;
 }
