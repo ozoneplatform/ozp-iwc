@@ -56,9 +56,12 @@ ozpIwc.ApiError.subclass=function(response) {
     });
 };
 
+ozpIwc.BadActionError=ozpIwc.ApiError.subclass("badAction");
+ozpIwc.BadResourceError=ozpIwc.ApiError.subclass("badResource");
+ozpIwc.BadRequestError=ozpIwc.ApiError.subclass("badRequest");
+
+ozpIwc.NoActionError=ozpIwc.ApiError.subclass("noAction");
 ozpIwc.NoResourceError=ozpIwc.ApiError.subclass("noResource");
 ozpIwc.NoMatchError=ozpIwc.ApiError.subclass("noMatch");
+ozpIwc.NoPermissionError=ozpIwc.ApiError.subclass("noPermission");
 
-ozpIwc.BadResourceError=ozpIwc.ApiError.subclass("badResource");
-ozpIwc.BadActionError=ozpIwc.ApiError.subclass("badAction");
-ozpIwc.BadRequestError=ozpIwc.ApiError.subclass("badRequest");

@@ -103,11 +103,16 @@ ozpIwc.PacketRouter.prototype.declareRoute=function(config,handler,handlerSelf) 
     config.handlerSelf=handlerSelf;
     config.uriTemplate=ozpIwc.packetRouter.uriTemplate(config.resource);
     
-    if(!this.routes.hasOwnProperty(config.action)) {
-        this.routes[config.action]=[];
-    }
+    // @FIXME var actions=ozpIwc.util.ensureArray(config.action);
+    var actions=Array.isArray(config.action)?config.action:[config.action];
     
-    this.routes[config.action].push(config);
+    actions.forEach(function(a) {
+        if(!this.routes.hasOwnProperty(a)) {
+            this.routes[a]=[];
+        }
+    
+        this.routes[a].push(config);
+    },this);
     return this;
 };
 

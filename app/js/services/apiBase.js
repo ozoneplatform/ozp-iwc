@@ -201,7 +201,7 @@ ozpIwc.ApiBase.declareRoute({
         
     ]
 },function(packet,context,pathParams) {
-    var entity=this.matchingNodes(pathParams.resource).map(function(node) {
+    var entity=this.matchingNodes(packet.resource).map(function(node) {
         return node.resource;
     });
     return {
@@ -217,7 +217,7 @@ ozpIwc.ApiBase.declareRoute({
         
     ]
 },function(packet,context,pathParams) {
-    var entity=this.matchingNodes(pathParams.resource).map(function(node) {
+    var entity=this.matchingNodes(packet.resource).map(function(node) {
         return node.toPacket();
     });
     // TODO: roll up the permissions of the nodes, as well
@@ -253,9 +253,7 @@ ozpIwc.ApiBase.declareRoute({
 ozpIwc.ApiBase.declareRoute({
     action: "unwatch",
     resource: "{resource:.*}",
-    filters: [
-        ozpIwc.apiFilter.createResource()
-    ]
+    filters: []
 },function(packet,context,pathParams) {
     var watchList=this.watchers[packet.resource];
     if(watchList) {

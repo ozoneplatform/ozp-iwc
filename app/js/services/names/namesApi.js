@@ -66,11 +66,38 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.ApiBase, function(config) {
 
 });
 ozpIwc.PacketRouter.mixin(ozpIwc.NamesApi);
+//====================================================================
+// Address, Multicast, and Router endpoints
+//====================================================================
+
+// list and bulkGet use the same implementations
 
 ozpIwc.NamesApi.declareRoute({
     action: "get",
-    resource: "/{collection:address|multicast|router}"
+    resource: "/{collection:address|multicast|router}",
+    filters: [
+    ]
 }, function(packet,context,pathParams) {
-    return listImpl(packet,context,pathParams);
+    return {
+        "contentType": "application/json",
+        "entity": this.matchingNodes(packet.resource).map(function(node) {
+            return node.resource;
+         })
+    };
 });
 
+// Disable set, delete
+ozpIwc.NamesApi.declareRoute({
+    action: ["set","delete"],
+    resource: "/{collection:address|multicast|router}"
+}, function(packet,context,pathParams) {
+    throw new ozpIwc.BadActionError();
+});
+
+// Disable watch, unwatch.  Might be able to re-enable them in the future
+ozpIwc.NamesApi.declareRoute({
+    action: ["watch","unwatch"],
+    resource: "/{collection:address|multicast|router}"
+}, function(packet,context,pathParams) {
+    throw new ozpIwc.BadActionError();
+});
