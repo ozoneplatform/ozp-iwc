@@ -153,8 +153,7 @@ ozpIwc.SystemApi.prototype.handleDelete = function(node,packetContext) {
  * @method handleLaunch
  */
 ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
-
-    this.participant.send({
+    var packet = {
         dst: "intents.api",
         contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
         action: "invoke",
@@ -164,7 +163,11 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
             "applicationId": node.resource,
             "launchData": packetContext.packet.entity
         }
-    });
+    };
+    if(typeof node.entity.id !== "undefined"){
+        packet.entity.id = node.entity.id;
+    }
+    this.participant.send(packet);
     packetContext.replyTo({'response': "ok"});
 };
 
