@@ -34,7 +34,7 @@ ozpIwc.policyAuth.PRP = function(config){
 ozpIwc.policyAuth.PRP.prototype.getPolicies = function(policyURIs){
     var asyncAction = new ozpIwc.AsyncAction();
     policyURIs = policyURIs || [];
-    policyURIs = Array.isArray(policyURIs)? policyURIs : [policyURIs];
+    policyURIs = ozpIwc.util.ensureArray(policyURIs);
     var policies = [];
 
     var policiesToGather = this.persistentPolicies.concat(policyURIs);
