@@ -5,3 +5,4 @@ app/js/ozpIwc-*.js
 .idea/
 bower_components
 dist
+*.tar.gz

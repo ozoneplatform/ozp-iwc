@@ -378,6 +378,16 @@ module.exports = function(grunt) {
                     'git push origin <% pkg.version %> --tags',
                     'git checkout master'
                 ].join('&&')
+            },
+            tarDate: {
+                command: [
+                    './packageRelease.sh iwc-prod dist'
+                ].join('&&')
+            },
+            tarVersion: {
+                command: [
+                    './packageRelease.sh iwc-prod dist <%= pkg.version %>'
+                ].join('&&')
             }
         },
         karma: {
