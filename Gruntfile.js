@@ -52,8 +52,24 @@ module.exports = function(grunt) {
                 '<%= src.common %>',
                 'app/js/client/**/*.js'
             ],
+            testLib: [
+                'test/karma/**/*.js',
+                'test/lib/**/*.js',
+                'test/mockParticipant/**/*.js'
+            ],
+            testUnit: [
+                'test/tests/unit/mockObject.js',
+                'test/tests/unit/**/*.js'
+            ],
+            testIntegrationClient: [
+                'test/tests/client-integration/**/*.js'
+            ],
+            testIntegrationBus: [
+                'test/tests/bus-integration/**/*.js'
+            ],
             test: [
-                'test/**/*'
+                '<%= src.testUnit %>',
+                '<%= src.testIntegrationClient %>'
             ],
             debugger: [
                 '<%= src.bus %>',
@@ -63,11 +79,13 @@ module.exports = function(grunt) {
                 'bower_components/vis/dist/vis.js',
                 'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
                 'bower_components/angular-ui-router/release/angular-ui-router.js',
+                'bower_components/angular-ui-grid/ui-grid.js',
                 'app/js/debugger/debugger.js',
                 'app/js/debugger/**/*.js'
             ],
             debuggerCss: [
                 'bower_components/bootstrap/dist/css/bootstrap.css',
+                'bower_components/angular-ui-grid/ui-grid.css',
                 'bower_components/vis/dist/vis.css',
                 'app/css/debugger/**/*.css'
             ],
@@ -90,7 +108,24 @@ module.exports = function(grunt) {
             metricsJsMin: 'dist/js/<%= pkg.name %>-metrics.min.js',
             debuggerJsMin: 'dist/js/debugger.min.js',
             allJs: ['<%=output.busJs %>', '<%=output.clientJs %>', '<%=output.metricsJs %>'],
-            allJsMin: ['<%=output.busJsMin %>', '<%=output.clientJsMin %>', '<%=output.metricsJsMin %>']
+            allJsMin: ['<%=output.busJsMin %>', '<%=output.clientJsMin %>', '<%=output.metricsJsMin %>'],
+            testUnit: [
+                '<%= output.busJsMin %>',
+                '<%= output.clientJsMin %>',
+                '<%= src.testLib %>',
+                '<%= src.testUnit %>'
+            ],
+            testIntegrationClient: [
+                '<%= output.busJsMin %>',
+                '<%= output.clientJsMin %>',
+                '<%= src.testLib %>',
+                '<%= src.testIntegrationClient %>'
+            ],
+            testIntegrationBus: [
+                '<%= output.busJs %>',
+                '<%= src.testLib %>',
+                '<%= src.testIntegrationBus %>'
+            ]
         },
         concat_sourcemap: {
             options: {
@@ -166,7 +201,15 @@ module.exports = function(grunt) {
                         cwd: 'bower_components/bootstrap/dist/fonts',
                         expand: true,
                         nonull:true
-                    },{
+                    },
+                    {
+                        src: ['*.eot','*.svg','*.ttf','*.woff'],
+                        dest: './dist/css',
+                        cwd: 'bower_components/angular-ui-grid',
+                        expand: true,
+                        nonull:true
+                    },
+                    {
                         src: ['**/*.tpl.html'],
                         dest: './dist/templates',
                         cwd: 'app/js/debugger',
@@ -268,7 +311,7 @@ module.exports = function(grunt) {
                 }
             },
             tests: {
-                options: {port: 14000, base: ["dist", "test",sampleDataBase]}
+                options: {port: 14000, base: ["dist", "test",sampleDataBase, 'node_modules/jasmine-core/lib']}
             },
             mockParticipant: {
                 options: {port: 14001, base: ["dist","test/mockParticipant"]}
@@ -336,6 +379,30 @@ module.exports = function(grunt) {
                     'git checkout master'
                 ].join('&&')
             }
+        },
+        karma: {
+            options:{
+                configFile: 'karma.conf.js',
+                browsers: ['Firefox']
+            },
+            unit: {
+                files: {
+                    src: ['<%= output.testUnit %>']
+                }
+            },
+            integrationClient: {
+                files: {
+                    src: ['<%= output.testIntegrationClient %>']
+                }
+            },
+            integrationBus: {
+                files: {
+                    src: ['<%= output.testIntegrationBus %>']
+                },
+                proxies: {
+                    '/js/ozpIwc-bus.js': '/base/dist/js/ozpIwc-bus.js'
+                }
+            }
         }
 
     };
@@ -352,9 +419,10 @@ module.exports = function(grunt) {
     });
     // Default task(s).
     grunt.registerTask('build', ['copy:hackBootstrap', 'jshint', 'concat_sourcemap', 'uglify', 'copy:dist','shell:buildVersionFile']);
-    grunt.registerTask('dist', ['build', 'yuidoc']);
-    grunt.registerTask('testOnly', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
-    grunt.registerTask('test', ['build','connect','watch']);
+    grunt.registerTask('karmaTests', ['karma:unit','connect:testBus','connect:mockParticipant', 'karma:integrationClient', 'karma:integrationBus']);
+    grunt.registerTask('dist', ['build','karmaTests','yuidoc']);
+    grunt.registerTask('connect-tests', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
+    grunt.registerTask('connect-all', ['build','connect','watch']);
     grunt.registerTask('releasePatch', ['bump:patch','readpkg','shell:releaseGit']);
     grunt.registerTask('releaseMinor', ['bump:minor','readpkg', 'shell:releaseGit']);
     grunt.registerTask('releaseMajor', ['bump:major','readpkg', 'shell:releaseGit']);

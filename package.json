@@ -1,7 +1,7 @@
 {
   "author": "Ozone Developers",
   "name": "ozpIwc",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "repository": "https://github.com/ozone-development/ozp-iwc",
   "devDependencies": {
     "grunt": "0.4.x",
@@ -17,6 +17,18 @@
     "grunt-jsdoc": "*",
     "grunt-shell": "^1.1.1",
     "jshint-stylish": "*",
-    "load-grunt-tasks": "~0.6.0"
+    "load-grunt-tasks": "~0.6.0",
+    "karma": "~0.12.31",
+    "jasmine-core": "~2.2.0",
+    "karma-jasmine": "~0.3.5",
+    "karma-chrome-launcher": "~0.1.7",
+    "karma-firefox-launcher": "~0.1.4",
+    "grunt-karma": "~0.10.1",
+    "karma-spec-reporter": "0.0.16",
+    "karma-coverage": "~0.2.7",
+    "karma-phantomjs-launcher": "~0.1.4"
+  },
+  "scripts": {
+    "test": "grunt dist"
   }
 }

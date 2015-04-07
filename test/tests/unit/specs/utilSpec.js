@@ -10,7 +10,7 @@ describe("Event",function() {
 	});
 	
     it("sets the BUS_ROOT",function() {
-        expect(ozpIwc.BUS_ROOT).toMatch("/tests/unit/$");
+        expect(ozpIwc.BUS_ROOT).toMatch("/$");
         expect(ozpIwc.BUS_ROOT).not.toMatch(".html?");
     });
     

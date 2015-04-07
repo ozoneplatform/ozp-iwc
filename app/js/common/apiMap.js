@@ -1,4 +1,4 @@
-ozpIwc = ozpIwc || {};
+var ozpIwc = ozpIwc || {};
 
 ozpIwc.apiMap = {
     "data.api" : { 'address': 'data.api',
