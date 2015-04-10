@@ -40,8 +40,21 @@ ozpIwc.log=ozpIwc.log || {
         if(level.severity > ozpIwc.log.threshold) {
             return;
         }
-        var log = Function.prototype.bind.call(window.console.log, window.console);
-        log.apply(window.console,["["+level.name+"] "].concat(args));
+
+        var console = window.console;
+        // if no console, no logs.
+        if(!console){
+            return;
+        }
+
+        var original = console.log;
+        if(original.apply){
+            original.apply(console,["["+level.name+"] "].concat(args));
+        } else {
+            // IE does not have apply on console functions
+            var msg = ["["+level.name+"]"].concat(args).join(' ');
+            original(msg);
+        }
     },
     
     /**
