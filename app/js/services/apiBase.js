@@ -106,10 +106,6 @@ ozpIwc.ApiBase.prototype.matchingNodes=function(prefix) {
 //===============================================================
 ozpIwc.ApiBase.prototype.receivePacketContext=function(packetContext) {
     var packet=packetContext.packet;
-    if(!packet.action) {
-        console.log("Refusing to route a packet with no action: ",packet);
-        return Promise.resolve();
-    }
     var routeName="Routing["+packet.action+" "+packet.resource+"] ";
     
     console.log(routeName+"packet=" + packetContext.packet);
@@ -145,6 +141,8 @@ ozpIwc.ApiBase.prototype.receivePacketContext=function(packetContext) {
 
 ozpIwc.ApiBase.prototype.defaultRoute=function(packet,context) {
     switch(context.defaultRouteCause) {
+        case "nonRoutablePacket": // packet doesn't have an action/resource, so ignore it
+            return;
         case "noAction": 
             throw new ozpIwc.BadActionError(packet);
         case "noResource":

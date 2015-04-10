@@ -166,6 +166,11 @@ ozpIwc.PacketRouter.prototype.routePacket=function(packet,context,thisPointer,ro
     var action=routeOverrides.action || packet.action;
     var resource=routeOverrides.resource || packet.resource;
     
+    if(!action || !resource) {
+        context.defaultRouteCause="nonRoutablePacket";
+        return this.defaultRoute.call(thisPointer,packet,context,{});                
+    }
+    
     context=context || {};
     thisPointer=thisPointer || this.defaultSelf;
     if(!this.routes.hasOwnProperty(action)) {
@@ -201,7 +206,51 @@ ozpIwc.PacketRouter.prototype.declareDefaultRoute=function(handler) {
 };
 
 
-
+/**
+ * Augments the provided class with a class-level router
+ * and routing functions on the prototype.  This allows the use of
+ * "declareRoute" on the class to create routes for all instances of
+ * that class.  All filters and handlers are evaluated using the
+ * instance as "this".
+ * 
+ * Defines:
+ *    classToAugment.declareRoute(routeConfig,handler)
+ *    classToAugment.prototype.routePacket(packet,context);
+ * 
+ * If the instance has a "defaultRoute" member, it will be used as the
+ * default route for packets.
+ * 
+ * Example:
+ *    ozpIwc.PacketRouter.mixin(MyClass);
+ *    
+ *    MyClass.declareRoute({
+ *       action: "get",
+ *       resource: "/foo/{id}"
+ *    },function (packet,context,pathParams) {
+ *       console.log("Foo handler",packet,context,pathParams);     
+ *       return "foo handler";
+ *    });
+ * 
+ *    MyClass.prototype.defaultRoute=function(packet,context) {
+ *      console.log("Default handler",packet,context,pathParams);
+ *      return "default!";
+ *    };
+ * 
+ *    var instance=new MyClass();
+ *
+ *    var packet1={ resource: "/foo/123", action: "get", ...}
+ *    var rv=instance.routePacket(packet1,{ bar: 2});
+ *    // console output: Foo handler, packet1, {bar:2}, {id: 123}
+ *    // rv === "foo handler"
+ *    
+ *    var packet2={ resource: "/dne/123", action: "get", ...}
+ *    rv=instance.routePacket(packet2,{ bar: 3});
+ *    // console output: Default handler, packet2, {bar:3}
+ *    // rv === "default!"
+ * 
+ * @param {type} classToAugment
+ * @returns {undefined}
+ */
 ozpIwc.PacketRouter.mixin=function(classToAugment) {
     var packetRouter=new ozpIwc.PacketRouter();
     
