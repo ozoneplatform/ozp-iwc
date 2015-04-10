@@ -17,18 +17,21 @@ ozpIwc.packetRouter = ozpIwc.packetRouter || {};
  */
 ozpIwc.packetRouter.uriTemplate=function(pattern) {
   var fields=[];
-  var regex=new RegExp("^"+pattern.replace(/\{.+?\}|[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, function(match) {
+  var modifiedPattern="^"+pattern.replace(/\{.+?\}|[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, function(match) {
       if(match.length===1) {
           return "\\"+match;
       }
-      var spec=match.slice(1,-1).split(":",2);
-      fields.push(spec[0]);
-      if(spec[1]) {
-          return "("+spec[1]+")";
+      var colon=match.indexOf(":");
+      
+      if(colon > 0) {
+          fields.push(match.slice(1,colon));
+          return "("+match.slice(colon+1,-1)+")";
       } else {
+        fields.push(match.slice(1,-1));
         return "([^\/]+)";
       }
-  })+"$");
+  })+"$";
+  var regex=new RegExp(modifiedPattern);
   
   return function(input) {
      var results=regex.exec(input);

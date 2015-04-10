@@ -55,7 +55,28 @@ ozpIwc.apiFilter={
             return next();
         };
     },
-    
+    nullFilter: function(packet,context,pathParams,next) {
+        return next();
+    },
+    checkContentType: function(contentType) {
+        if(!contentType) {
+            return ozpIwc.apiFilter.nullFilter;
+        }
+        contentType=Array.isArray(contentType)?contentType:[contentType];
+        return function(packet,context,pathParams,next) {
+            if(!contentType.some(function(t) {
+                return t===packet.contentType ||
+                    (Object.prototype.toString.call(contentType) === '[object RegExp]' && 
+                    t.test(packet.contentType));
+                })
+            ) {
+                throw new ozpIwc.BadContentError({
+                    'provided': packet.contentType,
+                    'allowedTypes': contentType
+                });
+            }
+            return next();
+    };},
     markResourceAsChanged: function() { 
         return function(packet,context,pathParams,next) {
             this.markForChange(packet);
@@ -73,5 +94,35 @@ ozpIwc.apiFilter={
         }
         return next();
     };}
-    
+};
+//=======================================================================
+// Wrappers that return the list of filters for a standard action
+//=======================================================================
+
+ozpIwc.standardApiFilters={
+    forAction: function(a) {
+        return ozpIwc.standardApiFilters[a+"Filters"];
+    },
+    setFilters: function(nodeType,contentType) {
+        return [
+            ozpIwc.apiFilter.createResource(nodeType),
+            ozpIwc.apiFilter.checkAuthorization(),
+            ozpIwc.apiFilter.checkContentType(contentType),
+            ozpIwc.apiFilter.checkVersion(),
+            ozpIwc.apiFilter.markResourceAsChanged()
+        ];
+    },
+    deleteFilters: function() {
+        return [
+            ozpIwc.apiFilter.checkAuthorization(),
+            ozpIwc.apiFilter.checkVersion(),
+            ozpIwc.apiFilter.markResourceAsChanged()
+        ];
+    },
+    getFilters: function() {
+        return [
+            ozpIwc.apiFilter.requireResource(),
+            ozpIwc.apiFilter.checkAuthorization()
+        ];
+    }
 };

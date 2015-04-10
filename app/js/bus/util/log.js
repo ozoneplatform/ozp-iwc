@@ -40,8 +40,9 @@ ozpIwc.log=ozpIwc.log || {
         if(level.severity > ozpIwc.log.threshold) {
             return;
         }
-        var log = Function.prototype.bind.call(window.console.log, window.console);
-        log.apply(window.console,["["+level.name+"] "].concat(args));
+//        var log = Function.prototype.bind.call(window.console.log, window.console);
+//        log.apply(window.console,["["+level.name+"] "].concat(args));
+        window.console.log.apply(window.console,["["+level.name+"] "].concat(args));
     },
     
     /**

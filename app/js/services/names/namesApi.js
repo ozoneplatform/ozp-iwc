@@ -15,9 +15,7 @@
  *
  * @type {Function}
  */
-ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.ApiBase, function(config) {
-    ozpIwc.CommonApiBase.apply(this, arguments);
-
+ozpIwc.NamesApi = ozpIwc.createApi(function(config) {
     /**
      * How often a heartbeat message should occur.
      * @property heartbeatFrequency
@@ -33,50 +31,35 @@ ozpIwc.NamesApi = ozpIwc.util.extend(ozpIwc.ApiBase, function(config) {
      * @default 3
      */
     this.heartbeatDropCount = config.heartbeatDropCount || 3;
-
-
-    this.apiMap = config.apiMap || ozpIwc.apiMap || {};
-
-    // map the alias "/me" to "/address/{packet.src}" upon receiving the packet
-    this.on("receive", function (packetContext) {
-        var packet = packetContext.packet;
-        if (packet.resource) {
-            packet.resource = packet.resource.replace(/$\/me^/, packetContext.packet.src);
-        }
-    });
-
-    this.addresses={
-        "router": {
-            contentType: "application/vnd.ozp-iwc-router-v1+json",
-            listContentType: "application/vnd.ozp-iwc-router-list-v1+json",
-            entries: {}
-        },
-        "address": {
-            contentType: "application/vnd.ozp-iwc-address-v1+json",
-            listContentType: "application/vnd.ozp-iwc-address-list-v1+json",
-            entries: {}
-
-        },
-        "multicast": {
-            contentType: "application/vnd.ozp-iwc-multicast-v1+json",
-            listContentType: "application/vnd.ozp-iwc-multicast-list-v1+json",
-            entries: {}
-        }
-    };
-
+    
+    for(var key in ozpIwc.apiMap){
+        var api = ozpIwc.apiMap[key];
+        var resourceName='/api/' + api.address;
+        this.data[resourceName]=new ozpIwc.ApiNode({
+            resource: resourceName,
+            entity: {'actions': api.actions},
+            contentType: 'application/vnd.ozp-iwc-api-v1+json'
+        });
+    }
 });
-ozpIwc.PacketRouter.mixin(ozpIwc.NamesApi);
+
+// Default handlers are fine for list, bulkGet, watch, and unwatch with any properly formed resource
+ozpIwc.NamesApi.useDefaultRoute(["list","bulkGet"],"/{c:(?:api|address|multicast|router).*}");
+
 //====================================================================
 // Address, Multicast, and Router endpoints
 //====================================================================
-
-// list and bulkGet use the same implementations
-
+ozpIwc.NamesApi.declareRoute({
+    action: ["set","delete"],
+    resource: "/{collection:api|address|multicast|router}",
+    filters: []
+}, function(packet,context,pathParams) {
+    throw new ozpIwc.NoPermissionError(packet);    
+});
 ozpIwc.NamesApi.declareRoute({
     action: "get",
-    resource: "/{collection:address|multicast|router}",
-    filters: [
-    ]
+    resource: "/{collection:api|address|multicast|router}",
+    filters: []
 }, function(packet,context,pathParams) {
     return {
         "contentType": "application/json",
@@ -85,19 +68,67 @@ ozpIwc.NamesApi.declareRoute({
          })
     };
 });
+//====================================================================
+// API endpoints
+//====================================================================
+ozpIwc.NamesApi.useDefaultRoute(["get","delete","watch","unwatch"],"/api/{addr}");
 
-// Disable set, delete
 ozpIwc.NamesApi.declareRoute({
-    action: ["set","delete"],
-    resource: "/{collection:address|multicast|router}"
+    action: "set",
+    resource: "/api/{addr}",
+    filters: ozpIwc.standardApiFilters.setFilters(ozpIwc.ApiNode,"application/vnd.ozp-iwc-api-v1+json")
 }, function(packet,context,pathParams) {
-    throw new ozpIwc.BadActionError();
+    // validate that the entity is an address
+    context.node.set(packet);
+    return {response:"ok"};
 });
 
-// Disable watch, unwatch.  Might be able to re-enable them in the future
+//====================================================================
+// Address endpoints
+//====================================================================
+ozpIwc.NamesApi.useDefaultRoute(["get","delete","watch","unwatch"],"/address/{addr}");
+
 ozpIwc.NamesApi.declareRoute({
-    action: ["watch","unwatch"],
-    resource: "/{collection:address|multicast|router}"
+    action: "set",
+    resource: "/address/{addr}",
+    filters: ozpIwc.standardApiFilters.setFilters(ozpIwc.ApiNode,"application/vnd.ozp-iwc-address-v1+json")
 }, function(packet,context,pathParams) {
-    throw new ozpIwc.BadActionError();
+    // validate that the entity is an address
+
+    context.node.set(packet);
+    return {response:"ok"};
+});
+
+//====================================================================
+// Multicast endpoints
+//====================================================================
+ozpIwc.NamesApi.useDefaultRoute(["get","delete","watch","unwatch"],"/multicast/{addr}");
+
+ozpIwc.NamesApi.declareRoute({
+    action: "set",
+    resource: "/multicast/{addr}",
+    filters: ozpIwc.standardApiFilters.setFilters(ozpIwc.ApiNode,"application/vnd.ozp-iwc-multicast-address-v1+json")
+}, function(packet,context,pathParams) {
+    // validate that the entity is an address
+    
+    //
+    context.node.set(packet);
+    return {response:"ok"};
+});
+
+//====================================================================
+// Router endpoints
+//====================================================================
+ozpIwc.NamesApi.useDefaultRoute(["get","delete","watch","unwatch"],"/router/{addr}");
+
+ozpIwc.NamesApi.declareRoute({
+    action: "set",
+    resource: "/router/{addr}",
+    filters: ozpIwc.standardApiFilters.setFilters(ozpIwc.ApiNode,"application/vnd.ozp-iwc-router-v1+json")
+}, function(packet,context,pathParams) {
+    // validate that the entity is an address
+    
+    //
+    context.node.set(packet);
+    return {response:"ok"};
 });

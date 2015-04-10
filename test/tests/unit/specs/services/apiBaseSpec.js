@@ -1,8 +1,12 @@
+var TestApi=ozpIwc.createApi(function() {});
+TestApi.useDefaultRoute(ozpIwc.ApiBase.allActions);
+
 describe("ApiBase",function() {
 	var apiBase;
+
     
 	beforeEach(function() {	
-		apiBase=new ozpIwc.ApiBase({
+		apiBase=new TestApi({
 			'participant': new TestParticipant()
 		});
         

@@ -59,6 +59,7 @@ ozpIwc.ApiError.subclass=function(response) {
 ozpIwc.BadActionError=ozpIwc.ApiError.subclass("badAction");
 ozpIwc.BadResourceError=ozpIwc.ApiError.subclass("badResource");
 ozpIwc.BadRequestError=ozpIwc.ApiError.subclass("badRequest");
+ozpIwc.BadContentError=ozpIwc.ApiError.subclass("badContent");
 
 ozpIwc.NoActionError=ozpIwc.ApiError.subclass("noAction");
 ozpIwc.NoResourceError=ozpIwc.ApiError.subclass("noResource");

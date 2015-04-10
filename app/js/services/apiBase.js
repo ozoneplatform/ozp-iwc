@@ -18,7 +18,7 @@ ozpIwc.ApiBase=function(config) {
         self.receivePacketContext(packetContext);
     });
 };
-ozpIwc.PacketRouter.mixin(ozpIwc.ApiBase);
+//ozpIwc.PacketRouter.mixin(ozpIwc.ApiBase);
 
 //===============================================================
 // Data Management
@@ -106,6 +106,10 @@ ozpIwc.ApiBase.prototype.matchingNodes=function(prefix) {
 //===============================================================
 ozpIwc.ApiBase.prototype.receivePacketContext=function(packetContext) {
     var packet=packetContext.packet;
+    if(!packet.action) {
+        console.log("Refusing to route a packet with no action: ",packet);
+        return Promise.resolve();
+    }
     var routeName="Routing["+packet.action+" "+packet.resource+"] ";
     
     console.log(routeName+"packet=" + packetContext.packet);
@@ -139,7 +143,6 @@ ozpIwc.ApiBase.prototype.receivePacketContext=function(packetContext) {
 // Default Routes
 //===============================================================
 
-
 ozpIwc.ApiBase.prototype.defaultRoute=function(packet,context) {
     switch(context.defaultRouteCause) {
         case "noAction": 
@@ -150,117 +153,88 @@ ozpIwc.ApiBase.prototype.defaultRoute=function(packet,context) {
             throw new ozpIwc.BadRequestError(packet);
     }
 };
-
-ozpIwc.ApiBase.declareRoute({
-    action: "get",
-    resource: "{resource:.*}",
-    filters: [
-        ozpIwc.apiFilter.requireResource(),
-        ozpIwc.apiFilter.checkAuthorization()
-    ]
-},function(packet,context,pathParams) {
-    return context.node.toPacket();
-});
-
-ozpIwc.ApiBase.declareRoute({
-    action: "set",
-    resource: "{resource:.*}",
-    filters: [
-        ozpIwc.apiFilter.createResource(),
-        ozpIwc.apiFilter.checkAuthorization(),
-        ozpIwc.apiFilter.checkVersion(),
-        ozpIwc.apiFilter.markResourceAsChanged()
-    ]
-},function(packet,context,pathParams) {
-    context.node.set(packet);
-    
-    return { response: "ok" };
-});
-
-ozpIwc.ApiBase.declareRoute({
-    action: "delete",
-    resource: "{resource:.*}",
-    filters: [
-        ozpIwc.apiFilter.checkAuthorization(),
-        ozpIwc.apiFilter.checkVersion(),
-        ozpIwc.apiFilter.markResourceAsChanged()
-    ]
-},function(packet,context,pathParams) {
-    if(context.node) {
-        context.node.markAsDeleted(packet);
-    }
-    
-    return { response: "ok" };
-});
-
-
-ozpIwc.ApiBase.declareRoute({
-    action: "list",
-    resource: "{resource:.*}",
-    filters: [
-        
-    ]
-},function(packet,context,pathParams) {
-    var entity=this.matchingNodes(packet.resource).map(function(node) {
-        return node.resource;
-    });
-    return {
-        "contentType": "application/json",
-        "entity": entity
-    };
-});
-
-ozpIwc.ApiBase.declareRoute({
-    action: "bulkGet",
-    resource: "{resource:.*}",
-    filters: [
-        
-    ]
-},function(packet,context,pathParams) {
-    var entity=this.matchingNodes(packet.resource).map(function(node) {
-        return node.toPacket();
-    });
-    // TODO: roll up the permissions of the nodes, as well
-    return {
-        "contentType": "application/json",
-        "entity": entity
-    };
-});
-
-ozpIwc.ApiBase.declareRoute({
-    action: "watch",
-    resource: "{resource:.*}",
-    filters: [
-    ]
-},function(packet,context,pathParams) {
-    var watchList=this.watchers[packet.resource];
-    if(!Array.isArray(watchList)) {
-        watchList=this.watchers[packet.resource]=[];
-    }
-    
-    watchList.push({
-        src: packet.src,
-        replyTo: packet.msgId
-    });
-    
-    if(context.node) {
+ozpIwc.ApiBase.defaultHandler={
+    "get":function(packet,context,pathParams) {
         return context.node.toPacket();
-    } else {
-        return { response: "ok"};
-    }
-});
+    },
+    "set":function(packet,context,pathParams) {
+        context.node.set(packet);
+        return { response: "ok" };
+    },
+    "delete": function(packet,context,pathParams) {
+        if(context.node) {
+            context.node.markAsDeleted(packet);
+        }
 
-ozpIwc.ApiBase.declareRoute({
-    action: "unwatch",
-    resource: "{resource:.*}",
-    filters: []
-},function(packet,context,pathParams) {
-    var watchList=this.watchers[packet.resource];
-    if(watchList) {
-        this.watchers[packet.resource]=watchList.filter(function(watch) {
-           return watch.src === packet.src && watch.replyTo === packet.msgId;
-       });
+        return { response: "ok" };
+    },
+    "list": function(packet,context,pathParams) {
+        var entity=this.matchingNodes(packet.resource).map(function(node) {
+            return node.resource;
+        });
+        return {
+            "contentType": "application/json",
+            "entity": entity
+        };
+    },
+    "bulkGet": function(packet,context,pathParams) {
+        var entity=this.matchingNodes(packet.resource).map(function(node) {
+            return node.toPacket();
+        });
+        // TODO: roll up the permissions of the nodes, as well
+        return {
+            "contentType": "application/json",
+            "entity": entity
+        };
+    },
+    "watch": function(packet,context,pathParams) {
+        var watchList=this.watchers[packet.resource];
+        if(!Array.isArray(watchList)) {
+            watchList=this.watchers[packet.resource]=[];
+        }
+
+        watchList.push({
+            src: packet.src,
+            replyTo: packet.msgId
+        });
+
+        if(context.node) {
+            return context.node.toPacket();
+        } else {
+            return { response: "ok"};
+        }
+    },
+    "unwatch": function(packet,context,pathParams) {
+        var watchList=this.watchers[packet.resource];
+        if(watchList) {
+            this.watchers[packet.resource]=watchList.filter(function(watch) {
+               return watch.src === packet.src && watch.replyTo === packet.msgId;
+           });
+        }
+
+        return { response: "ok" };
     }
-    
-    return { response: "ok" };
-});
+};
+ozpIwc.ApiBase.allActions=Object.keys(ozpIwc.ApiBase.defaultHandler);
+
+ozpIwc.createApi=function(init) {
+    var api=ozpIwc.util.extend(ozpIwc.ApiBase,function() {
+        ozpIwc.ApiBase.apply(this, arguments);
+        return init.apply(this,arguments);
+    });
+    ozpIwc.PacketRouter.mixin(api);
+    api.useDefaultRoute=function(actions,resource) {
+        resource = resource || "{resource:.*}";
+        actions=Array.isArray(actions)?actions:[actions];
+        actions.forEach(function(a) {
+            var filterFunc=ozpIwc.standardApiFilters.forAction(a);
+            api.declareRoute({
+                action: a,
+                resource: resource,
+                filters: (filterFunc?filterFunc():[])
+            },ozpIwc.ApiBase.defaultHandler[a]
+            );
+        });
+    };
+    return api;
+};

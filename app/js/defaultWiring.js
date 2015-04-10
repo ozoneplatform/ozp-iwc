@@ -41,16 +41,16 @@ if(typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
         ozpIwc.initEndpoints(ozpIwc.apiRootUrl || "api");
 
 
-        ozpIwc.namesApi = new ozpIwc.NamesApi({
-            'participant': new ozpIwc.LeaderGroupParticipant({
-                'name': "names.api",
-                'states': ozpIwc.defaultLeadershipStates(),
-                electionTimeout: ozpIwc.ELECTION_TIMEOUT
-            }),
-            'heartbeatDropCount': 3,
-            'heartbeatFrequency': ozpIwc.heartBeatFrequency
-        });
-        ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi.participant);
+//        ozpIwc.namesApi = new ozpIwc.NamesApi({
+//            'participant': new ozpIwc.LeaderGroupParticipant({
+//                'name': "names.api",
+//                'states': ozpIwc.defaultLeadershipStates(),
+//                electionTimeout: ozpIwc.ELECTION_TIMEOUT
+//            }),
+//            'heartbeatDropCount': 3,
+//            'heartbeatFrequency': ozpIwc.heartBeatFrequency
+//        });
+//        ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi.participant);
 
         ozpIwc.dataApi = new ozpIwc.DataApi({
             'participant': new ozpIwc.LeaderGroupParticipant({
