@@ -1,4 +1,4 @@
-[ozp-iwc](http://ozone-development.github.io/ozp-iwc/)
+[ozp-iwc](http://ozone-development.github.io/ozp-iwc/) [![Build Status](https://travis-ci.org/ozone-development/ozp-iwc.svg?branch=master)](https://travis-ci.org/ozone-development/ozp-iwc)
 ==============================
 
 ozp-iwc provides an in-browser communications network between participants in multiple browser tabs, 

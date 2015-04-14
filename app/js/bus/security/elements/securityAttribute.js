@@ -27,7 +27,7 @@ ozpIwc.policyAuth.SecurityAttribute.prototype.pushIfNotExist = function(id, val,
     if(!val){
         return;
     }
-    var value = Array.isArray(val) ? val : [val];
+    var value = ozpIwc.util.ensureArray(val);
     if (!this.attributes[id]) {
         this.attributes[id] = [];
         this.attributes[id] = this.attributes[id].concat(value);

@@ -102,7 +102,7 @@ ozpIwc.policyAuth.PDP.prototype.isPermitted = function(request){
 
 
 ozpIwc.policyAuth.PDP.prototype.formatAttributes = function(attributes,pip){
-    attributes = Array.isArray(attributes) ? attributes : [attributes];
+    attributes = ozpIwc.util.ensureArray(attributes);
     var asyncAction = new ozpIwc.AsyncAction();
     pip = pip || this.pip;
     var asyncs = [];

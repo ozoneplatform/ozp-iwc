@@ -93,8 +93,8 @@ ozpIwc.ozpIwcPolicies.implies=function(subjectVal,objectVal) {
     }
 
     // convert both to arrays, if necessary
-    subjectVal=Array.isArray(subjectVal)?subjectVal:[subjectVal];
-    objectVal=Array.isArray(objectVal)?objectVal:[objectVal];
+    subjectVal=ozpIwc.util.ensureArray(subjectVal);
+    objectVal=ozpIwc.util.ensureArray(objectVal);
 
     // confirm that every element in objectVal is also in subjectVal
     return ozpIwc.util.arrayContainsAll(subjectVal,objectVal);
@@ -109,7 +109,7 @@ ozpIwc.ozpIwcPolicies.implies=function(subjectVal,objectVal) {
  * @returns {string} NotApplicable, Deny, or Permit
  */
 ozpIwc.ozpIwcPolicies.defaultPolicy = function(request,action){
-    action = Array.isArray(action) ? action : [action];
+    action = ozpIwc.util.ensureArray(action);
     if(!ozpIwc.util.arrayContainsAll(action,request.action['ozp:iwc:action'])) {
         return "NotApplicable";
     } else if(!ozpIwc.util.objectContainsAll(request.subject,request.resource,ozpIwc.ozpIwcPolicies.implies)) {

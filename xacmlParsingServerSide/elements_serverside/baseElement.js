@@ -9,7 +9,7 @@ ozpIwc.policyAuth.BaseElement = function(config){
 
 
 ozpIwc.policyAuth.BaseElement.prototype.construct = function(element){
-    var parsed = ozpIwc.util.elementParser({
+    var parsed = ozpIwc.policyAuth.util.elementParser({
         element: element,
         reqAttrs: this.requiredAttributes,
         optAttrs: this.optionalAttributes,
@@ -37,14 +37,14 @@ ozpIwc.policyAuth.BaseElement.prototype.constructNodes = function(config){
     for(var i in config.attrs){
         // The property of the policy is the camelCase version of the tagName
         // (ex. this.policyId = parsed.attrs.PolicyId)
-        camelCasedProperty = ozpIwc.util.camelCased(i);
+        camelCasedProperty = ozpIwc.policyAuth.util.camelCased(i);
         this[camelCasedProperty] = config.attrs[i];
     }
 
     // Each node is likely to be mapped to a XACML element, construct said element and set it as this elements property.
     for(var j in config.nodes){
         // The property of the policy is the camelCase version of the tagName
-        camelCasedProperty = ozpIwc.util.camelCased(j);
+        camelCasedProperty = ozpIwc.policyAuth.util.camelCased(j);
 
         // If a property of the Policy accepts multiple elements, it's defaulted as an array.
         if(Array.isArray(this[camelCasedProperty])){

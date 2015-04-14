@@ -20,6 +20,82 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
     }
 
     scope.keys=[];
+
+    var statusTemplate = "<pre class='preWrap'>{{COL_FIELD | json}}</pre>";
+    var containsFilterGen = function(){
+        return {
+            condition: function (searchTerm, cellValue) {
+                return cellValue.match(searchTerm);
+            },
+            placeholder: 'contains'
+        };
+    };
+
+    var containsFilterJSONGen = function(){
+        return {
+            condition: function (searchTerm, cellValue) {
+                return JSON.stringify(cellValue).match(searchTerm);
+            },
+            placeholder: 'contains'
+        };
+
+    };
+
+    var columnDefs =  [
+        {
+            field: 'actions',
+            displayName: "actions",
+            headerCellTemplate: 'templates/headerTemplate.tpl.html',
+            cellTemplate: 'templates/resourceTemplate.tpl.html',
+            width: "8%"
+
+        },{
+            field:'resource',
+            displayName:'Resource',
+            //cellTemplate: 'templates/resourceTemplate.tpl.html',
+            filter: containsFilterGen(),
+            width: "12%"
+        },{
+            field:'contentType',
+            displayName:'Content Type',
+            filter: containsFilterGen(),
+            width: "15%"
+        },{
+            field:'entity',
+            displayName:'Entity',
+            cellTemplate: statusTemplate,
+            cellClass: 'grid-pre',
+            filter: containsFilterJSONGen(),
+            width: "35%"
+        },{
+            field:'permissions',
+            displayName:'Permissions',
+            cellTemplate: statusTemplate,
+            cellClass: 'grid-pre',
+            filter: containsFilterJSONGen(),
+            width: "15%"
+        }];
+    if(scope.hasChildren){
+        columnDefs.push({
+            field: 'children',
+            displayName: 'Children',
+            cellTemplate:  statusTemplate,
+            cellClass: 'grid-pre',
+            filter: containsFilterJSONGen(),
+            width: "15%"
+        });
+    }
+    scope.gridOptions = {
+        data : 'keys',
+        columnDefs: columnDefs,
+        rowHeight: 120,
+        enableFiltering: true,
+        onRegisterApi: function( gridApi ) {
+            scope.gridApi = gridApi;
+            scope.gridApi.core.handleWindowResize();
+        }
+    };
+
     scope.loadKey = function (key) {
         client.api(scope.api).get(key.resource).then(function(response) {
             for (i in response) {
@@ -86,6 +162,7 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
 
         client.connect().then(function(){
             scope.actions = client.apiMap[scope.api].actions;
+            scope.gridApi.core.handleWindowResize();
         });
 
     };

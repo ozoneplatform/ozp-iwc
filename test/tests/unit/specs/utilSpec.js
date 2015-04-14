@@ -10,7 +10,7 @@ describe("Event",function() {
 	});
 	
     it("sets the BUS_ROOT",function() {
-        expect(ozpIwc.BUS_ROOT).toMatch("/tests/unit/$");
+        expect(ozpIwc.BUS_ROOT).toMatch("/$");
         expect(ozpIwc.BUS_ROOT).not.toMatch(".html?");
     });
     
@@ -523,6 +523,26 @@ describe("General Utilities", function() {
                expect(ozpIwc.util.determineOrigin(c)).toEqual(cases[c]);
            });
        });
-    });     
+    });
+	
+	describe("ensureArray", function() {
+		it("handles null", function() {
+			expect(ozpIwc.util.ensureArray(null)).toEqual([null]);
+		});
+		it("handles empty list", function() {
+			expect(ozpIwc.util.ensureArray([])).toEqual([]);
+		});
+		it("handles empty obj", function() {
+			expect(ozpIwc.util.ensureArray({})).toEqual([{}]);
+		});
+		it("handles obj", function() {
+			var testobj = {test: "value"};
+			expect(ozpIwc.util.ensureArray(testobj)).toEqual([testobj]); // array wrapper added
+		});
+		it("handles array", function() {
+			var testlist = [{a: 1}, {b: 2}, {c: 3}];
+			expect(ozpIwc.util.ensureArray(testlist)).toEqual(testlist);
+		});
+	});
     
 });

@@ -50,7 +50,7 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
             }
             self.attributes[id] = {};
             for(var i in data){
-                self.attributes[id][i] = Array.isArray(data[i] ) ? data[i]  : [data[i] ];
+                self.attributes[id][i] =ozpIwc.util.ensureArray(data[i]);
             }
             asyncAction.resolve('success', self.attributes[id]);
         })['catch'](function(err){
@@ -70,7 +70,7 @@ ozpIwc.policyAuth.PIP.prototype.getAttributes = function(id){
 ozpIwc.policyAuth.PIP.prototype.grantAttributes = function(subjectId,attributes){
     var attrs = {};
     for(var i in attributes){
-        attrs[i] = Array.isArray(attributes[i]) ? attributes[i] : [attributes[i]];
+        attrs[i] =ozpIwc.util.ensureArray(attributes[i]);
     }
     this.attributes[subjectId] = attrs;
 };

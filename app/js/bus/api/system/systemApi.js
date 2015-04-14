@@ -45,18 +45,11 @@ ozpIwc.SystemApi.prototype.loadFromServer=function() {
     var headers = [
         {name: "Accept", value: "application/vnd.ozp-application-v1+json"}
     ];
-    return new Promise(function(resolve, reject) {
-        self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":application", headers)
-            .then(function() {
-                return self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":user");
-            }).then(function() {
-                return self.loadFromEndpoint(ozpIwc.linkRelPrefix + ":system");
-            }).then(function() {
-                resolve("system.api load complete");
-            })['catch'](function(error) {
-                reject(error);
-            });
-    });
+	var loadEndpoints = [];
+	loadEndpoints.push((self.loadFromEndpointIterative(ozpIwc.linkRelPrefix + ":application", headers)).then("system.api:application load complete"));
+	loadEndpoints.push((self.loadFromEndpointIterative(ozpIwc.linkRelPrefix + ":user", headers)).then("system.api:user load complete"));
+	loadEndpoints.push((self.loadFromEndpointIterative(ozpIwc.linkRelPrefix + ":system", headers)).then("system.api:system load complete"));
+	return Promise.all(loadEndpoints).then("system.api load complete");
 };
 
 /**
@@ -160,8 +153,7 @@ ozpIwc.SystemApi.prototype.handleDelete = function(node,packetContext) {
  * @method handleLaunch
  */
 ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
-
-    this.participant.send({
+    var packet = {
         dst: "intents.api",
         contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
         action: "invoke",
@@ -171,7 +163,11 @@ ozpIwc.SystemApi.prototype.handleLaunch = function(node,packetContext) {
             "applicationId": node.resource,
             "launchData": packetContext.packet.entity
         }
-    });
+    };
+    if(typeof node.entity.id !== "undefined"){
+        packet.entity.id = node.entity.id;
+    }
+    this.participant.send(packet);
     packetContext.replyTo({'response': "ok"});
 };
 

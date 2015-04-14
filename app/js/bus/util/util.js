@@ -146,3 +146,18 @@ ozpIwc.util.alert = function (message, errorObject) {
         ozpIwc.log.log(message,errorObject);
     }
 };
+
+/**
+ * Solves a common pattern to handle data from a function which may return a single object or an array of objects
+ * If given an array, returns the array.
+ * If given a single object, returns the object as a single element in a list.
+ *
+ * @method ensureArray
+ * @static
+ * @param {Object} obj The object may be an array or single object
+ *
+ * @returns {Array}
+ */
+ozpIwc.util.ensureArray=function(obj) { 
+	return Array.isArray(obj)?obj:[obj];
+};

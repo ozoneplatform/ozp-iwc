@@ -27,7 +27,7 @@ describe("Policy Repository Point",function() {
                 });
         });
 
-        it('always applies persistent policies to any policy request',function(){
+        it('always applies persistent policies to any policy request',function(done){
 
             prp = new ozpIwc.policyAuth.PRP({
                 'persistentPolicies': ['somePolicy']
@@ -38,6 +38,7 @@ describe("Policy Repository Point",function() {
                 .success(function(policies){
                     expect(policies.length).toEqual(1);
                     expect(policies[0]()).toEqual("Deny");
+                    done();
                 });
         });
 

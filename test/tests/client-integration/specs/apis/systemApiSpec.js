@@ -136,7 +136,8 @@ describe("System API", function() {
             expect(reply.entity).toEqual(jasmine.objectContaining({
                 "entity": { 
                     "url": "http://localhost:15004/", 
-                    "applicationId": "/application/8e8265bb-fef8-49ab-8b13-2356a1647b6b", 
+                    "applicationId": "/application/8e8265bb-fef8-49ab-8b13-2356a1647b6b",
+                    "id": "8e8265bb-fef8-49ab-8b13-2356a1647b6b",
                     "launchData": { "foo": 123 } 
                 }
             }));
