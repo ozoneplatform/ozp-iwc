@@ -43,18 +43,26 @@ ozpIwc.log=ozpIwc.log || {
 
         var console = window.console;
         // if no console, no logs.
-        if(!console){
+        if(!console || !console.log){
             return;
         }
-
-        var original = console.log;
-        if(original.apply){
-            original.apply(console,["["+level.name+"] "].concat(args));
-        } else {
-            // IE does not have apply on console functions
-            var msg = ["["+level.name+"]"].concat(args).join(' ');
-            original(msg);
-        }
+        
+        var msg=args.reduce(function(acc, val) {
+            if(typeof(val) === "object") {
+                return acc + JSON.stringify(val,null,2);
+            }
+            return acc + val;
+        },"["+level.name+"] ");
+        
+        console.log(msg);
+//        var original = console.log;
+//        if(original.apply){
+//            original.apply(console,["["+level.name+"] "].concat(args));
+//        } else {
+//            // IE does not have apply on console functions
+//            var msg = ["["+level.name+"]"].concat(args).join(' ');
+//            original(msg);
+//        }
     },
     
     /**
