@@ -247,7 +247,7 @@ ozpIwc.Participant.prototype.send=function(packet) {
             }
             self.router.send(packet, self);
         }).failure(function(e){
-            console.error("Participant Failed to send a packet:",e);
+            console.error("Participant " + self.address + " failed to send a packet:",e,packet);
         });
     return packet;
 };

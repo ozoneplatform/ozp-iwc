@@ -125,6 +125,17 @@ var tick=function(t) {
 	}
 };
 
+var pauseForPromiseResolution=function() {
+    return new Promise(function(resolve) {
+        console.log("Pausing for 5 ms");
+        window.setTimeout(function() {
+            console.log("Pause done!");
+            resolve();
+        },5);
+        tick(5);
+    });
+};
+
 // mock out the now function to let us fast forward time
 ozpIwc.util.now=function() {
 	return new Date().getTime() + clockOffset;

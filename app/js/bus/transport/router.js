@@ -245,7 +245,7 @@ ozpIwc.Router=function(config) {
         heartbeatFrequency: config.heartbeatFrequency
     });
 	this.registerParticipant(this.watchdog);
-
+    this.recursionDepth=0;
     ozpIwc.metrics.gauge('transport.router.participants').set(function() {
         return self.getParticipantCount();
     });
@@ -333,25 +333,33 @@ ozpIwc.Router.prototype.deliverLocal=function(packet,sendingParticipant) {
     if(!localParticipant) {
         return;
     }
-    var packetContext=new ozpIwc.TransportPacketContext({
-        'packet':packet,
-        'router': this,
-        'srcParticipant': sendingParticipant,
-        'dstParticipant': localParticipant
-    });
-
-    var preDeliverEvent=new ozpIwc.CancelableEvent({
-        'packet': packet,
-        'dstParticipant': localParticipant,
-        'srcParticipant': sendingParticipant
-    });
-
-    if(this.events.trigger("preDeliver",preDeliverEvent).canceled) {
-        ozpIwc.metrics.counter("transport.packets.rejected").inc();
-        return;
+    this.recursionDepth++;
+    if(this.recursionDepth > 10) {
+        console.log("Recursing more than 10 levels deep on ",packet);
     }
-    ozpIwc.metrics.counter("transport.packets.delivered").inc();
-    localParticipant.receiveFromRouter(packetContext);
+    try {
+        var packetContext=new ozpIwc.TransportPacketContext({
+            'packet':packet,
+            'router': this,
+            'srcParticipant': sendingParticipant,
+            'dstParticipant': localParticipant
+        });
+        
+        var preDeliverEvent=new ozpIwc.CancelableEvent({
+            'packet': packet,
+            'dstParticipant': localParticipant,
+            'srcParticipant': sendingParticipant
+        });
+
+        if(this.events.trigger("preDeliver",preDeliverEvent).canceled) {
+            ozpIwc.metrics.counter("transport.packets.rejected").inc();
+            return;
+        }
+        ozpIwc.metrics.counter("transport.packets.delivered").inc();
+        localParticipant.receiveFromRouter(packetContext);
+    } finally {
+        this.recursionDepth--;
+    }
 };
 
 

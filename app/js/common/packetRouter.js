@@ -107,7 +107,7 @@ ozpIwc.PacketRouter.prototype.declareRoute=function(config,handler,handlerSelf) 
     config.uriTemplate=ozpIwc.packetRouter.uriTemplate(config.resource);
     
     // @FIXME var actions=ozpIwc.util.ensureArray(config.action);
-    var actions=Array.isArray(config.action)?config.action:[config.action];
+    var actions=ozpIwc.util.ensureArray(config.action);
     
     actions.forEach(function(a) {
         if(!this.routes.hasOwnProperty(a)) {

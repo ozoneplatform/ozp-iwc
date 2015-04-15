@@ -27,6 +27,7 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
     this.sentPackets = [];
     // since we aren't connecting to a router, mock these out, too
     this.metricRoot = "testparticipant";
+    this.participantType="testParticipant";
     this.sentPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "sentPackets");
     this.receivedPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "receivedPackets");
     this.forbiddenPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "forbiddenPackets");
@@ -39,43 +40,54 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(co
         'send': function() {
         }
     };
-
-    this.receiveFromRouter = function(packet) {
-        this.packets.push(packet);
-        return ozpIwc.InternalParticipant.prototype.receiveFromRouter.call(this, packet);
-    };
-
-    this.send = function(packet, callback) {
-        this.sentPackets.push(packet);
-        packet = ozpIwc.InternalParticipant.prototype.send.call(this, packet, callback);
-        // tick to trigger the async send
-        tick(0);
-        return packet;
-    };
-
-    this.reply = function(originalPacket, packet, callback) {
-        packet.ver = packet.ver || originalPacket.ver || 1;
-        packet.src = packet.src || originalPacket.dst || this.address;
-        packet.dst = packet.dst || originalPacket.src || config.dst;
-        packet.msgId = packet.msgId || this.messageId++;
-        packet.time = packet.time || new Date().getTime();
-
-        packet.replyTo = originalPacket.msgId;
-
-        packet.action = packet.action || originalPacket.action;
-        packet.resource = packet.resource || originalPacket.resource;
-
-        this.sentPackets.push(packet);
-
-        if (callback) {
-            this.callbacks[packet.msgId] = callback;
-        }
-        if (this.router) {
-            this.router.send(packet, this);
-        }
-        return packet;
-    };
 });
+TestParticipant.prototype.receiveFromRouter = function(packet) {
+    this.packets.push(packet);
+    return ozpIwc.InternalParticipant.prototype.receiveFromRouter.call(this, packet);
+};
+
+TestParticipant.prototype.send = function(packet, callback) {
+    this.sentPackets.push(packet);
+    try {
+        packet = ozpIwc.InternalParticipant.prototype.send.call(this, packet, callback);
+    } catch (e) {
+        packet=e;
+    }
+    // tick to trigger the async send
+    tick(0);
+    return packet;
+};
+
+TestParticipant.prototype.reply = function(originalPacket, packet, callback) {
+    packet.ver = packet.ver || originalPacket.ver || 1;
+    packet.src = packet.src || originalPacket.dst || this.address;
+    packet.dst = packet.dst || originalPacket.src;// || config.dst;
+    packet.msgId = packet.msgId || this.messageId++;
+    packet.time = packet.time || new Date().getTime();
+
+    packet.replyTo = originalPacket.msgId;
+
+    packet.action = packet.action || originalPacket.action;
+    packet.resource = packet.resource || originalPacket.resource;
+
+    this.sentPackets.push(packet);
+
+    if (callback) {
+        this.callbacks[packet.msgId] = callback;
+    }
+    if (this.router) {
+        this.router.send(packet, this);
+    }
+    return packet;
+};
+
+
+var TestClientParticipant=ozpIwc.util.extend(TestParticipant,function() {
+    TestParticipant.apply(this,arguments);
+    this.participantType="testClientParticipant";
+    ozpIwc.ClientMixin(this);
+});
+TestClientParticipant.prototype.sendImpl=TestParticipant.prototype.send;
 
 var FakePeer = function() {
     this.events = new ozpIwc.Event();
@@ -155,19 +167,22 @@ beforeEach(function() {
     jasmine.addMatchers({
         toHaveSent: function(util, customEqualityTesters) { return {
 		compare: function(participant,expected) {
-            if(!(participant instanceof TestParticipant)) {
+            if(!((participant instanceof TestParticipant) || (participant instanceof TestPacketContext)) ) {
                 return {
 					pass: false,
 					message: "Expected " + participant + " to be a TestParticipant"
 				};
             }
-            var contains=util.contains(participant.sentPackets,jasmine.objectContaining(expected),customEqualityTesters);
+            
+            var sentPackets=participant.sentPackets || participant.responses;
+            
+            var contains=util.contains(sentPackets,jasmine.objectContaining(expected),customEqualityTesters);
             return {
                 pass: contains,
                 message: "Expected the participant to " + (contains?"NOT ":"") + "have sent " +
                     JSON.stringify(expected) +
-                    ", but it sent " +
-                    JSON.stringify(participant.sentPackets,null,2)
+                    ", but it sent packets " +
+                    JSON.stringify(sentPackets,null,2)
             };
 		}
 	};}

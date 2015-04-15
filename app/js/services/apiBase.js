@@ -2,8 +2,11 @@ ozpIwc.ApiBase=function(config) {
 	if(!config.participant) {
         throw Error("API must be configured with a participant");
     }
+    if(!config.name) {
+        throw Error("API must be configured with a name");
+    }
     this.participant=config.participant;
-
+    this.name=config.name;
     this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
     
@@ -12,13 +15,22 @@ ozpIwc.ApiBase=function(config) {
     this.watchers={};
     
     this.changeList={};
+    this.isLeader=false;
     
     var self=this;
-    this.participant.on("receive",function(packetContext) {
-        self.receivePacketContext(packetContext);
+    this.leaderPromise=this.participant.send({
+        dst: "locks.api",
+        resource: "/mutex/"+this.name,
+        action: "lock"
+    }).then(function() {
+        self.isLeader=true;
+            
+        self.participant.on("receive",function(packetContext) {
+            self.receivePacketContext(packetContext);
+        });
     });
+
 };
-//ozpIwc.PacketRouter.mixin(ozpIwc.ApiBase);
 
 //===============================================================
 // Data Management
@@ -46,26 +58,36 @@ ozpIwc.ApiBase.prototype.markForChange=function(/*varargs*/) {
     }
 };
 
+ozpIwc.ApiBase.prototype.addWatcher=function(resource,watcher) {
+    var watchList=this.watchers[resource];
+    if(!Array.isArray(watchList)) {
+        watchList=this.watchers[resource]=[];
+    }
+
+    watchList.push(watcher);
+};
+
 ozpIwc.ApiBase.prototype.resolveChangedNodes=function() {
     ozpIwc.object.eachEntry(this.changeList,function(resource,snapshot) {
         var node=this.data[resource];
         
         if(!node) {
-            return;
+            return Promise.resolve();
         }
         var changes=node.changesSince(snapshot);
 
         this.notifyWatchers(node,changes);
-        
     },this);
     this.changeList={};
 };
 
+        
+        
 ozpIwc.ApiBase.prototype.notifyWatchers=function(node,changes) {
     var watcherList=this.watchers[node.resource];
 
     if(!changes || !watcherList) {
-        return;
+        return Promise.resolve();
     }
 
     var permissions=ozpIwc.authorization.pip.attributeUnion(
@@ -80,7 +102,8 @@ ozpIwc.ApiBase.prototype.notifyWatchers=function(node,changes) {
 
     watcherList.forEach(function(watcher) {
         // @TODO allow watchers to changes notifications if they have permission to either the old or new, not just both
-        var reply={
+        console.log("Notifying " +watcher.src+" of change in " + node.resource);
+        this.participant.send({
             'src'   : this.participant.name,
             'dst'   : watcher.src,
             'replyTo' : watcher.replyTo,
@@ -88,9 +111,7 @@ ozpIwc.ApiBase.prototype.notifyWatchers=function(node,changes) {
             'resource': node.resource,
             'permissions': permissions,
             'entity': entity
-        };
-
-        this.participant.send(reply);
+        });
     },this);
     
 };
@@ -110,6 +131,7 @@ ozpIwc.ApiBase.prototype.receivePacketContext=function(packetContext) {
     
     console.log(routeName+"packet=" + packetContext.packet);
     var self=this;
+    
     return new Promise(function(resolve,reject) {
         try {
             packetContext.node=self.data[packetContext.packet.resource];
@@ -130,6 +152,7 @@ ozpIwc.ApiBase.prototype.receivePacketContext=function(packetContext) {
             'entity': e.message
         });
     }).then(function() {
+        console.log("Resolving changed nodes");
         self.resolveChangedNodes();    
     });
 
@@ -186,12 +209,7 @@ ozpIwc.ApiBase.defaultHandler={
         };
     },
     "watch": function(packet,context,pathParams) {
-        var watchList=this.watchers[packet.resource];
-        if(!Array.isArray(watchList)) {
-            watchList=this.watchers[packet.resource]=[];
-        }
-
-        watchList.push({
+        this.addWatcher(packet.resource,{
             src: packet.src,
             replyTo: packet.msgId
         });
@@ -223,7 +241,7 @@ ozpIwc.createApi=function(init) {
     ozpIwc.PacketRouter.mixin(api);
     api.useDefaultRoute=function(actions,resource) {
         resource = resource || "{resource:.*}";
-        actions=Array.isArray(actions)?actions:[actions];
+        actions=ozpIwc.util.ensureArray(actions);
         actions.forEach(function(a) {
             var filterFunc=ozpIwc.standardApiFilters.forAction(a);
             api.declareRoute({

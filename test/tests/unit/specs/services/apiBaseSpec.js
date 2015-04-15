@@ -3,11 +3,12 @@ TestApi.useDefaultRoute(ozpIwc.ApiBase.allActions);
 
 describe("ApiBase",function() {
 	var apiBase;
-
     
-	beforeEach(function() {	
+    
+	beforeEach(function() {
 		apiBase=new TestApi({
-			'participant': new TestParticipant()
+			'participant': new TestClientParticipant(),
+            'name': "testApiBase.api"
 		});
         
         apiBase.data["/foo"]=new ozpIwc.ApiNode({
@@ -242,7 +243,8 @@ describe("ApiBase",function() {
             });
             return apiBase.receivePacketContext(watchContext).then(function() {
                 return apiBase.receivePacketContext(context);
-            }).then(function() {
+            }).then(pauseForPromiseResolution).then(function() {
+                console.log("Testing expectations");
                 expect(apiBase.participant).toHaveSent({
                     resource: "/foo",
                     dst: "unitTest",
@@ -258,7 +260,7 @@ describe("ApiBase",function() {
             var context=testPacket({action:"delete",resource:"/foo"});
             return apiBase.receivePacketContext(watchContext).then(function() {
                 return apiBase.receivePacketContext(context);
-            }).then(function() {
+            }).then(pauseForPromiseResolution).then(function() {
                 expect(apiBase.participant).toHaveSent({
                     resource: "/foo",
                     dst: "unitTest",
@@ -301,7 +303,7 @@ describe("ApiBase",function() {
             });
             return apiBase.receivePacketContext(watchContext).then(function() {
                 return apiBase.receivePacketContext(context);
-            }).then(function() {
+            }).then(pauseForPromiseResolution).then(function() {
                 expect(apiBase.participant).toHaveSent({
                     resource: "/does-not-exist",
                     dst: "unitTest",
@@ -320,7 +322,7 @@ describe("ApiBase",function() {
             });
             return apiBase.receivePacketContext(watchContext).then(function() {
                 return apiBase.receivePacketContext(context);
-            }).then(function() {
+            }).then(pauseForPromiseResolution).then(function() {
                 expect(context.responses[0].response).toEqual("noResource");
             });
         });

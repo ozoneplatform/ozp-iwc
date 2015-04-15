@@ -1,6 +1,5 @@
 
 ozpIwc.apiFilter={
-
     /**
      * Stores the resource in context.node, creating it via the api's
      * createResource function if it doesn't exist.
@@ -62,7 +61,7 @@ ozpIwc.apiFilter={
         if(!contentType) {
             return ozpIwc.apiFilter.nullFilter;
         }
-        contentType=Array.isArray(contentType)?contentType:[contentType];
+        contentType=ozpIwc.util.ensureArray(contentType);
         return function(packet,context,pathParams,next) {
             if(!contentType.some(function(t) {
                 return t===packet.contentType ||

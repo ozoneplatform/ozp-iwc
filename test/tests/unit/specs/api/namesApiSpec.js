@@ -4,7 +4,8 @@ describe("Names API",function() {
     
 	beforeEach(function() {
 		namesApi=new ozpIwc.NamesApi({
-			'participant': new TestParticipant()
+			'participant': new TestClientParticipant(),
+            'name': "names.test.api"
 		});
 	});
 
@@ -53,7 +54,7 @@ describe("Names API",function() {
       }
     ].forEach(function(r) {
         describe("Resource tree root " + r.resource, function () {
-            var contextFor=function(action) {;
+            var contextFor=function(action) {
                 return new TestPacketContext({
                     'leaderState': "leader",
                     'packet': {

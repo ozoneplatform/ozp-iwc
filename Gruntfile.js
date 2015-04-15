@@ -431,11 +431,23 @@ module.exports = function(grunt) {
 
     });
     // Default task(s).
-    grunt.registerTask('build', ['copy:hackBootstrap', 'jshint', 'concat_sourcemap', 'uglify', 'copy:dist','shell:buildVersionFile']);
-    grunt.registerTask('karmaTests', ['karma:unit','connect:testBus','connect:mockParticipant', 'karma:integrationClient', 'karma:integrationBus']);
-    grunt.registerTask('dist', ['build','karmaTests','yuidoc']);
-    grunt.registerTask('connect-tests', ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']);
-    grunt.registerTask('connect-all', ['build','connect','watch']);
+    grunt.registerTask('build', "Concat and minify the source code into dist",
+        ['copy:hackBootstrap', 'jshint', 'concat_sourcemap', 
+            'uglify', 'copy:dist','shell:buildVersionFile']
+    );
+    
+    grunt.registerTask('karmaTests', "Runs the unit and integration tests.",
+        ['build','karma:unit','connect:testBus','connect:mockParticipant', 'karma:integrationClient', 'karma:integrationBus']
+    );
+    grunt.registerTask('dist', "Builds and tests the full distribution",
+        ['build','karmaTests','yuidoc']
+    );
+    grunt.registerTask('connect-tests', "Runs the tests locally for in-browser testing",
+        ['build','connect:tests','connect:testBus','connect:mockParticipant', 'watch']
+    );
+    grunt.registerTask('connect-all', "Runs tests and demos locally",
+        ['build','connect','watch']
+    );
     grunt.registerTask('releasePatch', ['bump:patch','readpkg','shell:releaseGit']);
     grunt.registerTask('releaseMinor', ['bump:minor','readpkg', 'shell:releaseGit']);
     grunt.registerTask('releaseMajor', ['bump:major','readpkg', 'shell:releaseGit']);

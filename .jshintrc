@@ -43,11 +43,15 @@
     "tick": true,
     "doneSemaphore": true,
     "TestParticipant": true,
+    "TestClientParticipant" : true,
     "TestPacketContext": true,
     "FakeRouter": true,
     "commonApiValueContractTests": true,
     "customMatchers": true,
     "promises": true,
-    "pit": true
+    "pit": true,
+    "pBeforeEach": true,
+    "pAfterEach": true,
+    "pauseForPromiseResolution": true
   }
 }
