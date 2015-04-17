@@ -98,7 +98,6 @@ var customMatchers={
 
 beforeEach(function() {
     jasmine.addMatchers(customMatchers);
-    jasmine.clock().install();
 });
 
 
@@ -125,14 +124,15 @@ var tick=function(t) {
 	}
 };
 
-var pauseForPromiseResolution=function() {
+var pauseForPromiseResolution=function(pause) {
+    //pause=pause || 1500;
     return new Promise(function(resolve) {
-        console.log("Pausing for 5 ms");
+        console.log("Pausing for "+pause+"ms");
         window.setTimeout(function() {
             console.log("Pause done!");
             resolve();
-        },5);
-        tick(5);
+        },pause);
+        tick(pause);
     });
 };
 

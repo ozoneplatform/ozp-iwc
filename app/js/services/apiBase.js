@@ -1,11 +1,9 @@
 ozpIwc.ApiBase=function(config) {
-	if(!config.participant) {
-        throw Error("API must be configured with a participant");
-    }
-    if(!config.name) {
+	if(!config.name) {
         throw Error("API must be configured with a name");
     }
-    this.participant=config.participant;
+    this.router=config.router || ozpIwc.defaultRouter;
+    
     this.name=config.name;
     this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
@@ -16,20 +14,35 @@ ozpIwc.ApiBase=function(config) {
     
     this.changeList={};
     this.isLeader=false;
-    
+
+    //TODO: flush the packet queue if someone else is the leader
+    this.enablePacketQueue();
+
+    this.participant=new ozpIwc.ClientParticipant();
+    this.router.registerParticipant(this.participant);
+    this.router.registerMulticast(this.participant,[this.name]);
+
     var self=this;
+    this.participant.on("receive",function(packetContext) {
+        if(self.isLeader) {
+            self.receivePacketContext(packetContext);
+        } else { 
+            self.queuePacket(packetContext);
+        }
+    });
+    
     this.leaderPromise=this.participant.send({
         dst: "locks.api",
         resource: "/mutex/"+this.name,
         action: "lock"
     }).then(function() {
         self.isLeader=true;
-            
-        self.participant.on("receive",function(packetContext) {
-            self.receivePacketContext(packetContext);
-        });
+        console.log("["+self.name+"] Became leader [address="+self.participant.address+"]");
+        self.deliverPacketQueue();
     });
-
+    this.leaderPromise.catch(function(e) {
+        console.error("Error registering for leader mutex [address="+self.participant.address+",api="+self.name+"]",e);
+    });
 };
 
 //===============================================================
@@ -39,6 +52,44 @@ ozpIwc.ApiBase=function(config) {
 ozpIwc.ApiBase.prototype.checkAuthorization=function(node,context,packet,action) {
   return true;
 };
+
+ozpIwc.ApiBase.prototype.matchingNodes=function(prefix) {
+    return ozpIwc.object.values(this.data, function(k,node) { 
+        return node.resource.indexOf(prefix) >=0;
+    });
+};
+
+//===============================================================
+// API Packet Queuing and ready state
+//===============================================================
+ozpIwc.ApiBase.prototype.queuePacket=function(packetContext) {
+    if(this.isPacketQueueing) {
+        this.packetQueue.push(packetContext);
+    }
+};
+
+ozpIwc.ApiBase.prototype.enablePacketQueue=function() {
+    this.isPacketQueueing=true;
+    this.packetQueue=[];
+};
+
+ozpIwc.ApiBase.prototype.deliverPacketQueue=function() {
+    this.packetQueue.forEach(function(packetContext) {
+        console.log("["+this.name+"] Delayed delivery on ",packetContext);
+        this.receivePacketContext(packetContext);
+    },this);
+    this.flushPacketQueue();
+};
+
+ozpIwc.ApiBase.prototype.flushPacketQueue=function() {
+    this.isPacketQueueing=false;
+    this.packetQueue=[];
+};
+
+
+//===============================================================
+// Watches
+//===============================================================
 
 ozpIwc.ApiBase.prototype.markForChange=function(/*varargs*/) {
     for(var i=0;i<arguments.length;++i) {
@@ -116,18 +167,13 @@ ozpIwc.ApiBase.prototype.notifyWatchers=function(node,changes) {
     
 };
 
-ozpIwc.ApiBase.prototype.matchingNodes=function(prefix) {
-    return ozpIwc.object.values(this.data, function(k,node) { 
-        return node.resource.indexOf(prefix) >=0;
-    });
-};
 
 //===============================================================
 // Packet Routing
 //===============================================================
 ozpIwc.ApiBase.prototype.receivePacketContext=function(packetContext) {
     var packet=packetContext.packet;
-    var routeName="Routing["+packet.action+" "+packet.resource+"] ";
+    var routeName="["+this.name+"] Routing ("+packet.action+" "+packet.resource+") ";
     
     console.log(routeName+"packet=" + packetContext.packet);
     var self=this;
@@ -140,19 +186,19 @@ ozpIwc.ApiBase.prototype.receivePacketContext=function(packetContext) {
             reject(e);
         }
     }).then(function(packetFragment) {
-//        console.log("Route completed successfully with ",packetFragment);
+        console.log(routeName + "completed successfully with ",packetFragment);
         if(packetFragment) {
             packetFragment.response = packetFragment.response || "ok";
-            packetContext.replyTo(packetFragment);
+            self.participant.send(packetContext.makeReplyTo(packetFragment));
         }
     },function(e) {
-        console.log(routeName+"failed with ",e);
-        packetContext.replyTo({
+        console.log(routeName+"failed with "+e.toString());
+        self.participant.send(packetContext.makeReplyTo({
+            'src': self.name,
             'response': e.errorAction || "errorUnknown",
             'entity': e.message
-        });
+        }));
     }).then(function() {
-        console.log("Resolving changed nodes");
         self.resolveChangedNodes();    
     });
 

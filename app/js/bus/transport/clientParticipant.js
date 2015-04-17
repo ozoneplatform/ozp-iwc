@@ -19,7 +19,7 @@ ozpIwc.ClientParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(config) 
 
     var self = this;
     this.connectPromise=new Promise(function(resolve,reject) {
-        this.on("connectedToRouter",function() {
+        self.on("connectedToRouter",function() {
             resolve();
             self.permissions.pushIfNotExist('ozp:iwc:address', self.address);
             self.permissions.pushIfNotExist('ozp:iwc:sendAs',self.address);
@@ -47,6 +47,7 @@ ozpIwc.ClientParticipant.prototype.receiveFromRouterImpl=function(packetContext)
         } else {
             this.events.trigger("receive",packetContext);
         }
+        return; // dummy statement to help with breakpoints
     }    
 };
 

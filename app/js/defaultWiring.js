@@ -39,45 +39,44 @@ if(typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
         };
 
         ozpIwc.initEndpoints(ozpIwc.apiRootUrl || "api");
+        
+        ozpIwc.locksApi = new ozpIwc.LocksApi({
+            'participant': new ozpIwc.LeaderGroupParticipant({
+                'name': "locks.api",
+                'states': ozpIwc.defaultLeadershipStates(),
+                electionTimeout: ozpIwc.ELECTION_TIMEOUT
+            })
+        });
+        ozpIwc.defaultRouter.registerParticipant(ozpIwc.locksApi.participant);
 
+        ozpIwc.namesApi = new ozpIwc.NamesApi({'name': "names.api"});
 
-//        ozpIwc.namesApi = new ozpIwc.NamesApi({
+//        ozpIwc.dataApi = new ozpIwc.DataApi({
 //            'participant': new ozpIwc.LeaderGroupParticipant({
-//                'name': "names.api",
+//                'name': "data.api",
 //                'states': ozpIwc.defaultLeadershipStates(),
 //                electionTimeout: ozpIwc.ELECTION_TIMEOUT
-//            }),
-//            'heartbeatDropCount': 3,
-//            'heartbeatFrequency': ozpIwc.heartBeatFrequency
+//            })
 //        });
-//        ozpIwc.defaultRouter.registerParticipant(ozpIwc.namesApi.participant);
-
-        ozpIwc.dataApi = new ozpIwc.DataApi({
-            'participant': new ozpIwc.LeaderGroupParticipant({
-                'name': "data.api",
-                'states': ozpIwc.defaultLeadershipStates(),
-                electionTimeout: ozpIwc.ELECTION_TIMEOUT
-            })
-        });
-        ozpIwc.defaultRouter.registerParticipant(ozpIwc.dataApi.participant);
-
-        ozpIwc.intentsApi = new ozpIwc.IntentsApi({
-            'participant': new ozpIwc.LeaderGroupParticipant({
-                'name': "intents.api",
-                'states': ozpIwc.defaultLeadershipStates(),
-                electionTimeout: ozpIwc.ELECTION_TIMEOUT
-            })
-        });
-        ozpIwc.defaultRouter.registerParticipant(ozpIwc.intentsApi.participant);
-
-        ozpIwc.systemApi = new ozpIwc.SystemApi({
-            'participant': new ozpIwc.LeaderGroupParticipant({
-                'name': "system.api",
-                'states': ozpIwc.defaultLeadershipStates(),
-                electionTimeout: ozpIwc.ELECTION_TIMEOUT
-            })
-        });
-        ozpIwc.defaultRouter.registerParticipant(ozpIwc.systemApi.participant);
+//        ozpIwc.defaultRouter.registerParticipant(ozpIwc.dataApi.participant);
+//
+//        ozpIwc.intentsApi = new ozpIwc.IntentsApi({
+//            'participant': new ozpIwc.LeaderGroupParticipant({
+//                'name': "intents.api",
+//                'states': ozpIwc.defaultLeadershipStates(),
+//                electionTimeout: ozpIwc.ELECTION_TIMEOUT
+//            })
+//        });
+//        ozpIwc.defaultRouter.registerParticipant(ozpIwc.intentsApi.participant);
+//
+//        ozpIwc.systemApi = new ozpIwc.SystemApi({
+//            'participant': new ozpIwc.LeaderGroupParticipant({
+//                'name': "system.api",
+//                'states': ozpIwc.defaultLeadershipStates(),
+//                electionTimeout: ozpIwc.ELECTION_TIMEOUT
+//            })
+//        });
+//        ozpIwc.defaultRouter.registerParticipant(ozpIwc.systemApi.participant);
     }
     if (typeof ozpIwc.acceptPostMessageParticipants === "undefined" ||
         ozpIwc.acceptPostMessageParticipants

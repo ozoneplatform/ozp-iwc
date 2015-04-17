@@ -167,8 +167,9 @@ ozpIwc.Client=function(config) {
     this.launchedIntents = [];
 
     this.constructApiFunctions();
-
-    window.addEventListener('beforeunload',this.disconnect);
+    var self=this;
+    this.unloadHandler=function() { self.disconnect();};
+    window.addEventListener('beforeunload',this.unloadHandler);
 
     if(this.autoConnect) {
         this.connect();
@@ -487,12 +488,14 @@ ozpIwc.Client.prototype.disconnect=function() {
     this.promiseCallbacks={};
     this.registeredCallbacks={};
     window.removeEventListener("message",this.postMessageHandler,false);
+    window.removeEventListener("unload",this.unloadHandler);
+    
     this.connectPromise = null;
     if(this.iframe) {
         this.iframe.src = "about:blank";
         var self = this;
         window.setTimeout(function(){
-            document.body.removeChild(self.iframe);
+            self.iframe.remove();
             self.iframe = null;
         },0);
     }

@@ -106,6 +106,16 @@ ozpIwc.TransportPacketContext=function(config) {
     }
 };
 
+ozpIwc.TransportPacketContext.prototype.makeReplyTo=function(response){
+    var now=new Date().getTime();
+    response.ver = response.ver || 1;
+    response.time = response.time || now;
+    response.replyTo=response.replyTo || this.packet.msgId;
+    response.src=response.src || this.packet.dst;
+    response.dst=response.dst || this.packet.src;
+    return response;
+};
+
 /**
  * @method replyTo
  * @param {ozpIwc.TransportPacket} response
@@ -113,16 +123,11 @@ ozpIwc.TransportPacketContext=function(config) {
  * @returns {ozpIwc.TransportPacket} the packet that was sent
  */
 ozpIwc.TransportPacketContext.prototype.replyTo=function(response) {
-    var now=new Date().getTime();
-    response.ver = response.ver || 1;
-    response.time = response.time || now;
-    response.replyTo=response.replyTo || this.packet.msgId;
-    response.src=response.src || this.packet.dst;
-    response.dst=response.dst || this.packet.src;
+    response=this.makeReplyTo(response);
     if(this.dstParticipant) {
         this.dstParticipant.send(response);
     } else{
-        response.msgId = response.msgId || now;
+        response.msgId = response.msgId || ozpIwc.util.now();
         this.router.send(response);
     }
     return response;

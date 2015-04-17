@@ -11,7 +11,14 @@
     <script type="text/javascript" src="../../jasmine-iwc-html-reporter.js"></script>
     <script type="text/javascript" src="/jasmine-core/boot.js"></script>
     <script type="text/javascript">
-        //jasmine.DEFAULT_TIMEOUT_INTERVAL=10000;
+       jasmine.DEFAULT_TIMEOUT_INTERVAL=10000;
+        // Clear out the window.name in case it's left over from previous failed tests
+        window.name="";
+        // Make sure that the async actions completely resolve after each test
+        afterEach(function() {
+            tick(5);
+        });
+        
     </script>
 
     <script type="text/javascript" src="/js/ozpIwc-client.js"></script>
@@ -19,10 +26,10 @@
     <script type="text/javascript" src="/mockParticipant/js/mockParticipant.js"></script>
 
     <script type="text/javascript" src="specs/clientSpec.js"></script>
-    <script type="text/javascript" src="specs/apis/dataApiSpec.js"></script>
-    <script type="text/javascript" src="specs/apis/intentsApiSpec.js"></script>
     <script type="text/javascript" src="specs/apis/namesApiSpec.js"></script>
-    <script type="text/javascript" src="specs/apis/systemApiSpec.js"></script>
+    <!--script type="text/javascript" src="specs/apis/dataApiSpec.js"></script>
+    <script type="text/javascript" src="specs/apis/intentsApiSpec.js"></script>
+    <script type="text/javascript" src="specs/apis/systemApiSpec.js"></script-->
 
     <!-- include spec files here... -->
     <!---

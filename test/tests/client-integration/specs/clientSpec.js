@@ -28,23 +28,16 @@ describe("IWC Client", function() {
         }
     });
 
-    it("Can be used before the connection is fully established", function(done) {
+    pit("Can be used before the connection is fully established", function() {
         client = new ozpIwc.Client({
             'peerUrl': "http://" + window.location.hostname + ":14002"
         });
         
-        var gate = doneSemaphore(2, done);
-        client.send({
-            'dst': "data.api",
+        return client.send({
+            'dst': "names.api",
             'action': "get",
-            'resource': ""
-        }).then(function(response) {
-            gate();
+            'resource': "/address"
         });
-        
-        client.on("connected",gate);
-        
-        
     });
 
     describe("", function() {
@@ -59,12 +52,13 @@ describe("IWC Client", function() {
             });
 
             var gate = doneSemaphore(2, done);
-
             participant.on("connected", function(){
                 gate();
             });
-            client.on("connected", function(){
+            client.connect().then(function(){
                 gate();
+            }).catch(function(e){
+                console.error("IWC Client failed to connect due to ",e);
             });
         });
 
@@ -112,7 +106,7 @@ describe("IWC Client", function() {
 
         });
 
-        xit('sends 15mb packets', function(done) {
+        it('sends 15mb packets', function(done) {
             client.on("receive", function(packet) {
                 if (packet.entity.bulkyData) {
                     expect(packet.entity.bulkyData.length).toEqual(19131876);
@@ -216,7 +210,7 @@ describe("IWC Client", function() {
              });
         });
         
-        it("fetches the mailbox when passed ozpIwc.mailbox",function(done) {
+        xit("DISABLED PENDING INTENTS.API REFACTOR --fetches the mailbox when passed ozpIwc.mailbox",function(done) {
              window.name="ozpIwc.inFlightIntent=\"/ozpIntents/invocations/123\"";
              client=new ozpIwc.Client({
                  peerUrl: "http://" + window.location.hostname + ":14002",

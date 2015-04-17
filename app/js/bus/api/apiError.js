@@ -49,6 +49,10 @@ ozpIwc.ApiError=ozpIwc.util.extend(Error,function(action,message) {
     this.message=message;
 });
 
+ozpIwc.ApiError.prototype.toString=function() {
+    return this.name+":"+JSON.stringify(this.message);
+};
+
 ozpIwc.ApiError.subclass=function(response) {
     return ozpIwc.util.extend(ozpIwc.ApiError,function(message) {
         ozpIwc.ApiError.call(this,response,message);

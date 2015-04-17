@@ -164,6 +164,7 @@ var FakeRouter = function() {
 };
 
 beforeEach(function() {
+    jasmine.clock().install();
     jasmine.addMatchers({
         toHaveSent: function(util, customEqualityTesters) { return {
 		compare: function(participant,expected) {

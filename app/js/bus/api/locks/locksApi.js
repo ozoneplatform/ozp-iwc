@@ -47,10 +47,11 @@ ozpIwc.LocksApi.prototype.makeValue = function(packet) {
 };
 
 ozpIwc.LocksApi.prototype.updateLock=function(node,newOwner) {
-    console.log("New lock owner: ",newOwner);
     if(!newOwner) {
+        console.log("[locks.api] Unused lock " + node.resource);
         return;
     }
+    console.log("[locks.api] New lock owner on " + node.resource + ": ",newOwner);
     var pkt={
         'dst'   : newOwner.src,
         'src'   : this.participant.name,
@@ -58,7 +59,6 @@ ozpIwc.LocksApi.prototype.updateLock=function(node,newOwner) {
         'response': 'ok',
         'resource': node.resource
     };
-    console.log("Sending ",pkt);
     
     this.participant.send(pkt);
 };

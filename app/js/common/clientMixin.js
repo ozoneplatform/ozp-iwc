@@ -13,9 +13,10 @@
  */
 ozpIwc.ClientMixin=function(client) {
     client.cmReplyCallbacks={};
-    client.cmMsgIdSequence=0;
+    client.cmMsgIdSequence=1;
     client.connectPromise = client.connectPromise || Promise.resolve();
     client.send=ozpIwc.ClientMixin.send;
+    client.routeToReplies=ozpIwc.ClientMixin.routeToReplies;
 };
 
 ozpIwc.ClientMixin.routeToReplies=function(packet) {
@@ -48,7 +49,7 @@ ozpIwc.ClientMixin.send=function(packetFragment,callback) {
     packet.msgId=packet.msgId || this.cmMsgIdSequence++;
     
     return this.connectPromise.then(function() { 
-        self.sendImpl(packetFragment);
+        self.sendImpl(packet);
         return new Promise(function(resolve,reject) {
             self.cmReplyCallbacks[packet.msgId]=function(reply,done) {
                 if(!callback) {

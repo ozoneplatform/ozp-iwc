@@ -102,11 +102,23 @@ ozpIwc.NamesApi.declareRoute({
 //====================================================================
 // Multicast endpoints
 //====================================================================
-ozpIwc.NamesApi.useDefaultRoute(["get","delete","watch","unwatch"],"/multicast/{addr}");
+ozpIwc.NamesApi.useDefaultRoute(["get","delete","watch","unwatch"],"/multicast/{group}");
+ozpIwc.NamesApi.useDefaultRoute(["get","delete","watch","unwatch"],"/multicast/{group}/{memberAddr}");
 
 ozpIwc.NamesApi.declareRoute({
     action: "set",
     resource: "/multicast/{addr}",
+    filters: ozpIwc.standardApiFilters.setFilters(ozpIwc.ApiNode,"application/vnd.ozp-iwc-multicast-address-v1+json")
+}, function(packet,context,pathParams) {
+    // validate that the entity is an address
+    
+    //
+    context.node.set(packet);
+    return {response:"ok"};
+});
+ozpIwc.NamesApi.declareRoute({
+    action: "set",
+    resource: "/multicast/{group}/{member}",
     filters: ozpIwc.standardApiFilters.setFilters(ozpIwc.ApiNode,"application/vnd.ozp-iwc-multicast-address-v1+json")
 }, function(packet,context,pathParams) {
     // validate that the entity is an address
