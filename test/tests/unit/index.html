@@ -14,12 +14,22 @@
           // These should be customized by the deployment
           var ozpIwc = ozpIwc || {};
           ozpIwc.enableDefault=false;
+          
+          // All unit tests need to fake out the clock
+          beforeEach(function() {
+            jasmine.clock().install();
+          });
+          afterEach(function() {
+            jasmine.clock().uninstall();
+          });
       </script>
 		<script type="text/javascript" src="/js/ozpIwc-bus.js"></script>
         <script type="text/javascript" src="/js/ozpIwc-client.js"></script>
 		<!-- include spec files here... -->
 		<script type="text/javascript" src="/lib/testTools.js"></script>
-		<script type="text/javascript" src="mockObjects.js"></script>
+		<script type="text/javascript" src="/lib/mockTime.js"></script>
+		<script type="text/javascript" src="/lib/jasmine-promises.js"></script>
+        <script type="text/javascript" src="mockObjects.js"></script>
 
 
 		<script type="text/javascript" src="specs/customMatcherSpec.js"></script>

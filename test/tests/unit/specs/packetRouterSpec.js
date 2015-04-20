@@ -438,7 +438,7 @@ describe("Packet Routing", function() {
             })).toEqual({filters:["1","2"]});
        });
 
-        it("allows the handler to return a promise",promises(function() {
+        pit("allows the handler to return a promise",function() {
             router.declareRoute({
                 action: "get",
                 resource: "/{id}",
@@ -455,9 +455,9 @@ describe("Packet Routing", function() {
             }).then(function(val) {
                 expect(val).toEqual({filters:["1"]});
             });
-        }));
+        });
         
-        it("allows filters to return promises",promises(function() {
+        pit("allows filters to return promises",function() {
             var promiseFilter=function(name) {
                 return function(packet,context,pathParams,next) {
                     console.log("Filter: "+name);
@@ -485,7 +485,7 @@ describe("Packet Routing", function() {
             }).then(function(val) {
                 expect(val).toEqual({filters:["1","2"]});
             });
-       }));
+       });
 
        var promiseChainTest=function(filterChain) {
             router.declareRoute({
@@ -505,19 +505,19 @@ describe("Packet Routing", function() {
             });
        };
         
-       it("allows immediate filters to follow promise filters",promises(function() {
+       pit("allows immediate filters to follow promise filters",function() {
             return promiseChainTest([promiseFilter("1"),testFilter("2")])
                 .then(function(val) {
                     expect(val).toEqual({filters:["1","2","handler"]});
                 });
-       }));
-       it("allows promise filters to follow immediate filters",promises(function() {
+       });
+       pit("allows promise filters to follow immediate filters",function() {
             return promiseChainTest([testFilter("1"),promiseFilter("2")])
                 .then(function(val) {
                     expect(val).toEqual({filters:["1","2","handler"]});
                 });
-       }));
-       it("allows a series of mixed promise/immediate filters",promises(function() {
+       });
+       pit("allows a series of mixed promise/immediate filters",function() {
             return promiseChainTest([
                 testFilter("1"),
                 promiseFilter("2"),
@@ -527,7 +527,7 @@ describe("Packet Routing", function() {
             ]).then(function(val) {
                 expect(val).toEqual({filters:["1","2","3","4","5","handler"]});
             });
-       }));
+       });
        
     });
     describe("class augmentation features",function() {

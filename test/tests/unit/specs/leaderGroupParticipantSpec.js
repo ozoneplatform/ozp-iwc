@@ -12,7 +12,7 @@ describe("Leader Group Participant",function() {
 
 	var tick=function(t) {
 		fakeRouter.pump();
-		jasmine.clock().tick(t);
+		ozpIwc.testUtil.tick(t);
 		fakeRouter.pump();
 	};
 
@@ -25,7 +25,7 @@ describe("Leader Group Participant",function() {
 		while(!elected) {
 //			console.log("============= Round " + round + " ===================");
 			round++;
-			jasmine.clock().tick(step);
+			ozpIwc.testUtil.tick(step);
 			fakeRouter.pump();
 
 			elected=fakeRouter.participants.some(leaderStatus);

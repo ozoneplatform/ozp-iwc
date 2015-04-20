@@ -54,7 +54,7 @@ TestParticipant.prototype.send = function(packet, callback) {
         packet=e;
     }
     // tick to trigger the async send
-    tick(0);
+    ozpIwc.testUtil.tick(0);
     return packet;
 };
 
@@ -89,16 +89,6 @@ var TestClientParticipant=ozpIwc.util.extend(TestParticipant,function() {
 });
 TestClientParticipant.prototype.sendImpl=TestParticipant.prototype.send;
 
-var FakePeer = function() {
-    this.events = new ozpIwc.Event();
-
-    this.events.mixinOnOff(this);
-
-    this.packets = [];
-    this.send = function(packet) {
-        this.packets.push(packet);
-    };
-};
 
 //================================================
 // Packetbuilders for testing API classes
@@ -113,7 +103,9 @@ var TestPacketContext = ozpIwc.util.extend(ozpIwc.TransportPacketContext, functi
         }
     };
 });
-
+//================================================
+// Fake Router
+//================================================
 var FakeRouter = function() {
     this.jitter = 0;
     this.events = new ozpIwc.Event();
@@ -163,29 +155,22 @@ var FakeRouter = function() {
     };
 };
 
-beforeEach(function() {
-    jasmine.clock().install();
-    jasmine.addMatchers({
-        toHaveSent: function(util, customEqualityTesters) { return {
-		compare: function(participant,expected) {
-            if(!((participant instanceof TestParticipant) || (participant instanceof TestPacketContext)) ) {
-                return {
-					pass: false,
-					message: "Expected " + participant + " to be a TestParticipant"
-				};
-            }
-            
-            var sentPackets=participant.sentPackets || participant.responses;
-            
-            var contains=util.contains(sentPackets,jasmine.objectContaining(expected),customEqualityTesters);
-            return {
-                pass: contains,
-                message: "Expected the participant to " + (contains?"NOT ":"") + "have sent " +
-                    JSON.stringify(expected) +
-                    ", but it sent packets " +
-                    JSON.stringify(sentPackets,null,2)
-            };
-		}
-	};}
-    });
-});
+ozpIwc.testUtil.customMatchers.toHaveSent=function(util, customEqualityTesters) { return { compare: function(participant,expected) {
+    if(!((participant instanceof TestParticipant) || (participant instanceof TestPacketContext)) ) {
+        return {
+            pass: false,
+            message: "Expected " + participant + " to be a TestParticipant"
+        };
+    }
+
+    var sentPackets=participant.sentPackets || participant.responses;
+
+    var contains=util.contains(sentPackets,jasmine.objectContaining(expected),customEqualityTesters);
+    return {
+        pass: contains,
+        message: "Expected the participant to " + (contains?"NOT ":"") + "have sent " +
+            JSON.stringify(expected) +
+            ", but it sent packets " +
+            JSON.stringify(sentPackets,null,2)
+    };
+}};};

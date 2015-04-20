@@ -4,8 +4,9 @@ describe("Names API",function() {
     
 	beforeEach(function() {
 		namesApi=new ozpIwc.NamesApi({
+            'name': "names.test.api",
 			'participant': new TestClientParticipant(),
-            'name': "names.test.api"
+            'router': new FakeRouter()
 		});
 	});
 

@@ -8,9 +8,9 @@ describe("ApiBase",function() {
 	beforeEach(function() {
 		apiBase=new TestApi({
 			'participant': new TestClientParticipant(),
-            'name': "testApiBase.api"
+            'name': "testApiBase.api",
+            'router': new FakeRouter()
 		});
-        
         apiBase.data["/foo"]=new ozpIwc.ApiNode({
             resource: "/foo",
             self: "https://example.com/iwc/foo",

@@ -5,7 +5,6 @@ describe("IWC Client", function() {
     var client;
     var participant;
 
-//    extend(setTimeout,function(){tick(1);});
     var pinger = function(remoteClient, testAddress) {
         var sendTick = function() {
             remoteClient.send({
@@ -51,7 +50,7 @@ describe("IWC Client", function() {
                 'client': client
             });
 
-            var gate = doneSemaphore(2, done);
+            var gate = ozpIwc.testUtil.doneSemaphore(2, done);
             participant.on("connected", function(){
                 gate();
             });

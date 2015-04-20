@@ -2,8 +2,8 @@ ozpIwc.ApiBase=function(config) {
 	if(!config.name) {
         throw Error("API must be configured with a name");
     }
-    this.router=config.router || ozpIwc.defaultRouter;
-    
+    this.participant=config.participant || new ozpIwc.ClientParticipant();
+
     this.name=config.name;
     this.events = new ozpIwc.Event();
     this.events.mixinOnOff(this);
@@ -15,12 +15,12 @@ ozpIwc.ApiBase=function(config) {
     this.changeList={};
     this.isLeader=false;
 
-    //TODO: flush the packet queue if someone else is the leader
     this.enablePacketQueue();
 
-    this.participant=new ozpIwc.ClientParticipant();
-    this.router.registerParticipant(this.participant);
-    this.router.registerMulticast(this.participant,[this.name]);
+    var router=config.router || ozpIwc.defaultRouter;
+    router.registerParticipant(this.participant);
+    router.registerMulticast(this.participant,[this.name]);
+
 
     var self=this;
     this.participant.on("receive",function(packetContext) {
@@ -189,15 +189,18 @@ ozpIwc.ApiBase.prototype.receivePacketContext=function(packetContext) {
         console.log(routeName + "completed successfully with ",packetFragment);
         if(packetFragment) {
             packetFragment.response = packetFragment.response || "ok";
-            self.participant.send(packetContext.makeReplyTo(packetFragment));
+            packetContext.replyTo(packetFragment);
+//            self.participant.send(packetContext.makeReplyTo(packetFragment));
         }
     },function(e) {
         console.log(routeName+"failed with "+e.toString());
-        self.participant.send(packetContext.makeReplyTo({
+        var packetFragment={
             'src': self.name,
             'response': e.errorAction || "errorUnknown",
             'entity': e.message
-        }));
+        };
+        packetContext.replyTo(packetFragment);
+//        self.participant.send(packetContext.makeReplyTo(packetFragment));
     }).then(function() {
         self.resolveChangedNodes();    
     });

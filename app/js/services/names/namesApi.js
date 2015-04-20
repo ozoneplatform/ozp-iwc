@@ -4,13 +4,11 @@
 
 /**
  * The Names Api. Collects information about current IWC state, Manages names, aliases, and permissions through the IWC.
- * Subclasses the {{#crossLink "ozpIwc.CommonApiBase"}}{{/crossLink}}. Utilizes the
- * {{#crossLink "ozpIwc.NamesApiValue"}}{{/crossLink}} which subclasses the
- * {{#crossLink "ozpIwc.CommonApiValue"}}{{/crossLink}}.
+ * Subclasses the {{#crossLink "ozpIwc.ApiBase"}}{{/crossLink}}.
  *
  * @class NamesApi
  * @namespace ozpIwc
- * @extends ozpIwc.CommonApiBase
+ * @extends ozpIwc.ApiBase
  * @constructor
  *
  * @type {Function}

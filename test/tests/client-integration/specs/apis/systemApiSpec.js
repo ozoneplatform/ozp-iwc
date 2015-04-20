@@ -15,7 +15,7 @@ describe("System API", function() {
 //            'client': client
 //        });
 //
-//        var gate = doneSemaphore(2, done);
+//        var gate = ozpIwc.testUtil.doneSemaphore(2, done);
 //
 //        participant.on("connected", gate);
         client.on("connected", done);
@@ -91,17 +91,16 @@ describe("System API", function() {
         });
     });
     
-    it("registers for the intent run /application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",promises(function() {
-       return client.api("intents.api").get("/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api")
-           .then(function(reply) {
-               console.log("Received Reply",reply);
-               expect(reply.response).toEqual("ok");
-               expect(reply.entity.invokeIntent).toBeDefined();
-               expect(reply.entity.invokeIntent.action).toEqual("invoke");
-               expect(reply.entity.invokeIntent.dst).toEqual("system.api");
-           });
-    }));
-    it("launch on system.api invokes the intent run /application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",promises(function() {
+    pit("registers for the intent run /application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",function() {
+        return client.api("intents.api").get("/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api")
+            .then(function(reply) {
+                expect(reply.response).toEqual("ok");
+                expect(reply.entity.invokeIntent).toBeDefined();
+                expect(reply.entity.invokeIntent.action).toEqual("invoke");
+                expect(reply.entity.invokeIntent.dst).toEqual("system.api");
+        });
+    });
+    pit("launch on system.api invokes the intent run /application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",function() {
         // hijack the system.api's intent registration so that we get it
        return client.api("intents.api").set("/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",{
             contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
@@ -142,5 +141,5 @@ describe("System API", function() {
                 }
             }));
         });
-    }));
+    });
 });

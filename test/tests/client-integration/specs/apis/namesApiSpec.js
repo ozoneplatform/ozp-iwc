@@ -16,7 +16,7 @@ describe("Names API", function () {
             'client': client
         });
         
-        var gate=doneSemaphore(2,done);
+        var gate=ozpIwc.testUtil.doneSemaphore(2,done);
 //        window.setTimeout(done,10);
 
         participant.on("connected",gate);
@@ -116,7 +116,6 @@ describe("Names API", function () {
         pit('Client sets values', function() {
             console.log("[NamesApiSpec] Sending names.api set");
             var rv=client.api('names.api').set(testId,testFragment)
-//                .then(pauseForPromiseResolution())
                 .then(function(reply) {
                     console.log("[NamesApiSpec] Set succeeded with",reply);
                     expect(reply.response).toEqual('ok');

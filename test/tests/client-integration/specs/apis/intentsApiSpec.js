@@ -16,7 +16,7 @@ describe("Intents API", function () {
 //            'client': client
 //        });
 
-        var gate=doneSemaphore(1,done);
+        var gate=ozpIwc.testUtil.doneSemaphore(1,done);
 
 //        participant.on("connected",gate);
         client.on("connected",gate);
@@ -137,7 +137,7 @@ describe("Intents API", function () {
 
     it('broadcasts to all handlers of a definition', function(done){
 
-        var gate=doneSemaphore(2,done);
+        var gate=ozpIwc.testUtil.doneSemaphore(2,done);
 
         client.api('intents.api').register('/text/plain/view', {
             contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
