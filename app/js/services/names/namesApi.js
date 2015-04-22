@@ -14,22 +14,6 @@
  * @type {Function}
  */
 ozpIwc.NamesApi = ozpIwc.createApi(function(config) {
-    /**
-     * How often a heartbeat message should occur.
-     * @property heartbeatFrequency
-     * @type {Number}
-     * @default 10000
-     */
-    this.heartbeatFrequency = config.heartbeatFrequency || 10000;
-
-    /**
-     * The amount of heartbeats to drop an unresponsive participant after
-     * @property heartbeatDropCount
-     * @type {number|*}
-     * @default 3
-     */
-    this.heartbeatDropCount = config.heartbeatDropCount || 3;
-    
     for(var key in ozpIwc.apiMap){
         var api = ozpIwc.apiMap[key];
         var resourceName='/api/' + api.address;

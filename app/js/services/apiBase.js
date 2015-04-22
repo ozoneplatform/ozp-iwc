@@ -1,3 +1,29 @@
+
+/**
+ * The base class for APIs. Use {{#crossLink "ozpIwc.createApi"}}{{/crossLink}} to subclass
+ * this.
+ * 
+ * Leader State Management
+ * =======================
+ * The base API uses locks.api to always have a single leader at a time.  An api instance goes
+ * through a linear series of states:  member -> loading -> leader
+ * * __member__ does not service requests
+ * * __loading__ is a transitory state between acquiring the leader lock and being ready to serve requests
+ * * __leader__ actively serves requests and broadcasts a death scream upon shutdown
+ *
+ * The member state has two substates-- ready and dormant
+ *  * __ready__ queues requests in case it has to become leader.  switches back to dormant on discovering a leader
+ *  * __dormant__ silently drops requests.  Upon hearing a deathScream, it switches to ready.
+
+ * @class ApiBase
+ * @module ozpIwc
+ * @namespace ozpIwc
+ * @constructor
+ * @param {Object} config
+ * @param {String} config.name The api address (e.g. "names.api")
+ * @param {ozpIwc.ClientMixin} [config.participant] The connection to use for communication
+ * @param {ozpIwc.Router} [config.router=ozpIwc.defaultRouter] The router to connect to
+ */
 ozpIwc.ApiBase=function(config) {
 	if(!config.name) {
         throw Error("API must be configured with a name");
@@ -47,8 +73,14 @@ ozpIwc.ApiBase=function(config) {
 //===============================================================
 /**
  * Create the data that needs to be handed off to the new leader.
- * This MUST be a synchronous call that returns immediately.
- * @returns {object}
+ *
+ * __Intended to be overridden by subclasses__
+ * 
+ * Subsclasses can override this if they need to add additional
+ * handoff data.  This MUST be a synchronous call that returns immediately.
+ *
+ * @method createDeathScream
+ * @return {Object} the data that will be passed to the new leader
  */
 ozpIwc.ApiBase.prototype.createDeathScream=function() {
     return {
@@ -63,17 +95,23 @@ ozpIwc.ApiBase.prototype.createDeathScream=function() {
  * Called when the API has become the leader, but before it starts
  * serving data.  Receives the deathScream of the previous leader
  * if available, otherwise undefined.
- * @param {type} deathScream
- * @returns {undefined}
+ * 
+ * __Intended to be overridden by subclasses__
+ * 
+ * Subsclasses can override this to load data from the server.
+ *  
+ * @method initializeData
+ * @param {object} deathScream
+ * @return {Promise} a promise that resolves when all data is loaded.
  */
 ozpIwc.ApiBase.prototype.initializeData=function(deathScream) {
     deathScream=deathScream || { watchers: {}, data: []};
     this.watchers=deathScream.watchers;
-    var results=deathScream.data.map(function(packet) {
+    deathScream.data.forEach(function(packet) {
         this.data[packet.resource]=new ozpIwc.ApiNode({resource: packet.resource});
         this.data[packet.resource].deserialize(packet);
     },this);
-    return Promise.all(results);
+    return Promise.resolve();
 };
 
 
@@ -81,21 +119,12 @@ ozpIwc.ApiBase.prototype.initializeData=function(deathScream) {
 //===============================================================
 // Leader state management
 //===============================================================
-// States: member -> loading -> leader
-//   member: see member substates
-//      -> loading on acquiring lock
-//   loading: loads data from deathscream and server
-//      -> leader   on loading complete
-//   leader: responds to requests
-//      -> terminal  on unload/shutdown
-//   terminal: emits deathscream
 
-// Member substates:  ready <-> dormant
-//  ready: queues requests in case it has to become leader
-//     -> dormant on discovering a leader
-//  dormant: a leader exists, so do nothing except listen for lock acquisition or deathscream
-//     -> ready on hearing a deathscream
-
+/**
+ * @method transitionToLoading
+ * @private
+ * @return {Promise} a promise that resolves when all data is loaded.
+ */
 ozpIwc.ApiBase.prototype.transitionToLoading=function() {
     var self=this;
     if(this.leaderState !== "member") {
@@ -111,6 +140,10 @@ ozpIwc.ApiBase.prototype.transitionToLoading=function() {
         });
 };
 
+/**
+ * @method transitionToLeader
+ * @private
+ */
 ozpIwc.ApiBase.prototype.transitionToLeader=function() {
     if(this.leaderState !== "loading") {
         return;
@@ -120,6 +153,11 @@ ozpIwc.ApiBase.prototype.transitionToLeader=function() {
     this.deliverRequestQueue();
 };
 
+/**
+ * Shuts down the api, issuing a deathscream and releasing the lock, if possible.
+ * @method shutdown
+ * @return 
+ */
 ozpIwc.ApiBase.prototype.shutdown=function() {
     if(this.leaderState === "leader") {
         this.broadcastDeathScream(this.createDeathScream());
@@ -132,6 +170,12 @@ ozpIwc.ApiBase.prototype.shutdown=function() {
     });
 };
 
+/**
+ * @method transitionToMemberReady
+ * @private
+ * @param {Object} deathScream
+ * @return {Promise}
+ */
 ozpIwc.ApiBase.prototype.transitionToMemberReady=function(deathScream) {
     if(this.leaderState !== "member") {
         return;
@@ -141,6 +185,11 @@ ozpIwc.ApiBase.prototype.transitionToMemberReady=function(deathScream) {
     return Promise.resolve();
 };
 
+/**
+ * @method transitionToMemberDormant
+ * @private
+ * @return {Promise}
+ */
 ozpIwc.ApiBase.prototype.transitionToMemberDormant=function() {
     if(this.leaderState !== "member") {
         return;
@@ -154,11 +203,28 @@ ozpIwc.ApiBase.prototype.transitionToMemberDormant=function() {
 // Data Management
 //===============================================================
 
+/**
+ * Authorize the request for the given node.
+ *  
+ * @method checkAuthorization
+ * @param {ozpIwc.ApiNode} node
+ * @param {Object} context
+ * @param {ozpIwc.TransportPacket} packet
+ * @param {String} action
+ * @return {undefined}
+ */
 ozpIwc.ApiBase.prototype.checkAuthorization=function(node,context,packet,action) {
+    //@TODO: actually implement checking the authorization...
     return true;
 };
 
-
+/**
+ * Returns a list of nodes that start with the given prefix.
+ *  
+ * @method matchingNodes
+ * @param {String} prefix
+ * @return {ozpIwc.ApiNode[]} a promise that resolves when all data is loaded.
+ */
 ozpIwc.ApiBase.prototype.matchingNodes=function(prefix) {
     return ozpIwc.object.values(this.data, function(k,node) { 
         return node.resource.indexOf(prefix) >=0;
@@ -170,6 +236,13 @@ ozpIwc.ApiBase.prototype.matchingNodes=function(prefix) {
 // Watches
 //===============================================================
 
+/**
+ * Marks that a node has changed and that change notices may need to 
+ * be sent out after the request completes.
+ *  
+ * @method markForChange
+ * @param {ApiNode} nodes...
+ */
 ozpIwc.ApiBase.prototype.markForChange=function(/*varargs*/) {
     for(var i=0;i<arguments.length;++i) {
         if(Array.isArray(arguments[i])) {
@@ -188,6 +261,16 @@ ozpIwc.ApiBase.prototype.markForChange=function(/*varargs*/) {
     }
 };
 
+/**
+ * Marks that a node has changed and that change notices may need to 
+ * be sent out after the request completes.
+ *  
+ * @method addWatcher
+ * @param {String} resource name of the resource to watch
+ * @param {Object} watcher
+ * @param {String} watcher.src Address of the watcher
+ * @param {String | Number} watcher.replyTo The conversation id that change notices will go to
+ */
 ozpIwc.ApiBase.prototype.addWatcher=function(resource,watcher) {
     var watchList=this.watchers[resource];
     if(!Array.isArray(watchList)) {
@@ -197,58 +280,63 @@ ozpIwc.ApiBase.prototype.addWatcher=function(resource,watcher) {
     watchList.push(watcher);
 };
 
+/**
+ * Called after the request is complete to send out change notices.
+ *  
+ * @method resolveChangedNodes
+ * @private
+ */
 ozpIwc.ApiBase.prototype.resolveChangedNodes=function() {
     ozpIwc.object.eachEntry(this.changeList,function(resource,snapshot) {
         var node=this.data[resource];
+        var watcherList=this.watchers[resource];
         
-        if(!node) {
-            return Promise.resolve();
+        if(!node || !watcherList) {
+            return;
         }
+        
         var changes=node.changesSince(snapshot);
+        if(!changes) {
+            return;
+        }
 
-        this.notifyWatchers(node,changes);
+        var permissions=ozpIwc.authorization.pip.attributeUnion(
+            changes.oldValue.permissions,
+            changes.newValue.permissions
+        );
+
+        var entity={
+            oldValue: changes.oldValue.entity,
+            newValue: changes.newValue.entity
+        };
+
+        watcherList.forEach(function(watcher) {
+            // @TODO allow watchers to changes notifications if they have permission to either the old or new, not just both
+            this.participant.send({
+                'src'   : this.participant.name,
+                'dst'   : watcher.src,
+                'replyTo' : watcher.replyTo,
+                'response': 'changed',
+                'resource': node.resource,
+                'permissions': permissions,
+                'entity': entity
+            });
+        },this);
     },this);
     this.changeList={};
-};
-
-        
-        
-ozpIwc.ApiBase.prototype.notifyWatchers=function(node,changes) {
-    var watcherList=this.watchers[node.resource];
-
-    if(!changes || !watcherList) {
-        return Promise.resolve();
-    }
-
-    var permissions=ozpIwc.authorization.pip.attributeUnion(
-        changes.oldValue.permissions,
-        changes.newValue.permissions
-    );
-    
-    var entity={
-        oldValue: changes.oldValue.entity,
-        newValue: changes.newValue.entity
-    };
-
-    watcherList.forEach(function(watcher) {
-        // @TODO allow watchers to changes notifications if they have permission to either the old or new, not just both
-        this.participant.send({
-            'src'   : this.participant.name,
-            'dst'   : watcher.src,
-            'replyTo' : watcher.replyTo,
-            'response': 'changed',
-            'resource': node.resource,
-            'permissions': permissions,
-            'entity': entity
-        });
-    },this);
-    
 };
 
 
 //===============================================================
 // Packet Routing
 //===============================================================
+
+/**
+ * Routes a packet received from the participant
+ *  
+ * @method receivePacketContext
+ * @private
+ */
 ozpIwc.ApiBase.prototype.receivePacketContext=function(packetContext) {
     if(packetContext.packet.src===this.participant.address) {
         // drop our own packets
@@ -266,44 +354,54 @@ ozpIwc.ApiBase.prototype.receivePacketContext=function(packetContext) {
 // API Request Handling
 //===============================================================
 
+/**
+ * Routes a request to the proper handler and takes care of overhead
+ * such as change requests.
+ *  
+ * @method receivePacketContext
+ * @private
+ */
 ozpIwc.ApiBase.prototype.receiveRequestPacket=function(packetContext) {
     var packet=packetContext.packet;
 
-//    var routeName=this.logPrefix+" Routing ("+packet.action+" "+packet.resource+") ";
     if(this.isRequestQueueing) {
-        this.queueRequest(packetContext);
+        this.requestQueue.push(packetContext);
         return Promise.resolve();
     }
     
-//    console.log(routeName+"packet=" + packetContext.packet);
     var self=this;
     return new Promise(function(resolve,reject) {
         try {
-            packetContext.node=self.data[packetContext.packet.resource];
-            resolve(self.routePacket(packetContext.packet,packetContext));
+            packetContext.node=self.data[packet.resource];
+            resolve(self.routePacket(packet,packetContext));
         } catch(e) {
             reject(e);
         }
     }).then(function(packetFragment) {
-//        console.log(routeName + "completed successfully with ",packetFragment);
         if(packetFragment) {
             packetFragment.response = packetFragment.response || "ok";
             packetContext.replyTo(packetFragment);
         }
         self.resolveChangedNodes();    
     },function(e) {
-//        console.log(routeName+"failed with "+e.toString());
         var packetFragment={
             'src': self.name,
             'response': e.errorAction || "errorUnknown",
             'entity': e.message
         };
         packetContext.replyTo(packetFragment);
-//        self.participant.send(packetContext.makeReplyTo(packetFragment));
     });
 
 };
 
+/**
+ * Any request packet that does not match a route ends up here.  By default,
+ * it replies with BadAction, BadResource, or BadRequest, as appropriate.
+ *  
+ * @method receivePacketContext
+ * @param {ozpIwc.TransportPacket} packet
+ * @param {ozpIwc.TransportPacketContext} context
+ */
 ozpIwc.ApiBase.prototype.defaultRoute=function(packet,context) {
     switch(context.defaultRouteCause) {
         case "nonRoutablePacket": // packet doesn't have an action/resource, so ignore it
@@ -317,23 +415,31 @@ ozpIwc.ApiBase.prototype.defaultRoute=function(packet,context) {
     }
 };
 
-ozpIwc.ApiBase.prototype.queueRequest=function(packetContext) {
-    if(this.isRequestQueueing) {
-        this.requestQueue.push(packetContext);
-    }
-};
-
+/**
+ * @method enableRequestQueue
+ * @private
+ */
 ozpIwc.ApiBase.prototype.enableRequestQueue=function() {
     this.isRequestQueueing=true;
     this.requestQueue=[];
 };
 
+/**
+ * Routes all queued packets and turns off request queueing
+ * @method deliverRequestQueue
+ * @private
+ */
 ozpIwc.ApiBase.prototype.deliverRequestQueue=function() {
     this.isRequestQueueing=false;
     this.requestQueue.forEach(this.receiveRequestPacket,this);
     this.requestQueue=[];
 };
 
+/**
+ * Empties the queue of requests without processing and turns off queuing
+ * @method flushRequestQueue
+ * @private
+ */
 ozpIwc.ApiBase.prototype.flushRequestQueue=function() {
     this.isRequestQueueing=false;
     this.requestQueue=[];
@@ -435,6 +541,21 @@ ozpIwc.ApiBase.defaultHandler={
 };
 ozpIwc.ApiBase.allActions=Object.keys(ozpIwc.ApiBase.defaultHandler);
 
+/**
+ * Install the default handler and filters for the provided actions and resources.
+ * @method useDefaultRoute
+ * @static
+ * @param {String | String[]} actions
+ * @param {String} resource="{resource:.*}" The resource template to install the default handler on.
+ */
+
+
+/**
+ * Creates a subclass of ApiBase and adds some static helper functions.
+ * 
+ * @param {Function} init the constructor function for the class
+ * @return {Class} A new API class that us
+ */
 ozpIwc.createApi=function(init) {
     var api=ozpIwc.util.extend(ozpIwc.ApiBase,function() {
         ozpIwc.ApiBase.apply(this, arguments);
