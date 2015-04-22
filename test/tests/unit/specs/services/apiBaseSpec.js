@@ -1,34 +1,39 @@
 var TestApi=ozpIwc.createApi(function() {});
 TestApi.useDefaultRoute(ozpIwc.ApiBase.allActions);
 
-describe("ApiBase",function() {
+function createApiRequestObject(fakeRouter) {
+    fakeRouter=fakeRouter || new FakeRouter();
+	var apiBase=new TestApi({
+        'participant': new TestClientParticipant(),
+        'name': "testApiBase.api",
+        'router': fakeRouter
+    });
+    apiBase.data["/foo"]=new ozpIwc.ApiNode({
+        resource: "/foo",
+        self: "https://example.com/iwc/foo",
+        contentType: "text/plain",
+        entity: "hello world"
+    });
+    apiBase.data["/foo/1"]=new ozpIwc.ApiNode({
+        resource: "/foo/1",
+        self: "https://example.com/iwc/foo/1",
+        contentType: "text/plain",
+        entity: "resource 1"
+    });
+    apiBase.data["/foo/2"]=new ozpIwc.ApiNode({
+        resource: "/foo/2",
+        self: "https://example.com/iwc/foo/2",
+        contentType: "text/plain",
+        entity: "resource 2"
+    });
+    return apiBase;
+}
+
+describe("ApiBase request handling",function() {
 	var apiBase;
-    
-    
 	beforeEach(function() {
-		apiBase=new TestApi({
-			'participant': new TestClientParticipant(),
-            'name': "testApiBase.api",
-            'router': new FakeRouter()
-		});
-        apiBase.data["/foo"]=new ozpIwc.ApiNode({
-            resource: "/foo",
-            self: "https://example.com/iwc/foo",
-            contentType: "text/plain",
-            entity: "hello world"
-        });
-        apiBase.data["/foo/1"]=new ozpIwc.ApiNode({
-            resource: "/foo/1",
-            self: "https://example.com/iwc/foo/1",
-            contentType: "text/plain",
-            entity: "resource 1"
-        });
-        apiBase.data["/foo/2"]=new ozpIwc.ApiNode({
-            resource: "/foo/2",
-            self: "https://example.com/iwc/foo/2",
-            contentType: "text/plain",
-            entity: "resource 2"
-        });
+        apiBase=createApiRequestObject();
+        apiBase.isRequestQueueing=false;
 	});
     
     var testPacket=function(packet) {
@@ -47,6 +52,7 @@ describe("ApiBase",function() {
     describe("action get",function() {
         pit("returns a valid resource",function() {
             var context=testPacket({action:"get",resource:"/foo"});
+            console.log(apiBase);
             return apiBase.receivePacketContext(context).then(function() {
                 expect(context.responses.length).toEqual(1);
                 expect(context.responses[0].response).toEqual("ok");
@@ -168,7 +174,7 @@ describe("ApiBase",function() {
                 expect(context.responses.length).toEqual(1);
                 expect(context.responses[0].response).toEqual("noMatch");
                 expect(context.responses[0].entity.expectedVersion).toEqual(20);
-                expect(context.responses[0].entity.actualVersion).toEqual(0);
+                expect(context.responses[0].entity.actualVersion).toEqual(1);
             });
         });
     });
@@ -205,7 +211,7 @@ describe("ApiBase",function() {
                 expect(context.responses.length).toEqual(1);
                 expect(context.responses[0].response).toEqual("noMatch");
                 expect(context.responses[0].entity.expectedVersion).toEqual(20);
-                expect(context.responses[0].entity.actualVersion).toEqual(0);
+                expect(context.responses[0].entity.actualVersion).toEqual(1);
             });
         });
     });
@@ -242,9 +248,10 @@ describe("ApiBase",function() {
                 entity: { foo:1}
             });
             return apiBase.receivePacketContext(watchContext).then(function() {
+                console.log("Sending set packet");
                 return apiBase.receivePacketContext(context);
             }).then(pauseForPromiseResolution).then(function() {
-                console.log("Testing expectations");
+                console.log("Checking for change packet");
                 expect(apiBase.participant).toHaveSent({
                     resource: "/foo",
                     dst: "unitTest",
@@ -369,5 +376,97 @@ describe("ApiBase",function() {
             });
         });
 
-    });    
+    });
+});    
+
+describe("ApiBase leadership handoff",function() {
+	var apiBase;
+    var fakeRouter;
+	beforeEach(function() {
+        fakeRouter=new FakeRouter();
+        apiBase=createApiRequestObject(fakeRouter);
+	});
+    
+    describe("Leader handoff basic functions",function() {
+        it("starts as a member in the queuing state",function() {
+            expect(apiBase.leaderState).toEqual("member");
+            expect(apiBase.isRequestQueueing).toEqual(true);
+        });
+
+        it("transitions to the dormant state upon receiving announceLeader",function() {
+            apiBase.receivePacketContext(new TestPacketContext({
+                packet: {
+                    dst: apiBase.coordinationAddress,
+                    action: "announceLeader"
+            }}));
+            expect(apiBase.leaderState).toEqual("member");
+            expect(apiBase.isRequestQueueing).toEqual(false);
+        });
+        
+        it("transitions to a loading state",function() {
+            apiBase.transitionToLoading();
+            expect(apiBase.leaderState).toEqual("loading");
+            expect(apiBase.isRequestQueueing).toEqual(true);
+        });        
+
+        pit("member transitions to ready->loading->master upon receiving deathscream",function() {
+            spyOn(apiBase,"initializeData").and.callThrough();
+            spyOn(apiBase,"transitionToMemberReady").and.callThrough();
+            spyOn(apiBase,"receiveCoordinationPacket").and.callThrough();
+            
+            var deathScream=apiBase.createDeathScream();
+            var deathScreamPacket=new TestPacketContext({
+                packet: {
+                    dst: apiBase.coordinationAddress,
+                    action: "deathScream",
+                    entity: deathScream
+            }});
+            return apiBase.receivePacketContext(deathScreamPacket).then(function() {
+                // Check for ready state-- queueing packets as member, holding deathscream data
+                expect(apiBase.leaderState).toEqual("member");
+                expect(apiBase.isRequestQueueing).toEqual(true);
+                expect(apiBase.deathScream).toEqual(deathScream);
+                expect(apiBase.transitionToMemberReady).toHaveBeenCalledWith(deathScream);
+                expect(apiBase.receiveCoordinationPacket).toHaveBeenCalled();
+                // simulates the lock being gained
+                return apiBase.transitionToLoading();
+            }).then(function() {
+                expect(apiBase.leaderState).toEqual("leader");
+                expect(apiBase.initializeData).toHaveBeenCalledWith(deathScream);
+            });
+        });         
+        it("Creates deathScream data",function() {
+            var deathScream=apiBase.createDeathScream();
+            deathScream.data.forEach(function(node){
+                var apiNode=apiBase.data[node.resource];
+                expect(apiNode).toBeDefined();
+                expect(node.entity).toEqual(apiNode.entity);
+            });           
+        });
+        
+        pit("Initializes data from a deathScream",function() {
+            var apiBase2=new TestApi({
+                'participant': new TestClientParticipant(),
+                'name': "testApiBase.api",
+                'router': fakeRouter
+            });
+            var deathScream=apiBase.createDeathScream();
+            
+            var deathScreamPacket=new TestPacketContext({
+                packet: {
+                    dst: apiBase.coordinationAddress,
+                    action: "deathScream",
+                    entity: deathScream
+            }});
+            return apiBase2.receivePacketContext(deathScreamPacket).then(function() {
+                // simulates the lock being gained
+                return apiBase2.transitionToLoading();
+            }).then(function() {
+                expect(apiBase2.leaderState).toEqual("leader");
+                expect(apiBase2.data).toEqual(apiBase.data);
+                expect(apiBase2.watchers).toEqual(apiBase.watchers);
+            });
+ 
+        });
+    });
 });

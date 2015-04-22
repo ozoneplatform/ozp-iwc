@@ -5,7 +5,9 @@ var jasminePromises = {
 jasminePromises.promises=function(fn) {
   return function(done) {
         fn().then(
-            done,
+            function() {
+                done();
+            },
             function(error) {
                 expect(error).toNotHappen();
                 done();

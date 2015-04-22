@@ -8,6 +8,7 @@ describe("Names API",function() {
 			'participant': new TestClientParticipant(),
             'router': new FakeRouter()
 		});
+        namesApi.isRequestQueueing=false;
 	});
 
 	afterEach(function() {

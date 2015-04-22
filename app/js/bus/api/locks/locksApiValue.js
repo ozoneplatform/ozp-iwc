@@ -22,12 +22,11 @@ ozpIwc.LocksApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config)
 
 ozpIwc.LocksApiValue.prototype.lock=function(packet) {
     this.entity.queue.push(packet);
-    if(this.entity.queue.length===1) {
-        this.entity.owner=packet;
+    if(this.entity.owner !== this.entity.queue[0]) {
+        this.entity.owner=this.entity.queue[0];
         return this.entity.owner;
-    } else {
-        return null;
     }
+    return null;
     
 };
 

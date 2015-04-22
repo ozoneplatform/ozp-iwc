@@ -41,7 +41,7 @@ ozpIwc.ApiNode= function(config) {
      * @type Number
      * @default 0
      */
-	this.version=config.version || 0;
+	this.version=config.version || 1;
 
     /**
      * @property persist
@@ -65,10 +65,31 @@ ozpIwc.ApiNode= function(config) {
 };
 
 
-ozpIwc.ApiNode.prototype.serializedEntity=function() {
-    
+ozpIwc.ApiNode.prototype.serialize=function() {
+    return this.toPacket({
+        deleted: this.deleted,
+        persist: this.persist,
+        allowedContentTypes: this.allowedContentTypes,
+       _links: {
+           self: {href: this.self}
+       }
+    });
 };
 
+ozpIwc.ApiNode.prototype.deserialize=function(packet) {
+    if(packet._links && packet._links.self) {
+        this.self=packet._links.self.href;
+    }
+    this.deleted = packet.deleted;
+    this.persist=packet.persist;
+    this.allowedContentTypes=packet.allowedContentTypes;
+    this.set(packet);
+};
+
+ozpIwc.ApiNode.prototype.serializedEntity=function() {
+    //TODO: umm... something something something...
+    return this.entity;
+};
 ozpIwc.ApiNode.prototype.serializedContentType=function() {
     return "application/json";
 };
@@ -101,7 +122,11 @@ ozpIwc.ApiNode.prototype.set=function(packet) {
     }
     this.contentType=packet.contentType;
     this.entity=packet.entity;
-    this.version++;
+    if(packet.eTag) {
+        this.version=packet.eTag;
+    } else {
+        this.version++;
+    }
 };
 
 ozpIwc.ApiNode.prototype.markAsDeleted=function(packet) {

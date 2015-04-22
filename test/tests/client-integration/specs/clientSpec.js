@@ -36,6 +36,8 @@ describe("IWC Client", function() {
             'dst': "names.api",
             'action': "get",
             'resource': "/address"
+        }).then(function(response) {
+            expect(response).toBeDefined();
         });
     });
 
