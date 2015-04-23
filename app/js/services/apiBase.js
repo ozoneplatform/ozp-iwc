@@ -214,8 +214,6 @@ ozpIwc.ApiBase.prototype.transitionToMemberDormant=function() {
  * @return {undefined}
  */
 ozpIwc.ApiBase.prototype.checkAuthorization=function(node,context,packet,action) {
-    //@TODO: actually implement checking the authorization...
-    return true;
 };
 
 /**

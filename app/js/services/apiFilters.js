@@ -50,8 +50,26 @@ ozpIwc.apiFilter={
     
     checkAuthorization: function(action) {
         return function(packet,context,pathParams,next) {
-            this.checkAuthorization(context.node,context,packet,action || packet.action);
             return next();
+//            if(!context.node) {
+//                return next();
+//            }
+//            
+//            var request = {
+//                'subject': packet.src,
+//                'resource': context.node.permissions,
+//                'action': {'ozp:iwc:action': action || packet.action},
+//                'policies': ozpIwc.authorization.policySets.apiSet
+//            };
+//
+//            return new Promise(function(resolve,reject) {
+//                ozpIwc.authorization.isPermitted(request)
+//                    .success(function (resolution) {
+//                        resolve(next());
+//                    }).failure(function (err) {
+//                        reject(err);
+//                    }); 
+//           });
         };
     },
     nullFilter: function(packet,context,pathParams,next) {

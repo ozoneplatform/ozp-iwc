@@ -34,6 +34,7 @@ module.exports = function(grunt) {
                 '<%= src.metrics %>',
                 'app/js/bus/util/**/*.js',
                 'app/js/bus/security/**/*.js',
+//                'app/js/abac/**/*.js',
                 'app/js/bus/network/**/*.js',
                 'app/js/bus/transport/participant.js',
                 'app/js/bus/transport/internalParticipant.js',
