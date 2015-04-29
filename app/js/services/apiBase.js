@@ -225,7 +225,7 @@ ozpIwc.ApiBase.prototype.checkAuthorization=function(node,context,packet,action)
  */
 ozpIwc.ApiBase.prototype.matchingNodes=function(prefix) {
     return ozpIwc.object.values(this.data, function(k,node) { 
-        return node.resource.indexOf(prefix) >=0;
+        return node.resource.indexOf(prefix) ===0;
     });
 };
 
