@@ -28,9 +28,14 @@ ozpIwc.Endpoint.prototype.get=function(resource, requestHeaders) {
     var self=this;
     resource = resource || '';
     return this.endpointRegistry.loadPromise.then(function() {
+        if(!self.endpointRegistry.loaded){
+            throw Error("Endpoint " + self.endpointRegistry.apiRoot + " could not be reached. Skipping GET of " + resource);
+        }
+
         if (resource === '/' || resource === '' ) {
             resource=self.baseUrl;
         }
+
         return ozpIwc.util.ajax({
             href:  resource,
             method: 'GET',
@@ -151,6 +156,7 @@ ozpIwc.EndpointRegistry=function(config) {
         href: apiRoot,
         method: 'GET'
     }).then(function(data) {
+        self.loaded = true;
         var payload = data.response || {};
         payload._links = payload._links || {};
         payload._embedded = payload._embedded || {};
@@ -169,6 +175,9 @@ ozpIwc.EndpointRegistry=function(config) {
             var embLink = payload._embedded[embEp]._links.self.href;
             self.endpoint(embEp).baseUrl = embLink;
         }
+    })['catch'](function(err){
+        ozpIwc.log.debug(Error("Endpoint " + self.apiRoot + " " + err.statusText + ". Status: " +  err.status));
+        self.loaded = false;
     });
 };
 
