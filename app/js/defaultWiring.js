@@ -13,8 +13,7 @@ ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
 });
 
 if(typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
-    ozpIwc.initEndpoints(ozpIwc.apiRootUrl);
-
+    ozpIwc.initEndpoints(ozpIwc.apiRootUrl || "api");
 
     ozpIwc.defaultPeer = new ozpIwc.Peer();
     ozpIwc.defaultLocalStorageLink = new ozpIwc.KeyBroadcastLocalStorageLink({
@@ -37,9 +36,6 @@ if(typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
                 'member': []
             };
         };
-
-        ozpIwc.initEndpoints(ozpIwc.apiRootUrl || "api");
-
 
         ozpIwc.namesApi = new ozpIwc.NamesApi({
             'participant': new ozpIwc.LeaderGroupParticipant({
