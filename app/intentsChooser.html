@@ -27,7 +27,7 @@
       <div id="cancelButton"></div>
 
       <script type="text/javascript">
-        var participant=new ozpIwc.InternalParticipant({'name':"intentsChooser"});
+        var participant=new ozpIwc.ClientParticipant({'name':"intentsChooser"});
         ozpIwc.defaultRouter.registerParticipant(participant);
 
         function failure(msg) {
@@ -35,17 +35,14 @@
         }
 
         function handleSelection(handler,intentInvocation){
-            participant.send({
-                dst: "intents.api",
-                action: "set",
+            participant.intents().set(intentInvocation.resource,{
                 contentType: intentInvocation.contentType,
-                resource: intentInvocation.resource,
                 entity: {
                     resource: handler.resource,
                     reason: "user",
                     state: "choosing"
                 }
-            },function(reply){
+            }).then(function(){
                 window.close();
             });
         }
@@ -73,11 +70,8 @@
             button.appendChild(document.createTextNode("Cancel"));
             button.addEventListener("click",function(evt) {
                 evt.preventDefault();
-                participant.send({
-                    dst: "intents.api",
-                    action: "set",
+                participant.intents().set(intentInvocation.resource,{
                     contentType: intentInvocation.contentType,
-                    resource: intentInvocation.resource,
                     entity: {
                         reply:{
                             'contentType': intentInvocation.contentType,
@@ -85,7 +79,7 @@
                         },
                         state: "fail"
                     }
-                },function(reply){
+                }).then(function(){
                     window.close();
                 });
             });
@@ -104,13 +98,11 @@
         }
         var loc=ozpIwc.util.parseOzpUrl(m[1]);
 
-        participant.send(loc,function(reply) {
-            if (/(ok).*/.test(reply.response)) {
-                showHandlers(reply.entity.handlerChoices|| [], reply);
-                showCancel(reply);
-            } else {
+        participant.send(loc).then(function(reply) {
+            showHandlers(reply.entity.handlerChoices || [], reply);
+            showCancel(reply);
+        })['catch'](function(){
                 failure();
-            }
         });
     </script>
   </body>
