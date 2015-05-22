@@ -1,5 +1,6 @@
 var ozpIwc=ozpIwc || {};
 ozpIwc.version = "0.2";
+ozpIwc.log.threshold = 11;
 ozpIwc.ELECTION_TIMEOUT = 1000;
 ozpIwc.apiRootUrl = ozpIwc.apiRootUrl || "/api";
 ozpIwc.policyRootUrl = ozpIwc.policyRootUrl || "/policy";
