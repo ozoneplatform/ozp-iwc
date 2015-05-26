@@ -58,7 +58,7 @@ ozpIwc.ApiPromiseMixin.registerEvents = function(participant){
 
         // fetch the inFlightIntent
         participant.intents().get(participant.launchParams.inFlightIntent).then(function (response) {
-            if (response) {
+            if (response && response.entity && response.entity.intent) {
                 participant.launchedIntents.push(response);
                 if (response.response === 'ok') {
                     for (var k in response.entity) {
