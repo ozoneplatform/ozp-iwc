@@ -222,10 +222,10 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
     }
     
     var handlerNodes=node.getHandlers(packetContext);
-
-    var inflightPacket = this.makeIntentInvocation(node,packetContext);
+    var inflightPacket;
 
     if(handlerNodes.length === 1) {
+        inflightPacket = this.makeIntentInvocation(node,packetContext);
         var updateInFlightEntity = inflightPacket.toPacket();
         updateInFlightEntity.entity.handlerChosen = {
             'resource' : handlerNodes[0].resource,
@@ -236,8 +236,11 @@ ozpIwc.IntentsApi.prototype.handleInvoke = function (node, packetContext) {
         inflightPacket.set(updateInFlightEntity);
 
         this.invokeIntentHandler(handlerNodes[0],packetContext,inflightPacket);
-    } else {
+    } else if (handlerNodes.length > 1 ) {
+        inflightPacket = this.makeIntentInvocation(node,packetContext);
         this.chooseIntentHandler(node,packetContext,inflightPacket);
+    } else {
+        ozpIwc.log.error("No handler found for the desired invocation. Intent:", packetContext.packet.resource);
     }
 };
 
@@ -355,7 +358,7 @@ ozpIwc.IntentsApi.prototype.chooseIntentHandler = function (node, packetContext,
     ozpIwc.util.openWindow("intentsChooser.html",{
        "ozpIwc.peer":ozpIwc.BUS_ROOT,
        "ozpIwc.intentSelection": "intents.api"+inflightPacket.resource
-    });
+    },"width=400,height=500");
 };
 
 /**
