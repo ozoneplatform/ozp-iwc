@@ -1,0 +1,4680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>ozpIwc.ApiBase - ozpIwc</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="shortcut icon" type="image/png" href="../assets/favicon.png">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+            
+                <h1><img src="../assets/css/logo.png" title="ozpIwc"></h1>
+            
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.3.0</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+    <h2 class="off-left">APIs</h2>
+    <div id="api-tabview" class="tabview">
+        <ul class="tabs">
+            <li><a href="#api-classes">Classes</a></li>
+            <li><a href="#api-modules">Modules</a></li>
+        </ul>
+
+        <div id="api-tabview-filter">
+            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+        </div>
+
+        <div id="api-tabview-panel">
+            <ul id="api-classes" class="apis classes">
+            
+                <li><a href="../classes/ozpIwc.AjaxPersistenceQueue.html">ozpIwc.AjaxPersistenceQueue</a></li>
+            
+                <li><a href="../classes/ozpIwc.ApiBase.html">ozpIwc.ApiBase</a></li>
+            
+                <li><a href="../classes/ozpIwc.ApiError.html">ozpIwc.ApiError</a></li>
+            
+                <li><a href="../classes/ozpIwc.apiFilter.html">ozpIwc.apiFilter</a></li>
+            
+                <li><a href="../classes/ozpIwc.apiFilter.Function.html">ozpIwc.apiFilter.Function</a></li>
+            
+                <li><a href="../classes/ozpIwc.ApiNode.html">ozpIwc.ApiNode</a></li>
+            
+                <li><a href="../classes/ozpIwc.AsyncAction.html">ozpIwc.AsyncAction</a></li>
+            
+                <li><a href="../classes/ozpIwc.BadActionError.html">ozpIwc.BadActionError</a></li>
+            
+                <li><a href="../classes/ozpIwc.BadContentError.html">ozpIwc.BadContentError</a></li>
+            
+                <li><a href="../classes/ozpIwc.BadRequestError.html">ozpIwc.BadRequestError</a></li>
+            
+                <li><a href="../classes/ozpIwc.BadResourceError.html">ozpIwc.BadResourceError</a></li>
+            
+                <li><a href="../classes/ozpIwc.BadStateError.html">ozpIwc.BadStateError</a></li>
+            
+                <li><a href="../classes/ozpIwc.CancelableEvent.html">ozpIwc.CancelableEvent</a></li>
+            
+                <li><a href="../classes/ozpIwc.Client.html">ozpIwc.Client</a></li>
+            
+                <li><a href="../classes/ozpIwc.ClientParticipant.html">ozpIwc.ClientParticipant</a></li>
+            
+                <li><a href="../classes/ozpIwc.CommonApiBase.html">ozpIwc.CommonApiBase</a></li>
+            
+                <li><a href="../classes/ozpIwc.CommonApiCollectionValue.html">ozpIwc.CommonApiCollectionValue</a></li>
+            
+                <li><a href="../classes/ozpIwc.CommonApiValue.html">ozpIwc.CommonApiValue</a></li>
+            
+                <li><a href="../classes/ozpIwc.DataApi.html">ozpIwc.DataApi</a></li>
+            
+                <li><a href="../classes/ozpIwc.DataNode.html">ozpIwc.DataNode</a></li>
+            
+                <li><a href="../classes/ozpIwc.Endpoint.html">ozpIwc.Endpoint</a></li>
+            
+                <li><a href="../classes/ozpIwc.EndpointRegistry.html">ozpIwc.EndpointRegistry</a></li>
+            
+                <li><a href="../classes/ozpIwc.Event.html">ozpIwc.Event</a></li>
+            
+                <li><a href="../classes/ozpIwc.FragmentPacket.html">ozpIwc.FragmentPacket</a></li>
+            
+                <li><a href="../classes/ozpIwc.FragmentStore.html">ozpIwc.FragmentStore</a></li>
+            
+                <li><a href="../classes/ozpIwc.IntentsApi.html">ozpIwc.IntentsApi</a></li>
+            
+                <li><a href="../classes/ozpIwc.IntentsInFlightNode.html">ozpIwc.IntentsInFlightNode</a></li>
+            
+                <li><a href="../classes/ozpIwc.InternalParticipant.html">ozpIwc.InternalParticipant</a></li>
+            
+                <li><a href="../classes/ozpIwc.KeyBroadcastLocalStorageLink.html">ozpIwc.KeyBroadcastLocalStorageLink</a></li>
+            
+                <li><a href="../classes/ozpIwc.LeaderGroupParticipant.html">ozpIwc.LeaderGroupParticipant</a></li>
+            
+                <li><a href="../classes/ozpIwc.Lifespan.Bound.html">ozpIwc.Lifespan.Bound</a></li>
+            
+                <li><a href="../classes/ozpIwc.Lifespan.Ephemeral.html">ozpIwc.Lifespan.Ephemeral</a></li>
+            
+                <li><a href="../classes/ozpIwc.Lifespan.Persistent.html">ozpIwc.Lifespan.Persistent</a></li>
+            
+                <li><a href="../classes/ozpIwc.LocksApi.html">ozpIwc.LocksApi</a></li>
+            
+                <li><a href="../classes/ozpIwc.LocksApiValue.html">ozpIwc.LocksApiValue</a></li>
+            
+                <li><a href="../classes/ozpIwc.log.html">ozpIwc.log</a></li>
+            
+                <li><a href="../classes/ozpIwc.MetricsRegistry.html">ozpIwc.MetricsRegistry</a></li>
+            
+                <li><a href="../classes/ozpIwc.metricsStats.Sample.html">ozpIwc.metricsStats.Sample</a></li>
+            
+                <li><a href="../classes/ozpIwc.metricsStats.UniformSample.html">ozpIwc.metricsStats.UniformSample</a></li>
+            
+                <li><a href="../classes/ozpIwc.metricStats.html">ozpIwc.metricStats</a></li>
+            
+                <li><a href="../classes/ozpIwc.metricStats.BinaryHeap.html">ozpIwc.metricStats.BinaryHeap</a></li>
+            
+                <li><a href="../classes/ozpIwc.metricStats.ExponentiallyDecayingSample.html">ozpIwc.metricStats.ExponentiallyDecayingSample</a></li>
+            
+                <li><a href="../classes/ozpIwc.metricTypes.BaseMetric.html">ozpIwc.metricTypes.BaseMetric</a></li>
+            
+                <li><a href="../classes/ozpIwc.metricTypes.Counter.html">ozpIwc.metricTypes.Counter</a></li>
+            
+                <li><a href="../classes/ozpIwc.metricTypes.Gauge.html">ozpIwc.metricTypes.Gauge</a></li>
+            
+                <li><a href="../classes/ozpIwc.metricTypes.Histogram.html">ozpIwc.metricTypes.Histogram</a></li>
+            
+                <li><a href="../classes/ozpIwc.metricTypes.Meter.html">ozpIwc.metricTypes.Meter</a></li>
+            
+                <li><a href="../classes/ozpIwc.MulticastParticipant.html">ozpIwc.MulticastParticipant</a></li>
+            
+                <li><a href="../classes/ozpIwc.NamesApi.html">ozpIwc.NamesApi</a></li>
+            
+                <li><a href="../classes/ozpIwc.NamesNode.html">ozpIwc.NamesNode</a></li>
+            
+                <li><a href="../classes/ozpIwc.NetworkPacket.html">ozpIwc.NetworkPacket</a></li>
+            
+                <li><a href="../classes/ozpIwc.NoActionError.html">ozpIwc.NoActionError</a></li>
+            
+                <li><a href="../classes/ozpIwc.NoMatchError.html">ozpIwc.NoMatchError</a></li>
+            
+                <li><a href="../classes/ozpIwc.NoPermissionError.html">ozpIwc.NoPermissionError</a></li>
+            
+                <li><a href="../classes/ozpIwc.NoResourceError.html">ozpIwc.NoResourceError</a></li>
+            
+                <li><a href="../classes/ozpIwc.PacketRouter.html">ozpIwc.PacketRouter</a></li>
+            
+                <li><a href="../classes/ozpIwc.packetRouter.html">ozpIwc.packetRouter</a></li>
+            
+                <li><a href="../classes/ozpIwc.Participant.html">ozpIwc.Participant</a></li>
+            
+                <li><a href="../classes/ozpIwc.Peer.html">ozpIwc.Peer</a></li>
+            
+                <li><a href="../classes/ozpIwc.policyAuth.PDP.html">ozpIwc.policyAuth.PDP</a></li>
+            
+                <li><a href="../classes/ozpIwc.policyAuth.SecurityAttribute.html">ozpIwc.policyAuth.SecurityAttribute</a></li>
+            
+                <li><a href="../classes/ozpIwc.PostMessageParticipant.html">ozpIwc.PostMessageParticipant</a></li>
+            
+                <li><a href="../classes/ozpIwc.PostMessageParticipantListener.html">ozpIwc.PostMessageParticipantListener</a></li>
+            
+                <li><a href="../classes/ozpIwc.Router.html">ozpIwc.Router</a></li>
+            
+                <li><a href="../classes/ozpIwc.RouterWatchdog.html">ozpIwc.RouterWatchdog</a></li>
+            
+                <li><a href="../classes/ozpIwc.standardApiFilters.html">ozpIwc.standardApiFilters</a></li>
+            
+                <li><a href="../classes/ozpIwc.SystemNode.html">ozpIwc.SystemNode</a></li>
+            
+                <li><a href="../classes/ozpIwc.Timer.html">ozpIwc.Timer</a></li>
+            
+                <li><a href="../classes/ozpIwc.TransportPacket.html">ozpIwc.TransportPacket</a></li>
+            
+                <li><a href="../classes/ozpIwc.TransportPacketContext.html">ozpIwc.TransportPacketContext</a></li>
+            
+                <li><a href="../classes/ozpIwc.util.html">ozpIwc.util</a></li>
+            
+                <li><a href="../classes/ozpIwcPolicies.html">ozpIwcPolicies</a></li>
+            
+            </ul>
+
+            <ul id="api-modules" class="apis modules">
+            
+                <li><a href="../modules/bus.html">bus</a></li>
+            
+                <li><a href="../modules/bus.api.html">bus.api</a></li>
+            
+                <li><a href="../modules/bus.api.Type.html">bus.api.Type</a></li>
+            
+                <li><a href="../modules/bus.api.Value.html">bus.api.Value</a></li>
+            
+                <li><a href="../modules/bus.network.html">bus.network</a></li>
+            
+                <li><a href="../modules/bus.network.packets.html">bus.network.packets</a></li>
+            
+                <li><a href="../modules/bus.security.html">bus.security</a></li>
+            
+                <li><a href="../modules/bus.service.html">bus.service</a></li>
+            
+                <li><a href="../modules/bus.service.Type.html">bus.service.Type</a></li>
+            
+                <li><a href="../modules/bus.service.Value.html">bus.service.Value</a></li>
+            
+                <li><a href="../modules/bus.service.Value.Persistance.html">bus.service.Value.Persistance</a></li>
+            
+                <li><a href="../modules/bus.transport.html">bus.transport</a></li>
+            
+                <li><a href="../modules/bus.util.html">bus.util</a></li>
+            
+                <li><a href="../modules/client.html">client</a></li>
+            
+                <li><a href="../modules/common.html">common</a></li>
+            
+                <li><a href="../modules/metrics.html">metrics</a></li>
+            
+                <li><a href="../modules/metrics.statistics.html">metrics.statistics</a></li>
+            
+                <li><a href="../modules/metrics.types.html">metrics.types</a></li>
+            
+                <li><a href="../modules/ozpIwc.html">ozpIwc</a></li>
+            
+            </ul>
+        </div>
+    </div>
+</div>
+
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+        Show:
+        <label for="api-show-inherited">
+            <input type="checkbox" id="api-show-inherited" checked>
+            Inherited
+        </label>
+
+        <label for="api-show-protected">
+            <input type="checkbox" id="api-show-protected">
+            Protected
+        </label>
+
+        <label for="api-show-private">
+            <input type="checkbox" id="api-show-private">
+            Private
+        </label>
+        <label for="api-show-deprecated">
+            <input type="checkbox" id="api-show-deprecated">
+            Deprecated
+        </label>
+
+    </div>
+
+
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+                        <h1>ozpIwc.ApiBase Class</h1>
+<div class="box meta">
+    
+
+    
+
+    
+        <div class="foundat">
+            Defined in: <a href="../files/app_js_services_api_apiBase.js.html#l9"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:9</code></a>
+        </div>
+    
+
+    
+        
+            Module: <a href="../modules/bus.service.Type.html">bus.service.Type</a><br>
+            Parent Module: <a href="../modules/ozpIwc.html">ozpIwc</a>
+        
+    
+
+    
+</div>
+
+
+
+<div class="box intro">
+    <p>The base class for APIs. Use ozpIwc.createApi to subclass
+this.</p>
+<h1 id="leader-state-management">Leader State Management</h1>
+<p>The base API uses locks.api to always have a single leader at a time.  An api instance goes
+through a linear series of states:  member -&gt; loading -&gt; leader</p>
+<ul>
+<li><strong>member</strong> does not service requests</li>
+<li><strong>loading</strong> is a transitory state between acquiring the leader lock and being ready to serve requests</li>
+<li><strong>leader</strong> actively serves requests and broadcasts a death scream upon shutdown</li>
+</ul>
+<p>The member state has two substates-- ready and dormant</p>
+<ul>
+<li><strong>ready</strong> queues requests in case it has to become leader.  switches back to dormant on discovering a leader</li>
+<li><strong>dormant</strong> silently drops requests.  Upon hearing a deathScream, it switches to ready.</li>
+</ul>
+
+</div>
+
+
+    <div class="constructor">
+        <h2>Constructor</h2>
+        <div id="method_ozpIwc.ApiBase" class="method item">
+    <h3 class="name"><code>ozpIwc.ApiBase</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>config</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l9"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:9</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">config</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                    
+                        <ul class="params-list">
+                            
+                            <li class="param">
+                                
+                                    <code class="param-name">name</code>
+                                    <span class="type">String</span>
+                                
+
+                                <div class="param-description">
+                                    <p>The api address (e.g. &quot;names.api&quot;)</p>
+
+                                </div>
+
+                                
+                            </li>
+                            
+                            <li class="param">
+                                
+                                    <code class="param-name optional">[participant]</code>
+                                    <span class="type">ozpIwc.ClientMixin</span>
+                                    <span class="flag optional" title="This parameter is optional.">optional</span>
+                                
+
+                                <div class="param-description">
+                                    <p>The connection to use for communication</p>
+
+                                </div>
+
+                                
+                            </li>
+                            
+                            <li class="param">
+                                
+                                    <code class="param-name optional">[router=ozpIwc.defaultRouter]</code>
+                                    <span class="type"><a href="../classes/ozpIwc.Router.html" class="crosslink">ozpIwc.Router</a></span>
+                                    <span class="flag optional" title="This parameter is optional.">optional</span>
+                                
+
+                                <div class="param-description">
+                                    <p>The router to connect to</p>
+
+                                </div>
+
+                                
+                            </li>
+                            
+                        </ul>
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+    </div>
+
+
+<div id="classdocs" class="tabview">
+    <ul class="api-class-tabs">
+        <li class="api-class-tab index"><a href="#index">Index</a></li>
+
+        
+            <li class="api-class-tab methods"><a href="#methods">Methods</a></li>
+        
+        
+            <li class="api-class-tab properties"><a href="#properties">Properties</a></li>
+        
+        
+        
+    </ul>
+
+    <div>
+        <div id="index" class="api-class-tabpanel index">
+            <h2 class="off-left">Item Index</h2>
+
+            
+                <div class="index-section methods">
+                    <h3>Methods</h3>
+
+                    <ul class="index-list methods">
+                        
+                            <li class="index-item method">
+                                <a href="#method_addCollector">addCollector</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_addWatcher">addWatcher</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_broadcastDeathScream">broadcastDeathScream</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_broadcastLeaderReady">broadcastLeaderReady</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_changedHandler">changedHandler</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_checkAuthorization">checkAuthorization</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_createApi">createApi</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_createDeathScream">createDeathScream</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_createdHandler">createdHandler</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_createNode">createNode</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_createNodeObject">createNodeObject</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method private">
+                                <a href="#method_deliverRequestQueue">deliverRequestQueue</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_disconnectHandler">disconnectHandler</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method private">
+                                <a href="#method_enableRequestQueue">enableRequestQueue</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method private">
+                                <a href="#method_flushRequestQueue">flushRequestQueue</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_getCollection">getCollection</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_getPreference">getPreference</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_initializeData">initializeData</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_loadFromEndpoint">loadFromEndpoint</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_markForChange">markForChange</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_matchingNodes">matchingNodes</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_receiveBusPacket">receiveBusPacket</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_receiveCoordinationPacket">receiveCoordinationPacket</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_receivePacketContext">receivePacketContext</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_removeCollector">removeCollector</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_removeDeadWatchers">removeDeadWatchers</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_removeWatcher">removeWatcher</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_resolveChangedNode">resolveChangedNode</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method private">
+                                <a href="#method_resolveChangedNodes">resolveChangedNodes</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_shutdown">shutdown</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method private">
+                                <a href="#method_transitionToLeader">transitionToLeader</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method private">
+                                <a href="#method_transitionToLoading">transitionToLoading</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method private">
+                                <a href="#method_transitionToMemberDormant">transitionToMemberDormant</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method private">
+                                <a href="#method_transitionToMemberReady">transitionToMemberReady</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_updateCollectionNode">updateCollectionNode</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_updateCollections">updateCollections</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method">
+                                <a href="#method_useDefaultRoute">useDefaultRoute</a>
+
+                                
+                                    <span class="flag static">static</span>
+                                
+                                
+                            </li>
+                        
+                    </ul>
+                </div>
+            
+
+            
+                <div class="index-section properties">
+                    <h3>Properties</h3>
+
+                    <ul class="index-list properties">
+                        
+                            <li class="index-item property">
+                                <a href="#property_allActions">allActions</a>
+
+                                
+                                    <span class="flag static">static</span>
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item property">
+                                <a href="#property_defaultHandler">defaultHandler</a>
+
+                                
+                                    <span class="flag static">static</span>
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item property private">
+                                <a href="#property_packetContext">packetContext</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item property private">
+                                <a href="#property_packetContext">packetContext</a>
+
+                                
+                                
+                            </li>
+                        
+                    </ul>
+                </div>
+            
+
+            
+
+            
+        </div>
+
+        
+            <div id="methods" class="api-class-tabpanel">
+                <h2 class="off-left">Methods</h2>
+
+                
+                    <div id="method_addCollector" class="method item">
+    <h3 class="name"><code>addCollector</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>node</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l465"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:465</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Adds the given node to the collector list. It&#39;s collection list will be updated on api data changes.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">node</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_addWatcher" class="method item">
+    <h3 class="name"><code>addWatcher</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>resource</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>watcher</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l425"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:425</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Marks that a node has changed and that change notices may need to
+be sent out after the request completes.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">resource</code>
+                        <span class="type">String</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        <p>name of the resource to watch</p>
+
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">watcher</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                        <ul class="params-list">
+                            
+                            <li class="param">
+                                
+                                    <code class="param-name">resource</code>
+                                    <span class="type">String</span>
+                                
+
+                                <div class="param-description">
+                                    <p>name of the resource to watch</p>
+
+                                </div>
+
+                                
+                            </li>
+                            
+                            <li class="param">
+                                
+                                    <code class="param-name">src</code>
+                                    <span class="type">String</span>
+                                
+
+                                <div class="param-description">
+                                    <p>Address of the watcher</p>
+
+                                </div>
+
+                                
+                            </li>
+                            
+                            <li class="param">
+                                
+                                    <code class="param-name">replyTo</code>
+                                    <span class="type">String | Number</span>
+                                
+
+                                <div class="param-description">
+                                    <p>The conversation id that change notices will go to</p>
+
+                                </div>
+
+                                
+                            </li>
+                            
+                        </ul>
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_broadcastDeathScream" class="method item">
+    <h3 class="name"><code>broadcastDeathScream</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>deathScream</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l797"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:797</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Broadcasts to other instances of this API on the bus this APIs state.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">deathScream</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        <p>the state data to pass on.</p>
+
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_broadcastLeaderReady" class="method item">
+    <h3 class="name"><code>broadcastLeaderReady</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l786"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:786</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Broadcasts to other instances of this API on the bus that it is ready to lead.</p>
+
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_changedHandler" class="method item">
+    <h3 class="name"><code>changedHandler</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>node</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>entity</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>packetContext</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l123"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:123</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>A handler function called after a node is changed but before it&#39;s watchers are notified.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">node</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">entity</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">packetContext</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_checkAuthorization" class="method item">
+    <h3 class="name"><code>checkAuthorization</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>node</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>context</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>packet</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>action</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type">Undefined</span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l367"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:367</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Authorize the request for the given node.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">node</code>
+                        <span class="type"><a href="../classes/ozpIwc.ApiNode.html" class="crosslink">ozpIwc.ApiNode</a></span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">context</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">packet</code>
+                        <span class="type"><a href="../classes/ozpIwc.TransportPacket.html" class="crosslink">ozpIwc.TransportPacket</a></span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">action</code>
+                        <span class="type">String</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Undefined</span>:
+                    
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_createApi" class="method item">
+    <h3 class="name"><code>createApi</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>init</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type">Object</span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l1001"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:1001</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Creates a subclass of ApiBase and adds some static helper functions.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">init</code>
+                        <span class="type">Function</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        <p>the constructor function for the class</p>
+
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Object</span>:
+                    
+                    <p>A new API class that inherits from the ApiBase class.</p>
+
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_createDeathScream" class="method item">
+    <h3 class="name"><code>createDeathScream</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type">Object</span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l157"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:157</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Create the data that needs to be handed off to the new leader.</p>
+<p><strong>Intended to be overridden by subclasses</strong></p>
+<p>Subsclasses can override this if they need to add additional
+handoff data.  This MUST be a synchronous call that returns immediately.</p>
+
+    </div>
+
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Object</span>:
+                    
+                    <p>the data that will be passed to the new leader</p>
+
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_createdHandler" class="method item">
+    <h3 class="name"><code>createdHandler</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>node</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l113"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:113</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>A handler function for when a node is created. Can be overridden by inherited APIs.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">node</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_createNode" class="method item">
+    <h3 class="name"><code>createNode</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>config</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/ozpIwc.ApiNode.html" class="crosslink">ozpIwc.ApiNode</a></span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l229"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:229</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Creates a node appropriate for the given config, puts it into this.data,
+and fires off the right events.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">config</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        <p>The ApiNode configuration.</p>
+
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type"><a href="../classes/ozpIwc.ApiNode.html" class="crosslink">ozpIwc.ApiNode</a></span>:
+                    
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_createNodeObject" class="method item">
+    <h3 class="name"><code>createNodeObject</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>config</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>NodeType</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/ozpIwc.ApiNode.html" class="crosslink">ozpIwc.ApiNode</a></span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l246"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:246</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Creates a node appropriate for the given config.  This does
+NOT add the node to this.data.  Default implementation returns
+a plain ozpIwc.ApiNode.</p>
+<p><strong>Intended to be overridden by subclasses</strong></p>
+<p>Subsclasses can override this for custom node types that may vary
+from resource to resource.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">config</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        <p>The ApiNode configuration.</p>
+
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">NodeType</code>
+                        <span class="type">Function</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        <p>The contructor call for the given node type to be created.</p>
+
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type"><a href="../classes/ozpIwc.ApiNode.html" class="crosslink">ozpIwc.ApiNode</a></span>:
+                    
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_deliverRequestQueue" class="method item private">
+    <h3 class="name"><code>deliverRequestQueue</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+
+    
+
+    
+        <span class="flag private">private</span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l760"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:760</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Routes all queued packets and turns off request queueing.</p>
+
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_disconnectHandler" class="method item">
+    <h3 class="name"><code>disconnectHandler</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>address</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l138"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:138</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>A handler function called when an instance of this API has disconnected from the bus.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">address</code>
+                        <span class="type">String</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_enableRequestQueue" class="method item private">
+    <h3 class="name"><code>enableRequestQueue</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+
+    
+
+    
+        <span class="flag private">private</span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l750"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:750</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Enables the API&#39;s request queue, all requests will be held until deliverRequestQueue or flushRequestQueue is called.</p>
+
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_flushRequestQueue" class="method item private">
+    <h3 class="name"><code>flushRequestQueue</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+
+    
+
+    
+        <span class="flag private">private</span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l771"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:771</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Empties the queue of requests without processing and turns off queuing.</p>
+
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_getCollection" class="method item">
+    <h3 class="name"><code>getCollection</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>pattern</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type">Array</span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l887"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:887</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Gathers the collection data for a node given its pattern only if it has a pattern.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">pattern</code>
+                        <span class="type">String</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Array</span>:
+                    
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_getPreference" class="method item">
+    <h3 class="name"><code>getPreference</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>prefName</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l178"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:178</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Gathers the desired preference from the data API.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">prefName</code>
+                        <span class="type">String</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Promise</span>:
+                    
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_initializeData" class="method item">
+    <h3 class="name"><code>initializeData</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>deathScream</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l194"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:194</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Called when the API has become the leader, but before it starts
+serving data.  Receives the deathScream of the previous leader
+if available, otherwise undefined.</p>
+<p><strong>Intended to be overridden by subclasses</strong></p>
+<p>Subsclasses can override this to load data from the server.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">deathScream</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Promise</span>:
+                    
+                    <p>a promise that resolves when all data is loaded.</p>
+
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_loadFromEndpoint" class="method item">
+    <h3 class="name"><code>loadFromEndpoint</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>endpoint</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>headers</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l833"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:833</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Loads data from the provided endpoint.  The endpoint must point to a HAL JSON document
+that embeds or links to all resources for this api.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">endpoint</code>
+                        <span class="type"><a href="../classes/ozpIwc.Endpoint.html" class="crosslink">ozpIwc.Endpoint</a></span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">headers</code>
+                        <span class="type">Array</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Promise</span>:
+                    
+                    <p>resolved when all data has been loaded.</p>
+
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_markForChange" class="method item">
+    <h3 class="name"><code>markForChange</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>nodes...</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l400"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:400</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Marks that a node has changed and that change notices may need to 
+be sent out after the request completes.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">nodes...</code>
+                        <span class="type">ApiNode</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_matchingNodes" class="method item">
+    <h3 class="name"><code>matchingNodes</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>prefix</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/ozpIwc.ApiNode.html" class="crosslink">ozpIwc.ApiNode[]</a></span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l382"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:382</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Returns a list of nodes that start with the given prefix.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">prefix</code>
+                        <span class="type">String</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type"><a href="../classes/ozpIwc.ApiNode.html" class="crosslink">ozpIwc.ApiNode[]</a></span>:
+                    
+                    <p>a promise that resolves when all data is loaded.</p>
+
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_receiveBusPacket" class="method item">
+    <h3 class="name"><code>receiveBusPacket</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>packetContext</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type"></span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l639"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:639</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Handles packets received with a destination of &quot;$bus.multicast&quot;.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">packetContext</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type"></span>:
+                    
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_receiveCoordinationPacket" class="method item">
+    <h3 class="name"><code>receiveCoordinationPacket</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>packetContext</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l810"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:810</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Handles packets received regarding leadership actions.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">packetContext</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Promise</span>:
+                    
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_receivePacketContext" class="method item">
+    <h3 class="name"><code>receivePacketContext</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>packet</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>context</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l729"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:729</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Any request packet that does not match a route ends up here.  By default,
+it replies with BadAction, BadResource, or BadRequest, as appropriate.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">packet</code>
+                        <span class="type"><a href="../classes/ozpIwc.TransportPacket.html" class="crosslink">ozpIwc.TransportPacket</a></span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">context</code>
+                        <span class="type"><a href="../classes/ozpIwc.TransportPacketContext.html" class="crosslink">ozpIwc.TransportPacketContext</a></span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_removeCollector" class="method item">
+    <h3 class="name"><code>removeCollector</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>node</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l485"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:485</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Removes the given node from the collector list. It&#39;s collection list will no longer be updated on api data changes.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">node</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_removeDeadWatchers" class="method item">
+    <h3 class="name"><code>removeDeadWatchers</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>address</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l660"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:660</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>If the the given address is watching a resource, it will be removed from the watch list. Router addresses will
+remove all of its participants watch registrations.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">address</code>
+                        <span class="type">String</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_removeWatcher" class="method item">
+    <h3 class="name"><code>removeWatcher</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>resource</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>watcher</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l445"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:445</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Removes mark that a node has changed and that change notices may need to
+be sent out after the request completes.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">resource</code>
+                        <span class="type">String</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        <p>name of the resource to unwatch</p>
+
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">watcher</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                        <ul class="params-list">
+                            
+                            <li class="param">
+                                
+                                    <code class="param-name">src</code>
+                                    <span class="type">String</span>
+                                
+
+                                <div class="param-description">
+                                    <p>Address of the watcher</p>
+
+                                </div>
+
+                                
+                            </li>
+                            
+                            <li class="param">
+                                
+                                    <code class="param-name">replyTo</code>
+                                    <span class="type">String | Number</span>
+                                
+
+                                <div class="param-description">
+                                    <p>The conversation id that change notices will go to</p>
+
+                                </div>
+
+                                
+                            </li>
+                            
+                        </ul>
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_resolveChangedNode" class="method item">
+    <h3 class="name"><code>resolveChangedNode</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>resource</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>snapshot</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>packetContext</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l497"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:497</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Notifies watchers of changes of the resource since the given snapshot.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">resource</code>
+                        <span class="type">String</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">snapshot</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">packetContext</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_resolveChangedNodes" class="method item private">
+    <h3 class="name"><code>resolveChangedNodes</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>packetContext</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+        <span class="flag private">private</span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l547"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:547</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Called after the request is complete to send out change notices.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">packetContext</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        <p>the packet that caused this change.</p>
+
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_shutdown" class="method item">
+    <h3 class="name"><code>shutdown</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type"></span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l314"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:314</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Shuts down the api, issuing a deathscream and releasing the lock, if possible.</p>
+
+    </div>
+
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_transitionToLeader" class="method item private">
+    <h3 class="name"><code>transitionToLeader</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+
+    
+
+    
+        <span class="flag private">private</span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l295"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:295</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_transitionToLoading" class="method item private">
+    <h3 class="name"><code>transitionToLoading</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+    
+
+    
+
+    
+        <span class="flag private">private</span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l273"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:273</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Promise</span>:
+                    
+                    <p>a promise that resolves when all data is loaded.</p>
+
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_transitionToMemberDormant" class="method item private">
+    <h3 class="name"><code>transitionToMemberDormant</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+    
+
+    
+
+    
+        <span class="flag private">private</span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l349"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:349</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Promise</span>:
+                    
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_transitionToMemberReady" class="method item private">
+    <h3 class="name"><code>transitionToMemberReady</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>deathScream</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+    
+
+    
+
+    
+        <span class="flag private">private</span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l331"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:331</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">deathScream</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Promise</span>:
+                    
+                
+            </div>
+        </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_updateCollectionNode" class="method item">
+    <h3 class="name"><code>updateCollectionNode</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>cNode</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l573"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:573</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Removes the collector node resource from the collectors list if deleted. Removes references to nodes in the given
+collectors collection property if said referenced node is deleted. Adds newly created nodes to the collection
+property if said node&#39;s resource matches the collection nodes pattern property.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">cNode</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        <p>the collector node to update</p>
+
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_updateCollections" class="method item">
+    <h3 class="name"><code>updateCollections</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l562"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:562</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Itterates over all collectors of the API for updates</p>
+
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_useDefaultRoute" class="method item">
+    <h3 class="name"><code>useDefaultRoute</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>actions</code>
+                    
+                </li>
+            
+                <li class="arg">
+                    
+                        <code>resource=&quot;{resource:.*}&quot;</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <span class="flag static">static</span>
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l992"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:992</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Install the default handler and filters for the provided actions and resources.</p>
+
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">actions</code>
+                        <span class="type">String | String</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                    
+                </li>
+            
+                <li class="param">
+                    
+                        <code class="param-name">resource=&quot;{resource:.*}&quot;</code>
+                        <span class="type">String</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                        <p>The resource template to install the default handler on.</p>
+
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
+    
+
+    
+</div>
+
+                
+            </div>
+        
+
+        
+            <div id="properties" class="api-class-tabpanel">
+                <h2 class="off-left">Properties</h2>
+
+                
+                    <div id="property_allActions" class="property item">
+    <h3 class="name"><code>allActions</code></h3>
+    <span class="type">String</span>
+
+    
+
+    
+
+    
+
+    
+        <span class="flag static">static</span>
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l984"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:984</code></a>
+        
+        </p>
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>A list of all of the default actions.</p>
+
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="property_defaultHandler" class="property item">
+    <h3 class="name"><code>defaultHandler</code></h3>
+    <span class="type">Object</span>
+
+    
+
+    
+
+    
+
+    
+        <span class="flag static">static</span>
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l905"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:905</code></a>
+        
+        </p>
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>A collection of default action handlers for an API.</p>
+
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="property_packetContext" class="property item private">
+    <h3 class="name"><code>packetContext</code></h3>
+    <span class="type">Object</span>
+
+    
+
+    
+        <span class="flag private">private</span>
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l617"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:617</code></a>
+        
+        </p>
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Routes a packet received from the participant.</p>
+
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="property_packetContext" class="property item private">
+    <h3 class="name"><code>packetContext</code></h3>
+    <span class="type">Object</span>
+
+    
+
+    
+        <span class="flag private">private</span>
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                    <p>Provided by the <a href="../modules/ozpIwc.html">ozpIwc</a> module.</p>
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/app_js_services_api_apiBase.js.html#l682"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;apiBase.js:682</code></a>
+        
+        </p>
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        <p>Routes a request to the proper handler and takes care of overhead
+such as change requests.</p>
+
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
+            </div>
+        
+
+        
+
+        
+    </div>
+</div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>
