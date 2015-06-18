@@ -72,6 +72,7 @@ ozpIwc.CommonApiBase = function(config) {
     this.retrievedBranches = 0;
 
     this.endpointUrls=[];
+    this.electionQueue = [];
 };
 ozpIwc.CommonApiBase.prototype.receiveState = function (state) {
     state = state || this.participant.stateStore;
@@ -609,6 +610,15 @@ ozpIwc.CommonApiBase.prototype.createKey=function(prefix) {
 ozpIwc.CommonApiBase.prototype.isLeader=function(){
     return this.participant.activeStates.leader;
 };
+
+/**
+ * Returns true if this API instance is a leadership election.
+ * @method isLeader
+ * @returns {Boolean}
+ */
+ozpIwc.CommonApiBase.prototype.isElecting=function(){
+    return this.participant.activeStates.election;
+};
 /**
  * Route a packet to the appropriate handler.  The routing path is based upon
  * the action and whether a resource is defined. If the handler does not exist, it is routed
@@ -1111,6 +1121,8 @@ ozpIwc.CommonApiBase.prototype.newLeader = function() {
     if (this.participant.leaderState === "actingLeader") {
         this.participant.sendElectionMessage("election", {previousLeader: this.participant.address, state: this.data});
     }
+
+    this.electionQueue=[];
     this.participant.changeState("member");
     this.participant.events.trigger("newLeader");
 };
@@ -1130,6 +1142,10 @@ ozpIwc.CommonApiBase.prototype.setToLeader = function(){
     ozpIwc.util.setImmediate(function() {
         self.participant.changeState("leader");
         self.participant.events.trigger("becameLeader");
+        self.electionQueue.forEach(function(p) {
+            self.participant.send(p);
+        },this);
+        self.electionQueue=[];
     });
 };
 

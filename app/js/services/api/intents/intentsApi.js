@@ -111,7 +111,7 @@ ozpIwc.IntentsApi.prototype.handleInflightIntentState=function(inflightNode) {
 
             packet = ozpIwc.util.clone(handlerNode.entity.invokeIntent);
             packet.entity = packet.entity || {};
-            packet.replyTo = handlerNode.replyTo;
+            packet.replyTo = handlerNode.entity.replyTo;
             packet.entity.inFlightIntent = inflightNode.resource;
             packet.entity.inFlightIntentEntity= inflightNode.entity;
             console.log(this.logPrefix+"delivering intent:",packet);

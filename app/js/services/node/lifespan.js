@@ -10,14 +10,42 @@
 ozpIwc.Lifespan = ozpIwc.Lifespan || {};
 
 /**
- * Returns the lifespan functionality given the lifespan object given.
+ * A object formatter for the node's lifespan. If passed as just a string, format it to the object notation.
  * @method getLifespan
  * @static
  * @param {Object} lifespanObj
- * @param {String} lifespan.type
- * @returns {{shouldPersist: Function, shouldDelete: Function}|*}
+ * @param {String} lifespanObj.type
+ * @returns {Object|undefined}
  */
 ozpIwc.Lifespan.getLifespan = function(lifespanObj){
+    if(!lifespanObj){
+        return;
+    }
+    if(typeof lifespanObj === "string"){
+        var type = lifespanObj;
+        lifespanObj = {
+            'type': type
+        };
+    }
+    if(!lifespanObj.type){
+        return;
+    }
+
+    lifespanObj.type = lifespanObj.type.charAt(0).toUpperCase() + lifespanObj.type.slice(1);
+
+    return lifespanObj;
+};
+
+
+/**
+ * Returns the lifespan functionality given the lifespan object given.
+ * @method getLifespanFunctionality
+ * @static
+ * @param {Object} lifespanObj
+ * @param {String} lifespanObj.type
+ * @returns {{shouldPersist: Function, shouldDelete: Function}|*}
+ */
+ozpIwc.Lifespan.getLifespanFunctionality = function(lifespanObj){
 
     switch(lifespanObj.type){
         case "Ephemeral":

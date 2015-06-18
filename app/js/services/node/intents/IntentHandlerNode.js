@@ -44,7 +44,7 @@ ozpIwc.IntentHandlerNode.prototype.set=function(packet) {
     this.entity.invokeIntent.dst=dst;
 
     //We need to know what callback to call on the client.
-    this.replyTo = packet.msgId;
+    this.entity.replyTo = packet.msgId;
 };
 
 /**

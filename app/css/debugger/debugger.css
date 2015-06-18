@@ -94,7 +94,6 @@ text-align:left;
     border-right: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
     max-height:80vh;
-    overflow: auto;
 }
 
 .ui-grid-viewport {
@@ -106,6 +105,12 @@ text-align:left;
     white-space: normal;
     word-wrap: break-word;
     overflow: auto;
+    font-size: 0.85em;
+}
+
+.ui-grid-filter-container{
+    padding: 4px 4px;
+    font-size:0.85em;
 }
 
 .grid {
