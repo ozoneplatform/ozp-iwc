@@ -129,7 +129,7 @@ ozpIwc.ApiBase.prototype.createdHandler=function(node){
  */
 ozpIwc.ApiBase.prototype.changedHandler =function(node,entity,packetContext) {
     //var culprit = packetContext.src;
-    var lifespanFns = ozpIwc.Lifespan.getLifespan(node.lifespan);
+    var lifespanFns = ozpIwc.Lifespan.getLifespanFunctionality(node.lifespan);
     if(lifespanFns.shouldPersist()) {
         this.persistenceQueue.queueNode(this.name + "/" + node.resource, node);
     }
@@ -143,7 +143,7 @@ ozpIwc.ApiBase.prototype.changedHandler =function(node,entity,packetContext) {
 ozpIwc.ApiBase.prototype.disconnectHandler =function(address) {
     var self = this;
     ozpIwc.object.eachEntry(self.data,function(resource,node) {
-        var lifespanFns = ozpIwc.Lifespan.getLifespan(node.lifespan);
+        var lifespanFns = ozpIwc.Lifespan.getLifespanFunctionality(node.lifespan);
         if(lifespanFns.shouldDelete(node.lifespan,address)){
             self.markForChange(node);
             node.markAsDeleted();

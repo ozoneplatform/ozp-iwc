@@ -286,6 +286,7 @@ ozpIwc.LeaderGroupParticipant=ozpIwc.util.extend(ozpIwc.InternalParticipant,func
         }
 
         self.events.trigger("unloadState");
+        self.startElection();
     });
 
 

@@ -264,6 +264,7 @@ ozpIwc.ApiNode.prototype.resourceFallback = function(serializedForm) {
 ozpIwc.ApiNode.prototype.toPacket=function(base) {
 	base = base || {};
 	base.entity=ozpIwc.util.clone(this.entity);
+    base.lifespan = this.lifespan;
 	base.contentType=this.contentType;
 	base.permissions=this.permissions;
 	base.eTag=this.version;
@@ -289,6 +290,7 @@ ozpIwc.ApiNode.prototype.set=function(packet) {
             this.permissions.pushIfNotExist(i,packet.permissions[i]);
         }
     }
+    this.lifespan = ozpIwc.Lifespan.getLifespan(packet.lifespan) || this.lifespan;
     this.contentType=packet.contentType;
     this.entity=packet.entity;
     this.pattern = packet.pattern || this.pattern;

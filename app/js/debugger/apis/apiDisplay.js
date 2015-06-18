@@ -46,19 +46,26 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
             displayName: "actions",
             headerCellTemplate: 'templates/headerTemplate.tpl.html',
             cellTemplate: 'templates/resourceTemplate.tpl.html',
-            width: "8%"
+            width: "5%"
 
         },{
             field:'resource',
             displayName:'Resource',
             //cellTemplate: 'templates/resourceTemplate.tpl.html',
             filter: containsFilterGen(),
-            width: "12%"
+            width: "7%"
         },{
             field:'contentType',
             displayName:'Content Type',
             filter: containsFilterGen(),
-            width: "15%"
+            width: "7%"
+        },{
+            field:'lifespan',
+            displayName:'Lifespan',
+            cellTemplate: statusTemplate,
+            cellClass: 'grid-pre',
+            filter: containsFilterGen(),
+            width: "7%"
         },{
             field:'entity',
             displayName:'Entity',
@@ -72,14 +79,14 @@ debuggerModule.controller("ApiDisplayCtrl",["$scope", "$attrs", "iwcClient","api
             cellTemplate: statusTemplate,
             cellClass: 'grid-pre',
             filter: containsFilterJSONGen(),
-            width: "15%"
+            width: "10%"
         },{
             field:'collection',
             displayName:'collection',
             cellTemplate: statusTemplate,
             cellClass: 'grid-pre',
             filter: containsFilterJSONGen(),
-            width: "15%"
+            width: "10%"
 
         }];
     scope.gridOptions = {

@@ -29,7 +29,8 @@ ozpIwc.LocksApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config)
  */
 ozpIwc.LocksApiValue.prototype.lock=function(packet) {
     this.entity.queue.push(packet);
-    if(this.entity.owner !== this.entity.queue[0]) {
+    this.entity.owner = this.entity.owner || {};
+    if(!ozpIwc.util.objectContainsAll(this.entity.owner,this.entity.queue[0])) {
         this.entity.owner=this.entity.queue[0];
         return this.entity.owner;
     }
@@ -48,7 +49,7 @@ ozpIwc.LocksApiValue.prototype.unlock=function(packet) {
     this.entity.queue=this.entity.queue.filter(function(q) {
        return !ozpIwc.util.objectContainsAll(q,packet);
     });
-    
+
     if(!ozpIwc.util.objectContainsAll(this.entity.owner,this.entity.queue[0])) {
         this.entity.owner=this.entity.queue[0];
         return this.entity.owner;
