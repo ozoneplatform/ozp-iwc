@@ -21,14 +21,14 @@ ozpIwc.intentsChooserUri = "intentsChooser.html";
 		}
 	}
 })();
-
+ozpIwc._busInit = function(){};
 ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
     'pip': new ozpIwc.policyAuth.PIP(),
     'prp': new ozpIwc.policyAuth.PRP(),
     'setsEndpoint': ozpIwc.policyRootUrl
 });
 
-function init() {
+
     if (typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
         ozpIwc.initEndpoints(ozpIwc.apiRootUrl || "api");
 
@@ -43,7 +43,7 @@ function init() {
             heartbeatFrequency: ozpIwc.heartBeatFrequency
         });
 
-
+    ozpIwc._busInit = function() {
         if (typeof ozpIwc.runApis === "undefined" || ozpIwc.runApis) {
             ozpIwc.defaultLeadershipStates = function () {
                 return {
@@ -80,17 +80,18 @@ function init() {
                 router: ozpIwc.defaultRouter
             });
         }
-    }
+    };
 }
 
-ozpIwc._ready = false;
-if(!document.hidden) {
-    ozpIwc._ready  = true;
-    init();
-}
-
-document.addEventListener("visibilityChange", function(e) {
-    if(!document.hidden && !ozpIwc._ready) {
-        init();
+new Promise(function(resolve,reject) {
+    if(document.visibilityState === undefined || (document.visibilityState !== "prerender" && document.visibilityState !== "unload")) {
+        resolve();
+    } else {
+        document.addEventListener("visibilityChange",function runOnce(e){
+            if(document.visibilityState!=="prerender"){
+	        resolve();
+                document.removeEventListener(runOnce);
+            } 
+        });
     }
-});
+}).then(ozpIwc._busInit);
