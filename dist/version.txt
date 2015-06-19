@@ -1,0 +1,5 @@
+Version: 0.3.1
+Git hash: 
+b7e4c01f6be56f2b93b924bf6474e39acc304f6e
+Date:
+2015-06-18 22:57:21 -0400
