@@ -56,9 +56,10 @@ ozpIwc.NamesApi.declareRoute({
         "contentType": "application/json",
         "entity": this.matchingNodes(packet.resource).map(function(node) {
             return node.resource;
-         })
+        })
     };
 });
+
 //====================================================================
 // API endpoints
 //====================================================================

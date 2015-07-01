@@ -51,7 +51,7 @@ ozpIwc.SystemApi = ozpIwc.createApi(function(config) {
                 }
             }
         };
-        self.participant.intents().register("/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",
+        return self.participant.intents().register("/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",
             registerData).catch(function(error) {
                 ozpIwc.log.error("System.api failed to register for launch intent: ",error);
             });
@@ -62,33 +62,42 @@ ozpIwc.SystemApi = ozpIwc.createApi(function(config) {
  * Updates intents API registrations for the given system api application.
  * @method updateIntents
  * @param {Object} node
+ * @returns {Promise}
  */
 ozpIwc.SystemApi.prototype.updateIntents=function(node) {
     if(!node.entity || !node.entity.intents) {
         return;
     }
+    var packets = [];
+
+    // build out the messages for intent registrations but don't send, we are sending in bulk.
     node.entity.intents.forEach(function(i) {
         var icon = i.icon || (node.entity && node.entity.icons && node.entity.icons.small) ? node.entity.icons.small : '';
         var label = i.label || node.entity.name;
-        this.participant.send({
-            'dst' : "intents.api",
-            'src' : "system.api",
-            'action': "set",
-            'resource': "/"+i.type+"/"+i.action+"/system.api"+node.resource.replace(/\//g,'.'),
+        var resource =  "/"+i.type+"/"+i.action+"/system.api"+node.resource.replace(/\//g,'.');
+        var payload ={
             'contentType': "application/vnd.ozp-iwc-intent-handler-v1+json",
             'entity': {
-                'type': i.type,
+            'type': i.type,
                 'action': i.action,
                 'icon': icon,
                 'label': label,
                 '_links': node.entity._links,
                 'invokeIntent': {
-                    'action' : 'launch',
+                'action' : 'launch',
                     'resource' : node.resource
                 }
             }
-        });
+        };
+
+        packets.push(this.participant.intents().messageBuilder.set(resource,payload));
     },this);
+
+    //Send out all intent messages in bulk
+    return this.participant.intents().bulkSend(packets).then(function(response){
+        // After getting the ok on the bulk message, wait for each individual message to resolve
+        return Promise.all(packets);
+    });
 
 };
 

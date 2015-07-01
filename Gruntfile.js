@@ -366,11 +366,12 @@ module.exports = function(grunt) {
             },
             releaseGit: {
                 command: [
+                    'grunt karmaTests',
                     'git add bower.json package.json',
                     'git commit -m "chore(release): <%= pkg.version %>"',
                     'git push origin master',
                     'git checkout --detach',
-                    'grunt dist',
+                    'grunt build yuidoc',
                     'git add -f dist',
                     'git commit -m "chore(release): <%= pkg.version %>"',
                     'git tag -a "<%= pkg.version %>" -m "chore(release): <%= pkg.version %>"',

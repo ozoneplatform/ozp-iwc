@@ -223,7 +223,145 @@ describe("IWC Client", function() {
 //            });
 //        });
     });
+    describe("bulkSend",function(){
 
+        beforeEach(function(done) {
+            client=new ozpIwc.Client({
+                peerUrl: "http://" + window.location.hostname + ":14002"
+            });
+            participant=new ozpIwc.test.MockParticipant({
+                clientUrl: "http://" + window.location.hostname + ":14001",
+                'client': client
+            });
+
+            var gate=ozpIwc.testUtil.doneSemaphore(2,done);
+
+            participant.on("connected",gate);
+            client.on("connected",gate);
+        });
+
+
+        pit("responds to a bulk set with an ok for receiving the packets, and responds to each request individually", function(){
+            var packets = [];
+            packets.push(client.api('data.api').messageBuilder.set("/foo",{entity: "bar"}));
+            packets.push(client.api('data.api').messageBuilder.set("/bar",{entity: "buz"}));
+            packets.push(client.api('data.api').messageBuilder.get("/foo"));
+            packets.push(client.api('data.api').messageBuilder.get("/bar"));
+
+            return client.api('data.api').bulkSend(packets).then(function(reply){
+                //These actually will resolve before the bulkSend resolves, but for the pit test structure this is easiest.
+                return Promise.all(packets).then(function(replies){
+                    expect(replies[0].response).toEqual("ok");
+                    expect(replies[1].response).toEqual("ok");
+                    expect(replies[2].entity).toEqual("bar");
+                    expect(replies[3].entity).toEqual("buz");
+                });
+            });
+        });
+
+        pit("responds to a bulk set with an ok for receiving the packets, and responds to each request individually including rejections", function(){
+            var packets = [];
+            packets.push(client.api('data.api').messageBuilder.set("/foo",{entity: "bar"}));
+            packets.push(client.api('data.api').messageBuilder.set("/bar",{entity: "buz"}));
+            packets.push(client.api('data.api').messageBuilder.get("/NO_RESOURCE"));
+            packets.push(client.api('data.api').messageBuilder.get("/foo"));
+            packets.push(client.api('data.api').messageBuilder.get("/bar"));
+
+            //Long promise chain, this is just because we want to see that packet[2] (noResource) will error, but all others
+            //will respond still.
+            return client.api('data.api').bulkSend(packets).then(function(reply){
+                return packets[0];
+            }).then(function(res){
+                expect(res.response).toEqual("ok");
+                return packets[1];
+            }).then(function(res) {
+                expect(res.response).toEqual("ok");
+                return packets[2];
+            }).then(function(res){
+                expect(res).toNotHappen();
+            },function(err){
+                expect(err.response).toEqual("noResource");
+                return packets[3];
+            }).then(function(res){
+                expect(res.entity).toEqual("bar");
+                return packets[4];
+            }).then(function(res){
+                expect(res.entity).toEqual("buz");
+            });
+        });
+    });
+    describe("respondOn",function(){
+
+        beforeEach(function(done) {
+            client=new ozpIwc.Client({
+                peerUrl: "http://" + window.location.hostname + ":14002"
+            });
+            participant=new ozpIwc.test.MockParticipant({
+                clientUrl: "http://" + window.location.hostname + ":14001",
+                'client': client
+            });
+
+            var gate=ozpIwc.testUtil.doneSemaphore(2,done);
+
+            participant.on("connected",gate);
+            client.connect().then(gate);
+        });
+
+        pit("defaults to respond on all (response/errors) by default",function(){
+            return client.api("data.api").set("/foo",{entity: "barbuz"}).then(function(reply){
+                return client.data().get("/NO_RESOURCE").catch(function(error){
+                    // We want to resolve this
+                    expect(error.response).toEqual("noResource");
+                    return error;
+                });
+            });
+        });
+
+        it("does not receive response packets if respondOn is none",function(done){
+            var resolved = false;
+            var rejected = false;
+            setTimeout(function(){
+                expect(resolved).toEqual(false);
+                expect(rejected).toEqual(false);
+                done();
+            },5000);
+
+            client.api("data.api").set("/foo",{respondOn:"none", entity: "barbuz"}).then(function(reply){
+                expect(reply).notToHappen();
+            }).catch(function(err){
+                expect(err).notToHappen();
+            });
+
+            client.api("data.api").get("/NO_RESOURCE",{respondOn:"none", entity: "barbuz"}).then(function(reply){
+                expect(reply).notToHappen();
+            }).catch(function(err){
+                expect(err).notToHappen();
+            });
+        });
+
+        it("responds only on errors if respondOn is error",function(done){
+            var resolved = false;
+            var rejected = false;
+            setTimeout(function(){
+                expect(resolved).toEqual(false);
+                expect(rejected).toEqual(true);
+                done();
+            },5000);
+
+            client.api("data.api").set("/foo",{respondOn: "error", entity: "barbuz"}).then(function(reply){
+                expect(reply).notToHappen();
+            }).catch(function(err){
+                expect(err).notToHappen();
+            });
+
+            client.api("data.api").get("/NO_RESOURCE",{respondOn: "error", entity: "barbuz"}).then(function(reply){
+                resolved = true;
+                expect(reply).notToHappen();
+            }).catch(function(err){
+                rejected = true;
+            });
+        });
+    });
 //    describe("", function() {
 //        var originalHref = window.location.href;
 //        var baseUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;

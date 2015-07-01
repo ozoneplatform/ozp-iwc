@@ -269,12 +269,13 @@ ozpIwc.Participant.prototype.generateMsgId=function() {
  */
 ozpIwc.Participant.prototype.heartbeat=function() {
     if(this.router) {
-        this.send({
+        return this.fixPacket({
             'dst': "names.api",
             'resource': this.namesResource,
             'action' : "set",
             'entity' : this.heartBeatStatus,
-            'contentType' : this.heartBeatContentType
+            'contentType' : this.heartBeatContentType,
+            'respondOn': "none"
         });
     }
 };
