@@ -20,8 +20,9 @@ describe("System API", function() {
         participant.on("connected", gate);
         client.connect().then(gate, gate);
 				
-				// wait for the systemAPI to be available
-				client.api("system.api").list("/").then(gate,gate);
+        // wait for the systemAPI to be available
+        client.api("system.api").list("/").then(gate,gate);
+
     });
 
     afterEach(function() {
@@ -63,8 +64,8 @@ describe("System API", function() {
                 .then(function(reply) {
                   return Promise.reject(reply);
                 }).catch(function(error) {
-									expect(error.response).toEqual("badAction");
-								});
+                    expect(error.response).toEqual("badAction");
+                });
         });
 
         pit("denies delete on " + resource, function() {
@@ -108,7 +109,7 @@ describe("System API", function() {
                 }),
                 new Promise(function(resolve,reject) {
                     client.on("receive",function(packet) {
-                        if(packet.src==="intents.api" && packet.resource==="") {
+                        if(packet.src==="intents.api" && packet.action==="invoke") {
                             resolve(packet);
                         }
                     });

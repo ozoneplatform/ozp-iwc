@@ -109,7 +109,7 @@ ozpIwc.TransportPacketContext=function(config) {
 /**
  * Formats a response packet,
  *
- * method makeReplyTo
+ * @method makeReplyTo
  * @param {Object} response
  * @param {Number} [response.ver]
  * @param {Number} [response.time]
@@ -129,23 +129,47 @@ ozpIwc.TransportPacketContext.prototype.makeReplyTo=function(response){
 };
 
 /**
- * Sends the given response to the sender of this context.
+ * Sends the given response to the sender of this context if the packet respondOn criteria is met.
+ *
  * @method replyTo
  * @param {ozpIwc.TransportPacket} response
- *
  * @returns {ozpIwc.TransportPacket} the packet that was sent
  */
 ozpIwc.TransportPacketContext.prototype.replyTo=function(response) {
-    response=this.makeReplyTo(response);
-    if(this.dstParticipant) {
-        this.dstParticipant.send(response);
-    } else{
-        response.msgId = response.msgId || ozpIwc.util.now();
-        this.router.send(response);
+
+    if(this.shouldReply(response)) {
+        response=this.makeReplyTo(response);
+
+        if (this.dstParticipant) {
+            this.dstParticipant.send(response);
+        } else {
+            response.msgId = response.msgId || ozpIwc.util.now();
+            this.router.send(response);
+        }
+        return response;
     }
-    return response;
 };
 
+/**
+ * Returns true if this packet be replied to based on its respondOn.
+ *
+ * @method shouldReply
+ * @param {Object} response
+ * @returns {Boolean}
+ */
+ozpIwc.TransportPacketContext.prototype.shouldReply=function(response){
+    this.packet = this.packet || {};
+    this.packet.respondOn = this.packet.respondOn || "all";
+
+    switch(this.packet.respondOn){
+        case "none":
+            return false;
+        case "error":
+            return /(bad|no).*/.test(response.response);
+        default: // "all"
+            return true;
+    }
+};
 
 /**
  * @class Router

@@ -180,6 +180,61 @@ describe("ApiBase request handling",function() {
         });
     });
 //=====================================================================
+// Basic Actions: bulkSend
+//=====================================================================
+    describe("action bulkSend",function() {
+
+        pit("returns ok when receiving a formatted bulkSend",function(){
+            var context = [];
+            context.push(testPacket({
+                'resource': "/foo",
+                'action': "set",
+                'entity': { foo:1}
+            }));
+            context.push(testPacket({
+                'resource': "/foo1",
+                'action': "set",
+                'entity': { foo:2}
+            }));
+            var bulkSendPacket = testPacket({
+                'action': "bulkSend",
+                'entity': context
+            });
+            return apiBase.receivePacketContext(bulkSendPacket).then(function() {
+                expect(bulkSendPacket.responses.length).toEqual(1);
+                expect(bulkSendPacket.responses[0].response).toEqual("ok");
+                expect(apiBase.data["/foo"].entity).toEqual({foo:1});
+                expect(apiBase.data["/foo1"].entity).toEqual({foo:2});
+
+            });
+        });
+
+        pit("returns ok when receiving a bulkSend with an error producing request",function(){
+            var context = [];
+            context.push(testPacket({
+                'resource': "/foo",
+                'action': "set",
+                'entity': { foo:1}
+            }));
+            context.push(testPacket({
+                'resource': "/foo1",
+                'action': "reset",
+                'entity': { foo:2}
+            }));
+            var bulkSendPacket = testPacket({
+                'action': "bulkSend",
+                'entity': context
+            });
+            return apiBase.receivePacketContext(bulkSendPacket).then(function() {
+                expect(bulkSendPacket.responses.length).toEqual(1);
+                expect(bulkSendPacket.responses[0].response).toEqual("ok");
+                expect(apiBase.data["/foo"].entity).toEqual({foo:1});
+                expect(apiBase.data["/foo1"]).not.toBeDefined();
+
+            });
+        });
+    });
+//=====================================================================
 // Basic Actions: delete
 //=====================================================================
     describe("action delete",function() {

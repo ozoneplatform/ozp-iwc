@@ -52,9 +52,9 @@ ozpIwc.ApiBase=function(config) {
     this.leaderState="member";
 
     
-    var router=config.router || ozpIwc.defaultRouter;
-    router.registerParticipant(this.participant);
-    router.registerMulticast(this.participant,[this.name,this.coordinationAddress]);
+    this.router=config.router || ozpIwc.defaultRouter;
+    this.router.registerParticipant(this.participant);
+    this.router.registerMulticast(this.participant,[this.name,this.coordinationAddress]);
 
     var self=this;
     this.participant.on("receive",function(packetContext) {
@@ -1024,5 +1024,25 @@ ozpIwc.createApi=function(init) {
             );
         });
     };
+
+    api.declareRoute({
+        action: ["bulkSend"],
+        resource: "{resource:.*}",
+        filters: []
+    }, function(packet, context, pathParams) {
+        var messages = packet.entity || [];
+        var self = this;
+
+        messages.forEach(function(message){
+            var packetContext=new ozpIwc.TransportPacketContext({
+                'packet':message.packet,
+                'router': self.router,
+                'srcParticipant': message.packet.src,
+                'dstParticipant': self.address
+            });
+            self.receiveRequestPacket(packetContext);
+        });
+        return { response: "ok"};
+    });
     return api;
 };

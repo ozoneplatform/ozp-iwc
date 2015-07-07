@@ -472,7 +472,45 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
          * @returns {Function} returns the wrapper call for the given api.
          */
         updateApi: function (apiName) {
-            var augment = function (dst, action, client) {
+
+            /**
+             * Function generator. Generates API functions given a messageBuilder function.
+             * @method augment
+             * @param messageBuilder
+             * @param client
+             * @returns {Function}
+             */
+            var augment = function (messageBuilder,client) {
+                return function (resource, fragment, otherCallback) {
+                    var message = messageBuilder(resource,fragment,otherCallback);
+                    var packet = message.packet;
+
+
+                    if (packet.dst === "intents.api" && packet.action === "register") {
+                        for (var i in client.launchedIntents) {
+                            var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
+                            if (resource === loadedResource) {
+                                client.intentInvocationHandling(resource, client.launchedIntents[i].resource, message.callback);
+                                delete client.launchedIntents[i];
+                            }
+                        }
+                    }
+                    return client.send(packet, message.callback);
+                };
+            };
+
+            /**
+             * Function generator. Generates API message formatting functions for a client-destination-action pairing.
+             * These are generated for bulk sending capabilities, since the message needs to be formatted but not
+             * transmitted until desired.
+             *
+             * @method messageBuilderAugment
+             * @param dst
+             * @param action
+             * @param client
+             * @returns {Function}
+             */
+            var messageBuilderAugment = function(dst, action, client) {
                 return function (resource, fragment, otherCallback) {
                     // If a fragment isn't supplied argument #2 should be a callback (if supplied)
                     if (typeof fragment === "function") {
@@ -488,16 +526,17 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
                     for (var k in fragment) {
                         packet[k] = fragment[k];
                     }
-                    if (dst === "intents.api" && action === "register") {
-                        for (var i in client.launchedIntents) {
-                            var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
-                            if (resource === loadedResource) {
-                                client.intentInvocationHandling(resource, client.launchedIntents[i].resource, otherCallback);
-                                delete client.launchedIntents[i];
-                            }
-                        }
-                    }
-                    return client.send(packet, otherCallback);
+                    var resolve,reject;
+                    var sendData = new Promise(function(res,rej){
+                        resolve = res;
+                        reject = rej;
+                    });
+
+                    sendData.packet = client.fixPacket(packet);
+                    sendData.callback = otherCallback;
+                    sendData.res = resolve;
+                    sendData.rej = reject;
+                    return sendData;
                 };
             };
 
@@ -505,9 +544,46 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
             if (this.apiMap.hasOwnProperty(apiName)) {
                 var api = this.apiMap[apiName];
                 wrapper = {};
+
+                /**
+                 *  All message formatting calls sits inside the API wrapper's messageBuilder object. These
+                 *  calls will return a formatted message ready to be sent.
+                 *  (e.g: data().messageBuilder.set)
+                 */
+                wrapper.messageBuilder = {};
+                wrapper.messageBuilder.bulkSend = function (messages, otherCallback) {
+                    var packet = {
+                        'dst': api.address,
+                        'action': "bulkSend",
+                        'resource': "/",
+                        'entity': messages
+                    };
+
+                    return {
+                        'packet': packet,
+                        'callback': otherCallback
+                    };
+                };
+
+                /**
+                 * All function calls are on the root level of the API wrapper. These calls will format messages and
+                 * then send them to the router.
+                 * (e.g: data().set)
+                 */
+                wrapper.bulkSend = (function (bulkMessageBuilder, client) {
+                    return function (messages) {
+                        var message = bulkMessageBuilder(messages);
+                        return client.send(message.packet, message.callback);
+                    };
+                })(wrapper.messageBuilder.bulkSend, this);
+
+                /**
+                 * Iterate over all mapped function calls and augment their message formatter and function call.
+                 */
                 for (var i = 0; i < api.actions.length; ++i) {
                     var action = api.actions[i];
-                    wrapper[action] = augment(api.address, action, this);
+                    wrapper.messageBuilder[action] = messageBuilderAugment(api.address, action, this);
+                    wrapper[action] = augment(wrapper.messageBuilder[action],this);
                 }
 
                 this.wrapperMap[apiName] = wrapper;
@@ -516,6 +592,86 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
             return wrapper;
         },
 
+        /**
+         * Applies necessary properties to the packet to be transmitted through the router.
+         *
+         * @method fixPacket
+         * @param {Object} fields
+         * @returns {Object}
+         */
+        fixPacket : function(fields){
+            var packet = {
+                ver: 1,
+                src: fields.src || this.address,
+                msgId: fields.msgId || "p:" + this.msgIdSequence++,
+                time: fields.time || new Date().getTime()
+            };
+
+            for (var k in fields) {
+                packet[k] = fields[k] || packet[k];
+            }
+
+            if(packet.src === "$nobody") {
+                packet.src = this.address;
+            }
+
+            return packet;
+        },
+
+        /**
+         * Registers callbacks for API request callbacks and promises.
+         *
+         * @method registerResponses
+         * @property {Object} packet
+         * @property {Function} callback
+         * @property {Function} promiseRes
+         * @property {Function} promiseRej
+         */
+        registerResponses: function(packet,callback,promiseRes,promiseRej){
+            var self = this;
+            if (callback) {
+                this.registeredCallbacks[packet.msgId] = function (reply, done) {
+                    // We've received a message that was a promise response but we've aready handled our promise response.
+                    if (reply.src === "$transport" || /(ok).*/.test(reply.response) || /(bad|no).*/.test(reply.response)) {
+                        // Do noting and let it get sent to the event handler
+                        return false;
+                    }else if (reply.entity && reply.entity.inFlightIntent) {
+                        self.intentInvocationHandling(packet.resource, reply.entity.inFlightIntent,
+                            reply.entity.inFlightIntentEntity, callback);
+                    } else {
+                        callback(reply, done);
+                    }
+                    return true;
+                };
+            }
+
+            //respondOn "all", "error", or no value (default all) will register a promise callback.
+            if(packet.respondOn !== "none") {
+                this.promiseCallbacks[packet.msgId] = function (reply, done) {
+                    if (reply.src === "$transport" || /(ok).*/.test(reply.response)) {
+                        done();
+                        promiseRes(reply);
+                    } else if (/(bad|no).*/.test(reply.response)) {
+                        done();
+                        promiseRej(reply);
+                    } else {
+                        // it was not a promise callback
+                    }
+                };
+            }
+
+            if (packet.action === "watch") {
+                this.watchMsgMap[packet.msgId] = packet;
+            } else if (packet.action === "unwatch" && packet.replyTo) {
+                this.cancelRegisteredCallback(packet.replyTo);
+            }
+
+            if(packet.action === "bulkSend"){
+                packet.entity.forEach(function(message) {
+                    self.registerResponses(message.packet, message.callback, message.res, message.rej);
+                });
+            }
+        },
         /**
          * Sends a packet through the IWC.
          * Will call the participants sendImpl function.
@@ -548,59 +704,12 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
                 });
                 return promise;
             }
-
-            var now = new Date().getTime();
-            var id = "p:" + this.msgIdSequence++; // makes the code below read better
-            var packet = {
-                ver: 1,
-                src: this.address,
-                msgId: id,
-                time: now
-            };
-
-            for (var k in fields) {
-                packet[k] = fields[k];
-            }
-
-            var self = this;
-
-            if (callback) {
-                this.registeredCallbacks[id] = function (reply, done) {
-                    // We've received a message that was a promise response but we've aready handled our promise response.
-                    if (reply.src === "$transport" || /(ok).*/.test(reply.response) || /(bad|no).*/.test(reply.response)) {
-                        // Do noting and let it get sent to the event handler
-                        return false;
-                    }else if (reply.entity && reply.entity.inFlightIntent) {
-                        self.intentInvocationHandling(packet.resource, reply.entity.inFlightIntent,
-                            reply.entity.inFlightIntentEntity, callback);
-                    } else {
-                        callback(reply, done);
-                    }
-                    return true;
-                };
-            }
-
-            this.promiseCallbacks[id] = function (reply, done) {
-                if (reply.src === "$transport" || /(ok).*/.test(reply.response)) {
-                    done();
-                    promiseRes(reply);
-                } else if (/(bad|no).*/.test(reply.response)) {
-                    done();
-                    promiseRej(reply);
-                } else {
-                    // it was not a promise callback
-                }
-            };
-
+            var packet = this.fixPacket(fields);
+            this.registerResponses(packet,callback,promiseRes,promiseRej);
             this.sendImpl(packet);
             this.sentBytes += packet.length;
             this.sentPackets++;
 
-            if (packet.action === "watch") {
-                this.watchMsgMap[id] = packet;
-            } else if (packet.action === "unwatch" && packet.replyTo) {
-                this.cancelRegisteredCallback(packet.replyTo);
-            }
             return promise;
         },
 

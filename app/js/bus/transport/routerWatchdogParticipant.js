@@ -7,8 +7,9 @@
  * @extends ozpIwc.InternalParticipant
  * @namespace ozpIwc
  */
-ozpIwc.RouterWatchdog = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(config) {
-    ozpIwc.InternalParticipant.apply(this, arguments);
+ozpIwc.RouterWatchdog = ozpIwc.util.extend(ozpIwc.ClientParticipant, function(config) {
+    ozpIwc.ClientParticipant.apply(this, arguments);
+    this.internal = true;
 
     /**
      * The type of the participant.
@@ -16,14 +17,6 @@ ozpIwc.RouterWatchdog = ozpIwc.util.extend(ozpIwc.InternalParticipant, function(
      * @type String
      */
     this.participantType = "routerWatchdog";
-
-    /**
-     * Fired when connected.
-     * @event #connected
-     */
-    this.on("connected", function() {
-        this.name = this.router.selfId;
-    }, this);
 
     /**
      * Frequency of heartbeats
@@ -86,17 +79,17 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
     this.name = this.router.selfId;
     var self=this;
     var heartbeat=function() {
-        self.send({
-            dst: "names.api",
-            action: "set",
-            resource: "/router/" + self.router.selfId,
+        var packets = [];
+        var p = self.names().messageBuilder.set("/router/" + self.router.selfId,{
             contentType: "application/vnd.ozp-iwc-router-v1+json",
             entity: {
                 'address': self.router.selfId,
                 'participants': self.router.getParticipantCount(),
                 'time': ozpIwc.util.now()
-            }
+            },
+            respondOn: "none"
         });
+        packets.push(p);
 
         for (var k in self.router.participants) {
             var participant=self.router.participants[k];
@@ -104,18 +97,26 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
             if(participant instanceof ozpIwc.MulticastParticipant) {
                 /*jshint loopfunc:true*/
                 participant.members.forEach(function(member){
-                    self.send({
-                        'dst': "names.api",
-                        'resource': participant.namesResource + "/"+ member.address,
-                        'action' : "set",
+                    p = self.names().messageBuilder.set(participant.namesResource + "/"+ member.address, {
                         'entity' : member.heartBeatStatus,
-                        'contentType' : participant.heartBeatContentType
+                        'contentType' : participant.heartBeatContentType,
+                        'respondOn': "none"
                     });
+                    packets.push(p);
                 });
             } else {
-                participant.heartbeat();
+
+                packets.push({
+                    packet: participant.heartbeat(),
+                    callback: undefined,
+                    res: function(){},
+                    rej: function(){}
+                });
             }            
         }
+
+        // Send all heartbeats at once
+        self.names().bulkSend(packets);
 
     };
 //    heartbeat();
