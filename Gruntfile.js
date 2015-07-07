@@ -306,7 +306,19 @@ module.exports = function(grunt) {
             app: {
                 options: {
                     port: 13000,
-                    base: [sampleDataBase,'dist']
+                    base: [sampleDataBase,'dist'],
+                    middleware:  function(connect, options, middlewares) {
+                        // inject a custom middleware into the array of default middlewares
+                        middlewares.unshift(function(req, res, next) {
+
+                            if (req.method !== 'PUT' && req.method !== 'POST' && req.method !== 'DELETE') {
+                                return next();
+                            }
+                            res.end('The ozp-iwc sample backend drops all write actions.');
+                        });
+
+                        return middlewares;
+                    }
                 }
             },
             tests: {
