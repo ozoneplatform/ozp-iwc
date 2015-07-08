@@ -973,7 +973,7 @@ ozpIwc.ApiBase.defaultHandler={
         this.removeWatcher(packet.resource, packet);
 
         //If no one is watching the resource any more, remove its collector if it has one to speed things up.
-        if(this.watchers[packet.resource] && this.watchers[packet.resource].length === 0){
+        if(context.node && this.watchers[packet.resource] && this.watchers[packet.resource].length === 0){
             this.removeCollector(context.node);
         }
 
