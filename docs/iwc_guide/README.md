@@ -16,5 +16,4 @@ deployed, and extended without impact to other applications.
 ####Stays out of the way.
 The IWC is designed to minimize the impact on your application. It is completely agnostic to the
 application presentation, including a tiny client library that adds a single, invisible element to
-your page. It uses standard web technologies, requiring no browser plugins for IE 8+, Firefox 3.5+,
-and all versions of Chrome and Safari.
+your page. It uses standard web technologies requiring no browser plugins.

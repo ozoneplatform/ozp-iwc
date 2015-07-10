@@ -2,6 +2,7 @@
 * [Introduction](README.md)
 * Getting Started
     * [Overview](getting_started/overview.md)
+    * [Server Communication](getting_started/serverComms.md)
     * [Adding an IWC Client to an Application](getting_started/setup.md)
     * [Connecting to the Bus](getting_started/connecting.md)
     * [Quick Start](quickStart.md)
