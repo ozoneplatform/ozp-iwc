@@ -10,7 +10,9 @@ describe("Locks API Value", function() {
     var lock;
     
     beforeEach(function() {
-        lock=new ozpIwc.LocksApiValue();
+        lock=new ozpIwc.LocksNode({
+            'resource': '/mutex/fake'
+        });
     });
     
     it("returns a new lock owner from the first lock(), but not subsequent queuing",function() {

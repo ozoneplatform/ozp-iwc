@@ -8,10 +8,10 @@ debuggerModule.controller('ElectionCtrl',['$scope',function($scope){
     function isNewestPacket(packet,api){
         { return api.lastElectionTS < packet.time; }
     }
-    function outOfElectionWindow(packet,api){
-        { return api.lastElectionTS +  $scope.ELECTION_TIME < Date.now(); }
-
-    }
+    //function outOfElectionWindow(packet,api){
+    //    { return api.lastElectionTS +  $scope.ELECTION_TIME < Date.now(); }
+    //
+    //}
 
     $scope.graphData= {
         value: 'locks.api',
@@ -49,14 +49,9 @@ debuggerModule.controller('ElectionCtrl',['$scope',function($scope){
         }
 
         switch(packet.action){
-            case "leaderQuery":
+            case "query":
                 timelineData.style = "background-color: purple";
                 timelineData.content = "<label>Leader Query</label>";
-                break;
-            case "leaderResponse":
-                timelineData.style = "background-color: purple";
-                timelineData.content = "<label>Leader Response</label>";
-                timelineData.end = null;
                 break;
             case "victory":
                 timelineData.style = "background-color: green";
@@ -86,17 +81,17 @@ debuggerModule.controller('ElectionCtrl',['$scope',function($scope){
             subgroup: "actual"
         };
     }
-    function genTimelineDrop(packet){
-        return {
-            id: packet.time,
-            content: ' Out of Election Window',
-            start: new Date(packet.debuggerTime),
-            end: new Date(packet.time + $scope.ELECTION_TIME),
-            group: packet.src,
-            style: "background-color: red",
-            subgroup: "actual"
-        };
-    }
+    //function genTimelineDrop(packet){
+    //    return {
+    //        id: packet.time,
+    //        content: ' Out of Election Window',
+    //        start: new Date(packet.debuggerTime),
+    //        end: new Date(packet.time + $scope.ELECTION_TIME),
+    //        group: packet.src,
+    //        style: "background-color: red",
+    //        subgroup: "actual"
+    //    };
+    //}
 
     function updateApiTimeline(packet,api){
         var timelineGroup = {
@@ -113,13 +108,10 @@ debuggerModule.controller('ElectionCtrl',['$scope',function($scope){
         api.electionGroups.update(timelineGroup);
 
         if(isNewestPacket(packet,api)) {
-            //api.elections.add(genTimelineDelta(packet));
             api.elections.add(genTimelineData(packet));
-        } else if(outOfElectionWindow(packet,api)){
-            //api.elections.add(genTimelineDelta(packet));
-            api.elections.add(genTimelineDrop(packet));
+        //} else if(outOfElectionWindow(packet,api)){
+        //    api.elections.add(genTimelineDrop(packet));
         } else {
-            //api.elections.add(genTimelineDelta(packet));
             api.elections.add(genTimelineOOS(packet));
         }
         if(packet.action === 'victory'){
@@ -134,12 +126,12 @@ debuggerModule.controller('ElectionCtrl',['$scope',function($scope){
         }
         var packet = msg.packet.data;
         packet.debuggerTime = Date.now();
-        var actions = ['election','victory','leaderQuery','leaderResponse'];
+        var actions = ['election','victory','query'];
         if(actions.indexOf(packet.action) < 0) {
             return;
         }
 
-        if(packet.dst === "locks.api.election" || packet.src === "locks.api.election") {
+        if(packet.dst === "locks.api.consensus" || packet.src === "locks.api.consensus") {
             $scope.$apply(function() {
                 updateApiTimeline(packet,$scope.graphData);
             });

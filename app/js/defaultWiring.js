@@ -1,7 +1,8 @@
 var ozpIwc=ozpIwc || {};
 ozpIwc.version = "0.3";
 ozpIwc.log.threshold = 6;
-ozpIwc.ELECTION_TIMEOUT = 1000;
+ozpIwc.ELECTION_TIMEOUT = 3000;
+ozpIwc.heartBeatFrequency = 1000; // 3 seconds
 ozpIwc.apiRootUrl = ozpIwc.apiRootUrl || "/api";
 ozpIwc.policyRootUrl = ozpIwc.policyRootUrl || "/policy";
 ozpIwc.basicAuthUsername= ozpIwc.basicAuthUsername || '';
@@ -21,6 +22,7 @@ ozpIwc.intentsChooserUri = "intentsChooser.html";
 		}
 	}
 })();
+
 ozpIwc._busInit = function(){};
 ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
     'pip': new ozpIwc.policyAuth.PIP(),
@@ -29,69 +31,45 @@ ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
 });
 
 
-    if (typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
-        ozpIwc.initEndpoints(ozpIwc.apiRootUrl || "api");
+if (typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
+    ozpIwc.initEndpoints(ozpIwc.apiRootUrl || "api");
+    ozpIwc.defaultPeer = new ozpIwc.Peer();
+    ozpIwc.defaultLocalStorageLink = new ozpIwc.KeyBroadcastLocalStorageLink({
+        peer: ozpIwc.defaultPeer
+    });
 
-        ozpIwc.defaultPeer = new ozpIwc.Peer();
-        ozpIwc.defaultLocalStorageLink = new ozpIwc.KeyBroadcastLocalStorageLink({
-            peer: ozpIwc.defaultPeer
-        });
+    ozpIwc.defaultRouter = new ozpIwc.Router({
+        peer: ozpIwc.defaultPeer,
+        heartbeatFrequency: ozpIwc.heartBeatFrequency
+    });
 
-        ozpIwc.heartBeatFrequency = 10000; // 10 seconds
-        ozpIwc.defaultRouter = new ozpIwc.Router({
-            peer: ozpIwc.defaultPeer,
-            heartbeatFrequency: ozpIwc.heartBeatFrequency
+    if (typeof ozpIwc.acceptPostMessageParticipants === "undefined" ||ozpIwc.acceptPostMessageParticipants) {
+        ozpIwc.defaultPostMessageParticipantListener = new ozpIwc.PostMessageParticipantListener({
+            router: ozpIwc.defaultRouter
         });
+    }
 
     ozpIwc._busInit = function() {
         if (typeof ozpIwc.runApis === "undefined" || ozpIwc.runApis) {
-            ozpIwc.defaultLeadershipStates = function () {
-                return {
-                    'leader': ['actingLeader'],
-                    'election': ['leaderSync', 'actingLeader'],
-                    'queueing': ['leaderSync'],
-                    'member': []
-                };
-            };
-
-            ozpIwc.locksApi = new ozpIwc.LocksApi({
-                'participant': new ozpIwc.LeaderGroupParticipant({
-                    'name': "locks.api",
-                    'states': ozpIwc.defaultLeadershipStates(),
-                    electionTimeout: ozpIwc.ELECTION_TIMEOUT,
-                    getStateData: function () {
-                        var foo = {};
-                        foo.data = ozpIwc.locksApi.data;
-                        return foo;
-                    }
-                })
-            });
-            ozpIwc.defaultRouter.registerParticipant(ozpIwc.locksApi.participant);
-
+            ozpIwc.locksApi = new ozpIwc.LocksApi({'name': "locks.api"});
             ozpIwc.namesApi = new ozpIwc.NamesApi({'name': "names.api"});
             ozpIwc.dataApi = new ozpIwc.DataApi({'name': "data.api"});
             ozpIwc.intentsApi = new ozpIwc.IntentsApi({'name': "intents.api"});
             ozpIwc.systemApi = new ozpIwc.SystemApi({'name': "system.api"});
         }
-        if (typeof ozpIwc.acceptPostMessageParticipants === "undefined" ||
-            ozpIwc.acceptPostMessageParticipants
-        ) {
-            ozpIwc.defaultPostMessageParticipantListener = new ozpIwc.PostMessageParticipantListener({
-                router: ozpIwc.defaultRouter
-            });
-        }
     };
 }
 
+
 new Promise(function(resolve,reject) {
-    if(document.visibilityState === undefined || (document.visibilityState !== "prerender" && document.visibilityState !== "unload")) {
-        resolve();
+    if (document.visibilityState === undefined || (document.visibilityState !== "prerender" && document.visibilityState !== "unload")) {
+        window.setTimeout(resolve,500);
     } else {
-        document.addEventListener("visibilityChange",function runOnce(e){
-            if(document.visibilityState!=="prerender"){
-	        resolve();
+        document.addEventListener("visibilityChange", function runOnce(e) {
+            if (document.visibilityState !== "prerender") {
+                window.setTimeout(resolve,500);
                 document.removeEventListener(runOnce);
-            } 
+            }
         });
     }
 }).then(ozpIwc._busInit);

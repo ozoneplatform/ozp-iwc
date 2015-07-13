@@ -200,6 +200,8 @@ ozpIwc.IntentsApi.registerDefinitionFilter = function(nodeType,contentType){
             });
         }
 
+        this.addCollector(context.node);
+
         return next();
     };
 

@@ -24,48 +24,47 @@ describe("Router", function() {
 
     describe("Participant registration", function() {
         var participant;
-        beforeEach(function() {
-            participant = new TestParticipant({origin: "foo.com"});
+        pBeforeEach(function() {
+            participant = new TestParticipant({origin: "foo.com", router: router});
+            return participant.connect();
         });
 
         it("returns and assigns a participant id", function() {
-            var participantId = router.registerParticipant(participant, {});
-            expect(participantId).toBeDefined();
-            expect(participant.address).toEqual(participantId);
+            expect(participant.address).toBeDefined();
+            expect(participant.address).not.toEqual("$nobody");
         });
 
         it("assigns a participant id derived from the router id", function() {
-            var participantId = router.registerParticipant(participant, {});
-
-            expect(participantId).toMatch(new RegExp("(.*)\\." + router.selfId));
+            expect(participant.address).toMatch(new RegExp("(.*)\\." + router.selfId));
         });
 
         it("calls registration handlers", function() {
             var called = false;
-
+            var eventPart;
             router.on("preRegisterParticipant", function(event) {
-                expect(event.participant).toEqual(participant);
+                expect(called).toEqual(false);
+                eventPart = event.participant;
                 called = true;
             });
 
-            router.registerParticipant(participant, {});
+            var part = new TestParticipant({origin: "foo.com", router: router}, {});
             expect(called).toEqual(true);
+            expect(eventPart).toEqual(part);
         });
 
-        it("blocks a participant if the handler cancels", function() {
+        pit("blocks a participant if the handler cancels", function() {
             router.on("preRegisterParticipant", function(event) {
                 if (event.participant.origin === "badguy.com") {
                     event.cancel("badguy");
                 }
             });
 
-            var badParticipant = new TestParticipant({origin: "badguy.com"});
+            var badParticipant = new TestParticipant({origin: "badguy.com", router: router});
+            return badParticipant.connect().then(function(){
+                expect(participant.address).not.toBeNull();
+                expect(badParticipant.address).toEqual("$nobody");
+            });
 
-            router.registerParticipant(participant, {});
-            router.registerParticipant(badParticipant, {});
-
-            expect(participant.address).not.toBeNull();
-            expect(badParticipant.address).toBeUndefined();
         });
     });
 

@@ -30,10 +30,7 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.ClientParticipant, function(conf
     };
 
 
-    ozpIwc.ClientParticipant.apply(this, arguments);
-    config = config || {};
     this.origin = config.origin || "foo.com";
-    this.address = config.staticAddress;
     // since we aren't connecting to a router, mock these out, too
     this.metricRoot = "testparticipant";
     this.participantType="testParticipant";
@@ -42,7 +39,7 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.ClientParticipant, function(conf
     this.forbiddenPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "forbiddenPackets");
 
     // mock common permission attributes (that would be assigned on router/multicast connections)
-    this.events.trigger('connectedToRouter');
+    ozpIwc.ClientParticipant.apply(this, arguments);
 
 
     this.router = {
@@ -133,6 +130,7 @@ var FakeRouter = function() {
     this.registerParticipant = function(p) {
         p.connectToRouter(this, (this.participants.length + 1) + ".fake");
         this.participants.push(p);
+        return p.address;
     };
     this.pump = function() {
         var processed = 0;
@@ -155,9 +153,25 @@ var FakeRouter = function() {
         return m;
     };
     this.registerMulticast = function(participant,groups) {
-        groups.forEach(function(groupName){
-            participant.permissions.pushIfNotExist('ozp:iwc:sendAs', groupName);
-            participant.permissions.pushIfNotExist('ozp:iwc:receiveAs', groupName);
+        var self=this;
+        groups.forEach(function(groupName) {
+            var g=self.participants[groupName];
+            if(!g) {
+                g=self.participants[groupName]=new ozpIwc.MulticastParticipant(groupName);
+            }
+            g.addMember(participant);
+            if (participant.address) {
+                var registeredEvent = new ozpIwc.CancelableEvent({
+                    'entity': {'group': groupName, 'address': participant.address}
+                });
+                participant.permissions.pushIfNotExist('ozp:iwc:sendAs', groupName);
+                participant.permissions.pushIfNotExist('ozp:iwc:receiveAs', groupName);
+
+                self.events.trigger("registeredMulticast", registeredEvent);
+            } else {
+                ozpIwc.log.log("no address for " +  participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
+            }
+            //ozpIwc.log.log("registered " + participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
         });
     };
 };

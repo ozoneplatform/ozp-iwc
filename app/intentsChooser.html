@@ -124,7 +124,6 @@
 
       <script type="text/javascript">
         var participant=new ozpIwc.ClientParticipant({'name':"intentsChooser"});
-        ozpIwc.defaultRouter.registerParticipant(participant);
 
         var cancelButton, onceButton, alwaysButton,selection;
         function failure(msg) {
@@ -274,7 +273,7 @@
 
         participant.send(loc,onHandlerChange).then(function(reply) {
             var action,type;
-            if(reply.entity.intent) {
+            if(reply.entity && reply.entity.intent) {
                 action = reply.entity.intent.action;
                 type = reply.entity.intent.type;
             }

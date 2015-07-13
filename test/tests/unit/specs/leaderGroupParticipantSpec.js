@@ -1,4 +1,4 @@
-describe("Leader Group Participant",function() {
+xdescribe("Leader Group Participant",function() {
 	var fakeRouter;
 
     /* 

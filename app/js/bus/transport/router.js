@@ -284,7 +284,8 @@ ozpIwc.Router=function(config) {
      */
 	this.watchdog=new ozpIwc.RouterWatchdog({
         router: this,
-        heartbeatFrequency: config.heartbeatFrequency
+        heartbeatFrequency: config.heartbeatFrequency,
+        autoConnect: false
     });
 	this.registerParticipant(this.watchdog);
     this.recursionDepth=0;
@@ -348,7 +349,8 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
     }
 
     this.participants[address] = participant;
-     participant.connectToRouter(this,address);
+    participant.connectToRouter(this,address);
+    this.send(participant.heartbeat(),participant);
     var registeredEvent=new ozpIwc.CancelableEvent({
         'packet': packet,
         'participant': participant
