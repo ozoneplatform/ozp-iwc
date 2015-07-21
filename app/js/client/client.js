@@ -34,20 +34,20 @@ ozpIwc.Client=function(config) {
  */
 ozpIwc.Client.prototype.genPeerUrlCheck = function(configUrl){
     if(typeof(configUrl) === "string") {
-        this.peerUrlCheck=function(url,resolve) {
+        this.peerUrlCheck=function(url) {
             if(typeof url !== 'undefined'){
-                resolve(url);
+                return url;
             } else {
-                resolve(configUrl);
+                return configUrl;
             }
 
         };
     } else if(Array.isArray(configUrl)) {
-        this.peerUrlCheck=function(url,resolve) {
+        this.peerUrlCheck=function(url) {
             if(configUrl.indexOf(url) >= 0) {
-                resolve(url);
+                return url;
             }
-            resolve(configUrl[0]);
+            return configUrl[0];
         };
     } else if(typeof(configUrl) === "function") {
         /**
@@ -67,7 +67,7 @@ ozpIwc.Client.prototype.genPeerUrlCheck = function(configUrl){
  */
 ozpIwc.Client.prototype.disconnect=function() {
     this.events.trigger("disconnect");
-    
+
     if(this.iframe) {
         this.iframe.src = "about:blank";
         var self = this;
@@ -96,46 +96,68 @@ ozpIwc.Client.prototype.connect=function() {
          * @type Promise
          */
         this.connectPromise=new Promise(function(resolve) {
-            self.peerUrlCheck(self.launchParams.peer,resolve);
-        }).then(function(url) {
-            // now that we know the url to connect to, find a peer element
-            // currently, this is only via creating an iframe.
-            self.peerUrl=url;
-            self.peerOrigin=ozpIwc.util.determineOrigin(url);
-            return self.createIframePeer();
-        }).then(function() {
-            // start listening to the bus and ask for an address
-            self.postMessageHandler = function (event) {
-                if (event.origin !== self.peerOrigin) {
-                    return;
-                }
-                try {
-                    var message = event.data;
-                    if (typeof(message) === 'string') {
-                        message = JSON.parse(event.data);
+            if (document.visibilityState === undefined || (document.visibilityState !== "prerender" && document.visibilityState !== "unload")) {
+                resolve();
+            } else {
+                document.addEventListener("visibilityChange", function runClientOnce(e) {
+                    if (document.visibilityState !== "prerender") {
+                        resolve();
+                        document.removeEventListener(runClientOnce);
                     }
-                    // Calls APIPromiseMixin receive handler
-                    self.receiveFromRouterImpl(message);
-                    self.receivedBytes += (event.data.length * 2);
-                    self.receivedPackets++;
-                } catch (e) {
-                    // ignore!
-                }
-            };
-            // receive postmessage events
-            ozpIwc.util.addEventListener("message", self.postMessageHandler);
-            return self.send({dst: "$transport"});
-        }).then(function(message) {
-            self.address = message.dst;
+                });
+            }
+        }).then(function() {
+                // now that we know the url to connect to, find a peer element
+                // currently, this is only via creating an iframe.
+                self.peerUrl=self.peerUrlCheck(self.launchParams.peer);
+                self.peerOrigin=ozpIwc.util.determineOrigin(self.peerUrl);
+                return self.createIframePeer();
+            }).then(function() {
+                // start listening to the bus and ask for an address
+                self.postMessageHandler = function (event) {
+                    if (event.origin !== self.peerOrigin) {
+                        return;
+                    }
+                    try {
+                        var message = event.data;
+                        if (typeof(message) === 'string') {
+                            message = JSON.parse(event.data);
+                        }
+                        // Calls APIPromiseMixin receive handler
+                        self.receiveFromRouterImpl(message);
+                        self.receivedBytes += (event.data.length * 2);
+                        self.receivedPackets++;
+                    } catch (e) {
+                        // ignore!
+                    }
+                };
+                // receive postmessage events
+                ozpIwc.util.addEventListener("message", self.postMessageHandler);
+                return self.send({dst: "$transport"});
+            }).then(function(message) {
 
-            /**
-             * Fired when the client receives its address.
-             * @event #gotAddress
-             */
-            self.events.trigger("gotAddress", self);
+                //TODO: post v1.0, rework this. Currently delays 1.1 second for the bus to init APIS (which sit on a .5
+                // second delay). These are because of the visibility API blockings.
 
-            return self.afterConnected();
-        });
+                var resolve;
+                var busDelayPromise = new Promise(function (res) {
+                    resolve = res;
+                });
+                window.setTimeout(function(){
+                    resolve(message);
+                }, 1100);
+                return busDelayPromise;
+            }).then(function(message){
+                self.address = message.dst;
+
+                /**
+                 * Fired when the client receives its address.
+                 * @event #gotAddress
+                 */
+                self.events.trigger("gotAddress", self);
+
+                return self.afterConnected();
+            });
     }
     return this.connectPromise;
 };
@@ -153,10 +175,10 @@ ozpIwc.Client.prototype.createIframePeer=function() {
             self.iframe.addEventListener("load",function() {
                 resolve();
             });
-						var url=self.peerUrl+"/iframe_peer.html";
-						if(self.launchParams.log) {
-							url+="?log="+self.launchParams.log;
-						}
+            var url=self.peerUrl+"/iframe_peer.html";
+            if(self.launchParams.log) {
+                url+="?log="+self.launchParams.log;
+            }
             self.iframe.src=url;
             self.iframe.height=1;
             self.iframe.width=1;
@@ -165,7 +187,7 @@ ozpIwc.Client.prototype.createIframePeer=function() {
             self.iframe.style.setProperty ("display", "none", "important");
             document.body.appendChild(self.iframe);
             self.peer=self.iframe.contentWindow;
-            
+
 
         };
         // need at least the body tag to be loaded, so wait until it's loaded

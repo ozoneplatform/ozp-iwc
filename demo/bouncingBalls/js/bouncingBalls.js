@@ -75,7 +75,7 @@ client.connect().then(function(){
             iwcClient: client
         }));
     })['catch'](function(err){
-        ozpIwc.log.log("Failed to push our ball: " + JSON.stringify(err,null,2));
+        console.log("Failed to push our ball: " + JSON.stringify(err,null,2));
     });
 
 	//=================================================================
