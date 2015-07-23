@@ -684,6 +684,9 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
          * value, canceled if it returns a false-like value.
          */
         send: function (fields, callback, preexistingPromiseRes, preexistingPromiseRej) {
+            if(this.sendingBlocked) {
+                return Promise.resolve({response: "dropped"});
+            }
             var promiseRes = preexistingPromiseRes;
             var promiseRej = preexistingPromiseRej;
             var promise = new Promise(function (resolve, reject) {

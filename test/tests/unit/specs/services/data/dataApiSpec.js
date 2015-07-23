@@ -40,11 +40,11 @@ describe("Data API data loading",function() {
 	});
     
     pit("fetches data from the server",function() {
-        
         return dataApi.transitionToLoading().then(function() {
-           expect(endpoint.get).toHaveBeenCalledWith("/");
-           expect(endpoint.get).toHaveBeenCalledWith("http://example.com/data/1",[]);
-           expect(endpoint.get).toHaveBeenCalledWith("http://example.com/data/2",[]);
+            expect(endpoint.get).toHaveBeenCalledWith("/");
+            expect(endpoint.get).toHaveBeenCalledWith("http://example.com/data/1",[]);
+            expect(endpoint.get).toHaveBeenCalledWith("http://example.com/data/2",[]);
         });
+
     });
 });

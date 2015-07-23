@@ -43,6 +43,8 @@ module.exports = function(grunt) {
                 'app/js/bus/api/commonApiValue.js',
                 'app/js/bus/api/commonApiCollectionValue.js',
                 'app/js/bus/api/*.js',
+                'app/js/bus/api/locks/locksApiValue.js',
+                'app/js/bus/api/locks/locksApi.js',
                 'app/js/bus/api/**/*.js',
                 'app/js/bus/*/**/*.js',
                 'app/js/services/*.js',
@@ -378,7 +380,6 @@ module.exports = function(grunt) {
             },
             releaseGit: {
                 command: [
-                    'grunt karmaTests',
                     'git add bower.json package.json',
                     'git commit -m "chore(release): <%= pkg.version %>"',
                     'git push origin master',
@@ -442,7 +443,7 @@ module.exports = function(grunt) {
     });
     // Default task(s).
     grunt.registerTask('build', "Concat and minify the source code into dist",
-        ['copy:hackBootstrap', 'jshint', 'concat_sourcemap', 
+        ['copy:hackBootstrap', 'jshint', 'concat_sourcemap',
             'uglify', 'copy:dist','shell:buildVersionFile']
     );
 
@@ -460,9 +461,9 @@ module.exports = function(grunt) {
     grunt.registerTask('connect-all', "Runs tests and demos locally",
         ['build','connect','watch']
     );
-    grunt.registerTask('releasePatch', ['bump:patch','readpkg','shell:releaseGit']);
-    grunt.registerTask('releaseMinor', ['bump:minor','readpkg', 'shell:releaseGit']);
-    grunt.registerTask('releaseMajor', ['bump:major','readpkg', 'shell:releaseGit']);
+    grunt.registerTask('releasePatch', ['build','karma:unit','bump:patch','readpkg','shell:releaseGit']);
+    grunt.registerTask('releaseMinor', ['build','karma:unit','bump:minor','readpkg', 'shell:releaseGit']);
+    grunt.registerTask('releaseMajor', ['build','karma:unit','bump:major','readpkg', 'shell:releaseGit']);
     grunt.registerTask('default', ['dist']);
 
 };

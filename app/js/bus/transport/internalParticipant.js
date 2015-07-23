@@ -80,9 +80,7 @@ ozpIwc.InternalParticipant.prototype.receiveFromRouterImpl=function(packetContex
 		if (cancel) {
             this.cancelCallback(packet.replyTo);
         }
-	} else if (packet.dst === "$bus.multicast"){
-        this.events.trigger("receiveEventChannelPacket",packetContext);
-    } else {
+	} else {
 		this.events.trigger("receive",packetContext);
 	}
 };

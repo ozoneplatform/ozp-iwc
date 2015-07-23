@@ -269,11 +269,14 @@ ozpIwc.Participant.prototype.generateMsgId=function() {
  */
 ozpIwc.Participant.prototype.heartbeat=function() {
     if(this.router) {
+        var entity = this.heartBeatStatus;
+        entity.time = ozpIwc.util.now();
+
         return this.fixPacket({
             'dst': "names.api",
             'resource': this.namesResource,
             'action' : "set",
-            'entity' : this.heartBeatStatus,
+            'entity' : entity,
             'contentType' : this.heartBeatContentType,
             'respondOn': "none"
         });

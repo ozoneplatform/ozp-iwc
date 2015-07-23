@@ -119,7 +119,6 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
         self.names().bulkSend(packets);
 
     };
-//    heartbeat();
 
     /**
      * The timer for the heartBeat

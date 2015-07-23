@@ -31,7 +31,33 @@ ozpIwc.NamesApi = ozpIwc.createApi(function(config) {
             }
         });
     });
+    this.leaderPromise.then(function(){
+        window.setInterval(function(){self.checkForNonresponsives();},ozpIwc.heartBeatFrequency);
+    });
 });
+
+/**
+ * Cycles through all /address/{address} resources and disconnects them from the bus if they have not responded in the
+ * last 2 heartbeats.
+ *
+ * @method checkForNonresponsives
+ */
+ozpIwc.NamesApi.prototype.checkForNonresponsives=function(){
+    var self = this;
+    this.matchingNodes("/address").forEach(function(node) {
+        var delta = ozpIwc.util.now() - node.entity.time;
+
+        if(delta > 3*ozpIwc.heartBeatFrequency) {
+            console.log("["+node.resource+"] [Removing] Time since update:", ozpIwc.util.now() - node.entity.time);
+            self.participant.send({
+                "dst": "$bus.multicast",
+                "action": "disconnect",
+                "entity": node.entity
+            });
+            node.markAsDeleted();
+        }
+    });
+};
 
 // Default handlers are fine for list, bulkGet, watch, and unwatch with any properly formed resource
 ozpIwc.NamesApi.useDefaultRoute(["list","bulkGet"],"{c:/}");

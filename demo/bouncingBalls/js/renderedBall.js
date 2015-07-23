@@ -67,7 +67,7 @@ var Ball=function(ballRef,svgElement,iwcClient) {
 			},500);
 		}
 	};
-	this.interval = setInterval(this.removeWatchdog,10000);
+	this.interval = setInterval(this.removeWatchdog,19000);
 
 	$(this.el).click(function() {
 		if(self.label.getAttribute("class").match("svgHidden")) {

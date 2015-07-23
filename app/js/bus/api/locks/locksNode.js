@@ -3,16 +3,16 @@
  */
 
 /**
- * @class LocksApiValue
+ * @class LocksNode
  * @namespace ozpIwc
- * @extends ozpIwc.CommonApiValue
+ * @extends ozpIwc.apiNode
  *
  * @constructor
  * @param {Object} config
  * @param {String[]} config.allowedContentTypes a list of content types this Locs Api value will accept.
  */
-ozpIwc.LocksApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config) {
-	ozpIwc.CommonApiValue.apply(this,arguments);
+ozpIwc.LocksNode = ozpIwc.util.extend(ozpIwc.ApiNode, function(config) {
+    ozpIwc.ApiNode.apply(this, arguments);
     this.entity={
         owner: null,
         queue: []
@@ -27,11 +27,26 @@ ozpIwc.LocksApiValue = ozpIwc.util.extend(ozpIwc.CommonApiValue,function(config)
  * @param {ozpIwc.TransportPacket} packet
  * @returns {Object|null} should the lock action set a new owner it will be returned, else null will be returned.
  */
-ozpIwc.LocksApiValue.prototype.lock=function(packet) {
+ozpIwc.LocksNode.prototype.lock=function(packet) {
+    this.entity.queue = this.entity.queue || [];
+
+    for(var i in this.entity.queue) {
+        var current = this.entity.queue[i];
+        //Skip over duplicates (for newly joined instances of locks)
+        if(current.src === packet.src && current.msgId === packet.msgId) {
+            return null;
+        }
+    }
+
     this.entity.queue.push(packet);
     this.entity.owner = this.entity.owner || {};
     if(!ozpIwc.util.objectContainsAll(this.entity.owner,this.entity.queue[0])) {
         this.entity.owner=this.entity.queue[0];
+        if(packet.eTag) {
+            this.version=packet.eTag;
+        } else {
+            this.version++;
+        }
         return this.entity.owner;
     }
     return null;
@@ -45,14 +60,28 @@ ozpIwc.LocksApiValue.prototype.lock=function(packet) {
  * @param {ozpIwc.TransportPacket} packet
  * @returns {Object|null} should the unlock action set a new owner it will be returned, else null will be returned.
  */
-ozpIwc.LocksApiValue.prototype.unlock=function(packet) {
+ozpIwc.LocksNode.prototype.unlock=function(packet) {
     this.entity.queue=this.entity.queue.filter(function(q) {
        return !ozpIwc.util.objectContainsAll(q,packet);
     });
 
+
+
     if(!ozpIwc.util.objectContainsAll(this.entity.owner,this.entity.queue[0])) {
         this.entity.owner=this.entity.queue[0];
+        if(packet.eTag) {
+            this.version=packet.eTag;
+        } else {
+            this.version++;
+        }
         return this.entity.owner;
+    } else if(this.entity.queue.length === 0){
+        if(packet.eTag) {
+            this.version=packet.eTag;
+        } else {
+            this.version++;
+        }
+        this.entity.owner = null;
     }
     return null;
 };

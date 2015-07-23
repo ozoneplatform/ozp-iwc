@@ -32,11 +32,16 @@ ozpIwc.policyAuth.SecurityAttribute.prototype.pushIfNotExist = function(id, val,
         this.attributes[id] = [];
         this.attributes[id] = this.attributes[id].concat(value);
     } else {
-        for (var i in this.attributes[id]) {
-            for (var j in value) {
-                if (!comp(this.attributes[id][i], value[j])) {
-                    this.attributes[id].push(val);
+        for (var j in value) {
+            var add = true;
+            for (var i in this.attributes[id]) {
+                if (comp(this.attributes[id][i], value[j])) {
+                    add = false;
+                    break;
                 }
+            }
+            if(add){
+                this.attributes[id].push(value[j]);
             }
         }
     }

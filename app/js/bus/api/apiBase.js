@@ -53,7 +53,6 @@ ozpIwc.ApiBase=function(config) {
 
     
     this.router=config.router || ozpIwc.defaultRouter;
-    this.router.registerParticipant(this.participant);
     this.router.registerMulticast(this.participant,[this.name,this.coordinationAddress]);
 
     var self=this;
@@ -61,15 +60,36 @@ ozpIwc.ApiBase=function(config) {
         self.receivePacketContext(packetContext);
     });
 
-    this.transitionToMemberReady();
 
     this.logPrefix="[" + this.name + "/" + this.participant.address +"] ";
-    
-    this.leaderPromise=this.participant.send({
+
+    ozpIwc.util.addEventListener("beforeunload",function(){ self.shutdown(); });
+
+    this.transitionToMemberReady();
+    this.queueForCoordination(config.leaderPromise);
+
+};
+
+ozpIwc.ApiBase.prototype.queueForCoordination=function(promise){
+    var self = this;
+    this.participant.send({
         dst: "locks.api",
-        resource: "/mutex/"+this.name,
-        action: "lock"
-    }).then(function(pkt) {
+        resource: "/mutex/" + this.name,
+        action: "watch"
+    },function(reply){
+        self.handleLockChange(reply);
+    });
+
+
+
+    this.leaderPromise= promise || this.participant.send({
+            dst: "locks.api",
+            resource: "/mutex/"+this.name,
+            action: "lock"
+        });
+
+    this.leaderPromise.then(function(pkt) {
+        ozpIwc.log.info("["+self.name+"]["+self.participant.address+"] Now operating");
         var resolve;
 
         // Delay loading for deathScreams to flow in.
@@ -85,16 +105,31 @@ ozpIwc.ApiBase=function(config) {
     }).then(function(){
         self.transitionToLoading();
     });
-    
+
     this.leaderPromise.catch(function(e) {
         console.error("Error registering for leader mutex [address="+self.participant.address+",api="+self.name+"]",e);
     });
 
-    ozpIwc.util.addEventListener("beforeunload",function(){
-        self.shutdown();
-    });
 };
 
+ozpIwc.ApiBase.prototype.handleLockChange=function(response,done){
+    response = response || {};
+    response.entity = response.entity || {};
+    response.entity.oldValue = response.entity.oldValue || {};
+    response.entity.newValue = response.entity.newValue || {};
+    var prevOwner = response.entity.oldValue.owner || {};
+    var newOwner = response.entity.newValue.owner || {};
+
+    // If we are no longer the holder of the API lock get back in line to own it. This case only applies if the API
+    // instance was pushed out. If the instance closes this code is not reached.
+    if(prevOwner.src === this.participant.address && newOwner.src !== this.participant.address){
+        this.broadcastDeathScream(this.createDeathScream());
+        this.leaderState = "member";
+        this.transitionToMemberReady();
+        this.queueForCoordination();
+        done();
+    }
+};
 
 /**
  * Generates a unique key with the given prefix.
@@ -171,7 +206,8 @@ ozpIwc.ApiBase.prototype.createDeathScream=function() {
         collectors: this.collectors,
         data: ozpIwc.object.eachEntry(this.data,function(k,v) {
             return v.serializeLive();
-        })
+        }),
+        timestamp: ozpIwc.util.now()
     };
 };
 
@@ -593,6 +629,7 @@ ozpIwc.ApiBase.prototype.updateCollectionNode = function(cNode){
         return node.resource;
     });
 
+    cNode.collection = cNode.collection || [];
     if(!ozpIwc.util.arrayContainsAll(cNode.collection,updatedCollection) || !ozpIwc.util.arrayContainsAll(updatedCollection,cNode.collection)) {
         this.markForChange(cNode);
         cNode.collection = updatedCollection;
@@ -778,6 +815,40 @@ ozpIwc.ApiBase.prototype.flushRequestQueue=function() {
     this.requestQueue=[];
 };
 
+/**
+ * Enables API's sending queue. This is to prevent an API from communicating given some state (Used for consensus
+ * initialization).
+ *
+ * @method enableSendQueue
+ * @private
+ */
+ozpIwc.ApiBase.prototype.enableSendQueue=function(){
+    this.isSendQueueing=true;
+    this.sendQueue=[];
+};
+
+/**
+ * Delivers and disables API's sending queue.
+ *
+ * @method deliverSendQueue
+ * @private
+ */
+ozpIwc.ApiBase.prototype.deliverSendQueue=function(){
+    this.isSendQueueing=false;
+    this.sendQueue.forEach(this.participant.send,this.participant);
+    this.sendQueue=[];
+};
+
+/**
+ * Empties and disables API's sending queue.
+ *
+ * @method flushSendQueue
+ * @private
+ */
+ozpIwc.ApiBase.prototype.flushSendQueue=function() {
+    this.isSendQueueing=false;
+    this.sendQueue=[];
+};
 
 
 //===============================================================
@@ -973,7 +1044,7 @@ ozpIwc.ApiBase.defaultHandler={
         this.removeWatcher(packet.resource, packet);
 
         //If no one is watching the resource any more, remove its collector if it has one to speed things up.
-        if(context.node && this.watchers[packet.resource] && this.watchers[packet.resource].length === 0){
+        if(this.watchers[packet.resource] && this.watchers[packet.resource].length === 0){
             this.removeCollector(context.node);
         }
 
