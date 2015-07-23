@@ -2,6 +2,7 @@
 /node_modules
 doc
 app/js/ozpIwc-*.js
+backend/db/
 .idea/
 bower_components
 dist

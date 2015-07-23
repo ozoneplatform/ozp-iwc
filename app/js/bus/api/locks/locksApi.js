@@ -37,6 +37,7 @@ ozpIwc.LocksApi =ozpIwc.util.extend(ozpIwc.ApiBase,function(config) {
     this.participantConfiguration(config);
     this.on("addressDisconnects",this.unlockAll,this);
 
+    this.logPrefix="[" + this.name + "/" + this.participant.address +"] ";
     //This is poor form, but the apiBase behavior for locks should let everyone write.
     this.leaderState="loading";
     this.transitionToLeader();

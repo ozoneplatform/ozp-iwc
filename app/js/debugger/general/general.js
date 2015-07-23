@@ -1,18 +1,18 @@
 /* global debuggerModule */
 debuggerModule.controller('GeneralCtrl',['$scope', '$state', 'iwcClient',function(scope, state, client){
     scope.ozpIwc = ozpIwc;
-    scope.apis=[
-        {'name': "Data API", 'obj': ozpIwc.dataApi},
-        {'name': "Intents API", 'obj': ozpIwc.intentsApi},
-        {'name': "System API", 'obj': ozpIwc.systemApi},
-        {'name': "Names API", 'obj': ozpIwc.namesApi}
-    ];
 
     scope.endpointClicked = function(endpoint) {
         state.go('hal-browser', {url: endpoint});
     };
     scope.endpointTabulated = [];
     client.connect().then(function() {
+        scope.apis=[
+            {'name': "Data API", 'obj': ozpIwc.dataApi},
+            {'name': "Intents API", 'obj': ozpIwc.intentsApi},
+            {'name': "System API", 'obj': ozpIwc.systemApi},
+            {'name': "Names API", 'obj': ozpIwc.namesApi}
+        ];
         scope.apis.forEach(function(api){
             api.endpoints = [];
             api.obj.endpoints.forEach(function(ep){
