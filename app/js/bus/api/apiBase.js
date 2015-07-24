@@ -503,17 +503,14 @@ ozpIwc.ApiBase.prototype.removeWatcher=function(resource,watcher) {
  * @method addCollector
  * @param {Object} node
  */
-ozpIwc.ApiBase.prototype.addCollector=function(node){
-    function isCollector(obj){
-        return (obj && obj.pattern && obj.collection);
+ozpIwc.ApiBase.prototype.addCollector=function(resource){
+    var index = this.collectors.indexOf(resource);
+    if(index < 0) {
+        this.collectors.push(resource);
     }
-
-    if(isCollector(node)) {
-        var index = this.collectors.indexOf(node.resource);
-        if(index < 0){
-            this.collectors.push(node.resource);
-            this.updateCollectionNode(node);
-        }
+    var node = this.data[resource];
+    if(node) {
+        this.updateCollectionNode(node);
     }
 };
 
@@ -615,10 +612,12 @@ ozpIwc.ApiBase.prototype.updateCollections = function(){
  * @param {Object} cNode the collector node to update
  */
 ozpIwc.ApiBase.prototype.updateCollectionNode = function(cNode){
-
+    if(!cNode) {
+        return;
+    }
     //If the collection node is deleted, stop collecting for it.
     if(cNode.deleted){
-        this.removeCollector(cNode);
+        this.removeCollector(cNode.resource);
         return;
     }
 
@@ -937,9 +936,14 @@ ozpIwc.ApiBase.prototype.loadFromEndpoint=function(endpoint,headers) {
 				// empty array resolves immediately, so no check needed
         return Promise.all(unknownLinks.map(function(l) {
             return endpoint.get(l,headers).then(function(data) {
+
+                var contentType = data.header['Content-Type'] || "";
+
+                //split off the charset if given.
+                contentType = contentType.split(';')[0];
                 self.createNode({
                     serializedEntity: data.response,
-                    serializedContentType: data.header['Content-Type']
+                    serializedContentType: contentType
                 });
             }).catch(function(err) {
 							ozpIwc.log.info(self.logPrefix+"Could not load from "+l+" -- ",err);
@@ -1030,7 +1034,7 @@ ozpIwc.ApiBase.defaultHandler={
         });
 
         //Only if the node has a pattern applied will it actually be added as a collector.
-        this.addCollector(context.node);
+        this.addCollector(packet.resource);
 
         if(context.node) {
             var p =  context.node.toPacket();
@@ -1045,7 +1049,7 @@ ozpIwc.ApiBase.defaultHandler={
 
         //If no one is watching the resource any more, remove its collector if it has one to speed things up.
         if(this.watchers[packet.resource] && this.watchers[packet.resource].length === 0){
-            this.removeCollector(context.node);
+            this.removeCollector(packet.resource);
         }
 
         return { response: "ok" };

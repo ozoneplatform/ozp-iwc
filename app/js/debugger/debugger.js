@@ -48,7 +48,39 @@ var debuggerModule=angular.module("ozpIwc.debugger",[
 
 
 debuggerModule.factory("iwcClient",function() {
-    return new ozpIwc.ClientParticipant({name: "debuggerClient"});
+    var part = new ozpIwc.ClientParticipant({name: "debuggerClient",autoConnect: false});
+
+    part.connect = function(){
+        if(!this.connectPromise) {
+            var self = this;
+            /**
+             * Promise to chain off of for client connection asynchronous actions.
+             * @property connectPromise
+             *
+             * @type Promise
+             */
+            this.connectPromise = new Promise(function(resolve,reject){
+                resolve(self.router.registerParticipant(self));
+            }).then(function(addr){
+                //@TODO: This is only because the client library has to delay, thus the debuggers client should delay.
+                //TODO: post v1.0, rework this. Currently delays 1.1 second for the bus to init APIS (which sit on a .5
+                // second delay). These are because of the visibility API blockings.
+                var resolve;
+                var busDelayPromise = new Promise(function (res) {
+                    resolve = res;
+                });
+                window.setTimeout(function(){
+                    resolve(addr);
+                }, 1100);
+                return busDelayPromise;
+            }).then(function(addr){
+                return self.afterConnected(addr);
+            });
+        }
+        return this.connectPromise;
+    };
+    part.connect();
+    return part;
 });
         
         

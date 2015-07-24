@@ -62,7 +62,7 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler=function(packet,type,action,hand
     });
     
     this.data[inflightNode.resource] = inflightNode;
-    this.addCollector(inflightNode);
+    this.addCollector(inflightNode.resource);
     this.addWatcher(inflightNode.resource,{src:packet.src,replyTo:packet.msgId});
     return this.handleInflightIntentState(inflightNode).then(function() {
         return {
@@ -200,7 +200,7 @@ ozpIwc.IntentsApi.registerDefinitionFilter = function(nodeType,contentType){
             });
         }
 
-        this.addCollector(context.node);
+        this.addCollector(context.node.resource);
 
         return next();
     };

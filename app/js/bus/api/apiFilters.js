@@ -57,7 +57,7 @@ ozpIwc.apiFilter={
     markAsCollector: function(){
 
         return function(packet,context,pathParams,next) {
-            this.addCollector(context.node);
+            this.addCollector(packet.resource);
             return next();
         };
     },

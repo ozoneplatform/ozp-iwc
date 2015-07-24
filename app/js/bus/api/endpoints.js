@@ -35,7 +35,9 @@ ozpIwc.Endpoint.prototype.get=function(resource, requestHeaders) {
         if (resource === '/' || resource === '' ) {
             resource=self.baseUrl;
         }
-
+        if(!resource){
+            return Promise.reject();
+        }
         return ozpIwc.util.ajax({
             href:  resource,
             method: 'GET',

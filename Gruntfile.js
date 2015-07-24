@@ -308,7 +308,7 @@ module.exports = function(grunt) {
             app: {
                 options: {
                     port: 13000,
-                    base: [sampleDataBase,'dist'],
+                    base: ['dist'],
                     middleware:  function(connect, options, middlewares) {
                         // inject a custom middleware into the array of default middlewares
                         middlewares.unshift(function(req, res, next) {
@@ -427,6 +427,26 @@ module.exports = function(grunt) {
                     '/js/ozpIwc-bus.js': '/base/dist/js/ozpIwc-bus.js'
                 }
             }
+        },
+        nodemon: {
+            backend: {
+                script: 'server.js',
+                options: {
+                    env:{
+                        PORT: "8181"
+                    },
+                    cwd: 'backend',
+                    ignore: ['node_modules/**']
+                }
+            }
+        },
+        concurrent: {
+            server: {
+                tasks: ['nodemon','connect-tests'],
+                options: {
+                    logConcurrentOutput: true
+                }
+            }
         }
 
     };
@@ -437,21 +457,18 @@ module.exports = function(grunt) {
     grunt.initConfig(config);
 
     grunt.registerTask('readpkg', 'Read in the package.json file', function() {
-
         grunt.config.set('pkg', grunt.file.readJSON('./package.json'));
-
     });
     // Default task(s).
     grunt.registerTask('build', "Concat and minify the source code into dist",
-        ['copy:hackBootstrap', 'jshint', 'concat_sourcemap',
-            'uglify', 'copy:dist','shell:buildVersionFile']
+        ['copy:hackBootstrap', 'jshint', 'concat_sourcemap','uglify', 'copy:dist','shell:buildVersionFile']
     );
-
     grunt.registerTask('karmaTests', "Runs the unit and integration tests.",
         ['build','karma:unit','connect:testBus','connect:mockParticipant', 'karma:integrationClient', 'karma:integrationBus']
     );
-    grunt.registerTask('travis', "Build, Runs the unit tests, and create Docs",['build','karma:unit', 'yuidoc']);
-
+    grunt.registerTask('travis', "Build, Runs the unit tests, and create Docs",
+        ['build','karma:unit', 'yuidoc']
+    );
     grunt.registerTask('dist', "Builds and tests the full distribution",
         ['build','karmaTests','yuidoc']
     );
@@ -461,9 +478,20 @@ module.exports = function(grunt) {
     grunt.registerTask('connect-all', "Runs tests and demos locally",
         ['build','connect','watch']
     );
-    grunt.registerTask('releasePatch', ['build','karma:unit','bump:patch','readpkg','shell:releaseGit']);
-    grunt.registerTask('releaseMinor', ['build','karma:unit','bump:minor','readpkg', 'shell:releaseGit']);
-    grunt.registerTask('releaseMajor', ['build','karma:unit','bump:major','readpkg', 'shell:releaseGit']);
-    grunt.registerTask('default', ['dist']);
+    grunt.registerTask('serve', "Launches the IWC & Backend",
+        ['concurrent:server']
+    );
+    grunt.registerTask('releasePatch',
+        ['build','karma:unit','bump:patch','readpkg','shell:releaseGit']
+    );
+    grunt.registerTask('releaseMinor',
+        ['build','karma:unit','bump:minor','readpkg', 'shell:releaseGit']
+    );
+    grunt.registerTask('releaseMajor',
+        ['build','karma:unit','bump:major','readpkg', 'shell:releaseGit']
+    );
+    grunt.registerTask('default',
+        ['dist']
+    );
 
 };
