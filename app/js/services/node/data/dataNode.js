@@ -14,7 +14,7 @@ ozpIwc.DataNode=ozpIwc.util.extend(ozpIwc.ApiNode,function(config) {
     if(lifespanParsed){
         this.lifespan = lifespanParsed;
     }
-    this.lifespan=new ozpIwc.Lifespan.Ephemeral();
+    this.lifespan=new ozpIwc.Lifespan.Persistent();
 });
 
 /**
