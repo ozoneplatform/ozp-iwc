@@ -30,6 +30,7 @@ ozpIwc.apiFilter={
                     context.node=this.data[packet.resource]=new NodeType({
                         resource: packet.resource,
                         pattern: packet.pattern,
+                        lifespan: packet.lifespan,
                         src: packet.src
                     });
                 }
@@ -41,6 +42,7 @@ ozpIwc.apiFilter={
                     context.node=this.createNode({
                         resource: packet.resource,
                         pattern: packet.pattern,
+                        lifespan: packet.lifespan,
                         src: packet.src
                     });
                 }

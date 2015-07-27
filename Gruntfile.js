@@ -308,7 +308,7 @@ module.exports = function(grunt) {
             app: {
                 options: {
                     port: 13000,
-                    base: ['dist'],
+                    base: ['dist',sampleDataBase],
                     middleware:  function(connect, options, middlewares) {
                         // inject a custom middleware into the array of default middlewares
                         middlewares.unshift(function(req, res, next) {
@@ -316,7 +316,7 @@ module.exports = function(grunt) {
                             if (req.method !== 'PUT' && req.method !== 'POST' && req.method !== 'DELETE') {
                                 return next();
                             }
-                            res.end('The ozp-iwc sample backend drops all write actions.');
+                            res.end('The ozp-iwc test backend drops all write actions.');
                         });
 
                         return middlewares;
@@ -442,7 +442,7 @@ module.exports = function(grunt) {
         },
         concurrent: {
             server: {
-                tasks: ['nodemon','connect-tests'],
+                tasks: ['nodemon','build','watch'],
                 options: {
                     logConcurrentOutput: true
                 }
