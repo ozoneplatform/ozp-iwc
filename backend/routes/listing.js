@@ -95,6 +95,13 @@ var routeFormatListing = function(req,listing){
 //========================================
 
 //Drop the application db
+try {
+    fs.mkdirSync('db');
+} catch(e) {
+    if ( e.code != 'EEXIST' ){
+        throw e;
+    }
+}
 fs.writeFileSync('db/listing', '');
 
 //Populate with listing files

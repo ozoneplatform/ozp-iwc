@@ -27,5 +27,14 @@ Links
 
 Demo
 ---------------
-Various example widgets using the ozp-iwc can be found at:
-http://ozone-development.github.io/ozp-demo/
+The IWC is bundled with a persistent data backend & demo applications. Simply follow these steps to deploy an example
+IWC environment:
+
+```
+npm install && bower install
+grunt serve
+```
+
+A list of IWC registered applications can be found under the "My Apps" tab of the system.api page in the 
+[IWC Debugger](http://localhost:13000/debugger.html#/system-api) once the server is running.
+
