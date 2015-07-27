@@ -37,15 +37,17 @@ app.use(function rawText(req, res, next) {
 //=======================================
 // Routes
 //=======================================
-//Bus routes
-app.use(ServerConfig.ROOT_ROUTE,index);
-app.use(ServerConfig.ROOT_ROUTE,express.static('../dist'));
+//Library routes
+app.use(ServerConfig.ROOT_ROUTE,express.static('../dist', {index: "debugger.html"}));
+
+// Api Root Route
+app.use(ServerConfig.API_ROOT_ROUTE,index);
 
 // Data Api Routes
-app.use(ServerConfig.DATA_ROUTE,data);
+app.use(ServerConfig.API_ROOT_ROUTE + ServerConfig.DATA_ROUTE,data);
 
 // System Api Application Listing Routes
-app.use(ServerConfig.LISTING_ROUTE,listing);
+app.use(ServerConfig.API_ROOT_ROUTE + ServerConfig.LISTING_ROUTE,listing);
 
 
 // Applications & Application Bower component routes

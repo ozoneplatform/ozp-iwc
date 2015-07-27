@@ -9,8 +9,12 @@
  * @constructor
  */
 ozpIwc.DataNode=ozpIwc.util.extend(ozpIwc.ApiNode,function(config) {
-   ozpIwc.ApiNode.apply(this, arguments);
-    this.lifespan = new ozpIwc.Lifespan.Persistent();
+    ozpIwc.ApiNode.apply(this, arguments);
+    var lifespanParsed = ozpIwc.Lifespan.getLifespan(config.lifespan);
+    if(lifespanParsed){
+        this.lifespan = lifespanParsed;
+    }
+    this.lifespan=new ozpIwc.Lifespan.Ephemeral();
 });
 
 /**
