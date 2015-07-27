@@ -37,13 +37,22 @@ app.use(function rawText(req, res, next) {
 //=======================================
 // Routes
 //=======================================
+//Bus routes
 app.use(ServerConfig.ROOT_ROUTE,index);
 app.use(ServerConfig.ROOT_ROUTE,express.static('../dist'));
+
+// Data Api Routes
 app.use(ServerConfig.DATA_ROUTE,data);
+
+// System Api Application Listing Routes
 app.use(ServerConfig.LISTING_ROUTE,listing);
-app.use(ServerConfig.APPLICATION_ROUTE + "/OzoneConfig.js",express.static('public/OzoneConfig.js'));
+
+
+// Applications & Application Bower component routes
+app.use(ServerConfig.APPLICATION_ROUTE,express.static('public'));
 app.use(ServerConfig.APPLICATION_ROUTE,express.static('../bower_components/ozp-demo/app'));
 app.use(ServerConfig.APPLICATION_ROUTE + "/bower_components/ozp-iwc/dist",express.static('../dist'));
+app.use(ServerConfig.APPLICATION_ROUTE+ "/bower_components",express.static('../bower_components'));
 
 var server = app.listen(13000, function () {
     var host = server.address().address;
