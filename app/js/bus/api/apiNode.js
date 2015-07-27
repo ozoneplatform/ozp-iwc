@@ -75,8 +75,9 @@ ozpIwc.ApiNode= function(config) {
     var lifespanParsed = ozpIwc.Lifespan.getLifespan(config.lifespan);
     if(lifespanParsed){
         this.lifespan = lifespanParsed;
+    } else {
+        this.lifespan = new ozpIwc.Lifespan.Ephemeral();
     }
-    this.lifespan=new ozpIwc.Lifespan.Ephemeral();
 
     /**
      * @property deleted
