@@ -41,10 +41,9 @@ app.use(ServerConfig.ROOT_ROUTE,index);
 app.use(ServerConfig.ROOT_ROUTE,express.static('../dist'));
 app.use(ServerConfig.DATA_ROUTE,data);
 app.use(ServerConfig.LISTING_ROUTE,listing);
+app.use(ServerConfig.APPLICATION_ROUTE + "/OzoneConfig.js",express.static('public/OzoneConfig.js'));
 app.use(ServerConfig.APPLICATION_ROUTE,express.static('../bower_components/ozp-demo/app'));
 app.use(ServerConfig.APPLICATION_ROUTE + "/bower_components/ozp-iwc/dist",express.static('../dist'));
-app.use(ServerConfig.APPLICATION_ROUTE + "/bower_components",express.static('../bower_components'));
-app.use('/bower_components/ozp-demo/app/OzoneConfig.js',express.static('public/OzoneConfig.js'));
 
 var server = app.listen(13000, function () {
     var host = server.address().address;
