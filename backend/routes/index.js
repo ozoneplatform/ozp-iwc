@@ -1,6 +1,6 @@
 var express = require('express');
 var utils = require("../lib/utils.js");
-var OzoneConfig = require("../OzoneConfig.js");
+var ServerConfig = require("../ServerConfig.js");
 var router = express.Router();
 
 
@@ -20,8 +20,8 @@ router.get("/", function(req,res){
             "name": "ozp",
             "templated": true
         },
-        "ozp:application": {"href": utils.getFullUrl(req,true) + OzoneConfig.LISTING_ROUTE},
-        "ozp:user-data": {"href": utils.getFullUrl(req,true) + OzoneConfig.DATA_ROUTE},
+        "ozp:application": {"href": utils.getFullUrl(req,true) + ServerConfig.LISTING_ROUTE},
+        "ozp:user-data": {"href": utils.getFullUrl(req,true) + ServerConfig.DATA_ROUTE},
         "self": {"href": utils.getFullUrl(req)}
     });
 

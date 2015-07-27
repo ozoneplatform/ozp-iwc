@@ -1,6 +1,6 @@
 var express = require('express');
 var utils = require("../lib/utils.js");
-var OzoneConfig = require("../OzoneConfig.js");
+var ServerConfig = require("../ServerConfig.js");
 var Datastore = require('nedb');
 var glob = require('glob');
 var fs = require('fs');
@@ -26,7 +26,7 @@ var addPathing = function(resource){
     if(resource.charAt(0) !== "/") {
         resource = "/" + resource;
     }
-    resource = OzoneConfig.APPLICATION_ROUTE + resource;
+    resource = ServerConfig.APPLICATION_ROUTE + resource;
     return resource;
 };
 
