@@ -69,6 +69,18 @@ ozpIwc.IntentsInFlightNode.prototype.setError=function(entity) {
     this.entity.state = "error";
     this.version++;
 };
+/**
+ * Sets the inFlight state to "choosing".
+ *
+ * @method setError
+ * @param {Object} entity
+ */
+ozpIwc.IntentsInFlightNode.prototype.setDeserialize=function(entity) {
+    this.entity=entity;
+    this.entity.state = entity.dState;
+    this.dState = null;
+    this.version++;
+};
 
 /**
  * Sets the handler chosen to the inFlight node.
@@ -124,15 +136,25 @@ ozpIwc.IntentsInFlightNode.stateTransitions={
     "choosing": {
         "error": ozpIwc.IntentsInFlightNode.prototype.setError,
         "delivering" : ozpIwc.IntentsInFlightNode.prototype.setHandlerResource,
+        "deserialize": ozpIwc.IntentsInFlightNode.prototype.setDeserialize,
         "complete": ozpIwc.IntentsInFlightNode.prototype.setComplete
     },
     "delivering": {
         "error": ozpIwc.IntentsInFlightNode.prototype.setError,
         "running": ozpIwc.IntentsInFlightNode.prototype.setHandlerParticipant,
+        "deserialize": ozpIwc.IntentsInFlightNode.prototype.setDeserialize,
         "complete": ozpIwc.IntentsInFlightNode.prototype.setComplete
     },
     "running": {
         "error": ozpIwc.IntentsInFlightNode.prototype.setError,
+        "deserialize": ozpIwc.IntentsInFlightNode.prototype.setDeserialize,
+        "complete": ozpIwc.IntentsInFlightNode.prototype.setComplete
+    },
+    "deserialize": {
+        "error": ozpIwc.IntentsInFlightNode.prototype.setError,
+        "running": ozpIwc.IntentsInFlightNode.prototype.setHandlerParticipant,
+        "delivering" : ozpIwc.IntentsInFlightNode.prototype.setHandlerResource,
+        "deserialize": ozpIwc.IntentsInFlightNode.prototype.setDeserialize,
         "complete": ozpIwc.IntentsInFlightNode.prototype.setComplete
     },
     "complete": {},
