@@ -30,6 +30,39 @@ ozpIwc.IntentsApi = ozpIwc.createApi(function(config) {
     ];
 });
 
+ozpIwc.IntentsApi.prototype.initializeData=function(deathScream) {
+    deathScream=deathScream || { watchers: {}, collectors: [], data: []};
+    this.watchers=deathScream.watchers;
+    this.collectors = deathScream.collectors;
+    deathScream.data.forEach(function(packet) {
+        if(packet.resource.indexOf("/inFlightIntent") === 0){
+            packet.entity = packet.entity || {};
+            packet.entity.dState = packet.entity.state;
+            packet.entity.state = "deserialize";
+            this.createNode({
+                resource: packet.resource, invokePacket: {},
+                handlerChoices:[0,1],
+                state: "deserialize"
+            },ozpIwc.IntentsInFlightNode).deserializeLive(packet);
+        }else {
+            this.createNode({resource: packet.resource}).deserializeLive(packet);
+        }
+    },this);
+
+    this.updateCollections();
+    if(this.endpoints) {
+        var self=this;
+        return Promise.all(this.endpoints.map(function(u) {
+            var e=ozpIwc.endpoint(u.link) ;
+            return self.loadFromEndpoint(e,u.headers).catch(function(e) {
+                ozpIwc.log.error(self.logPrefix,"load from endpoint ",e," failed: ",e);
+            });
+        }));
+    } else {
+        return Promise.resolve();
+    }
+};
+
 // turn on bulkGet and list for everything
 ozpIwc.IntentsApi.useDefaultRoute(["bulkGet", "list"]);
 
