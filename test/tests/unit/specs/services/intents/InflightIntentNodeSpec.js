@@ -35,24 +35,35 @@ describe("Intents in Flight Value", function () {
     };
     
     var stateValidation={
-        choosing: function(node) {
-            expect(node.entity).toEqual(jasmine.objectContaining(baseEntity));
-            expect(node.entity.state).toEqual("choosing");
-            expect(node.entity.handlerChosen).toEqual({
-                resource: null,
-                reason: null
-            });
+        init: function(node){
+            expect(node.entity.state).toEqual("init");
             expect(node.entity.handler).toEqual({
                 'resource': null,
                 'address': null
             });
         },
-        delivering: function(node) {
+        choosing: function(node) {
             expect(node.entity).toEqual(jasmine.objectContaining(baseEntity));
-            expect(node.entity.state).toEqual("delivering");
+            expect(node.entity.state).toEqual("choosing");
             expect(node.entity.handler).toEqual({
                 'resource': null,
                 'address': null
+            });
+        },
+        deliveringOnlyOne: function(node) {
+            expect(node.entity).toEqual(jasmine.objectContaining(baseEntity));
+            expect(node.entity.state).toEqual("delivering");
+            expect(node.entity.handler).toEqual({
+                'resource': handlerChoices[0].resource,
+                'reason': 'onlyOne'
+            });
+        },
+        deliveringUserSelected: function(node) {
+            expect(node.entity).toEqual(jasmine.objectContaining(baseEntity));
+            expect(node.entity.state).toEqual("delivering");
+            expect(node.entity.handler).toEqual({
+                'resource': handlerChoices[0].resource,
+                'reason': 'userSelected'
             });
         },
         running: function(node) {
@@ -67,13 +78,14 @@ describe("Intents in Flight Value", function () {
     
     it("expects initial state to be choosing if there are multiple handler choices", function () {
         var node = makeNode();
-        stateValidation.choosing(node);
+        stateValidation.init(node);
     });
 
     it("expects initial state to be delivering if there is only one handler choice", function () {
         var node = makeNode({'handlerChoices': [handlerChoices[0]]});
-        stateValidation.delivering(node);
-        expect(node.entity.handlerChosen).toEqual({
+        node = ozpIwc.InFlightIntentFSM.transition(node);
+        stateValidation.deliveringOnlyOne(node);
+        expect(node.entity.handler).toEqual({
             resource: handlerChoices[0].resource,
             reason: "onlyOne"
         });
@@ -83,47 +95,47 @@ describe("Intents in Flight Value", function () {
     // choosing -> delivering
     //============================================
     
-    it("transitions from choosing to deliverying on receiving a 'delivering' packet", function () {
+    it("transitions from choosing to delivering on receiving a 'delivering' packet", function () {
         var node = makeNode();
-        node.set({'entity': {
+        node = ozpIwc.InFlightIntentFSM.transition(node,{'entity': {
                 'state': "delivering",
-                'handlerChosen' : {
+                'handler' : {
                     'resource': handlerChoices[0].resource,
                     'reason': "userSelected"
                 }
             }
         });
-        stateValidation.delivering(node);
-        expect(node.entity.handlerChosen).toEqual({
+        stateValidation.deliveringUserSelected(node);
+        expect(node.entity.handler).toEqual({
             resource: handlerChoices[0].resource,
             reason: "userSelected"
         });
     });
     it("transitions from choosing to error on receiving a error packet", function () {
         var node = makeNode();
-        node.set({'entity': {'state': "error", 'error': "Unknown Error" }});
+        node = ozpIwc.InFlightIntentFSM.transition(node,{'entity': {'state': "error", 'error': "Unknown Error" }});
         expect(node.entity.state).toEqual("error");
         expect(node.entity.reply).toEqual("Unknown Error");
     });
     it("throws badState if the set lacks resource or reason",function() {
         var node = makeNode();
         expect(function() {
-            node.set({'entity':{
+            ozpIwc.InFlightIntentFSM.transition(node,{'entity':{
                 'state': "delivering",
-                'handlerChosen' : {
+                'handler' : {
                     'reason': "userSelected"
                 }
             }});
         }).toThrow();
         expect(function() {
-            node.set({'entity':{
+            ozpIwc.InFlightIntentFSM.transition(node,{'entity':{
                 'state': "delivering",
-                'handlerChosen' : {
+                'handler' : {
                     'resource': handlerChoices[0].resource
                 }
             }});
         }).toThrow();
-        stateValidation.choosing(node);
+        stateValidation.init(node);
     });
     
     //============================================
@@ -133,69 +145,86 @@ describe("Intents in Flight Value", function () {
         var node;
         beforeEach(function() {
             node = makeNode({'handlerChoices': [handlerChoices[0]]});
-            stateValidation.delivering(node);
+            node = ozpIwc.InFlightIntentFSM.transition(node);
+            stateValidation.deliveringOnlyOne(node);
         });
         it("on receiving a 'running' packet", function () {
-            node.set({'entity': {
-                'state': "running",
-                'handler': {
-                    'address': "someAddress",
-                    'resource': "/intentReceiver"
+            node = ozpIwc.InFlightIntentFSM.transition(node,{
+                'entity': {
+                    'state': "running",
+                    'handler': {
+                        'address': "someAddress",
+                        'resource': "/handler1"
+                    }
                 }
-            }});
-            stateValidation.running(node);
-            expect(node.entity.handler).toEqual({
-                'address': "someAddress",
-                'resource': "/intentReceiver"
             });
+            stateValidation.running(node);
+            expect(node.entity.handler.address).toEqual("someAddress");
+            expect(node.entity.handler.resource).toEqual("/handler1");
+            expect(node.entity.handler.reason).toEqual("onlyOne");
         });
         
         it("transitions from delivering to error on receiving a error packet", function () {
-            node.set({'entity': {'state': "error", 'error': "Unknown Error" }});
+            node = ozpIwc.InFlightIntentFSM.transition(node,{'entity': {'state': "error", 'error': "Unknown Error" }});
             expect(node.entity.state).toEqual("error");
             expect(node.entity.reply).toEqual("Unknown Error");
         });
         
         it("throws badState if the set lacks an address",function() {
             expect(function() {
-                node.set({'entity': {
-                    'state': "running",
-                    'handler': {
-                        'resource': "/intentReceiver"
+                node = ozpIwc.InFlightIntentFSM.transition(node,{
+                    'entity': {
+                        'state': "running",
+                        'handler': {
+                            'resource': "/intentReceiver"
+                        }
                     }
-                }});
+                });
             }).toThrow();
-            stateValidation.delivering(node);
+            stateValidation.deliveringOnlyOne(node);
         });
     });
+    //============================================
+    // running ->
+    //============================================
     describe("transition from running",function() {
         var node;
         beforeEach(function() {
             node = makeNode({'handlerChoices': [handlerChoices[0]]});
-            stateValidation.delivering(node);
-            node.set({'entity': {
-                'state': "running",
-                'handler': {
-                    'address': "someAddress",
-                    'resource': "/intentReceiver"
+            node = ozpIwc.InFlightIntentFSM.transition(node);
+            stateValidation.deliveringOnlyOne(node);
+            node = ozpIwc.InFlightIntentFSM.transition(node,{
+                'entity': {
+                    'state': "running",
+                    'handler': {
+                        'address': "someAddress",
+                        'resource': "/intentReceiver"
+                    }
                 }
-            }});
+            });
             stateValidation.running(node);
         });
         
         it("to error on receiving a error packet", function () {
-            node.set({'entity': {'state': "error", 'error': "Unknown Error" }});
+            node = ozpIwc.InFlightIntentFSM.transition(node,{
+                'entity': {
+                    'state': "error",
+                    'error': "Unknown Error"
+                }
+            });
             expect(node.entity.state).toEqual("error");
             expect(node.entity.reply).toEqual("Unknown Error");
         });
         
         it("to complete on receiving a 'complete' packet", function () {
-            node.set({ 'entity': {
+            node = ozpIwc.InFlightIntentFSM.transition(node,{
+                'entity': {
                 'state': "complete",
-                'reply': {
-                    'contentType' : "text/plain",
-                    'entity' : "Goodbye!"
-                }}
+                    'reply': {
+                        'contentType' : "text/plain",
+                        'entity' : "Goodbye!"
+                    }
+                }
             });
             stateValidation.complete(node);
             expect(node.entity.reply).toEqual({
