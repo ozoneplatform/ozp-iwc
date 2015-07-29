@@ -117,10 +117,7 @@ describe("System API", function() {
             ]);
         }).then(function(replies) {
             var intentsPacket=replies[1];
-            expect(intentsPacket.entity.inFlightIntent).toBeDefined();
-            return client.api("intents.api").get(intentsPacket.entity.inFlightIntent);
-        }).then(function(reply) {
-            expect(reply.entity).toEqual(jasmine.objectContaining({
+            expect(intentsPacket.entity.inFlightIntent.entity).toEqual(jasmine.objectContaining({
                 "entity": { 
                     'url': 'http://localhost:15001/?color=green',
                     'applicationId': '/application/23456',

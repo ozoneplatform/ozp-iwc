@@ -387,37 +387,35 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
          *
          * @method intentInvocationHandling
          * @param resource {String} The resource of the packet that sent the intent invocation
-         * @param intentResource {String} The in flight intent resource, used internally to operate the in flight intent state machine
+         * @param inFlightIntent {Object} The in flight intent, used internally to operate the in flight intent state machine
          * @param callback {Function} The intent handler's callback function
          * @returns {Promise}
          */
-        intentInvocationHandling: function (resource, intentResource, intentEntity, callback) {
+        intentInvocationHandling: function (packet, inFlightIntent, callback) {
             var self = this;
             var res;
             var promiseChain;
             callback = callback || function(){};
-
-            if(intentEntity) {
-                promiseChain = Promise.resolve(intentEntity);
+            inFlightIntent = inFlightIntent || {};
+            if(inFlightIntent.entity) {
+                promiseChain = Promise.resolve(inFlightIntent);
             } else {
                 promiseChain = self.send({
                     dst: "intents.api",
                     action: "get",
-                    resource: intentResource
-                }).then(function(reply){
-                    return reply.entity;
+                    resource: inFlightIntent.resource
                 });
             }
-            return promiseChain.then(function(response) {
-                res = response;
+            return promiseChain.then(function(inFlightIntentRes) {
+                res = inFlightIntentRes;
                 return self.send({
                     dst: "intents.api",
-                    contentType: response.contentType,
+                    contentType: res.contentType,
                     action: "set",
-                    resource: intentResource,
+                    resource: res.resource,
                     entity: {
                         handler: {
-                            resource: resource,
+                            resource: packet.resource,
                             address: self.address
                         },
                         state: "running"
@@ -425,7 +423,7 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
                 });
             }).then(function(){
                 // Run the intent handler. Wrapped in a promise chain in case the callback itself is async.
-                return callback(res);
+                return callback(res.entity);
             }).then(function (result) {
 
                 // Respond to the inflight resource
@@ -433,20 +431,20 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
                     dst: "intents.api",
                     contentType: res.contentType,
                     action: "set",
-                    resource: intentResource,
+                    resource: res.resource,
                     entity: {
                         reply: {
                             'entity': result || {},
-                            'contentType': res.intent.type
+                            'contentType': res.entity.intent.type
                         },
                         state: "complete"
                     }
                 });
             })['catch'](function(e){
-                console.log("Error in handling intent: ", e, " -- Clearing in-flight intent node:", intentResource);
+                console.log("Error in handling intent: ", e, " -- Clearing in-flight intent node:", res.resource);
                 self.send({
                     dst: "intents.api",
-                    resource: intentResource,
+                    resource: res.resource,
                     action: "delete"
                 });
             });
@@ -490,7 +488,7 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
                         for (var i in client.launchedIntents) {
                             var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
                             if (resource === loadedResource) {
-                                client.intentInvocationHandling(resource, client.launchedIntents[i].resource, message.callback);
+                                client.intentInvocationHandling(packet, client.launchedIntents[i].resource, message.callback);
                                 delete client.launchedIntents[i];
                             }
                         }
@@ -636,8 +634,7 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
                         // Do noting and let it get sent to the event handler
                         return false;
                     }else if (reply.entity && reply.entity.inFlightIntent) {
-                        self.intentInvocationHandling(packet.resource, reply.entity.inFlightIntent,
-                            reply.entity.inFlightIntentEntity, callback);
+                        self.intentInvocationHandling(packet, reply.entity.inFlightIntent, callback);
                     } else {
                         callback(reply, done);
                     }

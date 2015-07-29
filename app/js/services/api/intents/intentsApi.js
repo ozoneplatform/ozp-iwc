@@ -84,6 +84,7 @@ ozpIwc.IntentsApi.useDefaultRoute([ "watch", "unwatch", "delete"], "/inFlightInt
  * @returns {Promise}
  */
 ozpIwc.IntentsApi.prototype.invokeIntentHandler=function(packet,type,action,handlers,pattern) {
+    var self = this;
     var inflightNode = new ozpIwc.IntentsInFlightNode({
         resource: this.createKey("/inFlightIntent/"),
         src:packet.src,
@@ -96,11 +97,12 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler=function(packet,type,action,hand
     
     this.data[inflightNode.resource] = inflightNode;
     this.addCollector(inflightNode.resource);
-    this.addWatcher(inflightNode.resource,{src:packet.src,replyTo:packet.msgId});
+
+    this.data[inflightNode.resource] = ozpIwc.InFlightIntentFSM.transition(inflightNode);
     return this.handleInflightIntentState(inflightNode).then(function() {
         return {
             entity: {
-                inFlightIntent: inflightNode.resource
+                inFlightIntent: self.data[inflightNode.resource].toPacket()
             }
         };
     });
@@ -115,54 +117,14 @@ ozpIwc.IntentsApi.prototype.invokeIntentHandler=function(packet,type,action,hand
  * @returns {*}
  */
 ozpIwc.IntentsApi.prototype.handleInflightIntentState=function(inflightNode) {
-    var self=this;
-    var packet;
     switch(inflightNode.entity.state){
         case "choosing":
-            var showChooser=function(err) {
-                console.log("Picking chooser because",err);
-                ozpIwc.util.openWindow(ozpIwc.intentsChooserUri, {
-                    "ozpIwc.peer": ozpIwc.BUS_ROOT,
-                    "ozpIwc.intentSelection": "intents.api" + inflightNode.resource
-                },ozpIwc.INTENT_CHOOSER_FEATURES);
-            };
-            return this.getPreference(inflightNode.entity.intent.type+"/"+inflightNode.entity.intent.action).then(function(handlerResource) {
-                if(handlerResource in self.data) {
-                    inflightNode.setHandlerResource({
-                        'state': "delivering",
-                        'handlerChosen' : {
-                            'resource': handlerResource,
-                            'reason': "remembered"
-                        }
-                    });
-                } else {
-                    showChooser();
-                }
-            }).catch(showChooser);
+            return this.handleChoosing(inflightNode);
         case "delivering":
-            var handlerNode=this.data[inflightNode.entity.handlerChosen.resource];
-
-            packet = ozpIwc.util.clone(handlerNode.entity.invokeIntent);
-            packet.entity = packet.entity || {};
-            packet.replyTo = handlerNode.entity.replyTo;
-            packet.entity.inFlightIntent = inflightNode.resource;
-            packet.entity.inFlightIntentEntity= inflightNode.entity;
-            console.log(this.logPrefix+"delivering intent:",packet);
-            // TODO: packet permissions
-            this.send(packet);
+            this.handleDelivering(inflightNode);
             break;
         case "complete":
-            if(inflightNode.entity.invokePacket && inflightNode.entity.invokePacket.src && inflightNode.entity.reply) {
-                packet ={
-                    dst: inflightNode.entity.invokePacket.src,
-                    replyTo: inflightNode.entity.invokePacket.msgId,
-                    contentType: inflightNode.entity.reply.contentType,
-                    response: "complete",
-                    entity: inflightNode.entity.reply.entity
-                };
-                this.send(packet);
-            }
-            inflightNode.markAsDeleted();
+            this.handleComplete(inflightNode);
             break;
         default:
             break;
@@ -170,12 +132,87 @@ ozpIwc.IntentsApi.prototype.handleInflightIntentState=function(inflightNode) {
     return Promise.resolve();
 };
 
+/**
+ * A handler for the "choosing" state of an in-flight intent node.
+ * @method handleChoosing
+ * @param node
+ * @returns {Promise} Resolves when either a preference is gathered or the intent chooser is opened.
+ */
+ozpIwc.IntentsApi.prototype.handleChoosing = function(node){
+    var showChooser=function(err) {
+        console.log("Picking chooser because",err);
+        ozpIwc.util.openWindow(ozpIwc.intentsChooserUri, {
+            "ozpIwc.peer": ozpIwc.BUS_ROOT,
+            "ozpIwc.intentSelection": "intents.api" + node.resource
+        },ozpIwc.INTENT_CHOOSER_FEATURES);
+    };
+    var self = this;
+    return this.getPreference(node.entity.intent.type+"/"+node.entity.intent.action).then(function(handlerResource) {
+        if(handlerResource in self.data) {
+            node = ozpIwc.InFlightIntentFSM.transition(node,{
+                entity: {
+                    state: "delivering",
+                    'handler': {
+                        'resource': handlerResource,
+                        'reason': "remembered"
+                    }
+                }
+            });
+            self.handleInflightIntentState(node);
+        } else {
+            showChooser();
+        }
+    }).catch(showChooser);
+};
+
+/**
+ *  A handler for the "delivering" state of an in-flight intent node.
+ *  Sends a packet to the chosen handler.
+ *
+ *  @TODO should resolve on response from the handler that transitions the node to "running".
+ *
+ * @method handleDelivering
+ * @param {ozpIwc.ApiNode} node
+ */
+ozpIwc.IntentsApi.prototype.handleDelivering = function(node){
+    var handlerNode=this.data[node.entity.handler.resource];
+
+    var packet = ozpIwc.util.clone(handlerNode.entity.invokeIntent);
+    packet.entity = packet.entity || {};
+    packet.replyTo = handlerNode.entity.replyTo;
+    packet.entity.inFlightIntent = node.toPacket();
+    console.log(this.logPrefix+"delivering intent:",packet);
+    // TODO: packet permissions
+    return this.send(packet);
+};
+
+/**
+ * A handler for the "complete" state of an in-flight intent node.
+ * Sends notification to the invoker that the intent was handled & deletes the in-flight intent node as it is no longer
+ * needed.
+ *
+ * @method handleComplete
+ * @param {ozpIwc.ApiNode} node
+ */
+ozpIwc.IntentsApi.prototype.handleComplete = function(node){
+    if(node.entity.invokePacket && node.entity.invokePacket.src && node.entity.reply) {
+        this.send({
+            dst: node.entity.invokePacket.src,
+            replyTo: node.entity.invokePacket.msgId,
+            contentType: node.entity.reply.contentType,
+            response: "complete",
+            entity: node.entity.reply.entity
+        });
+    }
+    node.markAsDeleted();
+};
+
 ozpIwc.IntentsApi.declareRoute({
     action: "set",
     resource: "/inFlightIntent/{id}",
     filters: ozpIwc.standardApiFilters.setFilters(ozpIwc.IntentsInFlightNode)
 }, function(packet, context, pathParams) {
-    context.node.set(packet);
+    context.node = ozpIwc.InFlightIntentFSM.transition(context.node,packet);
     return this.handleInflightIntentState(context.node).then(function() {
         return {response: "ok"};
     });
