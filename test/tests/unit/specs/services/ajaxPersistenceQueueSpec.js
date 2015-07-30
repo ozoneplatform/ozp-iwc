@@ -18,9 +18,10 @@ describe("with one pool", function() {
         return queue.queueNode("data.api/foo/bar",exampleNode).then(function() {
             expect(ozpIwc.util.ajax).toHaveBeenCalledWith(jasmine.objectContaining({
                 href: exampleNode.self,
-                headers: {
-                    "Content-Type": exampleNode.serializedContentType()
-                }
+                headers: [{
+                    name:"Content-Type",
+                    value:exampleNode.serializedContentType()
+                }]
             }));
         });
     });
@@ -37,9 +38,10 @@ describe("with one pool", function() {
 				}).then(function() {
 						expect(ozpIwc.util.ajax).toHaveBeenCalledWith(jasmine.objectContaining({
                 href: "http://example.com/foo/bar",
-                headers: {
-                    "Content-Type": exampleNode.serializedContentType()
-                }
+                headers: [{
+                    name:"Content-Type",
+                    value:exampleNode.serializedContentType()
+                }]
             }));
         });
     });
