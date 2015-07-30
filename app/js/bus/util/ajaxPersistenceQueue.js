@@ -49,9 +49,10 @@ ozpIwc.AjaxPersistenceQueue.prototype.doSync=function(iwcUri,node) {
             href:  uri,
             method: 'PUT',
             data: entity,
-            headers: {
-                "Content-Type": node.serializedContentType()
-            }
+            headers: [{
+                name: "Content-Type",
+                value: node.serializedContentType()
+            }]
         }).then(function(result) {
             ozpIwc.log.debug("  saving to " + uri,result);
         },function(error) {
