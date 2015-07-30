@@ -1,0 +1,5 @@
+Version: 1.0.4
+Git hash: 
+37decb9030095f6ba7def42955e4c0e99a312f9b
+Date:
+2015-07-30 14:58:32 -0400
