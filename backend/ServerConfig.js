@@ -30,5 +30,23 @@ module.exports = {
      * CORS Access-Control-Allow-Origin property.
      * @property ALLOW_ORIGIN
      */
-    ALLOW_ORIGIN: "http://localhost:13000"
+    ALLOW_ORIGINS: ["http://localhost:13000", "http://localhost:9000"],
+
+    /**
+     * Port which the backend runs on
+     * @property SERVER_PORT
+     */
+    SERVER_PORT: 13000,
+
+    /**
+     * Domain name of the server.
+     * @property SERVER_DOMAIN_NAME
+     */
+    SERVER_DOMAIN_NAME: 'localhost',
+
+    /**
+     * Protocol used for server communication
+     * @proerty SERVER_PROTOCOL
+     */
+    SERVER_PROTOCOL: 'http'
 };

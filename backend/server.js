@@ -15,7 +15,9 @@ var app = express();
 // Middleware
 //=======================================
 app.use(function (req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', ServerConfig.ALLOW_ORIGIN);
+    ServerConfig.ALLOW_ORIGINS.forEach(function(origin){
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    });
     res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -56,7 +58,7 @@ app.use(ServerConfig.APPLICATION_ROUTE,express.static('../bower_components/ozp-d
 app.use(ServerConfig.APPLICATION_ROUTE + "/bower_components/ozp-iwc/dist",express.static('../dist'));
 app.use(ServerConfig.APPLICATION_ROUTE+ "/bower_components",express.static('../bower_components'));
 
-var server = app.listen(13000, function () {
+var server = app.listen(ServerConfig.SERVER_PORT, function () {
     var host = server.address().address;
     var port = server.address().port;
     console.log('IWC Example Backend listening at http://%s:%s', host, port);
