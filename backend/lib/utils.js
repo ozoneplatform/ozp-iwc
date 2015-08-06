@@ -1,3 +1,5 @@
+var ServerConfig = require("../ServerConfig.js");
+
 module.exports = {
     /**
      * Formats an payload & links into hateoas form for REST compliance.
@@ -47,6 +49,15 @@ module.exports = {
             // remove trailing "/" if present
         }
         return this.getHostUrl(req) + url;
+    },
+    /**
+     * Used to generate listing data. Returns a static path to the server's root.
+     * @method getServerPath
+     * @returns {string}
+     */
+    getServerPath : function(){
+        return ServerConfig.SERVER_PROTOCOL + "://" + ServerConfig.SERVER_DOMAIN_NAME + ":" +
+            ServerConfig.SERVER_PORT;
     }
 
 };

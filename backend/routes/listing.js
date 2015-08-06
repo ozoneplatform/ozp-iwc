@@ -26,7 +26,7 @@ var addPathing = function(resource){
     if(resource.charAt(0) !== "/") {
         resource = "/" + resource;
     }
-    resource = ServerConfig.APPLICATION_ROUTE + resource;
+    resource = utils.getServerPath() + ServerConfig.APPLICATION_ROUTE +  resource;
     return resource;
 };
 
@@ -50,6 +50,15 @@ var fsGetListing = function(listingFile,callback){
         for(var i in obj.launchUrls) {
             obj.launchUrls[i] = addPathing(obj.launchUrls[i]);
         }
+
+        // To comply with webtop's gathering of listings, providing a pre-formatted listing property.
+        obj.listing = {
+            'title': obj.title,
+                'uuid': obj.id,
+                'imageSmallUrl': obj.icons.small,
+                'imageMediumUrl': obj.icons.large,
+                'launchUrl': obj.launchUrls.default
+        };
         callback(obj);
     });
 };
