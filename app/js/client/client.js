@@ -66,8 +66,6 @@ ozpIwc.Client.prototype.genPeerUrlCheck = function(configUrl){
  * @method disconnect
  */
 ozpIwc.Client.prototype.disconnect=function() {
-    this.events.trigger("disconnect");
-
     if(this.iframe) {
         this.iframe.src = "about:blank";
         var self = this;
