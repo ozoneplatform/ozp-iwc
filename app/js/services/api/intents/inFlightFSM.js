@@ -10,6 +10,8 @@
  * @type {Object}
  */
 ozpIwc.InFlightIntentFSM = {};
+ozpIwc.InFlightIntentFSM.events=new ozpIwc.Event();
+ozpIwc.InFlightIntentFSM.events.mixinOnOff(ozpIwc.InFlightIntentFSM);
 
 //===============================================
 // States.
@@ -59,14 +61,14 @@ ozpIwc.InFlightIntentFSM.states.init = function(){
  *
  * @method error
  * @param {Object} entity The entity of the request packet received by the Api.
- * @returns {Object}
+ * @returns {ozpIwc.ApiNode}
  */
 ozpIwc.InFlightIntentFSM.states.error=function(entity){
     this.entity = this.entity || {};
     this.entity.reply = entity.error;
     this.entity.state = "error";
     this.version++;
-    return this;
+    return ozpIwc.InFlightIntentFSM.stateEvent(this);
 };
 
 /**
@@ -76,7 +78,7 @@ ozpIwc.InFlightIntentFSM.states.error=function(entity){
  *
  * @method delivering
  * @param {Object} entity The entity of the request packet received by the Api.
- * @returns {Object}
+ * @returns {ozpIwc.ApiNode}
  */
 ozpIwc.InFlightIntentFSM.states.delivering=function(entity){
     if(!entity.handler || !entity.handler.resource || !entity.handler.reason) {
@@ -85,7 +87,7 @@ ozpIwc.InFlightIntentFSM.states.delivering=function(entity){
     this.entity.handler = entity.handler;
     this.entity.state = "delivering";
     this.version++;
-    return this;
+    return ozpIwc.InFlightIntentFSM.stateEvent(this);
 };
 
 /**
@@ -96,7 +98,7 @@ ozpIwc.InFlightIntentFSM.states.delivering=function(entity){
  *
  * @method running
  * @param {Object} entity The entity of the request packet received by the Api.
- * @returns {Object}
+ * @returns {ozpIwc.ApiNode}
  */
 ozpIwc.InFlightIntentFSM.states.running=function(entity){
     if(!entity.handler || !entity.handler.address) {
@@ -105,7 +107,7 @@ ozpIwc.InFlightIntentFSM.states.running=function(entity){
     this.entity.handler.address=entity.handler.address;
     this.entity.state = "running";
     this.version++;
-    return this;
+    return ozpIwc.InFlightIntentFSM.stateEvent(this);
 };
 
 /**
@@ -117,12 +119,12 @@ ozpIwc.InFlightIntentFSM.states.running=function(entity){
  * The node will transition to delivering once the handler has been chosen.
  *
  * @method choosing
- * @returns {Object}
+ * @returns {ozpIwc.ApiNode}
  */
 ozpIwc.InFlightIntentFSM.states.choosing=function(){
     this.entity.state = "choosing";
     this.version++;
-    return this;
+    return ozpIwc.InFlightIntentFSM.stateEvent(this);
 };
 
 /**
@@ -132,13 +134,13 @@ ozpIwc.InFlightIntentFSM.states.choosing=function(){
  *
  * @method complete
  * @param {Object} entity The entity of the request packet received by the Api.
- * @returns {*}
+ * @returns {ozpIwc.ApiNode}
  */
 ozpIwc.InFlightIntentFSM.states.complete=function(entity){
     this.entity.reply=entity.reply;
     this.entity.state = "complete";
     this.version++;
-    return this;
+    return ozpIwc.InFlightIntentFSM.stateEvent(this);
 };
 
 
@@ -182,7 +184,7 @@ ozpIwc.InFlightIntentFSM.stateTransitions ={
  * calls the state transition and returns the modified node for storage.
  * @method transition
  * @param {ozpIwc.ApiNode} node
- * @param {ozpIwc.PacketContext} [packet] If not provided, FSM assumes initial state trantition.
+ * @param {ozpIwc.PacketContext} [packet] If not provided, FSM assumes initial state transition.
  * @returns {ozpIwc.ApiNode}
  */
 ozpIwc.InFlightIntentFSM.transition = function(node,packet){
@@ -196,12 +198,11 @@ ozpIwc.InFlightIntentFSM.transition = function(node,packet){
     var transist=ozpIwc.InFlightIntentFSM.stateTransitions[node.entity.state];
     if(!transist) {
         // we're in a bad state.  pretty much unrecoverable
-        ozpIwc.InFlightIntentFSM.states.error.call(node, {
+        return ozpIwc.InFlightIntentFSM.states.error.call(node, {
             entity: {
                 error: "Inflight intent is in an invalid state.  Cannot proceed.",
             }
         });
-        return;
     }
 
     transist=transist[packet.entity.state];
@@ -211,4 +212,17 @@ ozpIwc.InFlightIntentFSM.transition = function(node,packet){
     }
 
     return transist.call(node,packet.entity);
+};
+
+/**
+ * Triggers node's state event and returns the node.
+ * @method stateReturn
+ * @param node
+ * @returns {ozpIwc.ApiNode}
+ */
+ozpIwc.InFlightIntentFSM.stateEvent = function(node){
+    if(node.entity && node.entity.state) {
+       ozpIwc.InFlightIntentFSM.events.trigger(node.entity.state,node);
+    }
+    return node;
 };

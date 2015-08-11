@@ -441,11 +441,20 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
                     }
                 });
             })['catch'](function(e){
-                console.log("Error in handling intent: ", e, " -- Clearing in-flight intent node:", res.resource);
-                self.send({
+                ozpIwc.log.log("Error in handling intent: ", e, " -- Reporting error on in-flight intent node:", res.resource);
+                // Respond to the inflight resource
+                return self.send({
                     dst: "intents.api",
+                    contentType: res.contentType,
+                    action: "set",
                     resource: res.resource,
-                    action: "delete"
+                    entity: {
+                        reply: {
+                            'entity': e || {},
+                            'contentType': res.entity.intent.type
+                        },
+                        state: "error"
+                    }
                 });
             });
         },
@@ -749,7 +758,7 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
                 }
                 self.events.trigger("connected");
             })['catch'](function(e){
-                console.log(self.launchParams.inFlightIntent, " not handled, reason: ", e);
+                ozpIwc.log.error(self.launchParams.inFlightIntent, " not handled, reason: ", e);
                 self.events.trigger("connected");
             });
         }

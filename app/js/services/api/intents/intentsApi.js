@@ -129,7 +129,7 @@ ozpIwc.IntentsApi.prototype.handleInflightIntentState=function(inflightNode) {
         default:
             break;
     }
-    return Promise.resolve();
+    return Promise.resolve(inflightNode);
 };
 
 /**
@@ -139,12 +139,76 @@ ozpIwc.IntentsApi.prototype.handleInflightIntentState=function(inflightNode) {
  * @returns {Promise} Resolves when either a preference is gathered or the intent chooser is opened.
  */
 ozpIwc.IntentsApi.prototype.handleChoosing = function(node){
+
+    var useRegisteredChooser = function(intentNode){
+
+        var tryChooser = function(chooser){
+            var packet = ozpIwc.util.clone(chooser.entity.invokeIntent);
+            packet.entity = packet.entity || {};
+            packet.replyTo = chooser.entity.replyTo;
+            packet.entity.inFlightIntent = intentNode.toPacket();
+
+            return self.invokeIntentHandler(packet, '/inFlightIntent/chooser', 'choose', [chooser], '/inFlightIntent/chooser/choose/').then(function(packet){
+                //This is because we are manually using the packetRouter route.
+                var inFlightNode = packet.entity.inFlightIntent;
+                inFlightNode.entity = inFlightNode.entity || {};
+
+                if(inFlightNode.entity.state === "complete"){
+                    return true;
+                } else if(inFlightNode.entity.state === "error"){
+                    throw "err";
+                } else {
+                    var res,rej;
+                    var promise = new Promise(function(resolve,reject){
+                        res = resolve;
+                        rej = reject;
+                    });
+                    var onComplete = function(node){
+                        if(node.resource === inFlightNode.resource) {
+                            ozpIwc.InFlightIntentFSM.off("complete",onComplete);
+                            res(true);
+                        }
+                    };
+                    var onError = function(node){
+                        if(node.resource === inFlightNode.resource) {
+                            ozpIwc.InFlightIntentFSM.off("error",onError);
+                            rej("err");
+                        }
+                    };
+                    ozpIwc.InFlightIntentFSM.on("complete",onComplete);
+                    ozpIwc.InFlightIntentFSM.on("error",onError);
+                    return promise;
+                }
+            });
+        };
+
+        var itterChoosers = function(choosers){
+            if(choosers.length > 0){
+                return tryChooser(choosers[0]).then(function(){
+                    return Promise.resolve();
+                }).catch(function(err){
+                    choosers.shift();
+                    return itterChoosers(choosers);
+                });
+            } else {
+                return Promise.reject("no choosers.");
+            }
+        };
+
+
+        var registeredChoosers = self.matchingNodes('/inFlightIntent/chooser/choose/');
+        return itterChoosers(registeredChoosers);
+    };
+
     var showChooser=function(err) {
-        console.log("Picking chooser because",err);
-        ozpIwc.util.openWindow(ozpIwc.intentsChooserUri, {
-            "ozpIwc.peer": ozpIwc.BUS_ROOT,
-            "ozpIwc.intentSelection": "intents.api" + node.resource
-        },ozpIwc.INTENT_CHOOSER_FEATURES);
+        ozpIwc.log.log("Picking chooser because",err);
+        return useRegisteredChooser(node).catch(function(err){
+            ozpIwc.log.log("launching popup chooser because: ", err);
+            ozpIwc.util.openWindow(ozpIwc.intentsChooserUri, {
+                "ozpIwc.peer": ozpIwc.BUS_ROOT,
+                "ozpIwc.intentSelection": "intents.api" + node.resource
+            }, ozpIwc.INTENT_CHOOSER_FEATURES);
+        });
     };
     var self = this;
     return this.getPreference(node.entity.intent.type+"/"+node.entity.intent.action).then(function(handlerResource) {
@@ -158,9 +222,9 @@ ozpIwc.IntentsApi.prototype.handleChoosing = function(node){
                     }
                 }
             });
-            self.handleInflightIntentState(node);
+            return self.handleInflightIntentState(node);
         } else {
-            showChooser();
+            return showChooser();
         }
     }).catch(showChooser);
 };
@@ -181,7 +245,7 @@ ozpIwc.IntentsApi.prototype.handleDelivering = function(node){
     packet.entity = packet.entity || {};
     packet.replyTo = handlerNode.entity.replyTo;
     packet.entity.inFlightIntent = node.toPacket();
-    console.log(this.logPrefix+"delivering intent:",packet);
+    ozpIwc.log.log(this.logPrefix+"delivering intent:",packet);
     // TODO: packet permissions
     return this.send(packet);
 };
