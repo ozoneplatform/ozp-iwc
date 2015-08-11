@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<head>
+    <title>TEST</title>
+    <script type="text/javascript" src="js/ozpIwc-client.js"></script>
+
+    <script type="text/javascript">
+        var createIframeShim=function() {
+            var iframe = document.createElement("iframe");
+            iframe.addEventListener("load",function() {
+                console.log("Loaded Iframe.");
+            });
+            var url="iframe.html";
+            iframe.src=url;
+            iframe.height=1;
+            iframe.width=1;
+            iframe.setAttribute("area-hidden",true);
+            iframe.setAttribute("hidden",true);
+            iframe.style.setProperty ("display", "none", "important");
+            document.body.appendChild(iframe);
+            console.log(iframe.contentWindow);
+        };
+    </script>
+  </head>
+  <body>
+  </body>
+</html>

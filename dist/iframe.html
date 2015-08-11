@@ -1,0 +1,9 @@
+<script type="text/javascript">
+    var id = Date.now();
+    window.addEventListener('storage', function(evt){
+        console.log(id, evt.newValue);
+    });
+    window.setInterval(function(){
+        localStorage.setItem("x",Date.now());
+    },1000);
+</script>
