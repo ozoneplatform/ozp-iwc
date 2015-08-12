@@ -42,6 +42,11 @@ ozpIwc.PostMessageParticipant=ozpIwc.util.extend(ozpIwc.Participant,function(con
     this.credentials=config.credentials;
 
     /**
+     * @property readyPromise
+     * @type {Promise}
+     */
+    this.readyPromise = config.ready || Promise.resolve();
+    /**
      * The type of the participant.
      * @property participantType
      * @type  String
@@ -107,7 +112,10 @@ ozpIwc.PostMessageParticipant.prototype.handleTransportPacket=function(packet) {
 			"address": this.address
 		}
 	};
-	this.sendToRecipient(reply);
+    var self = this;
+    this.readyPromise.then(function(){
+        self.sendToRecipient(reply);
+    });
 };
 
 
@@ -147,6 +155,7 @@ ozpIwc.PostMessageParticipant.prototype.forwardFromPostMessage=function(packet,e
  * @class PostMessageParticipantListener
  * @param {Object} config
  * @param {ozpIwc.Router} config.router
+ * @param {Promise} config.ready
  */
 ozpIwc.PostMessageParticipantListener=function(config) {
 	config = config || {};
@@ -162,6 +171,12 @@ ozpIwc.PostMessageParticipantListener=function(config) {
      * @type ozpIwc.Router
      */
 	this.router=config.router || ozpIwc.defaultRouter;
+
+    /**
+     * @property readyPromise
+     * @type {Promise}
+     */
+    this.readyPromise = config.ready || Promise.resolve();
 
 	var self=this;
 
@@ -252,7 +267,8 @@ ozpIwc.PostMessageParticipantListener.prototype.receiveFromPostMessage=function(
                 participant = new ozpIwc.PostMessageParticipant({
                     'origin': event.origin,
                     'sourceWindow': event.source,
-                    'credentials': packet.entity
+                    'credentials': packet.entity,
+                    'ready': self.readyPromise
                 });
                 self.router.registerParticipant(participant, packet);
                 self.participants.push(participant);

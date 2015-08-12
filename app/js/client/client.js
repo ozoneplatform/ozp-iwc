@@ -132,19 +132,6 @@ ozpIwc.Client.prototype.connect=function() {
                 // receive postmessage events
                 ozpIwc.util.addEventListener("message", self.postMessageHandler);
                 return self.send({dst: "$transport"});
-            }).then(function(message) {
-
-                //TODO: post v1.0, rework this. Currently delays 1.1 second for the bus to init APIS (which sit on a .5
-                // second delay). These are because of the visibility API blockings.
-
-                var resolve;
-                var busDelayPromise = new Promise(function (res) {
-                    resolve = res;
-                });
-                window.setTimeout(function(){
-                    resolve(message);
-                }, 1100);
-                return busDelayPromise;
             }).then(function(message){
                 self.address = message.dst;
 
