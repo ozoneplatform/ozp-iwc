@@ -29,7 +29,7 @@ ozpIwc.authorization = new ozpIwc.policyAuth.PDP({
     'prp': new ozpIwc.policyAuth.PRP(),
     'setsEndpoint': ozpIwc.policyRootUrl
 });
-
+var enablePostMessageParticipants = function(){};
 
 if (typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
     ozpIwc.initEndpoints(ozpIwc.apiRootUrl || "api");
@@ -45,7 +45,10 @@ if (typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
 
     if (typeof ozpIwc.acceptPostMessageParticipants === "undefined" ||ozpIwc.acceptPostMessageParticipants) {
         ozpIwc.defaultPostMessageParticipantListener = new ozpIwc.PostMessageParticipantListener({
-            router: ozpIwc.defaultRouter
+            router: ozpIwc.defaultRouter,
+            ready: new Promise(function(resolve){
+                enablePostMessageParticipants = resolve;
+            })
         });
     }
 
@@ -57,18 +60,19 @@ if (typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
             ozpIwc.intentsApi = new ozpIwc.IntentsApi({'name': "intents.api"});
             ozpIwc.systemApi = new ozpIwc.SystemApi({'name': "system.api"});
         }
+        enablePostMessageParticipants();
     };
 }
 
 
 new Promise(function(resolve,reject) {
     if (document.visibilityState === undefined || (document.visibilityState !== "prerender" && document.visibilityState !== "unload")) {
-        window.setTimeout(resolve,500);
+        resolve();
     } else {
         document.addEventListener("visibilityChange", function runOnce(e) {
             if (document.visibilityState !== "prerender") {
-                window.setTimeout(resolve,500);
                 document.removeEventListener(runOnce);
+                resolve();
             }
         });
     }

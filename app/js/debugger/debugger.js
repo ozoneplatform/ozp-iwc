@@ -62,18 +62,6 @@ debuggerModule.factory("iwcClient",function() {
             this.connectPromise = new Promise(function(resolve,reject){
                 resolve(self.router.registerParticipant(self));
             }).then(function(addr){
-                //@TODO: This is only because the client library has to delay, thus the debuggers client should delay.
-                //TODO: post v1.0, rework this. Currently delays 1.1 second for the bus to init APIS (which sit on a .5
-                // second delay). These are because of the visibility API blockings.
-                var resolve;
-                var busDelayPromise = new Promise(function (res) {
-                    resolve = res;
-                });
-                window.setTimeout(function(){
-                    resolve(addr);
-                }, 1100);
-                return busDelayPromise;
-            }).then(function(addr){
                 return self.afterConnected(addr);
             });
         }
