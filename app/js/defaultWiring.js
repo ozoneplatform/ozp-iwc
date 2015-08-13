@@ -65,15 +65,4 @@ if (typeof ozpIwc.enableDefault === "undefined" || ozpIwc.enableDefault) {
 }
 
 
-new Promise(function(resolve,reject) {
-    if (document.visibilityState === undefined || (document.visibilityState !== "prerender" && document.visibilityState !== "unload")) {
-        resolve();
-    } else {
-        document.addEventListener("visibilityChange", function runOnce(e) {
-            if (document.visibilityState !== "prerender") {
-                document.removeEventListener(runOnce);
-                resolve();
-            }
-        });
-    }
-}).then(ozpIwc._busInit);
+ozpIwc.util.prerender().then(ozpIwc._busInit);

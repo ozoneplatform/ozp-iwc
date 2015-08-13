@@ -408,3 +408,25 @@ ozpIwc.util.getInternetExplorerVersion= function() {
     }
     return rv;
 };
+
+/**
+ * A promise that resolves when the document is past its prerender state.
+ * @method prerender
+ * @static
+ * @returns {Promise}
+ */
+ozpIwc.util.prerender=function(){
+    return new Promise(function(resolve,reject) {
+        if (document.visibilityState === undefined || (document.visibilityState !== "prerender" &&
+            document.visibilityState !== "unload")) {
+            resolve();
+        } else {
+            document.addEventListener("visibilitychange", function runOnce(e) {
+                if (document.visibilityState !== "prerender") {
+                    document.removeEventListener(runOnce);
+                    resolve();
+                }
+            });
+        }
+    });
+};
