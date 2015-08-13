@@ -93,18 +93,7 @@ ozpIwc.Client.prototype.connect=function() {
          * @property connectPromise
          * @type Promise
          */
-        this.connectPromise=new Promise(function(resolve) {
-            if (document.visibilityState === undefined || (document.visibilityState !== "prerender" && document.visibilityState !== "unload")) {
-                resolve();
-            } else {
-                document.addEventListener("visibilityChange", function runClientOnce(e) {
-                    if (document.visibilityState !== "prerender") {
-                        resolve();
-                        document.removeEventListener(runClientOnce);
-                    }
-                });
-            }
-        }).then(function() {
+        this.connectPromise=ozpIwc.util.prerender().then(function() {
                 // now that we know the url to connect to, find a peer element
                 // currently, this is only via creating an iframe.
                 self.peerUrl=self.peerUrlCheck(self.launchParams.peer);

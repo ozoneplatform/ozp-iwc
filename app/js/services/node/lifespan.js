@@ -94,7 +94,7 @@ ozpIwc.Lifespan.boundFunctionality = {
     shouldDelete: function(lifespan,address){
         var len=address.length;
         for(var i in lifespan.addresses) {
-            if(lifespan.addresses[i].substr(-len) === address) {
+            if(!lifespan.addresses[i] || lifespan.addresses[i].substr(-len) === address) {
                 return true;
             }
         }
