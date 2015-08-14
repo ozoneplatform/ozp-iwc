@@ -1,6 +1,6 @@
 var ozpIwc=ozpIwc || {};
 ozpIwc.version = "1.0.3";
-ozpIwc.log.threshold = 3;
+ozpIwc.log.threshold = 6;
 ozpIwc.ELECTION_TIMEOUT = 3000;
 ozpIwc.heartBeatFrequency = 1000; // 3 seconds
 ozpIwc.apiRootUrl = ozpIwc.apiRootUrl || "/";
