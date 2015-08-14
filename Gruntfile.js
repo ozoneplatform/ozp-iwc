@@ -104,15 +104,25 @@ module.exports = function(grunt) {
             busJs: 'dist/js/<%= pkg.name %>-bus.js',
             clientJs: 'dist/js/<%= pkg.name %>-client.js',
             metricsJs: 'dist/js/<%= pkg.name %>-metrics.js',
+            ngBusJs: 'dist/js/<%= pkg.name %>-bus-angular.js',
+            ngClientJs: 'dist/js/<%= pkg.name %>-client-angular.js',
+            ngMetricsJs: 'dist/js/<%= pkg.name %>-metrics-angular.js',
             debuggerJs: 'dist/js/debugger.js',
             debuggerCss: 'dist/css/debugger.css',
 
             busJsMin: 'dist/js/<%= pkg.name %>-bus.min.js',
             clientJsMin: 'dist/js/<%= pkg.name %>-client.min.js',
             metricsJsMin: 'dist/js/<%= pkg.name %>-metrics.min.js',
+            ngBusJsMin: 'dist/js/<%= pkg.name %>-bus-angular.min.js',
+            ngClientJsMin: 'dist/js/<%= pkg.name %>-client-angular.min.js',
+            ngMetricsJsMin: 'dist/js/<%= pkg.name %>-metrics-angular.min.js',
             debuggerJsMin: 'dist/js/debugger.min.js',
-            allJs: ['<%=output.busJs %>', '<%=output.clientJs %>', '<%=output.metricsJs %>'],
-            allJsMin: ['<%=output.busJsMin %>', '<%=output.clientJsMin %>', '<%=output.metricsJsMin %>'],
+
+
+            allJs: ['<%=output.busJs %>', '<%=output.clientJs %>', '<%=output.metricsJs %>',
+                    '<%=output.ngBusJs %>', '<%=output.ngClientJs %>', '<%=output.ngMetricsJs %>'],
+            allJsMin: ['<%=output.busJsMin %>', '<%=output.clientJsMin %>', '<%=output.metricsJsMin %>',
+                       '<%=output.ngBusJsMin %>', '<%=output.ngClientJsMin %>', '<%=output.ngMetricsJsMin %>'],
             testUnit: [
                 '<%= output.busJsMin %>',
                 '<%= output.clientJsMin %>',
@@ -154,6 +164,56 @@ module.exports = function(grunt) {
             debuggerCss: {
                 src: '<%= src.debuggerCss %>',
                 dest: '<%= output.debuggerCss %>'
+            }
+        },
+        concat: {
+            ngBus: {
+                options: {
+                    banner: 'angular.module(\'ozpIwcBus\', []).factory(\'iwcBus\', function () {\n',
+                    footer: '\n//Return the ozpIwc object\nreturn ozpIwc;\n});'
+                },
+                src: '<%= output.busJs %>',
+                dest: '<%= output.ngBusJs %>'
+            },
+            ngBusMin: {
+                options: {
+                    banner: 'angular.module(\'ozpIwcBus\', []).factory(\'iwcBus\', function () {\n',
+                    footer: '\n//Return the ozpIwc object\nreturn ozpIwc;\n});'
+                },
+                src: '<%= output.busJsMin %>',
+                dest: '<%= output.ngBusJsMin %>'
+            },
+            ngClient: {
+                options: {
+                    banner: 'angular.module(\'ozpIwcClient\', []).factory(\'iwcClient\', function () {\n',
+                    footer: '\n//Return the ozpIwc object\nreturn ozpIwc;\n});'
+                },
+                src: '<%= output.clientJs %>',
+                dest: '<%= output.ngClientJs %>'
+            },
+            ngClientMin: {
+                options: {
+                    banner: 'angular.module(\'ozpIwcClient\', []).factory(\'iwcClient\', function () {\n',
+                    footer: '\n//Return the ozpIwc object\nreturn ozpIwc;\n});'
+                },
+                src: '<%= output.clientJsMin %>',
+                dest: '<%= output.ngClientJsMin %>'
+            },
+            ngMetrics: {
+                options: {
+                    banner: 'angular.module(\'ozpIwcMetrics\', []).factory(\'iwcMetrics\', function () {\n',
+                    footer: '\n//Return the ozpIwc object\nreturn ozpIwc;\n});'
+                },
+                src: '<%= output.metricsJs %>',
+                dest: '<%= output.ngMetricsJs %>'
+            },
+            ngMetricsMin: {
+                options: {
+                    banner: 'angular.module(\'ozpIwcMetrics\', []).factory(\'iwcMetrics\', function () {\n',
+                    footer: '\n//Return the ozpIwc object\nreturn ozpIwc;\n});'
+                },
+                src: '<%= output.metricsJsMin %>',
+                dest: '<%= output.ngMetricsJsMin %>'
             }
         },
         uglify: {
@@ -461,7 +521,7 @@ module.exports = function(grunt) {
     });
     // Default task(s).
     grunt.registerTask('build', "Concat and minify the source code into dist",
-        ['copy:hackBootstrap', 'jshint', 'concat_sourcemap','uglify', 'copy:dist','shell:buildVersionFile']
+        ['copy:hackBootstrap', 'jshint', 'concat_sourcemap','uglify','concat', 'copy:dist','shell:buildVersionFile']
     );
     grunt.registerTask('karmaTests', "Runs the unit and integration tests.",
         ['build','karma:unit','connect:testBus','connect:mockParticipant', 'karma:integrationClient', 'karma:integrationBus']
