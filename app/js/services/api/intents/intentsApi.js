@@ -147,6 +147,7 @@ ozpIwc.IntentsApi.prototype.handleChoosing = function(node){
             packet.entity = packet.entity || {};
             packet.replyTo = chooser.entity.replyTo;
             packet.entity.inFlightIntent = intentNode.toPacket();
+            packet.entity.force = (ozpIwc.util.getInternetExplorerVersion() === 11);
 
             return self.invokeIntentHandler(packet, '/inFlightIntent/chooser', 'choose', [chooser], '/inFlightIntent/chooser/choose/').then(function(packet){
                 //This is because we are manually using the packetRouter route.
@@ -203,11 +204,18 @@ ozpIwc.IntentsApi.prototype.handleChoosing = function(node){
     var showChooser=function(err) {
         ozpIwc.log.log("Picking chooser because",err);
         return useRegisteredChooser(node).catch(function(err){
-            ozpIwc.log.log("launching popup chooser because: ", err);
-            ozpIwc.util.openWindow(ozpIwc.intentsChooserUri, {
-                "ozpIwc.peer": ozpIwc.BUS_ROOT,
-                "ozpIwc.intentSelection": "intents.api" + node.resource
-            }, ozpIwc.INTENT_CHOOSER_FEATURES);
+
+            if(ozpIwc.util.getInternetExplorerVersion() !== 11) {
+                ozpIwc.log.log("launching popup chooser because: ", err);
+                ozpIwc.util.openWindow(ozpIwc.intentsChooserUri, {
+                    "ozpIwc.peer": ozpIwc.BUS_ROOT,
+                    "ozpIwc.intentSelection": "intents.api" + node.resource
+                }, ozpIwc.INTENT_CHOOSER_FEATURES);
+            } else {
+                ozpIwc.log.error("Failed to handle intent choosing: Internet Explorer 11 is not supported"+
+                " for the default intent chooser.");
+                node = ozpIwc.InFlightIntentFSM.transition(node,{ state: "error"});
+            }
         });
     };
     var self = this;
