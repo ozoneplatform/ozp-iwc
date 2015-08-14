@@ -398,10 +398,18 @@ ozpIwc.util.isIWCPacket=function(packet) {
  */
 ozpIwc.util.getInternetExplorerVersion= function() {
     var rv = -1; // Return value assumes failure.
+    var ua, re;
     if (navigator.appName === 'Microsoft Internet Explorer')
     {
-        var ua = navigator.userAgent;
-        var re  = /MSIE ([0-9]{1,}[\.0-9]{0,})/;
+        ua = navigator.userAgent;
+        re  = /MSIE ([0-9]{1,}[\.0-9]{0,})/;
+        if (re.exec(ua) !== null) {
+            rv = parseFloat(RegExp.$1);
+        }
+    }   else if (navigator.appName === 'Netscape')
+    {
+        ua = navigator.userAgent;
+        re  = /Trident\/.*rv:([0-9]{1,}[\.0-9]{0,})/;
         if (re.exec(ua) !== null) {
             rv = parseFloat(RegExp.$1);
         }
