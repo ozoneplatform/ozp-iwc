@@ -5,9 +5,9 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
-        <title>Introduction | Inter-Widget Communication (IWC)</title>
+        <title>FAQs | Inter-Widget Communication (IWC)</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <meta name="description" content="The Ozone Platform&#39;s Inter-Widget Communications (IWC) enables loosely coupled integration of webapplications by applying the best practices of enterprise service buses and service-orientedarchitecture to a completely in-browser system that works across multiple tabs and windows.Applications can share data and services then use the data and services offered by others to enrichtheir own user experience.">
+        <meta name="description" content="">
         <meta name="generator" content="GitBook 1.5.0">
         <meta name="HandheldFriendly" content="true"/>
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
@@ -20,6 +20,8 @@
     
     
     
+    <link rel="prev" href="./core_apis/names/overview.html" />
+    
 
         
     </head>
@@ -30,7 +32,7 @@
 
 
         
-    <div class="book" data-level="0" data-basepath="." data-revision="1440171564750">
+    <div class="book" data-level="3" data-basepath="." data-revision="1440168704001">
     
 
 <div class="book-summary">
@@ -48,7 +50,7 @@
         
     
         
-        <li class="chapter active" data-level="0" data-path="index.html">
+        <li class="chapter " data-level="0" data-path="index.html">
             
                 
                     <a href="./index.html">
@@ -558,7 +560,7 @@
         </li>
     
         
-        <li class="chapter " data-level="3" data-path="FAQ.html">
+        <li class="chapter active" data-level="3" data-path="FAQ.html">
             
                 
                     <a href="./FAQ.html">
@@ -926,24 +928,35 @@
                 <div class="page-inner">
                 
                 
-                    <section class="normal" id="section-gitbook_2">
+                    <section class="normal" id="section-gitbook_1">
                     
-                        <h1 id="inter-widget-communication">Inter Widget Communication</h1>
-<p>The Ozone Platform&#39;s Inter-Widget Communications (IWC) enables loosely coupled integration of web
-applications by applying the best practices of enterprise service buses and service-oriented
-architecture to a completely in-browser system that works across multiple tabs and windows.
-Applications can share data and services then use the data and services offered by others to enrich
-their own user experience.</p>
-<h4 id="lightweight-integration">Lightweight Integration</h4>
-<p>Today’s rich web applications tend to carry more state than a simple link can convey, and
-componentized development allows UI elements to be embedded, but at the cost of maintenance
-and application size. The IWC allows application frontends to expose data and services to other
-applications within the browser. Just like services on an ESB, these elements can be developed,
-deployed, and extended without impact to other applications.</p>
-<h4 id="stays-out-of-the-way">Stays out of the way.</h4>
-<p>The IWC is designed to minimize the impact on your application. It is completely agnostic to the
-application presentation, including a tiny client library that adds a single, invisible element to
-your page. It uses standard web technologies requiring no browser plugins.</p>
+                        <h2 id="frequently-asked-questions">Frequently Asked Questions</h2>
+<h4 id="what-browser-technologies-does-the-iwc-use-to-communicate">What browser technologies does the IWC use to communicate?</h4>
+<p>The IWC has been designed to adapt to communication capabilities based on the users browser version. Currently 
+the IWC operates using local storage as its lowest level transport (cross domain client to client communications), 
+and window.postMessage to communicate between the client libraries and the bus.</p>
+<h4 id="why-use-the-iwc-over-just-windowpostmessage">Why use the IWC over just window.postMessage?</h4>
+<p>PostMessage requires reference of the window which will receive the message, this limits communication to a
+point-to-point topology. The IWC at it&#39;s lowest level is a bus topology. It uses bus topology underneath it&#39;s 
+PostMessage point-to-point (client library to it&#39;s bus connection) to communicate across all bus connections using
+localStorage. This adds a layer of abstraction for the IWC-using widget such that it does not need to maintain 
+knowledge of open IWC connections of different domains as the bus transport layer takes care of it.</p>
+<h4 id="why-cant-i-use-the-system-api-to-register-an-application">Why can&#39;t I use the system API to register an application?</h4>
+<p>Application registration for a bus is on an administrative level. Deployed Ozone platforms are intended to
+maintain user based application registrations. The system API is read only.</p>
+<h4 id="how-do-i-know-if-another-iwc-widget-is-registered-to-handle-my-widgets-intent-invocation">How do I know if another IWC widget is registered to handle my widget&#39;s intent invocation?</h4>
+<p>Individual application listings in the system API contain information about intents the widget claims to be 
+registered for. The IWC is aware of opened applications and will open a chooser window should more than 1 open
+widget be registered to handle said intent.</p>
+<h4 id="can-the-iwc-open-a-widget-to-handle-an-my-widgets-intent-invocation">Can the IWC open a widget to handle an my widget&#39;s intent invocation?</h4>
+<p>It is planned to direct the user to a choosing dialog for opening widgets to handle an intent invocation. It
+has not been implemented at this time.</p>
+<h4 id="can-the-iwc-retain-my-choice-when-choosing-a-widget-to-handle-my-widgets-intent-invocation">Can the IWC retain my choice when choosing a widget to handle my widget&#39;s intent invocation?</h4>
+<p>It is planned to allow users to store their choices for intent decisions. This is in development but not
+available at this time.</p>
+<h4 id="is-there-documentation-on-commonly-used-intents-and-the-data-they-expect">Is there documentation on commonly used intents and the data they expect?</h4>
+<p>At the current stage of development there is not a definitive list of commonly used intents. As the platform continues
+to grow this will be addressed and documented.</p>
 
                     
                     </section>
@@ -953,6 +966,8 @@ your page. It uses standard web technologies requiring no browser plugins.</p>
             </div>
         </div>
 
+        
+        <a href="./core_apis/names/overview.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Names API"><i class="fa fa-angle-left"></i></a>
         
         
     </div>

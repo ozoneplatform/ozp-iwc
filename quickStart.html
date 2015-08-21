@@ -5,9 +5,9 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
-        <title>Introduction | Inter-Widget Communication (IWC)</title>
+        <title>Quick Start | Inter-Widget Communication (IWC)</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <meta name="description" content="The Ozone Platform&#39;s Inter-Widget Communications (IWC) enables loosely coupled integration of webapplications by applying the best practices of enterprise service buses and service-orientedarchitecture to a completely in-browser system that works across multiple tabs and windows.Applications can share data and services then use the data and services offered by others to enrichtheir own user experience.">
+        <meta name="description" content="">
         <meta name="generator" content="GitBook 1.5.0">
         <meta name="HandheldFriendly" content="true"/>
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
@@ -19,6 +19,10 @@
         
     
     
+    <link rel="next" href="./getting_started/api/apis.html" />
+    
+    
+    <link rel="prev" href="./getting_started/connecting.html" />
     
 
         
@@ -30,7 +34,7 @@
 
 
         
-    <div class="book" data-level="0" data-basepath="." data-revision="1440171564750">
+    <div class="book" data-level="1.5" data-basepath="." data-revision="1440171564750">
     
 
 <div class="book-summary">
@@ -48,7 +52,7 @@
         
     
         
-        <li class="chapter active" data-level="0" data-path="index.html">
+        <li class="chapter " data-level="0" data-path="index.html">
             
                 
                     <a href="./index.html">
@@ -135,7 +139,7 @@
         </li>
     
         
-        <li class="chapter " data-level="1.5" data-path="quickStart.html">
+        <li class="chapter active" data-level="1.5" data-path="quickStart.html">
             
                 
                     <a href="./quickStart.html">
@@ -926,24 +930,130 @@
                 <div class="page-inner">
                 
                 
-                    <section class="normal" id="section-gitbook_2">
+                    <section class="normal" id="section-gitbook_51">
                     
-                        <h1 id="inter-widget-communication">Inter Widget Communication</h1>
-<p>The Ozone Platform&#39;s Inter-Widget Communications (IWC) enables loosely coupled integration of web
-applications by applying the best practices of enterprise service buses and service-oriented
-architecture to a completely in-browser system that works across multiple tabs and windows.
-Applications can share data and services then use the data and services offered by others to enrich
-their own user experience.</p>
-<h4 id="lightweight-integration">Lightweight Integration</h4>
-<p>Today’s rich web applications tend to carry more state than a simple link can convey, and
-componentized development allows UI elements to be embedded, but at the cost of maintenance
-and application size. The IWC allows application frontends to expose data and services to other
-applications within the browser. Just like services on an ESB, these elements can be developed,
-deployed, and extended without impact to other applications.</p>
-<h4 id="stays-out-of-the-way">Stays out of the way.</h4>
-<p>The IWC is designed to minimize the impact on your application. It is completely agnostic to the
-application presentation, including a tiny client library that adds a single, invisible element to
-your page. It uses standard web technologies requiring no browser plugins.</p>
+                        <h2 id="quick-start">Quick Start</h2>
+<p>The purpose of this guide is to get a base hosting of the IWC running locally.</p>
+<h2 id="building-and-running-the-bus-includes-a-static-mock-backend">Building and Running the Bus (includes a static mock-backend)</h2>
+<ol>
+<li>Install node.js.</li>
+<li>sudo npm install -g grunt-cli bower</li>
+<li>git clone git@github.com:ozone-development/ozp-iwc.git</li>
+<li>cd ozp-iwc</li>
+<li>git submodule init &amp;&amp; git submodule update</li>
+<li>npm install &amp;&amp; bower install</li>
+<li>grunt connect-all</li>
+<li>Browse to <a href="http://localhost:14000" target="_blank">http://localhost:14000</a> for an index of samples and tests.</li>
+</ol>
+<h2 id="connecting-a-javascript-entity-to-the-bus">Connecting a Javascript entity to the Bus</h2>
+<ol>
+<li><p>Include the IWC&#39;s client library to your html.        </p>
+<ul>
+<li><p><strong>If using bower</strong>: Include the ozp-iwc library to your bower dependencies. Then reference the bower_component 
+file.</p>
+<pre><code>  bower install ozp-iwc --save-dev
+</code></pre><pre><code>  &lt;script src=&quot;&lt;relative pathing for project&gt;/bower_components/ozp-iwc-/dist/js/ozpIwc-client.min.js&quot;&gt;&lt;/script&gt;
+</code></pre></li>
+<li><p><strong>Not using bower</strong>: Copy the library (dist/js/ozpIwc-client.min.js) into your widget&#39;s project and refer to it 
+with the script tag.</p>
+<pre><code>  &lt;script src=&quot;&lt;relative pathing for project&gt;/ozpIwc-client.min.js&quot;&gt;&lt;/script&gt;
+</code></pre></li>
+</ul>
+</li>
+<li><p>Create a IWC client</p>
+<pre><code>var client = new ozpIwc.Client({ peerUrl: &quot;http://localhost:13000&quot;});
+</code></pre></li>
+<li><p>Test that the client can connect</p>
+<pre><code>client.connect().then(function(){
+     console.log(&quot;IWC Client connected with address:&quot;, client.address);
+ }).catch(function(err){
+     console.log(&quot;IWC Client failed to connect:&quot;, err);
+ });
+</code></pre></li>
+</ol>
+<h2 id="key-value-capabilities">Key-Value capabilities</h2>
+<ol>
+<li><p>Storing </p>
+<pre><code>     var value = {
+         size: &quot;medium&quot;,
+         quantity: 1,
+         color: &quot;red&quot;
+     };
+
+     client.data().set(&quot;/t-shirt/Style01&quot;,{entity: value});
+</code></pre></li>
+<li><p>Retrieving</p>
+<pre><code>    var value;
+
+    client.data().get(&quot;/t-shirt/Style01&quot;).then(function(resp){
+        value = resp.entity;
+    });
+</code></pre></li>
+<li><p>Watching</p>
+<pre><code>     var onChange = function(resp){
+         console.log(&quot;Old value:&quot;, resp.entity.oldValue);
+         console.log(&quot;New value:&quot;, resp.entity.newValue);
+     };
+
+     client.data().watch(&quot;/t-shirt/Style01&quot;,onChange);
+</code></pre></li>
+</ol>
+<h2 id="application-capabilities">Application capabilities</h2>
+<ol>
+<li><p>Listing applications registered to the bus</p>
+<pre><code> var applications;
+
+ client.system().get(&quot;/application&quot;).then(function(resp){
+     applications = resp.entity;
+ });
+</code></pre></li>
+<li><p>Launching an application registered to the bus</p>
+<pre><code>     var application = &quot;/application/1234&quot;;
+
+     client.system().launch(application);
+</code></pre></li>
+</ol>
+<h2 id="intent-capabilities">Intent capabilities</h2>
+<ol>
+<li><p>Registering an intent</p>
+<pre><code>     var intent = &quot;/application/json/print&quot;;
+
+     var config = {
+         entity: {
+             type: &quot;/application/json&quot;,
+             action: &quot;print&quot;,
+             icon: &quot;printIcon.png&quot;,
+             label: &quot;Console logs data received from the invoker&quot;
+         }
+     };
+
+     var onInvoke = function(resp){
+             console.log(&quot;Intent invoked with the following data:&quot;, resp.entity);
+     };
+
+     client.intents().register(intent, config, onInvoke);
+</code></pre></li>
+<li><p>Invoking an intent</p>
+<pre><code>     var intent = &quot;/application/json/print&quot;;
+     var value = {
+         size: &quot;medium&quot;,
+         quantity: 1,
+         color: &quot;red&quot;
+     };
+
+     client.intents().invoke(intent,value);
+</code></pre></li>
+<li><p>Broadcasting an intent (all registrants will handle)</p>
+<pre><code>     var intent = &quot;/application/json/print&quot;;
+     var value = {
+         size: &quot;medium&quot;,
+         quantity: 1,
+         color: &quot;red&quot;
+     };
+
+     client.intents().broadcast(intent,value);
+</code></pre></li>
+</ol>
 
                     
                     </section>
@@ -954,6 +1064,10 @@ your page. It uses standard web technologies requiring no browser plugins.</p>
         </div>
 
         
+        <a href="./getting_started/connecting.html" class="navigation navigation-prev " aria-label="Previous page: Connecting to the Bus"><i class="fa fa-angle-left"></i></a>
+        
+        
+        <a href="./getting_started/api/apis.html" class="navigation navigation-next " aria-label="Next page: APIs"><i class="fa fa-angle-right"></i></a>
         
     </div>
 </div>

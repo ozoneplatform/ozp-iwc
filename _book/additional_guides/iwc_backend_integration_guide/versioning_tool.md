@@ -1,0 +1,2 @@
+##Versioning
+The IWC follows Semantic Versioning. To check the version of a deployed IWC bus, reference the `bower.json` or `package.json` file of the bower_components/ozp-iwc (version reference currently not available in the dist directory)
