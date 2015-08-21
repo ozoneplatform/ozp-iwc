@@ -20,9 +20,8 @@ presentation, including a tiny client library that adds a single, invisible elem
 
 Links
 --------------
-  * [Quick Start](docs/iwc_guide/quickStart.md)
-  * [FAQ](docs/iwc_guide/FAQ.md)
-  * [Developer's Guide](docs/iwc_guide/SUMMARY.md)
+  * [Quick Start](http://ozone-development.github.io/ozp-iwc/quickStart.html)
+  * [FAQ](http://ozone-development.github.io/ozp-iwc/FAQ.html)
 
 
 Demo
