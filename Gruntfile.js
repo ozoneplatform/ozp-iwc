@@ -450,6 +450,7 @@ module.exports = function(grunt) {
                     'git tag -a "<%= pkg.version %>" -m "chore(release): <%= pkg.version %>"',
                     'git tag -a "release/<%= pkg.version %>" -m "chore(release): <%= pkg.version %>"',
                     'git push origin <% pkg.version %> --tags',
+                    'grunt update-gh-pages',
                     'git checkout master'
                 ].join('&&')
             },
@@ -507,6 +508,20 @@ module.exports = function(grunt) {
                     logConcurrentOutput: true
                 }
             }
+        },
+        gitbook: {
+            development: {
+                output: "_book",
+                input: "./docs/iwc_guide",
+                title: "Inter-Widget Communication (IWC)",
+                github: "ozone-development/ozp-iwc"
+            }
+        },
+        'gh-pages': {
+            options: {
+                base: "_book"
+            },
+            src: ["**"]
         }
 
     };
@@ -549,6 +564,9 @@ module.exports = function(grunt) {
     );
     grunt.registerTask('releaseMajor',
         ['build','karma:unit','bump:major','readpkg', 'shell:releaseGit']
+    );
+    grunt.registerTask('update-gh-pages',
+        ['gitbook', 'gh-pages']
     );
     grunt.registerTask('default',
         ['dist']
