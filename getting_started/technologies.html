@@ -34,7 +34,7 @@
 
 
         
-    <div class="book" data-level="1.2" data-basepath=".." data-revision="1440184886727">
+    <div class="book" data-level="1.2" data-basepath=".." data-revision="1440184990956">
     
 
 <div class="book-summary">
@@ -965,7 +965,7 @@
 <h3 id="iwc-client">IWC Client</h3>
 <p>This communication through an iframe marks the separation of the two IWC libraries, <code>ozpIwc-client.js</code> and <code>ozpIwc-bus.js</code>. All code ran by the <code>ozpIwc-client.js</code> acts as a representative of the bus for a widget to communicate through. This library has no server communication. Widget developers will only use the IWC client library for their widget, so only an understanding of <a href="connecting.html">connecting a client</a> and the <a href="../core_apis/overview.html">client API calls</a>  are necessary to develop.</p>
 <p>Widgets will show no visible trace its use of iframes and PostMessage to communicate with the IWC bus because the IWC client library generates the iframe to be hidden and have no size. </p>
-<p>To have a common point to load the IWC bus libraries, each IWC client instance, when connecting, will load the common domain website into the iframe. For simplicity, the IWC bus library is packaged up in a <code>iframe_peer.html</code> file, such that when connecting a client, it simply sets a <code>peerUrl</code> parameter to the <strong>path that holds the iframe_peer.html file</strong>. </p>
+<p>To have a common point to load the IWC bus libraries, each IWC client instance, when connecting, will load the common domain website into the iframe. For simplicity, the IWC bus library is packaged up in a <code>iframe_peer.html</code> file, such that when connecting a client, it simply sets a <code>peerUrl</code> parameter to the path that holds the iframe_peer.html file. </p>
 <p>In other terms, if the IWC bus is available at <a href="http://www.iwchost.com/iframe_peer.html" target="_blank">http://www.iwchost.com/iframe_peer.html</a>, any widget that creates an IWC client to connect as follows will have access to use that bus: </p>
 <pre><code>var client = new OzpIwc.Client({peerUrl: &quot;http://www.iwchost.com&quot;});
 </code></pre><h3 id="iwc-bus">IWC Bus</h3>
@@ -973,10 +973,12 @@
 <p>The reason these widgets must load the <code>iframe_peer.html</code> from a common domain (<a href="http://www.iwchost.com" target="_blank">http://www.iwchost.com</a>) flows back to the use of <strong>LocalStorage</strong>. In order to communicate locally through the key-value store, a common domain must be used. Thus, loading a resource on the common domain opens up the ability to use this communication practice. </p>
 <p>Each IWC client loads an instance of the IWC bus. By using a distributed consensus algorithm, a single instance of the bus will act upon requests and the other instances will sit and wait incase they need to take over leadership.</p>
 <p><strong>The IWC bus can communicate back to a server if desired.</strong> While the IWC without any server communication is powerful all in its own it can be encorporated with a backend server for:</p>
-<pre><code>1. The ability to persist data for saved state and future application use.
-2. Loading information to alow users to launch widgets ready for use on the bus.
-3. Attribute-based access control.
-</code></pre><p>Further information on server communication of the IWC can be found in the <a href="serverComms.html">Server Communication</a> section.</p>
+<ol>
+<li>The ability to persist data for saved state and future application use.</li>
+<li>Loading information to alow users to launch widgets ready for use on the bus.</li>
+<li>Attribute-based access control.</li>
+</ol>
+<p>Further information on server communication of the IWC can be found in the <a href="serverComms.html">Server Communication</a> section.</p>
 <h3 id="xmlhttprequest">XMLHttpRequest</h3>
 <p>XMLHttpRequest (AJAX) is used by the IWC bus library to gather bus information from its corresponding server if configured to do so.</p>
 
