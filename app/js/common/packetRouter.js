@@ -144,7 +144,7 @@ ozpIwc.PacketRouter.prototype.filterChain=function(packet,context,pathParams,rou
       return self.filterChain(packet,context,pathParams,routeSpec,thisPointer,filters);
   });
   if(!filterCalled) {
-      ozpIwc.log.info("Filter did not call next() and did not throw an exception",currentFilter);
+      ozpIwc.log.debug("Filter did not call next() and did not throw an exception",currentFilter);
   } else {
       ozpIwc.log.debug("Filter returned ", returnValue);
   }

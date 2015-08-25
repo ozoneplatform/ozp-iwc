@@ -1,8 +1,9 @@
 var ozpIwc=ozpIwc || {};
-ozpIwc.version = "1.0.3";
+ozpIwc.version = "1.0.10";
 ozpIwc.log.threshold = 6;
+ozpIwc.legacySupport = true;
 ozpIwc.ELECTION_TIMEOUT = 3000;
-ozpIwc.heartBeatFrequency = 1000; // 3 seconds
+ozpIwc.heartBeatFrequency = 20000; // 3 seconds
 ozpIwc.apiRootUrl = ozpIwc.apiRootUrl || "/";
 ozpIwc.policyRootUrl = ozpIwc.policyRootUrl || "/policy";
 ozpIwc.basicAuthUsername= ozpIwc.basicAuthUsername || '';

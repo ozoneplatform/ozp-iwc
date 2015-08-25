@@ -441,7 +441,8 @@ ozpIwc.ApiPromiseMixin.getCore = function() {
                     }
                 });
             })['catch'](function(e){
-                ozpIwc.log.log("Error in handling intent: ", e, " -- Reporting error on in-flight intent node:", res.resource);
+                ozpIwc.log.error("Error in handling intent: ", e, " -- Reporting error on in-flight intent node:",
+                    res.resource);
                 // Respond to the inflight resource
                 return self.send({
                     dst: "intents.api",
