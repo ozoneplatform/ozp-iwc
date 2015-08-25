@@ -159,7 +159,7 @@ ozpIwc.SystemApi.declareRoute({
     resource: "/application/{id}",
     filters: ozpIwc.standardApiFilters.getFilters()
 }, function(packet, context, pathParams) {
-    ozpIwc.log.info(this.logPrefix+" launching ",packet.entity);
+    ozpIwc.log.debug(this.logPrefix+" launching ",packet.entity);
     this.participant.send({
         dst: "intents.api",
         contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
@@ -180,7 +180,7 @@ ozpIwc.SystemApi.declareRoute({
     resource: "/launchNewWindow",
     filters: []
 }, function(packet,context,pathParams) {
-    ozpIwc.log.info(this.logPrefix+" handling launchdata ",packet.entity);
+    ozpIwc.log.debug(this.logPrefix+" handling launchdata ",packet.entity);
     if(packet.entity && packet.entity.inFlightIntent){
         ozpIwc.util.openWindow(packet.entity.inFlightIntent.entity.entity.url,{
             "ozpIwc.peer":ozpIwc.BUS_ROOT,

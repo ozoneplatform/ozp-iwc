@@ -178,6 +178,9 @@ ozpIwc.util.structuredCloneSupport=function() {
         return ozpIwc.util.structuredCloneSupportCache;
     }
     var cloneSupport = 'postMessage' in window;
+    if(ozpIwc.legacySupport){
+        cloneSupport = false;
+    }
     //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
     try {
         window.postMessage({
@@ -193,8 +196,6 @@ ozpIwc.util.structuredCloneSupport=function() {
     return ozpIwc.util.structuredCloneSupportCache;
 };
 
-ozpIwc.util.structuredCloneSupport.cache=undefined;
-
 /**
  * Does a deep clone of a serializable object.  Note that this will not
  * clone unserializable objects like DOM elements, Date, RegExp, etc.
@@ -208,7 +209,7 @@ ozpIwc.util.clone=function(value) {
         try {
             return JSON.parse(JSON.stringify(value));
         } catch (e) {
-            ozpIwc.log.log(e);
+            ozpIwc.log.error(e);
         }
 	} else {
 		return value;

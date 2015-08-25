@@ -343,7 +343,7 @@ ozpIwc.Router.prototype.registerParticipant=function(participant,packet) {
 
     if(registerEvent.canceled){
         // someone vetoed this participant
-        ozpIwc.log.log("registeredParticipant[DENIED] origin:"+participant.origin+
+        ozpIwc.log.info("registeredParticipant[DENIED] origin:"+participant.origin+
             " because " + registerEvent.cancelReason);
         return null;
     }
@@ -434,7 +434,8 @@ ozpIwc.Router.prototype.registerMulticast=function(participant,multicastGroups) 
 
             self.events.trigger("registeredMulticast", registeredEvent);
         } else {
-            ozpIwc.log.log("no address for " +  participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
+            ozpIwc.log.info("no address for " + participant.participantType + " " + participant.name + "with address " +
+                participant.address + " for group " + groupName);
         }
         //ozpIwc.log.log("registered " + participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
     });

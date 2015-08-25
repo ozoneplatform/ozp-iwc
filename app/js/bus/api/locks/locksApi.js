@@ -151,7 +151,7 @@ ozpIwc.LocksApi.prototype.cleanup = function(){
  * @param {String} state
  */
 ozpIwc.LocksApi.prototype.handleConsensusState = function(state){
-    ozpIwc.log.info("[" + this.participant.address + "] State: ", state);
+    ozpIwc.log.debug("[" + this.participant.address + "] State: ", state);
     switch(state){
         case "coordinator":
             this.deliverRequestQueue();
@@ -279,7 +279,7 @@ ozpIwc.LocksApi.declareRoute({
     filters: ozpIwc.standardApiFilters.setFilters(ozpIwc.LocksNode)
 }, function(packet,context,pathParams) {
     packet.entity = packet.entity || {};
-    ozpIwc.log.info("[locks.api"+ context.node.resource +"][UNLOCK]: ", packet.src);
+    ozpIwc.log.debug("[locks.api"+ context.node.resource +"][UNLOCK]: ", packet.src);
     if(context.node) {
         this.updateLock(context.node, context.node.unlock({
             src: packet.entity.src || packet.src,
@@ -301,7 +301,7 @@ ozpIwc.LocksApi.declareRoute({
  */
 ozpIwc.LocksApi.prototype.updateLock=function(node,newOwner) {
     if(newOwner){
-        ozpIwc.log.info("[locks.api"+ node.resource +"][NEW LEADER]",newOwner);
+        ozpIwc.log.debug("[locks.api"+ node.resource +"][NEW LEADER]",newOwner);
         var pkt = {
             'dst': newOwner.src,
             'src': this.participant.name,
@@ -315,7 +315,5 @@ ozpIwc.LocksApi.prototype.updateLock=function(node,newOwner) {
         } else {
             this.participant.send(pkt);
         }
-    } else {
-        ozpIwc.log.info("[locks.api"+ node.resource +"][SAME LEADER] queue:", JSON.stringify(node.entity.queue));
     }
 };

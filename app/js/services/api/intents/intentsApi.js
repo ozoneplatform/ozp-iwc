@@ -202,11 +202,11 @@ ozpIwc.IntentsApi.prototype.handleChoosing = function(node){
     };
 
     var showChooser=function(err) {
-        ozpIwc.log.log("Picking chooser because",err);
+        ozpIwc.log.info("Picking chooser because",err);
         return useRegisteredChooser(node).catch(function(err){
 
             if(ozpIwc.util.getInternetExplorerVersion() !== 11) {
-                ozpIwc.log.log("launching popup chooser because: ", err);
+                ozpIwc.log.info("launching popup chooser because: ", err);
                 ozpIwc.util.openWindow(ozpIwc.intentsChooserUri, {
                     "ozpIwc.peer": ozpIwc.BUS_ROOT,
                     "ozpIwc.intentSelection": "intents.api" + node.resource
@@ -253,7 +253,7 @@ ozpIwc.IntentsApi.prototype.handleDelivering = function(node){
     packet.entity = packet.entity || {};
     packet.replyTo = handlerNode.entity.replyTo;
     packet.entity.inFlightIntent = node.toPacket();
-    ozpIwc.log.log(this.logPrefix+"delivering intent:",packet);
+    ozpIwc.log.debug(this.logPrefix+"delivering intent:",packet);
     // TODO: packet permissions
     return this.send(packet);
 };
