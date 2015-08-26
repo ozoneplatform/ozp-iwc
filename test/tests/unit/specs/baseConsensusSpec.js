@@ -2,11 +2,11 @@ describe("Base Consensus",function() {
     var consensus = null;
     beforeEach(function(){
         consensus = new ozpIwc.consensus.BaseConsensus({
-            'name': "fake"
+            'name': "fake",
+            'routePacket': function(){
+                //drop it
+            }
         });
-        consensus.routePacket = function(){
-            //drop it
-        };
     });
     afterEach(function(){
         consensus = null;

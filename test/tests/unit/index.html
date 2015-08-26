@@ -10,51 +10,13 @@
         <script type="text/javascript" src="/jasmine-core/jasmine.js"></script>
         <script type="text/javascript" src="../../jasmine-iwc-html-reporter.js"></script>
         <script type="text/javascript" src="/jasmine-core/boot.js"></script>
-        <script type="text/javascript">
-            // These should be customized by the deployment
-            var ozpIwc = ozpIwc || {};
-            ozpIwc.enableDefault = false;
-        </script>
         <script type="text/javascript" src="/js/ozpIwc-bus.js"></script>
-        <!--script type="text/javascript" src="/js/ozpIwc-client.js"></script-->
-        <script type="text/javascript">
-
-            ozpIwc.log.setThreshold(ozpIwc.log.ALL);
-
-            ozpIwc.defaultPeer = new ozpIwc.Peer();
-            ozpIwc.defaultRouter = new ozpIwc.Router({
-                peer: ozpIwc.defaultPeer,
-                heartbeatFrequency: 99999999
-            });
-
-
-            // All unit tests need to fake out the clock
-            var now = function() {
-                return Date.now();
-            };
-            var start;
-            beforeEach(function() {
-                start = now();
-                jasmine.clock().install();
-            });
-            afterEach(function() {
-                jasmine.clock().uninstall();
-                ozpIwc.object.eachEntry(ozpIwc.util.eventListeners, function(type, listenerList) {
-                    if (listenerList.length) {
-                        console.log("Dangling listeners on " + type, listenerList);
-                    }
-                });
-                ozpIwc.util.purgeEventListeners();
-                expect(now() - start).toBeLessThan(15000);
-            });
-
-        </script>
-
+        <script type="text/javascript" src="/lib/testWiring.js"></script>
 
         <script type="text/javascript" src="/lib/testTools.js"></script>
         <script type="text/javascript" src="/lib/mockTime.js"></script>
         <script type="text/javascript" src="/lib/jasmine-promises.js"></script>
-        <script type="text/javascript" src="mockObjects.js"></script>
+        <script type="text/javascript" src="../../lib/mockObjects.js"></script>
 
 
         <!-- include spec files here... -->
@@ -121,17 +83,6 @@
         <script type="text/javascript" src="specs/baseConsensusSpec.js"></script>
         <script type="text/javascript" src="specs/bullyConsensusSpec.js"></script>
 
-        <!-- Legacy tests, probably not needed
-        <script type="text/javascript" src="specs/api/dataApiValueSpec.js"></script>
-        <script type="text/javascript" src="specs/api/dataApiSpec.js"></script>
-
-        <script type="text/javascript" src="specs/api/intentApiDataValuesSpec.js"></script>
-        <script type="text/javascript" src="specs/api/intentApiSpec.js"></script>
-
-        <script type="text/javascript" src="specs/api/systemApiValueSpec.js"></script>
-        <script type="text/javascript" src="specs/api/systemApiSpec.js"></script>
-        -->
-        
         <!--script type="text/javascript" src="specs/clientSpec.js"></script-->
 
     </head>

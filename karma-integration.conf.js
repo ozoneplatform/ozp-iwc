@@ -1,5 +1,5 @@
 // Karma configuration
-// Generated on Tue Mar 24 2015 10:45:12 GMT-0400 (EDT)
+// Generated on Tue Aug 25 2015 14:35:52 GMT-0400 (EDT)
 
 module.exports = function(config) {
   config.set({
@@ -14,17 +14,25 @@ module.exports = function(config) {
 
 
     // list of files / patterns to load in the browser
-    files: [], // Overridden in Gruntfile.js
+    files: [
+      'dist/js/ozpIwc-client.js',
+      'test/lib/testTools.js',
+      'test/lib/jasmine-promises.js',
+      'test/mockParticipant/js/mockParticipant.js',
+      'test/tests/client-integration/**/*.js'
+    ],
 
 
     // list of files to exclude
-    exclude: [],
+    exclude: [
+      'test/tests/unit/specs/clientSpec.js'
+    ],
 
     proxies: {},
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-        //'app/**/*.js': ['coverage']
+      'dist/js/*.js': ['coverage']
     },
 
     // test results reporter to use
@@ -43,25 +51,24 @@ module.exports = function(config) {
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_WARN,
+    logLevel: config.LOG_DEBUG,
 
 
     // enable / disable watching file and executing tests whenever any file changes
-    autoWatch: true,
+    autoWatch: false,
 
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Firefox'],
-    // If browser does not capture in given timeout [ms], kill it
+    browsers: ['Chrome'],
     captureTimeout: 100000,
 
     // to avoid DISCONNECTED messages
     browserDisconnectTimeout : 10000, // default 2000
-    browserDisconnectTolerance : 3, // default 0
     browserNoActivityTimeout : 60000, //default 10000
+
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: true,     // If browser does not capture in given timeout [ms], kill it
+    singleRun: true     // If browser does not capture in given timeout [ms], kill it
   });
 };

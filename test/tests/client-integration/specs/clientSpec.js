@@ -324,7 +324,7 @@ describe("IWC Client", function() {
                 expect(resolved).toEqual(false);
                 expect(rejected).toEqual(false);
                 done();
-            },5000);
+            },3000);
 
             client.api("data.api").set("/foo",{respondOn:"none", entity: "barbuz"}).then(function(reply){
                 expect(reply).notToHappen();
@@ -346,7 +346,7 @@ describe("IWC Client", function() {
                 expect(resolved).toEqual(false);
                 expect(rejected).toEqual(true);
                 done();
-            },5000);
+            },3000);
 
             client.api("data.api").set("/foo",{respondOn: "error", entity: "barbuz"}).then(function(reply){
                 expect(reply).notToHappen();

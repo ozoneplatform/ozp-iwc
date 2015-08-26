@@ -82,7 +82,7 @@ describe("Intents API", function() {
         });
     });
 
-    pit('invokes handler directly', function() {
+    it('invokes handler directly', function(done) {
         return client.api('intents.api').register('/text/plain/view', {
             contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: {
@@ -100,7 +100,8 @@ describe("Intents API", function() {
             console.log("Handler received packet ", responce);
             expect(responce.entity).toEqual("This is some text");
             expect(responce.intent.type).toEqual("text/plain");
-            expect(responce.handler.resource).toEqual("/text/plain/view");
+            expect(responce.handler.resource).toMatch("/text/plain/view");
+            done();
         }).then(function(reply) {
             console.log("Handler is registered: ", reply);
             expect(reply.response).toEqual('ok');

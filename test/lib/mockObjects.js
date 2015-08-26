@@ -174,24 +174,5 @@ var FakeRouter = function() {
             //ozpIwc.log.log("registered " + participant.participantType + " " + participant.name + "with address " + participant.address + " for group " + groupName);
         });
     };
+
 };
-
-ozpIwc.testUtil.customMatchers.toHaveSent=function(util, customEqualityTesters) { return { compare: function(participant,expected) {
-    if(!((participant instanceof TestParticipant) || (participant instanceof TestPacketContext)) ) {
-        return {
-            pass: false,
-            message: "Expected " + participant + " to be a TestParticipant"
-        };
-    }
-
-    var sentPackets=participant.sentPacketObjs || participant.responses;
-
-    var contains=util.contains(sentPackets,jasmine.objectContaining(expected),customEqualityTesters);
-    return {
-        pass: contains,
-        message: "Expected the participant to " + (contains?"NOT ":"") + "have sent " +
-            JSON.stringify(expected,null,2) +
-            ", but it sent packets " +
-            JSON.stringify(sentPackets,null,2)
-    };
-}};};
