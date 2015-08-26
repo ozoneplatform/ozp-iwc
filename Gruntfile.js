@@ -57,7 +57,6 @@ module.exports = function(grunt) {
                 'app/js/client/**/*.js'
             ],
             testLib: [
-                'test/karma/**/*.js',
                 'test/lib/**/*.js',
                 'test/mockParticipant/**/*.js'
             ],
@@ -130,9 +129,10 @@ module.exports = function(grunt) {
                 '<%= src.testUnit %>'
             ],
             testIntegrationClient: [
-                '<%= output.busJsMin %>',
-                '<%= output.clientJsMin %>',
-                '<%= src.testLib %>',
+                '<%= output.clientJs %>',
+                'test/lib/testTools.js',
+                'test/lib/jasmine-promises.js',
+                'test/mockParticipant/js/mockParticipant.js',
                 '<%= src.testIntegrationClient %>'
             ],
             testIntegrationBus: [
@@ -467,10 +467,12 @@ module.exports = function(grunt) {
         },
         karma: {
             options:{
-                configFile: 'karma.conf.js',
                 browsers: ['Firefox']
             },
             unit: {
+                options: {
+                    configFile: 'karma-unit.conf.js'
+                },
                 files: {
                     src: ['<%= output.testUnit %>']
                 }

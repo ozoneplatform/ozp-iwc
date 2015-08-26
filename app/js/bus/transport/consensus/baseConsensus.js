@@ -63,6 +63,8 @@ ozpIwc.consensus.BaseConsensus = function(config){
         self.participant.permissions.pushIfNotExist('ozp:iwc:receiveAs',[self.participant.address,self.consensusAddress]);
     });
 
+    this.routePacket = config.routePacket || this.routePacket;
+
     this.router.registerMulticast(this.participant,[this.consensusAddress]);
     this.participant.on("receive",this.routePacket,this);
 };
