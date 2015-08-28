@@ -163,3 +163,11 @@ ozpIwc.util.alert = function (message, errorObject) {
 ozpIwc.util.ensureArray=function(obj) {
 	return Array.isArray(obj)?obj:[obj];
 };
+
+/**
+ * A key for data transmission over localStorage.
+ *
+ * @property localStorageKey
+ * @type {String}
+ */
+ozpIwc.util.localStorageKey = "ozp.iwc.transport.localStorage";

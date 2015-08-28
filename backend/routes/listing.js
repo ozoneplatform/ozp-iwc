@@ -87,7 +87,12 @@ var routeFormatListing = function(req,listing){
         listing.icons[i] = utils.getHostUrl(req) + listing.icons[i];
     }
     for(var i in listing.launchUrls){
-        listing.launchUrls[i] = utils.getHostUrl(req) + listing.launchUrls[i];
+        if(listing.isLegacy) {
+            listing.launchUrls[i] =  utils.getHostUrl(req) + "/owf7adapter.html?url=" + encodeURIComponent(utils.getHostUrl(req) + listing.launchUrls[i]);
+
+        } else {
+            listing.launchUrls[i] = utils.getHostUrl(req) + listing.launchUrls[i];
+        }
     }
     // To comply with webtop's gathering of listings, providing a pre-formatted listing property.
     listing.listing = {
