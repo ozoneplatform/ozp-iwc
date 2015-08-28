@@ -150,6 +150,9 @@ ozpIwc.KeyBroadcastLocalStorageLink = function (config) {
     var self = this;
     var packet;
     var receiveStorageEvent = function (event) {
+        if(event.key !== ozpIwc.util.localStorageKey) {
+            return;
+        }
         if(event.newValue) {
             try {
                 packet = JSON.parse(event.newValue);
@@ -430,12 +433,12 @@ ozpIwc.KeyBroadcastLocalStorageLink.prototype.sendImpl = function (packet) {
     var sendStatus;
     try {
         var p = JSON.stringify(packet);
-        localStorage.setItem("x", p);
+        localStorage.setItem(ozpIwc.util.localStorageKey, p);
         this.packetsSentCounter.inc();
         if(packet.data.time) {
             this.latencyOutTimer.mark(ozpIwc.util.now() - packet.data.time);
         }
-        localStorage.removeItem("x");
+        localStorage.removeItem(ozpIwc.util.localStorageKey);
         sendStatus = null;
     }
     catch (e) {

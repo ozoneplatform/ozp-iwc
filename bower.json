@@ -30,6 +30,7 @@
     "es5-shim": "~4.1.0",
     "hal-browser": "ozone-development/hal-browser",
     "ozp-demo": "ozone-development/ozp-demo#master",
+    "ozp-iwc-owf7-widget-adapter": "ozone-development/ozp-iwc-owf7-widget-adapter#master",
     "angular-ui-router": "~0.2.13",
     "angular-ui-grid": "3.0.0-rc.20"
   },

@@ -58,6 +58,9 @@ app.use(ServerConfig.APPLICATION_ROUTE,express.static('../bower_components/ozp-d
 app.use(ServerConfig.APPLICATION_ROUTE + "/bower_components/ozp-iwc/dist",express.static('../dist'));
 app.use(ServerConfig.APPLICATION_ROUTE+ "/bower_components",express.static('../bower_components'));
 
+// Legacy support
+app.use(ServerConfig.ROOT_ROUTE,express.static('../bower_components/ozp-iwc-owf7-widget-adapter/dist'));
+
 var server = app.listen(ServerConfig.SERVER_PORT, function () {
     var host = server.address().address;
     var port = server.address().port;
