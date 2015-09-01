@@ -189,15 +189,15 @@ describe("System API", function() {
             }
         });
         spyOn( ozpIwc.util,"openWindow");
-				return systemApi.receivePacketContext(packetContext).then(function() {
-						expect(packetContext).toHaveSent({
-							"response":"ok"
-						});
-						
-						expect(ozpIwc.util.openWindow.calls.mostRecent().args[0]).toEqual("http://" + window.location.hostname + ":15000/?color=blue");
-						var params=ozpIwc.util.openWindow.calls.mostRecent().args[1];
-						expect(params['ozpIwc.peer']).toEqual(ozpIwc.BUS_ROOT);
-						expect(params['ozpIwc.inFlightIntent']).toEqual(packetContext.packet.entity.inFlightIntent);
-				});
-		});
+        return systemApi.receivePacketContext(packetContext).then(function() {
+                expect(packetContext).toHaveSent({
+                    "response":"ok"
+                });
+
+                expect(ozpIwc.util.openWindow.calls.mostRecent().args[0]).toEqual("http://" + window.location.hostname + ":15000/?color=blue");
+                var params=ozpIwc.util.openWindow.calls.mostRecent().args[1];
+                expect(params['ozpIwc.peer']).toEqual(ozpIwc.BUS_ROOT);
+                expect(params['ozpIwc.inFlightIntent']).toEqual(packetContext.packet.entity.inFlightIntent.resource);
+            });
+    });
 });
