@@ -184,7 +184,7 @@ ozpIwc.SystemApi.declareRoute({
     if(packet.entity && packet.entity.inFlightIntent){
         ozpIwc.util.openWindow(packet.entity.inFlightIntent.entity.entity.url,{
             "ozpIwc.peer":ozpIwc.BUS_ROOT,
-            "ozpIwc.inFlightIntent":packet.entity.inFlightIntent
+            "ozpIwc.inFlightIntent":packet.entity.inFlightIntent.resource
         });
         return {'response': "ok"};
     } else{
