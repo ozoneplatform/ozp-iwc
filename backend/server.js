@@ -10,16 +10,19 @@ var listing = require('./routes/listing');
 var app = express();
 
 
-
 //=======================================
 // Middleware
 //=======================================
 app.use(function (req, res, next) {
-    ServerConfig.ALLOW_ORIGINS.forEach(function(origin){
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    });
+    for(var i in  ServerConfig.ALLOW_ORIGINS){
+        req.headers.origin = req.headers.origin || [];
+        if(req.headers.origin.indexOf(ServerConfig.ALLOW_ORIGINS[i]) > -1){
+            res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+            break;
+        }
+    }
     res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Headers',  'Origin, X-Requested-With, Content-Type, Accept');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 });
