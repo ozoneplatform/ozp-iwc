@@ -1,19 +1,4 @@
 ##The IWC Components
-The `dist` directory for the IWC is as follows
-```
-├── debugger
-├── debugger.html
-├── doc
-├── iframe_peer.html
-├── intentsChooser.html
-└── js
-    ├── defaultInit.js
-    ├── ozpIwc-bus.js 
-    ├── ozpIwc-client.js
-    ├── ozpIwc-metrics.js
-```
-Note: _(removed *.min.js & *.js.map variants from this tree for readability)_
-
 **The minimum files required to host the IWC bus are as follows:**
 
 1. iframe_peer.html
