@@ -72,8 +72,11 @@ ozpIwc.ApiNode= function(config) {
      * @type Boolean
      * @default false
      */
-    var lifespanParsed = ozpIwc.Lifespan.getLifespan(config.lifespan);
+    var lifespanParsed = ozpIwc.Lifespan.getLifespan(this, config);
     if(lifespanParsed){
+        if(lifespanParsed.type === "Bound" && !lifespanParsed.addresses){
+            lifespanParsed.addresses = [config.src];
+        }
         this.lifespan = lifespanParsed;
     } else {
         this.lifespan = new ozpIwc.Lifespan.Ephemeral();
@@ -295,7 +298,7 @@ ozpIwc.ApiNode.prototype.set=function(packet) {
             this.permissions.pushIfNotExist(i,packet.permissions[i]);
         }
     }
-    this.lifespan = ozpIwc.Lifespan.getLifespan(packet.lifespan) || this.lifespan;
+    this.lifespan = ozpIwc.Lifespan.getLifespan(this, packet) || this.lifespan;
     this.contentType=packet.contentType;
     this.entity=packet.entity;
     this.pattern = packet.pattern || this.pattern;

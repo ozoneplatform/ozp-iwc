@@ -362,6 +362,81 @@ describe("IWC Client", function() {
             });
         });
     });
+
+    describe("Resource Lifespans",function(){
+        var client;
+
+        beforeEach(function() {
+            window.name="";
+            client=new ozpIwc.Client({peerUrl:"http://" + window.location.hostname + ":13000"});
+        });
+        afterEach(function() {
+            client.disconnect();
+            client=null;
+        });
+
+        pit("Bound resources are automatically bound to the client address",function(){
+            return client.data().set("/foo",{lifespan:"bound"}).then(function(){
+                return client.data().get("/foo");
+            }).then(function(resp){
+                expect(resp.lifespan).toEqual({
+                    type: 'Bound',
+                    addresses: [client.address]
+                });
+            });
+        });
+        pit("A Client can bind multiple addresses to a resource",function() {
+            return client.connect().then(function(){
+                return client.data().set("/foo", {
+                    lifespan: {
+                        type: "Bound",
+                        addresses: [client.address, "fake.address"]
+                    }
+                });
+            }).then(function(){
+                return client.data().get("/foo");
+            }).then(function(resp){
+                expect(resp.lifespan).toEqual({
+                    type: 'Bound',
+                    addresses: [client.address, "fake.address"]
+                });
+            });
+        });
+        pit("Bound resources are automatically removed when the client disconnects",function(){
+            return client.data().set("/foo",{lifespan:"bound"}).then(function(){
+                return client.data().get("/foo");
+            }).then(function(resp){
+                client.disconnect();
+                client=new ozpIwc.Client({peerUrl:"http://" + window.location.hostname + ":13000"});
+                return client.connect();
+            }).then(function(){
+                return client.data().get("/foo");
+            }).then(function(resp){
+                expect(resp).toNotHappen();
+            }).catch(function(e){
+                expect(e.response).toEqual("noResource");
+            });
+        });
+
+        pit("Bound resources are visable to other clients", function(){
+            var client2;
+            return client.data().set("/foo",{lifespan:"bound"}).then(function(){
+                return client.data().get("/foo");
+            }).then(function(resp){
+                client2=new ozpIwc.Client({peerUrl:"http://" + window.location.hostname + ":13000"});
+                return client2.connect();
+            }).then(function(){
+                return client2.data().get("/foo");
+            }).then(function(resp) {
+                expect(resp.lifespan).toEqual({
+                    type: 'Bound',
+                    addresses: [client.address]
+                });
+            });
+        });
+
+    });
+
 //    describe("", function() {
 //        var originalHref = window.location.href;
 //        var baseUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
