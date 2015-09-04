@@ -10,10 +10,9 @@
  */
 ozpIwc.DataNode=ozpIwc.util.extend(ozpIwc.ApiNode,function(config) {
     ozpIwc.ApiNode.apply(this, arguments);
-    var lifespanParsed = ozpIwc.Lifespan.getLifespan(config.lifespan);
-    if(lifespanParsed){
-        this.lifespan = lifespanParsed;
-    } else {
+
+    // If there was no specified lifespan in the creation, override to Persistent.
+    if(!config.lifespan){
         this.lifespan = new ozpIwc.Lifespan.Persistent();
     }
 });

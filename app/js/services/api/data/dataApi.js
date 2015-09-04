@@ -48,13 +48,15 @@ ozpIwc.DataApi.useDefaultRoute(ozpIwc.ApiBase.allActions);
  * @returns {function[]}
  */
 ozpIwc.DataApi.addChildFilters = function(){
-    var childsPattern;
+    var childData = {};
     var filters = ozpIwc.standardApiFilters.createAndCollectFilters(ozpIwc.DataNode);
 
     //Stash the child's pattern for now and create the parent.
     filters.unshift(function(packet,context,pathParams,next) {
-        childsPattern = packet.pattern;
+        childData.pattern = packet.pattern;
+        childData.lifespan = packet.lifespan;
         packet.pattern = null;
+        packet.lifespan = null;
         return next();
     });
     //Make sure the parent node has it's pattern set then replace the childs pattern at the end of the filter chain
@@ -62,7 +64,8 @@ ozpIwc.DataApi.addChildFilters = function(){
         context.node.set({
             pattern: packet.pattern
         });
-        packet.pattern = childsPattern;
+        packet.pattern = childData.pattern;
+        packet.lifespan = childData.lifespan;
         return next();
     });
     return filters;
@@ -76,7 +79,11 @@ ozpIwc.DataApi.declareRoute({
     var key = this.createKey(context.node.pattern);
     packet.resource = key;
     packet.pattern =  packet.pattern || key + "/";
-    var childNode = this.createNode({resource: key}, ozpIwc.DataNode);
+    var childNode = this.createNode({
+        resource: key,
+        lifespan:packet.lifespan,
+        src: packet.src
+    }, ozpIwc.DataNode);
     this.markForChange(childNode);
     childNode.set(packet);
 

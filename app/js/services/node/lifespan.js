@@ -13,26 +13,43 @@ ozpIwc.Lifespan = ozpIwc.Lifespan || {};
  * A object formatter for the node's lifespan. If passed as just a string, format it to the object notation.
  * @method getLifespan
  * @static
- * @param {Object} lifespanObj
- * @param {String} lifespanObj.type
+ * @param {Object} node
+ * @param {object} config
  * @returns {Object|undefined}
  */
-ozpIwc.Lifespan.getLifespan = function(lifespanObj){
-    if(!lifespanObj){
+ozpIwc.Lifespan.getLifespan = function(node, config){
+    if(!config || !config.lifespan){
         return;
     }
-    if(typeof lifespanObj === "string"){
-        var type = lifespanObj;
-        lifespanObj = {
+    if(typeof config.lifespan === "string"){
+        var type = config.lifespan;
+        config.lifespan = {
             'type': type
         };
     }
-    if(!lifespanObj.type){
+    if(!config.lifespan.type){
         return;
     }
 
+    var lifespanObj = config.lifespan;
     lifespanObj.type = lifespanObj.type.charAt(0).toUpperCase() + lifespanObj.type.slice(1);
 
+    if(lifespanObj.type === "Bound"){
+        if(!lifespanObj.addresses){
+            if(!config.src){
+                return;
+            }
+            lifespanObj.addresses = [config.src];
+        }
+        if(node.lifespan && node.lifespan.type === "Bound") {
+            node.lifespan.addresses = node.lifespan.addresses || [];
+            node.lifespan.addresses.forEach(function(address){
+                if(lifespanObj.addresses.indexOf(address) === -1){
+                    lifespanObj.addresses.push(address);
+                }
+            });
+        }
+    }
     return lifespanObj;
 };
 
@@ -93,12 +110,12 @@ ozpIwc.Lifespan.boundFunctionality = {
     shouldPersist: function(){ return false; },
     shouldDelete: function(lifespan,address){
         var len=address.length;
-        for(var i in lifespan.addresses) {
-            if(!lifespan.addresses[i] || lifespan.addresses[i].substr(-len) === address) {
-                return true;
-            }
-        }
-        return false;
+        lifespan.addresses = lifespan.addresses || [];
+        lifespan.addresses = lifespan.addresses.filter(function(addr){
+            return (addr.substr(-len) !== address);
+        });
+
+        return (lifespan.addresses.length === 0);
     }
 };
 

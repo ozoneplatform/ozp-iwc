@@ -32,7 +32,10 @@ ozpIwc.RouterWatchdog = ozpIwc.util.extend(ozpIwc.ClientParticipant, function(co
      */
     this.on("connectedToRouter", this.setupWatches, this);
 
-
+    var self = this;
+    this.on("beforeunload", function(){
+        self.leaveEventChannel();
+    });
 });
 
 /**
@@ -126,6 +129,7 @@ ozpIwc.RouterWatchdog.prototype.setupWatches = function() {
      * @type window.setInterval
      */
     this.timer = window.setInterval(heartbeat, this.heartbeatFrequency);
+    heartbeat();
 };
 
 /**

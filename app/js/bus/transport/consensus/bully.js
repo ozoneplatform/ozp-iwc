@@ -184,8 +184,7 @@ ozpIwc.consensus.Bully.prototype.onElectionMessage = function(packet){
     // Ignore it if they out rank us.
     if(consensusId > this.consensusId){
         this.cancelElection();
-        window.clearTimeout(this.coordinatorTimeout);
-        window.clearInterval(this.coordinatorInterval);
+        this.restartCoordinatorTimeout(this.coordinatorTimeoutHeartbeat,true);
         return;
     }
 
@@ -275,12 +274,13 @@ ozpIwc.consensus.Bully.prototype.onQueryMessage = function(packet){
  * @method restartCoordinatorTimeout
  * @param {Number}[timeout]
  */
-ozpIwc.consensus.Bully.prototype.restartCoordinatorTimeout = function(timeout){
+ozpIwc.consensus.Bully.prototype.restartCoordinatorTimeout = function(timeout,keepState){
     timeout = timeout || this.coordinatorTimeoutHeartbeat;
     var self = this;
     window.clearTimeout(this.coordinatorTimeout);
-    this.changeState("member");
-
+    if(!keepState) {
+        this.changeState("member");
+    }
     this.coordinatorTimeout = window.setTimeout(function(){
         self.onCoordinatorTimeout(timeout);
     },timeout);
