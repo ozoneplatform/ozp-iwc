@@ -5,6 +5,8 @@ applying the best practices of enterprise service buses and service-oriented arc
 in-browser system that works across multiple tabs and windows. Applications can share data and services then use
 the data and services offered by others to enrich their own user experience.
 
+![img](docs/iwc_guide/assets/example.gif)
+*An example of two applications utilizing the IWC to communicate.*
 The IWC provides lightweight integration.
 --------------
 Today’s rich web applications tend to carry more state than a simple link can convey, and componentized development
