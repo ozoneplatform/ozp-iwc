@@ -3,7 +3,7 @@
 debuggerModule.controller('ElectionCtrl',['$scope',function($scope){
     $scope.enableOrNot = false;
     $scope.recvToggle = false;
-    $scope.ELECTION_TIME = ozpIwc.ELECTION_TIMEOUT;
+    $scope.ELECTION_TIME = ozpIwc.config.consensusTimeout;
 
     function isNewestPacket(packet,api){
         { return api.lastElectionTS < packet.time; }

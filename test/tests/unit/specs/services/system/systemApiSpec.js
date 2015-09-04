@@ -196,7 +196,7 @@ describe("System API", function() {
 
                 expect(ozpIwc.util.openWindow.calls.mostRecent().args[0]).toEqual("http://" + window.location.hostname + ":15000/?color=blue");
                 var params=ozpIwc.util.openWindow.calls.mostRecent().args[1];
-                expect(params['ozpIwc.peer']).toEqual(ozpIwc.BUS_ROOT);
+                expect(params['ozpIwc.peer']).toEqual(ozpIwc.config._busRoot);
                 expect(params['ozpIwc.inFlightIntent']).toEqual(packetContext.packet.entity.inFlightIntent.resource);
             });
     });

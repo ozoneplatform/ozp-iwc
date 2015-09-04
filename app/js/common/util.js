@@ -178,9 +178,6 @@ ozpIwc.util.structuredCloneSupport=function() {
         return ozpIwc.util.structuredCloneSupportCache;
     }
     var cloneSupport = 'postMessage' in window;
-    if(ozpIwc.legacySupport){
-        cloneSupport = false;
-    }
     //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
     try {
         window.postMessage({

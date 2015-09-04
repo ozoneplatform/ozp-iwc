@@ -193,7 +193,7 @@ ozpIwc.ApiNode.prototype.deserializeLive=function(serializedForm, serializedCont
  */
 ozpIwc.ApiNode.prototype.deserializeResourceFromContentType = function(serializedForm) {
     if(serializedForm._links && serializedForm._links.self){
-        this.resource = serializedForm._links.self.href.replace(ozpIwc.apiRootUrl,"");
+        this.resource = serializedForm._links.self.href.replace(ozpIwc.config.apiRootUrl,"");
     }
 };
 

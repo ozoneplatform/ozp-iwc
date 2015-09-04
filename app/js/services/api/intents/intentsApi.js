@@ -22,9 +22,9 @@ ozpIwc.IntentsApi = ozpIwc.createApi(function(config) {
      * @property endpoints
      * @type {Object[]}
      */
-    this.endpoints=[
+    this.endpoints= config.endpoints || [
         {
-            link: ozpIwc.linkRelPrefix+":intent",
+            link: ozpIwc.config.linkRelPrefix+":intent",
             headers: []
         }
     ];
@@ -207,10 +207,10 @@ ozpIwc.IntentsApi.prototype.handleChoosing = function(node){
 
             if(ozpIwc.util.getInternetExplorerVersion() !== 11) {
                 ozpIwc.log.info("launching popup chooser because: ", err);
-                ozpIwc.util.openWindow(ozpIwc.intentsChooserUri, {
-                    "ozpIwc.peer": ozpIwc.BUS_ROOT,
+                ozpIwc.util.openWindow(ozpIwc.config.intentsChooserUri, {
+                    "ozpIwc.peer": ozpIwc.config._busRoot,
                     "ozpIwc.intentSelection": "intents.api" + node.resource
-                }, ozpIwc.INTENT_CHOOSER_FEATURES);
+                }, ozpIwc.config.intentChooserFeatures);
             } else {
                 ozpIwc.log.error("Failed to handle intent choosing: Internet Explorer 11 is not supported"+
                 " for the default intent chooser.");

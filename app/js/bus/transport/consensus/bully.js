@@ -30,7 +30,7 @@ ozpIwc.consensus.Bully = ozpIwc.util.extend(ozpIwc.consensus.BaseConsensus,funct
      * @property coordinatorTimeoutHeartbeat
      * @type {Number}
      */
-    this.coordinatorTimeoutHeartbeat = config.heartbeat || ozpIwc.ELECTION_TIMEOUT;
+    this.coordinatorTimeoutHeartbeat = config.heartbeat || ozpIwc.config.consensusTimeout;
 
     /**
      * How often this module broadcasts being the coordinator (if coordinator).

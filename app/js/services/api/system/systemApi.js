@@ -19,17 +19,17 @@ ozpIwc.SystemApi = ozpIwc.createApi(function(config) {
      * @property endpoints
      * @type {Object[]}
      */
-    this.endpoints = [
+    this.endpoints = config.endpoints || [
         {
-            link: ozpIwc.linkRelPrefix + ":application",
+            link: ozpIwc.config.linkRelPrefix + ":application",
             headers: [{name: "Accept", value: "application/vnd.ozp-application-v1+json"}]
         },
         {
-            link: ozpIwc.linkRelPrefix + ":user",
+            link: ozpIwc.config.linkRelPrefix + ":user",
             headers: []
         },
         {
-            link: ozpIwc.linkRelPrefix + ":system",
+            link: ozpIwc.config.linkRelPrefix + ":system",
             headers: []
         }
     ];
@@ -183,7 +183,7 @@ ozpIwc.SystemApi.declareRoute({
     ozpIwc.log.debug(this.logPrefix+" handling launchdata ",packet.entity);
     if(packet.entity && packet.entity.inFlightIntent){
         ozpIwc.util.openWindow(packet.entity.inFlightIntent.entity.entity.url,{
-            "ozpIwc.peer":ozpIwc.BUS_ROOT,
+            "ozpIwc.peer":ozpIwc.config._busRoot,
             "ozpIwc.inFlightIntent":packet.entity.inFlightIntent.resource
         });
         return {'response': "ok"};

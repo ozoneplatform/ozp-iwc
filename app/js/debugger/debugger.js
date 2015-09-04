@@ -74,7 +74,7 @@ debuggerModule.factory("iwcClient",function() {
         
 debuggerModule.controller("debuggerController",["$scope","iwcClient",function(scope,client) {
     scope.ozpIwc = ozpIwc;
-    scope.apiRootUrl = ozpIwc.apiRootUrl;
+    scope.apiRootUrl = ozpIwc.config.apiRootUrl;
     scope.tab = 'general';
     client.connect().then(function(){
         scope.address = client.address;

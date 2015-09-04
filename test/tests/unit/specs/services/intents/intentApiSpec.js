@@ -165,10 +165,10 @@ describe("Intent API Class", function () {
                 var inflightNode=invocationPacket.responses[0].entity.inFlightIntent;
                 expect(inflightNode.entity.state).toEqual("choosing");
                 expect(ozpIwc.util.openWindow)
-                    .toHaveBeenCalledWith(ozpIwc.intentsChooserUri,jasmine.objectContaining({
-                        "ozpIwc.peer": ozpIwc.BUS_ROOT,
+                    .toHaveBeenCalledWith(ozpIwc.config.intentsChooserUri,jasmine.objectContaining({
+                        "ozpIwc.peer": ozpIwc.config._busRoot,
                         "ozpIwc.intentSelection": "intents.api"+inflightNode.resource
-                    }),ozpIwc.INTENT_CHOOSER_FEATURES);
+                    }),ozpIwc.config.intentChooserFeatures);
             });
         });
         pit("uses a saved preference when one exists",function() {
@@ -196,10 +196,10 @@ describe("Intent API Class", function () {
                 var inflightNode=invocationPacket.responses[0].entity.inFlightIntent;
                 expect(inflightNode.entity.state).toEqual("choosing");
                 expect(ozpIwc.util.openWindow)
-                    .toHaveBeenCalledWith(ozpIwc.intentsChooserUri,jasmine.objectContaining({
-                        "ozpIwc.peer": ozpIwc.BUS_ROOT,
+                    .toHaveBeenCalledWith(ozpIwc.config.intentsChooserUri,jasmine.objectContaining({
+                        "ozpIwc.peer": ozpIwc.config._busRoot,
                         "ozpIwc.intentSelection": "intents.api"+inflightNode.resource
-                    }),ozpIwc.INTENT_CHOOSER_FEATURES);
+                    }),ozpIwc.config.intentChooserFeatures);
             });
         });
         

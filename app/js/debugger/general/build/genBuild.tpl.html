@@ -22,9 +22,9 @@
             <th>value</th>
             </thead>
             <tbody>
-            <tr>
-                <td>version</td>
-                <td>{{ozpIwc.version}}</td>
+            <tr ng-repeat="(key,value) in config">
+                <td ng-if="key != 'contentType'">{{key}}</td>
+                <td ng-if="key != 'contentType'">{{value}}</td>
             </tr>
             </tbody>
         </table>

@@ -46,11 +46,16 @@ module.exports = function(grunt) {
                 'app/js/bus/api/locks/locksApiValue.js',
                 'app/js/bus/api/locks/locksApi.js',
                 'app/js/bus/api/**/*.js',
-                'app/js/bus/*/**/*.js',
+                'app/js/bus/network/**/*.js',
+                'app/js/bus/security/**/*.js',
+                'app/js/bus/transport/**/*.js',
                 'app/js/services/*.js',
                 'app/js/services/node/**/*.js',
                 'app/js/services/api/**/*.js',
-                'app/js/defaultWiring.js'
+                'app/js/bus/init/configLoading.js',
+                'app/js/bus/init/support/**/*.js',
+                'app/js/bus/init/init/baseInit.js',
+                'app/js/bus/init/init/defaultInit.js'
             ],
             client: [
                 '<%= src.common %>',
@@ -253,6 +258,12 @@ module.exports = function(grunt) {
                     },{
                         src: ['**/*'],
                         dest: './dist/js/app/js',
+                        cwd: 'app/js',
+                        expand: true,
+                        nonull:true
+                    },{
+                        src: ['ozpIwc.conf.js'],
+                        dest: './dist/js',
                         cwd: 'app/js',
                         expand: true,
                         nonull:true

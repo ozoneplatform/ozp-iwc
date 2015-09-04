@@ -6,6 +6,7 @@ debuggerModule.controller('GeneralCtrl',['$scope', '$state', 'iwcClient',functio
         state.go('hal-browser', {url: endpoint});
     };
     scope.endpointTabulated = [];
+    scope.config = ozpIwc.config;
     client.connect().then(function() {
         scope.apis=[
             {'name': "Data API", 'obj': ozpIwc.dataApi},
