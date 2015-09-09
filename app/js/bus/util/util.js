@@ -106,16 +106,6 @@ ozpIwc.util.openWindow=function(url,windowName,features) {
     }
 };
 
-
-(function() {
-    ozpIwc.BUS_ROOT=window.location.protocol + "//" +
-            window.location.host +
-            window.location.pathname.replace(/[^\/]+$/,"");
-
-    ozpIwc.INTENT_CHOOSER_FEATURES = "width=330,height=500";
-})();
-
-
 /**
  * IWC alert handler.
  *
@@ -171,3 +161,16 @@ ozpIwc.util.ensureArray=function(obj) {
  * @type {String}
  */
 ozpIwc.util.localStorageKey = "ozp.iwc.transport.localStorage";
+
+
+/**
+ * Returns the specified default value if the given value is undefined. safer than "x = x || 500" because it checks
+ * for being defined, rather than its truly/falsey value.
+ * @param value
+ * @param defaultVal
+ * @method ifUndef
+ * @returns {*}
+ */
+ozpIwc.util.ifUndef = function(value,defaultVal){
+    return (typeof value === 'undefined') ? defaultVal : value;
+};

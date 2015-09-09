@@ -284,7 +284,7 @@ ozpIwc.Router=function(config) {
      */
 	this.watchdog=new ozpIwc.RouterWatchdog({
         router: this,
-        heartbeatFrequency: config.heartbeatFrequency,
+        heartbeatFrequency: ozpIwc.config.heartBeatFrequency,
         autoConnect: false
     });
 	this.registerParticipant(this.watchdog);

@@ -9,9 +9,9 @@ describe("Event",function() {
 		event=null;
 	});
 	
-    it("sets the BUS_ROOT",function() {
-        expect(ozpIwc.BUS_ROOT).toMatch("/$");
-        expect(ozpIwc.BUS_ROOT).not.toMatch(".html?");
+    it("sets config._busRoot if not explicitly set by iwc.conf.js",function() {
+        expect(ozpIwc.config._busRoot).toMatch("/$");
+        expect(ozpIwc.config._busRoot).not.toMatch(".html?");
     });
     
 	it("single handlers gets event", function() {

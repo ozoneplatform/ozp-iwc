@@ -15,9 +15,9 @@
  */
 ozpIwc.DataApi = ozpIwc.createApi(function(config) {
     this.persistenceQueue=config.persistenceQueue || new ozpIwc.AjaxPersistenceQueue();
-    this.endpoints=[
+    this.endpoints= config.endpoints || [
         {
-            link: ozpIwc.linkRelPrefix+":user-data",
+            link: ozpIwc.config.linkRelPrefix+":user-data",
             headers: []
         }
     ];

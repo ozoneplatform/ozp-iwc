@@ -67,14 +67,14 @@ describe("Bully Consensus",function() {
                 done();
             });
 
-            ozpIwc.testUtil.tick(ozpIwc.ELECTION_TIMEOUT * 3);
+            ozpIwc.testUtil.tick(ozpIwc.config.consensusTimeout * 3);
         });
 
         it("calls onBecomeCoordinator when becoming coordinator",function(){
             consensus =  consensusGen(router);
 
             spyOn(consensus,'onBecomeCoordinator');
-            ozpIwc.testUtil.tick(ozpIwc.ELECTION_TIMEOUT * 3);
+            ozpIwc.testUtil.tick(ozpIwc.config.consensusTimeout * 3);
             expect(consensus.onBecomeCoordinator).toHaveBeenCalled();
         });
 
@@ -83,7 +83,7 @@ describe("Bully Consensus",function() {
             ozpIwc.testUtil.tick(1000);
             var consensusB =  consensusGen(router);
 
-            ozpIwc.testUtil.tick(ozpIwc.ELECTION_TIMEOUT * 3);
+            ozpIwc.testUtil.tick(ozpIwc.config.consensusTimeout * 3);
             expect(consensusA.state).toEqual("coordinator");
             expect(consensusB.state).toEqual("member");
 
@@ -94,12 +94,12 @@ describe("Bully Consensus",function() {
             ozpIwc.testUtil.tick(1000);
             var consensusB = consensusGen(router);
 
-            ozpIwc.testUtil.tick(ozpIwc.ELECTION_TIMEOUT * 3);
+            ozpIwc.testUtil.tick(ozpIwc.config.consensusTimeout * 3);
             expect(consensusA.state).toEqual("coordinator");
             expect(consensusB.state).toEqual("member");
             var consensusC = consensusGen(router);
 
-            ozpIwc.testUtil.tick(ozpIwc.ELECTION_TIMEOUT * 3);
+            ozpIwc.testUtil.tick(ozpIwc.config.consensusTimeout* 3);
             expect(consensusA.state).toEqual("coordinator");
             expect(consensusB.state).toEqual("member");
             expect(consensusC.state).toEqual("member");
@@ -112,13 +112,13 @@ describe("Bully Consensus",function() {
             ozpIwc.testUtil.tick(1000);
             var consensusC = consensusGen(router);
 
-            ozpIwc.testUtil.tick(ozpIwc.ELECTION_TIMEOUT * 3);
+            ozpIwc.testUtil.tick(ozpIwc.config.consensusTimeout * 3);
             expect(consensusA.state).toEqual("coordinator");
             expect(consensusB.state).toEqual("member");
             expect(consensusC.state).toEqual("member");
             disableConsensus(consensusA);
 
-            ozpIwc.testUtil.tick(ozpIwc.ELECTION_TIMEOUT * 3);
+            ozpIwc.testUtil.tick(ozpIwc.config.consensusTimeout * 3);
             expect(consensusB.state).toEqual("coordinator");
             expect(consensusC.state).toEqual("member");
         });

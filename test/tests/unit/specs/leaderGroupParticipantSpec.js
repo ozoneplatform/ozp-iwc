@@ -76,7 +76,7 @@ xdescribe("Leader Group Participant",function() {
 	it("is leader after one member election",function() {
 		var leader=makeLeader(1);
 		leader.startElection();
-        tick(ozpIwc.ELECTION_TIMEOUT * 2);
+        tick(ozpIwc.config.consensusTimeout * 2);
 		expect(leader.isLeader()).toEqual(true);
 	});
 
@@ -85,7 +85,7 @@ xdescribe("Leader Group Participant",function() {
 		var calls=0;
 		leader.on("startElection",function() { calls=true;});
 		leader.startElection();
-        tick(ozpIwc.ELECTION_TIMEOUT * 2);
+        tick(ozpIwc.config.consensusTimeout * 2);
 		expect(leader.isLeader()).toEqual(true);
 	});
 
@@ -95,7 +95,7 @@ xdescribe("Leader Group Participant",function() {
 
 		leader.startElection();
 
-        tick(ozpIwc.ELECTION_TIMEOUT * 2);
+        tick(ozpIwc.config.consensusTimeout * 2);
 
 		expect(leader.isLeader()).toEqual(true);
 		expect(member.isLeader()).toEqual(false);
@@ -104,14 +104,14 @@ xdescribe("Leader Group Participant",function() {
 	it("higher priority will take over",function() {
 		var member=makeLeader(1);
 		member.startElection();
-        tick(ozpIwc.ELECTION_TIMEOUT * 2);
+        tick(ozpIwc.config.consensusTimeout * 2);
 
 		expect(member.isLeader()).toEqual(true);
 
 
 		var leader=makeLeader(2);
 		leader.startElection();
-        tick(ozpIwc.ELECTION_TIMEOUT * 2);
+        tick(ozpIwc.config.consensusTimeout * 2);
 
 		expect(leader.isLeader()).toEqual(true);
 		expect(member.isLeader()).toEqual(false);
@@ -126,7 +126,7 @@ xdescribe("Leader Group Participant",function() {
 
 		lowbie.startElection();
 
-        tick(ozpIwc.ELECTION_TIMEOUT * 2);
+        tick(ozpIwc.config.consensusTimeout * 2);
 
 		for(i=0; i< fakeRouter.participants.length-1; ++i) {
 			expect(fakeRouter.participants[i].isLeader()).toEqual(false);

@@ -2,13 +2,11 @@
 <html>
 <head>
     <title>Choose an Intent</title>
-    <script type="text/javascript">
-        var ozpIwc = ozpIwc || {};
-        ozpIwc.apiRootUrl="/api";
-        ozpIwc.basicAuthUsername=null;
-        ozpIwc.basicAuthPassword=null;
-        ozpIwc.runApis=false;
-        ozpIwc.acceptPostMessageParticipants=false;
+    <script type="text/javascript" src="js/ozpIwc.conf.js">
+        // Intent chooser will never takeover control of the bus because it is bound to its opener.
+        ozpIwc.config = ozpIwc.config || {};
+        ozpIwc.config.runApis=false;
+        ozpIwc.config.allowLocalClients=false;
     </script>
     <script type="text/javascript" src="js/ozpIwc-bus.js"></script>
     <style>

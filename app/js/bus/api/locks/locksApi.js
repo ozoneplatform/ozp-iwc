@@ -130,7 +130,7 @@ ozpIwc.LocksApi.prototype.cleanup = function(){
     var self = this;
     this.participant.names().bulkGet("/address").then(function(reply){
         reply.entity.forEach(function(node){
-            if(node.entity.time && node.entity.time + ozpIwc.heartBeatFrequency > ozpIwc.util.now()){
+            if(node.entity.time && node.entity.time + ozpIwc.config.heartBeatFrequency > ozpIwc.util.now()){
                 addrMap[node.entity.address] = false;
             }
         });

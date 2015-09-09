@@ -7,18 +7,12 @@
         <link rel="shortcut icon" href="favicon.ico?v=2" />
 
         <script type="text/javascript">
-            var ozpIwc = ozpIwc || {};
-            ozpIwc.apiRootUrl="/api";
-            ozpIwc.basicAuthUsername=null;
-            ozpIwc.basicAuthPassword=null;
-            ozpIwc.runApis=true;
-            ozpIwc.acceptPostMessageParticipants=true;
-            
             // for resizing the height of an iframe (hal-browser)
             function resizeIframe(obj) {
                 obj.style.height = window.innerHeight + 'px';
             }
         </script>
+        <script type="text/javascript" src="js/ozpIwc.conf.js"></script>
         <script src="js/debugger.js"></script>
     </head>
     <body ng-controller="debuggerController">
@@ -53,7 +47,7 @@
             </li>
             <hr />
             <li>
-                <a ui-sref="hal-browser({url: ozpIwc.apiRootUrl})" ui-sref-active="selected">HAL Browser</a>
+                <a ui-sref="hal-browser({url: ozpIwc.config.apiRootUrl})" ui-sref-active="selected">HAL Browser</a>
             </li>
             <hr />
             <li style="word-wrap: break-word; font-size: 0.75em"> {{::address}}</li>
