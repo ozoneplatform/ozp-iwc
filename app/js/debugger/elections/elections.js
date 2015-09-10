@@ -167,8 +167,8 @@ debuggerModule.controller('ElectionCtrl',['$scope',function($scope){
         } else {
             ozpIwc.util.removeEventListener("storage",$scope.evtListener);
         }
-        ozpIwc.defaultPeer.on("receive",logPacket);
-        ozpIwc.defaultPeer.on("send",logPacket);
+        ozpIwc.wiring.peer.on("receive",logPacket);
+        ozpIwc.wiring.peer.on("send",logPacket);
     };
 }]);
 

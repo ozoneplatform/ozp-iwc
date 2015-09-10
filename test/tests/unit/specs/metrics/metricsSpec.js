@@ -2,7 +2,7 @@ describe("Metrics Registry",function() {
 	var metrics;
 	
 	beforeEach(function() {
-		metrics=new ozpIwc.MetricsRegistry();
+		metrics=new ozpIwc.metric.Registry();
 	});
 	
 	afterEach(function() {
@@ -11,12 +11,12 @@ describe("Metrics Registry",function() {
 	
 	it("creates a counter upon request",function() {
 		expect(metrics.counter("foo.bar"))
-						.toBeInstanceOf(ozpIwc.metricTypes.Counter);
+						.toBeInstanceOf(ozpIwc.metric.types.Counter);
 	});
 
 	it("creates a meter upon request",function() {
 		expect(metrics.meter("foo.bar"))
-						.toBeInstanceOf(ozpIwc.metricTypes.Meter);
+						.toBeInstanceOf(ozpIwc.metric.types.Meter);
 	});
 
 	it("returns the same counter at each invocation",function() {

@@ -24,7 +24,7 @@
     "grunt-contrib-jshint": "*",
     "grunt-contrib-uglify": "*",
     "grunt-contrib-watch": "*",
-    "grunt-contrib-yuidoc": "^0.5.2",
+    "grunt-contrib-yuidoc": "^0.10.0",
     "grunt-gh-pages": "^0.10.0",
     "grunt-gitbook": "^1.5.0",
     "grunt-jsdoc": "*",

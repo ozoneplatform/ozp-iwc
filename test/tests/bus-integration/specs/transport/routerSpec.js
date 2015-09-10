@@ -2,24 +2,24 @@ describe("IWC Router",function(){
     var routerA, peerA, linkA, partA, otherContext;
 
     var otherContextOnLoad = function(){
-        this.peerB = new ozpIwc.Peer();
+        this.peerB = new ozpIwc.network.Peer();
 
-        this.linkB = new ozpIwc.KeyBroadcastLocalStorageLink({
+        this.linkB = new ozpIwc.network.KeyBroadcastLocalStorageLink({
             peer: this.peerB
         });
-        this.routerB = new ozpIwc.Router({
+        this.routerB = new ozpIwc.transport.Router({
             peer: this.peerB
         });
-        this.partB = new ozpIwc.InternalParticipant();
+        this.partB = new ozpIwc.transport.participant.Internal();
         this.routerB.registerParticipant(this.partB);
     };
 
     beforeEach(function(){
-        peerA = new ozpIwc.Peer();
-        linkA = new ozpIwc.KeyBroadcastLocalStorageLink({
+        peerA = new ozpIwc.network.Peer();
+        linkA = new ozpIwc.network.KeyBroadcastLocalStorageLink({
             peer: peerA
         });
-        routerA = new ozpIwc.Router({
+        routerA = new ozpIwc.transport.Router({
             peer: peerA,
             heartbeatFrequency: 10000
         });
@@ -29,7 +29,7 @@ describe("IWC Router",function(){
                 scope.partB.send(message);
             }
         });
-        partA = new ozpIwc.InternalParticipant();
+        partA = new ozpIwc.transport.participant.Internal();
         routerA.registerParticipant(partA);
     });
 

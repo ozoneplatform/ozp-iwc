@@ -5,7 +5,7 @@
 // Fake peer that just stores the packets that it receives
 //========================================================
 var FakePeer = function() {
-    this.events = new ozpIwc.Event();
+    this.events = new ozpIwc.util.Event();
 
     this.events.mixinOnOff(this);
 
@@ -18,7 +18,7 @@ var FakePeer = function() {
 //========================================================
 // TestParticipant for connecting to a router
 //========================================================
-var TestParticipant = ozpIwc.util.extend(ozpIwc.ClientParticipant, function(config) {
+var TestParticipant = ozpIwc.util.extend(ozpIwc.transport.participant.Client, function(config) {
     config = config || {};
     this.sentPacketObjs = [];
     this.packets = [];
@@ -29,17 +29,17 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.ClientParticipant, function(conf
         'queueing': false
     };
 
-
+    this.metrics = new ozpIwc.metric.Registry();
     this.origin = config.origin || "foo.com";
     // since we aren't connecting to a router, mock these out, too
     this.metricRoot = "testparticipant";
     this.participantType="testParticipant";
-    this.sentPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "sentPackets");
-    this.receivedPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "receivedPackets");
-    this.forbiddenPacketsMeter = ozpIwc.metrics.meter(this.metricRoot, "forbiddenPackets");
+    this.sentPacketsMeter = this.metrics.meter(this.metricRoot, "sentPackets");
+    this.receivedPacketsMeter = this.metrics.meter(this.metricRoot, "receivedPackets");
+    this.forbiddenPacketsMeter = this.metrics.meter(this.metricRoot, "forbiddenPackets");
 
     // mock common permission attributes (that would be assigned on router/multicast connections)
-    ozpIwc.ClientParticipant.apply(this, arguments);
+    ozpIwc.transport.participant.Client.apply(this, arguments);
 
 
     this.router = {
@@ -50,13 +50,13 @@ var TestParticipant = ozpIwc.util.extend(ozpIwc.ClientParticipant, function(conf
 
 TestParticipant.prototype.receiveFromRouter = function(packet) {
     this.packets.push(packet);
-    return ozpIwc.ClientParticipant.prototype.receiveFromRouter.call(this, packet);
+    return ozpIwc.transport.participant.Client.prototype.receiveFromRouter.call(this, packet);
 };
 
 TestParticipant.prototype.sendImpl = function(packet, callback) {
     this.sentPacketObjs.push(packet);
     try {
-        packet = ozpIwc.ClientParticipant.prototype.send.call(this, packet, callback);
+        packet = ozpIwc.transport.participant.Client.prototype.send.call(this, packet, callback);
     } catch (e) {
         packet=e;
     }
@@ -89,7 +89,11 @@ TestParticipant.prototype.reply = function(originalPacket, packet, callback) {
 
 
 var TestClientParticipant=ozpIwc.util.extend(TestParticipant,function() {
-    TestParticipant.apply(this,arguments);
+    var config = arguments[0] || {};
+    config.name = config.name || "fakeName";
+    config.router = config.router || new FakeRouter();
+
+    TestParticipant.call(this,config);
     this.participantType="testClientParticipant";
 });
 
@@ -97,8 +101,8 @@ var TestClientParticipant=ozpIwc.util.extend(TestParticipant,function() {
 //================================================
 // Packetbuilders for testing API classes
 //================================================
-var TestPacketContext = ozpIwc.util.extend(ozpIwc.TransportPacketContext, function() {
-    ozpIwc.TransportPacketContext.apply(this, arguments);
+var TestPacketContext = ozpIwc.util.extend(ozpIwc.transport.PacketContext, function() {
+    ozpIwc.transport.PacketContext.apply(this, arguments);
     var self = this;
     this.responses = [];
     this.router = {
@@ -112,7 +116,7 @@ var TestPacketContext = ozpIwc.util.extend(ozpIwc.TransportPacketContext, functi
 //================================================
 var FakeRouter = function() {
     this.jitter = 0;
-    this.events = new ozpIwc.Event();
+    this.events = new ozpIwc.util.Event();
     this.events.mixinOnOff(this);
     this.packetQueue=[];
     this.participants=[];
@@ -157,11 +161,15 @@ var FakeRouter = function() {
         groups.forEach(function(groupName) {
             var g=self.participants[groupName];
             if(!g) {
-                g=self.participants[groupName]=new ozpIwc.MulticastParticipant(groupName);
+                g=self.participants[groupName]=new ozpIwc.transport.participant.Multicast({
+                    name: groupName,
+                    authorization: ozpIwc.wiring.authorization,
+                    metrics: new ozpIwc.metric.Registry()
+                });
             }
             g.addMember(participant);
             if (participant.address) {
-                var registeredEvent = new ozpIwc.CancelableEvent({
+                var registeredEvent = new ozpIwc.util.CancelableEvent({
                     'entity': {'group': groupName, 'address': participant.address}
                 });
                 participant.permissions.pushIfNotExist('ozp:iwc:sendAs', groupName);

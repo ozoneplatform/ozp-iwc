@@ -3,10 +3,15 @@ describe("Names API",function() {
 	var namesApi;
     
 	beforeEach(function() {
-		namesApi=new ozpIwc.NamesApi({
+        var fakeRouter = new FakeRouter();
+		namesApi=new ozpIwc.api.names.Api({
+            authorization: ozpIwc.wiring.authorization,
             'name': "names.test.api",
-			'participant': new TestClientParticipant(),
-            'router': new FakeRouter()
+			'participant': new TestClientParticipant({
+                authorization: ozpIwc.wiring.authorization,
+                router: fakeRouter
+            }),
+            'router': fakeRouter
 		});
         namesApi.isRequestQueueing=false;
         namesApi.leaderState = "leader";
@@ -154,7 +159,7 @@ describe("Names API",function() {
         });
         pit("updates the collection when setting a value in the tree",function() {
             var resourceName=r.resource + "/testValue";
-            namesApi.data[resourceName]=new ozpIwc.ApiNode({
+            namesApi.data[resourceName]=new ozpIwc.api.base.Node({
                     'resource': resourceName,
                     'contentType': r.contentType,
                     'entity' : { 'foo' : 1 }

@@ -9,15 +9,15 @@ debuggerModule.controller('GeneralCtrl',['$scope', '$state', 'iwcClient',functio
     scope.config = ozpIwc.config;
     client.connect().then(function() {
         scope.apis=[
-            {'name': "Data API", 'obj': ozpIwc.dataApi},
-            {'name': "Intents API", 'obj': ozpIwc.intentsApi},
-            {'name': "System API", 'obj': ozpIwc.systemApi},
-            {'name': "Names API", 'obj': ozpIwc.namesApi}
+            {'name': "Data API", 'obj': ozpIwc.wiring.apis.data},
+            {'name': "Intents API", 'obj': ozpIwc.wiring.apis.intents},
+            {'name': "System API", 'obj': ozpIwc.wiring.apis.system},
+            {'name': "Names API", 'obj': ozpIwc.wiring.apis.names}
         ];
         scope.apis.forEach(function(api){
             api.endpoints = [];
             api.obj.endpoints.forEach(function(ep){
-                var endpoint = ozpIwc.endpoint(ep.link);
+                var endpoint = ozpIwc.api.endpoint(ep.link);
                 scope.$apply(function() {
                     scope.endpointTabulated.push({
                         'name': api.name,

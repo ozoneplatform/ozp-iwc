@@ -6,9 +6,13 @@ describe("Locks API",function() {
     beforeEach(function(done) {
         fakeRouter = new FakeRouter();
         sentPacketObjs = [];
-        locksApi=new ozpIwc.LocksApi({
-            'participant': new TestClientParticipant(),
-            'name': "testLocks.api"
+        locksApi=new ozpIwc.api.locks.Api({
+            'authorization': ozpIwc.wiring.authorization,
+            'participant': new TestClientParticipant({
+                authorization: ozpIwc.wiring.authorization,
+                router: fakeRouter
+            }),
+            'router': fakeRouter
         });
         locksApi.participant.connect().then(function(){
             spyOn(locksApi.participant,"sendImpl").and.callFake(function(packet){
@@ -16,7 +20,7 @@ describe("Locks API",function() {
             });
             locksApi.isRequestQueueing=false;
             locksApi.isSendQueueing=false;
-            locksApi.consensusMember.sendVictoryMessage();
+            //locksApi.consensusMember.sendVictoryMessage();
             done();
         });
 	});
@@ -56,17 +60,17 @@ describe("Locks API",function() {
     };
 
     pit("gives the lock to the first requester",function() {
-        return locksApi.receiveRequestPacket(lockPacket("12345")).then(function(){
+        return locksApi.receivePacketContext(lockPacket("12345")).then(function(){
             expect(sentPacketObjs[0]).toEqual(ownerNotification("12345"));
         });
     });
 
     pit("passes the lock down the queue when the owner unlocks",function() {
         return Promise.all([
-            locksApi.receiveRequestPacket(lockPacket("12345")),
-            locksApi.receiveRequestPacket(lockPacket("12346")),
-            locksApi.receiveRequestPacket(lockPacket("12347")),
-            locksApi.receiveRequestPacket(unlockPacket("12345"))
+            locksApi.receivePacketContext(lockPacket("12345")),
+            locksApi.receivePacketContext(lockPacket("12346")),
+            locksApi.receivePacketContext(lockPacket("12347")),
+            locksApi.receivePacketContext(unlockPacket("12345"))
         ]).then(function(){
             expect(sentPacketObjs.length).toEqual(2);
             expect(sentPacketObjs[0]).toEqual(ownerNotification("12345"));
@@ -80,12 +84,12 @@ describe("Locks API",function() {
         var context = getPacket("unitTest","i:300");
 
         return Promise.all([
-            locksApi.receiveRequestPacket(lockPacket("12345")),
-            locksApi.receiveRequestPacket(lockPacket("12346")),
-            locksApi.receiveRequestPacket(lockPacket("12347")),
-            locksApi.receiveRequestPacket(unlockPacket("12346"))
+            locksApi.receivePacketContext(lockPacket("12345")),
+            locksApi.receivePacketContext(lockPacket("12346")),
+            locksApi.receivePacketContext(lockPacket("12347")),
+            locksApi.receivePacketContext(unlockPacket("12346"))
         ]).then(function(){
-            return locksApi.receiveRequestPacket(context);
+            return locksApi.receivePacketContext(context);
         }).then(function(){
             expect(context.responses[0].entity).toEqual({
                 owner: queueEntry("12345"),
@@ -100,13 +104,13 @@ describe("Locks API",function() {
         var context = getPacket("unitTest","i:300");
 
         return Promise.all([
-            locksApi.receiveRequestPacket(lockPacket("12345")),
-            locksApi.receiveRequestPacket(lockPacket("12346")),
-            locksApi.receiveRequestPacket(lockPacket("12347")),
-            locksApi.receiveRequestPacket(lockPacket("12346","i:10")),
-            locksApi.receiveRequestPacket(lockPacket("12346","i:20"))
+            locksApi.receivePacketContext(lockPacket("12345")),
+            locksApi.receivePacketContext(lockPacket("12346")),
+            locksApi.receivePacketContext(lockPacket("12347")),
+            locksApi.receivePacketContext(lockPacket("12346","i:10")),
+            locksApi.receivePacketContext(lockPacket("12346","i:20"))
         ]).then(function(){
-            return locksApi.receiveBusPacket({
+            return locksApi.receivePacketContext({
                 packet: {
                     dst: "$bus.multicast",
                     action: "disconnect",
@@ -118,7 +122,7 @@ describe("Locks API",function() {
                 }
             });
         }).then(function(){
-            return locksApi.receiveRequestPacket(context);
+            return locksApi.receivePacketContext(context);
         }).then(function(){
             expect(context.responses[0].entity).toEqual({
                 owner: queueEntry("12345"),
@@ -134,11 +138,11 @@ describe("Locks API",function() {
         var context = getPacket("unitTest","i:300");
 
         return Promise.all([
-            locksApi.receiveRequestPacket(lockPacket("12345")),
-            locksApi.receiveRequestPacket(lockPacket("12346")),
-            locksApi.receiveRequestPacket(lockPacket("12347"))
+            locksApi.receivePacketContext(lockPacket("12345")),
+            locksApi.receivePacketContext(lockPacket("12346")),
+            locksApi.receivePacketContext(lockPacket("12347"))
         ]).then(function(){
-            return locksApi.receiveBusPacket({
+            return locksApi.receivePacketContext({
                 packet: {
                     dst: "$bus.multicast",
                     action: "disconnect",
@@ -150,7 +154,7 @@ describe("Locks API",function() {
                 }
             });
         }).then(function(){
-            locksApi.receiveRequestPacket(context);
+            locksApi.receivePacketContext(context);
         }).then(function(){
             expect(sentPacketObjs.length).toEqual(2);
             expect(sentPacketObjs[1]).toEqual(ownerNotification("12346"));
@@ -162,16 +166,16 @@ describe("Locks API",function() {
         var context2 = getPacket("unitTest","i:300","/mutex/2");
 
         return Promise.all([
-            locksApi.receiveRequestPacket(lockPacket("12345","i:1","/mutex/1")),
-            locksApi.receiveRequestPacket(lockPacket("12346","i:1","/mutex/1")),
-            locksApi.receiveRequestPacket(lockPacket("12347","i:1","/mutex/1")),
-            locksApi.receiveRequestPacket(lockPacket("12346","i:10","i:1","/mutex/1")),
-            locksApi.receiveRequestPacket(lockPacket("12346","i:20","i:1","/mutex/1")),
-            locksApi.receiveRequestPacket(lockPacket("12346","i:2","/mutex/2")),
-            locksApi.receiveRequestPacket(lockPacket("12349","i:2","/mutex/2")),
-            locksApi.receiveRequestPacket(lockPacket("12347","i:2","/mutex/2"))
+            locksApi.receivePacketContext(lockPacket("12345","i:1","/mutex/1")),
+            locksApi.receivePacketContext(lockPacket("12346","i:1","/mutex/1")),
+            locksApi.receivePacketContext(lockPacket("12347","i:1","/mutex/1")),
+            locksApi.receivePacketContext(lockPacket("12346","i:10","i:1","/mutex/1")),
+            locksApi.receivePacketContext(lockPacket("12346","i:20","i:1","/mutex/1")),
+            locksApi.receivePacketContext(lockPacket("12346","i:2","/mutex/2")),
+            locksApi.receivePacketContext(lockPacket("12349","i:2","/mutex/2")),
+            locksApi.receivePacketContext(lockPacket("12347","i:2","/mutex/2"))
         ]).then(function() {
-            return locksApi.receiveBusPacket({
+            return locksApi.receivePacketContext({
                 packet: {
                     dst: "$bus.multicast",
                     action: "disconnect",
@@ -184,8 +188,8 @@ describe("Locks API",function() {
             });
         }).then(function(){
             return Promise.all([
-                locksApi.receiveRequestPacket(context1),
-                locksApi.receiveRequestPacket(context2)
+                locksApi.receivePacketContext(context1),
+                locksApi.receivePacketContext(context2)
             ]);
         }).then(function(){
             expect(context1.responses[0].entity).toEqual({
@@ -210,8 +214,8 @@ describe("Locks API",function() {
     pit("returns badAction on a set",function() {
         var context = testPacket("unitTest", "set");
 
-        return locksApi.receiveRequestPacket(lockPacket("12345")).then(function () {
-            return locksApi.receiveRequestPacket(context);
+        return locksApi.receivePacketContext(lockPacket("12345")).then(function () {
+            return locksApi.receivePacketContext(context);
         }).then(function () {
             expect(context.responses[0].response).toEqual("badAction");
         });
@@ -220,8 +224,8 @@ describe("Locks API",function() {
     pit("returns badAction on a delete",function() {
         var context=testPacket("unitTest","delete");
 
-        return locksApi.receiveRequestPacket(lockPacket("12345")).then(function(){
-            return locksApi.receiveRequestPacket(context);
+        return locksApi.receivePacketContext(lockPacket("12345")).then(function(){
+            return locksApi.receivePacketContext(context);
         }).then(function(){
             expect(context.responses[0].response).toEqual("badAction");
         });

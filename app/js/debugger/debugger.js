@@ -48,7 +48,11 @@ var debuggerModule=angular.module("ozpIwc.debugger",[
 
 
 debuggerModule.factory("iwcClient",function() {
-    var part = new ozpIwc.ClientParticipant({name: "debuggerClient",autoConnect: false});
+    var part = new ozpIwc.transport.participant.Client({
+        authorization: ozpIwc.wiring.authorization,
+        name: "debuggerClient",
+        router: ozpIwc.wiring.router,
+        autoConnect: false});
 
     part.connect = function(){
         if(!this.connectPromise) {
@@ -83,7 +87,7 @@ debuggerModule.controller("debuggerController",["$scope","iwcClient",function(sc
 debuggerModule.service("apiSettingService",function(){
     this.apis={
         'data.api' : {
-            'address': "data.api",
+            'address': "data.api"
         },
         'intents.api': {
             'address': "intents.api",

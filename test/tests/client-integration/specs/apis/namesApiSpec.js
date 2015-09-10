@@ -114,14 +114,14 @@ describe("Names API", function () {
 
 
         pit('Client sets values', function() {
-            console.log("[NamesApiSpec] Sending names.api set");
+            console.log("[Names Api Spec] Sending names.api set");
             var rv=client.api('names.api').set(testId,testFragment)
                 .then(function(reply) {
-                    console.log("[NamesApiSpec] Set succeeded with",reply);
+                    console.log("[Names Api Spec] Set succeeded with",reply);
                     expect(reply.response).toEqual('ok');
                 });
             rv.catch(function(e) {
-                console.log("[NamesApiSpec] Set failed with ",e);
+                console.log("[Names Api Spec] Set failed with ",e);
             });
             return rv;
         });

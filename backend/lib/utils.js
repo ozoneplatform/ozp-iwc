@@ -7,7 +7,7 @@ module.exports = {
      * @method hateoas
      * @param {Object} payload
      * @param {Array} links
-     * @returns {Object}
+     * @return {Object}
      */
     hateoas:  function (payload, links) {
         var wrapped = {};
@@ -27,7 +27,7 @@ module.exports = {
     /**
      * Gets the host path matching the given request.
      * @param {Object} req
-     * @returns {String}
+     * @return {String}
      */
     getHostUrl: function(req){
         return req.protocol + '://' + req.get('host');
@@ -37,7 +37,7 @@ module.exports = {
      * @method getFullUrl
      * @param {Object} req
      * @param {Boolean} [noFslash]
-     * @returns {String}
+     * @return {String}
      */
     getFullUrl: function(req,noFslash){
         var url;
@@ -53,7 +53,7 @@ module.exports = {
     /**
      * Used to generate listing data. Returns a static path to the server's root.
      * @method getServerPath
-     * @returns {string}
+     * @return {string}
      */
     getServerPath : function(){
         return ServerConfig.SERVER_PROTOCOL + "://" + ServerConfig.SERVER_DOMAIN_NAME + ":" +

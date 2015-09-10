@@ -32,8 +32,9 @@ describe("KeyBroadcastLocalStorageLink", function () {
         clockOffset = 0;
         localStorage.clear();
 
-        peer = new ozpIwc.Peer();
-        link = new ozpIwc.KeyBroadcastLocalStorageLink({
+        peer = new ozpIwc.network.Peer();
+        link = new ozpIwc.network.KeyBroadcastLocalStorageLink({
+            metrics: ozpIwc.wiring.metrics,
             peer: peer,
             fragmentSize: 100,
             fragmentTimeout: 500
@@ -57,7 +58,7 @@ describe("KeyBroadcastLocalStorageLink", function () {
                 bar: []
                 }
             };
-            sentPacket.data.foo[0] = sentPacket.data. bar;
+            sentPacket.data.foo[0] = sentPacket.data.bar;
             sentPacket.data.bar[0] = sentPacket.data.foo;
 
             link.send(sentPacket);

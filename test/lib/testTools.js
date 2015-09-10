@@ -100,7 +100,7 @@ beforeEach(function() {
  * useful for tests that have multiple asynchronous paths.
  * @param {type} count - Number of times the returned function must be invoked.
  * @param {type} done - Function to call when count reaches zero
- * @returns {function}
+ * @return {function}
  */
 ozpIwc.testUtil.doneSemaphore=function(count,done) {
     return function() { 

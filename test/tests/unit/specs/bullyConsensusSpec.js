@@ -2,7 +2,8 @@ describe("Bully Consensus",function() {
 
     var consensus,router;
     var consensusGen = function(router){
-        return  new ozpIwc.consensus.Bully({
+        return  new ozpIwc.transport.consensus.Bully({
+            'authorization': ozpIwc.wiring.authorization,
             'name': "fake",
             'router': router
         });
@@ -14,8 +15,9 @@ describe("Bully Consensus",function() {
         //ozpIwc.util.setImmediate=function(f) {
         //    window.setTimeout(f,0);
         //};
-        router = new ozpIwc.Router({
-            peer: new ozpIwc.Peer()
+        router = new ozpIwc.transport.Router({
+            authorization: ozpIwc.wiring.authorization,
+            peer: new ozpIwc.network.Peer()
         });
     });
 
@@ -25,9 +27,7 @@ describe("Bully Consensus",function() {
     });
 
     var disableConsensus = function(consensus){
-        consensus.sendVictoryMessage = function(){};
-        consensus.sendElectionMessage = function(){};
-        consensus.sendAckMessage= function(){};
+        consensus.participant.send = function(){};
     };
 
 

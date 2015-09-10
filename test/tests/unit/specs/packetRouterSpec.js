@@ -29,7 +29,7 @@ describe("URL Template Tool", function() {
     /* jshint loopfunc:true */
     Object.keys(cases).forEach(function(pattern) {
         describe("Pattern " + pattern, function() {
-            var template = ozpIwc.packetRouter.uriTemplate(pattern);
+            var template = ozpIwc.util.PacketRouter.uriTemplate(pattern);
             var tests = cases[pattern];
             Object.keys(tests).forEach(function(uri) {
                 it("handles " + uri, function() {
@@ -43,7 +43,7 @@ describe("URL Template Tool", function() {
 describe("Packet Routing", function() {
     var router;
     beforeEach(function() {
-        router=new ozpIwc.PacketRouter();
+        router=new ozpIwc.util.PacketRouter();
     });
     describe("basic, single routes",function() {
         var receivedPacket=false;
@@ -536,7 +536,7 @@ describe("Packet Routing", function() {
             TestClass=function(name) {
                 this.name=name;
             };
-            ozpIwc.PacketRouter.mixin(TestClass);
+            ozpIwc.util.PacketRouter.mixin(TestClass);
         });
         
         it("declares routes at a class level",function() {
@@ -620,7 +620,7 @@ describe("Packet Routing", function() {
                    TestClass.apply(this,arguments);
                    this.name="SUBCLASS: " + this.name;
                 });
-                ozpIwc.PacketRouter.mixin(TestSubclass);
+                ozpIwc.util.PacketRouter.mixin(TestSubclass);
                 
                 TestClass.declareRoute({
                     action: "get",

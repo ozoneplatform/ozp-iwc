@@ -7,7 +7,7 @@ describe("Peer",function() {
 	
 	beforeEach(function() {	
 		sendCount=receiveCount=0;
-		peer=new ozpIwc.Peer();
+		peer=new ozpIwc.network.Peer();
 		peer.on("send",function(event) {sendCount++;});
 		peer.on("receive",function(event) {receiveCount++;});
 		
