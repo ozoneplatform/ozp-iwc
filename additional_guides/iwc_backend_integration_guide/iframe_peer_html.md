@@ -15,7 +15,7 @@ Below is an example of a configured iframe_peer.html.
         ozpIwc.acceptPostMessageParticipants=true;
     </script>
     <script type="text/javascript" src="js/ozpIwc-bus.js"></script>
-    <script type="text/javascript" src="js/defaultWiring.js"></script>
+    <script type="text/javascript" src="js/defaultInit.js"></script>
 
   </head>
   <body>
@@ -37,7 +37,7 @@ var client = new ozpIwc.client({peerUrl: "http://ozone-development.github.io/iwc
 ```
 For more information on IWC client aspects see [[IWC App Integration]]
 
-The ozpIwc-bus.js & defaultWiring.js files can be hosted anywhere else on server so long as they:
+The ozpIwc-bus.js & defaultInit.js files can be hosted anywhere else on server so long as they:
   1. remain within the same origin.
   2. can be loaded by the iframe_peer.html
 
@@ -53,5 +53,5 @@ Property | Type | Default Value | Definition
  ozpIwc.apiRootUrl | String| "/api" | The location of Api backend root [hal data](LINKME) index.json (relative or absolute)
 ozpIwc.marketplaceUsername | String | "" | Basic authentication username for the backend (For development purposes only)
 ozpIwc.marketplacePassword | String | "" | Basic authentication password for the backend (For development purposes only)
-ozpIwc.runApis | Boolean | true | If false, api's defined in the defaultWiring.js will not be loaded
+ozpIwc.runApis | Boolean | true | If false, api's defined in the defaultInit.js will not be loaded
 ozpIwc.acceptPostMessageParticipants | Boolean | true | If false, the IWC bus will be confined to one browsing context.
