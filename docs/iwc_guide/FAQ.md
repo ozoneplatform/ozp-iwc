@@ -33,3 +33,12 @@ available at this time.
 ####Is there documentation on commonly used intents and the data they expect?
 At the current stage of development there is not a definitive list of commonly used intents. As the platform continues
 to grow this will be addressed and documented.
+
+####In OWF7, I used publish subscribe between my widgets. Why isn't that in the IWC?
+Since the IWC framework is built around the concept of state rather than active events, there isn't a direct mapping of
+the publish subscribe functionality. Rather there is the concept of set and watch, where set can act as the publish
+functionality, and watch listens to changes of a resource. The difference between watch and subscribe is watch is state 
+aware. A watch registered function will be called when the resource value is changed with both the new value and old
+value of the resource. This gives developers the ability to do transitions in their applications without having to 
+retain state of data themselves. For examples of transitioning from publish/subscribe to set/watch, refer to the 
+[Migration Example](migration/pubsub_to_setwatch.md).

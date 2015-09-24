@@ -34,9 +34,8 @@
 * [FAQs](FAQ.md)
 * Designing IWC Applications
 * Testing IWC Applications
-* Migrating an Existing Application
 * Migration from OWF 7
-    * Comparison of OWF 7 to IWC
+    * [Publish/Subscribe to Set/Watch](migration/pubsub_to_setwatch.md)
 * Additional Guides
     * [IWC App Integration Guide](additional_guides/app_integration_guide/README.md)
         * [Adding an IWC Client to an Application](additional_guides/app_integration_guide/adding_an_iwc_client_to_an_application.md)
