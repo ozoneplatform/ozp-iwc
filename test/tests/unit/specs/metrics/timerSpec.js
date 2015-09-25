@@ -2,7 +2,7 @@ describe("Metrics: Timer",function() {
 	var timer;
 	
 	beforeEach(function() {
-		timer=new ozpIwc.metricTypes.Timer();
+		timer=new ozpIwc.metric.types.Timer();
 	});
 	
 	it("starts at zero",function() {

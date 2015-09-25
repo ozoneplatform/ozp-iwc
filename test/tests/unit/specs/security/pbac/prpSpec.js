@@ -3,7 +3,7 @@ describe("Policy Repository Point",function() {
     var prp;
     describe("default behavior and policy acquisition failure.",function(){
         beforeEach(function(){
-            prp = new ozpIwc.policyAuth.PRP();
+            prp = new ozpIwc.policyAuth.points.PRP();
         });
 
         xit("formats server loaded policies as Policy Elements",function(){
@@ -29,7 +29,7 @@ describe("Policy Repository Point",function() {
 
         it('always applies persistent policies to any policy request',function(done){
 
-            prp = new ozpIwc.policyAuth.PRP({
+            prp = new ozpIwc.policyAuth.points.PRP({
                 'persistentPolicies': ['somePolicy']
             });
 
@@ -57,7 +57,7 @@ describe("Policy Repository Point",function() {
                 });
             });
 
-            prp = new ozpIwc.policyAuth.PRP();
+            prp = new ozpIwc.policyAuth.points.PRP();
         });
 
         xit("fetches desired policies.",function(done){

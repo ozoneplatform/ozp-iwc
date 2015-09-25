@@ -2,9 +2,9 @@ describe("IWC Peer", function() {
     var peerA, linkA, otherContext;
 
     var otherContextOnLoad = function(){
-        this.peerB = new ozpIwc.Peer();
+        this.peerB = new ozpIwc.network.Peer();
 
-        this.linkB = new ozpIwc.KeyBroadcastLocalStorageLink({
+        this.linkB = new ozpIwc.network.KeyBroadcastLocalStorageLink({
             peer: this.peerB
         });
     };
@@ -13,8 +13,8 @@ describe("IWC Peer", function() {
     };
 
     beforeEach(function(){
-        peerA = new ozpIwc.Peer();
-        linkA = new ozpIwc.KeyBroadcastLocalStorageLink({
+        peerA = new ozpIwc.network.Peer();
+        linkA = new ozpIwc.network.KeyBroadcastLocalStorageLink({
             peer: peerA
         });
         otherContext = new ozpIwc.testUtil.BrowsingContext(otherContextOnLoad, function (message, scope) {
@@ -46,7 +46,7 @@ describe("IWC Peer", function() {
 
         it("shouldn't receive duplicates",function(done){
             peerA.inj = function(packet){
-                expect(ozpIwc.metrics.counter('network.packets.dropped').get()).toEqual(0);
+                expect(ozpIwc.wiring.metrics.counter('network.packets.dropped').get()).toEqual(0);
                 done();
             };
             peerA.events.on('receive',peerA.inj);

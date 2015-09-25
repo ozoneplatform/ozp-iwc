@@ -151,8 +151,8 @@ debuggerModule.controller("packetLogController",["$scope", "$filter",function(sc
             });
         }
     };
-    ozpIwc.defaultPeer.on("receive",logPacket);
-    ozpIwc.defaultPeer.on("send",logPacket);
+    ozpIwc.wiring.peer.on("receive",logPacket);
+    ozpIwc.wiring.peer.on("send",logPacket);
 
 }]);
 

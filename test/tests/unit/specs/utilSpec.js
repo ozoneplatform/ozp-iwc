@@ -2,7 +2,7 @@ describe("Event",function() {
 	var event;
 	
 	beforeEach(function() {
-		event=new ozpIwc.Event();
+		event=new ozpIwc.util.Event();
 	});
 	
 	afterEach(function() {
@@ -104,12 +104,12 @@ describe("Event",function() {
 		});
 
 		it("returns false from trigger if the cancelable event is not canceled",function() {
-			expect(event.trigger("1",new ozpIwc.CancelableEvent()).canceled).toEqual(false);
+			expect(event.trigger("1",new ozpIwc.util.CancelableEvent()).canceled).toEqual(false);
 		});
 
 		it("returns true from trigger if the event is canceled",function() {
 			event.on("1",function(event) { event.cancel();});
-			expect(event.trigger("1",new ozpIwc.CancelableEvent()).canceled).toEqual(true);
+			expect(event.trigger("1",new ozpIwc.util.CancelableEvent()).canceled).toEqual(true);
 		});
 
 	});
@@ -171,7 +171,7 @@ describe("Event",function() {
 describe("Async Action",function() {
 	var action;
 	beforeEach(function() {
-		action=new ozpIwc.AsyncAction();
+		action=new ozpIwc.util.AsyncAction();
 	});
 	
 	it("resolve calls the handler",function() {
@@ -238,15 +238,15 @@ describe("Async Action",function() {
         var foo = {
             a: true
         };
-        expect(ozpIwc.AsyncAction.isAnAction(action)).toEqual(true);
-        expect(ozpIwc.AsyncAction.isAnAction(foo)).toEqual(false);
+        expect(ozpIwc.util.AsyncAction.isAnAction(action)).toEqual(true);
+        expect(ozpIwc.util.AsyncAction.isAnAction(foo)).toEqual(false);
     });
 
     describe('All functionality', function(){
         it("can resolve an AsyncAction immediately if a group of actions have resolved",function() {
-            var tempAction1 = new ozpIwc.AsyncAction().resolve('success',{foo:1});
-            var tempAction2 = new ozpIwc.AsyncAction().resolve('success',{foo:2});
-            ozpIwc.AsyncAction.all([tempAction1,tempAction2])
+            var tempAction1 = new ozpIwc.util.AsyncAction().resolve('success',{foo:1});
+            var tempAction2 = new ozpIwc.util.AsyncAction().resolve('success',{foo:2});
+            ozpIwc.util.AsyncAction.all([tempAction1,tempAction2])
                 .success(function(results){
                     expect(results.length).toEqual(2);
                     expect(results[0]).toEqual({foo:1});
@@ -257,9 +257,9 @@ describe("Async Action",function() {
                 });
         });
         it("can reject an AsyncAction immediately if any action in a group of actions rejects",function() {
-            var tempAction1 = new ozpIwc.AsyncAction().resolve('failure',"I dropped my ice cream.");
-            var tempAction2 = new ozpIwc.AsyncAction().resolve('success',{foo:2});
-            ozpIwc.AsyncAction.all([tempAction1,tempAction2])
+            var tempAction1 = new ozpIwc.util.AsyncAction().resolve('failure',"I dropped my ice cream.");
+            var tempAction2 = new ozpIwc.util.AsyncAction().resolve('success',{foo:2});
+            ozpIwc.util.AsyncAction.all([tempAction1,tempAction2])
                 .success(function(results){
                     expect("this").toEqual("not happen.");
                 })
@@ -269,9 +269,9 @@ describe("Async Action",function() {
         });
 
         it("can resolve an AsyncAction asynchronously if a group of actions have resolved",function(done) {
-            var tempAction1 = new ozpIwc.AsyncAction();
-            var tempAction2 = new ozpIwc.AsyncAction();
-            ozpIwc.AsyncAction.all([tempAction1,tempAction2])
+            var tempAction1 = new ozpIwc.util.AsyncAction();
+            var tempAction2 = new ozpIwc.util.AsyncAction();
+            ozpIwc.util.AsyncAction.all([tempAction1,tempAction2])
                 .success(function(results){
                     expect(results.length).toEqual(2);
                     expect(results[0]).toEqual({foo:1});
@@ -282,9 +282,9 @@ describe("Async Action",function() {
             tempAction2.resolve('success',{foo:2});
         });
         it("can reject an AsyncAction asynchronously if any action in a group of actions rejects",function(done) {
-            var tempAction1 = new ozpIwc.AsyncAction();
-            var tempAction2 = new ozpIwc.AsyncAction();
-            ozpIwc.AsyncAction.all([tempAction1,tempAction2])
+            var tempAction1 = new ozpIwc.util.AsyncAction();
+            var tempAction2 = new ozpIwc.util.AsyncAction();
+            ozpIwc.util.AsyncAction.all([tempAction1,tempAction2])
                 .success(function(results){
                     expect("this").toEqual("not happen.");
                 })
@@ -297,9 +297,9 @@ describe("Async Action",function() {
         });
 
         it('can resolve all with a mixture of AsyncAction and non-AsyncAction objects immediately',function(){
-            var tempAction1 = new ozpIwc.AsyncAction().resolve('success',{foo:1});
-            var tempAction2 = new ozpIwc.AsyncAction().resolve('success',{foo:2});
-            ozpIwc.AsyncAction.all([tempAction1,true,"works",action.resolve('success',1),2,tempAction2])
+            var tempAction1 = new ozpIwc.util.AsyncAction().resolve('success',{foo:1});
+            var tempAction2 = new ozpIwc.util.AsyncAction().resolve('success',{foo:2});
+            ozpIwc.util.AsyncAction.all([tempAction1,true,"works",action.resolve('success',1),2,tempAction2])
                 .success(function(results){
                     expect(results[0]).toEqual({foo:1});
                     expect(results[1]).toEqual(true);
@@ -311,9 +311,9 @@ describe("Async Action",function() {
         });
 
         it('can reject all with a mixture of AsyncAction and non-AsyncAction objects immediately',function(){
-            var tempAction1 = new ozpIwc.AsyncAction().resolve('success',{foo:1});
-            var tempAction2 = new ozpIwc.AsyncAction().resolve('success',{foo:2});
-            ozpIwc.AsyncAction.all([tempAction1,true,"works",action.resolve('failure',"test"),2,tempAction2])
+            var tempAction1 = new ozpIwc.util.AsyncAction().resolve('success',{foo:1});
+            var tempAction2 = new ozpIwc.util.AsyncAction().resolve('success',{foo:2});
+            ozpIwc.util.AsyncAction.all([tempAction1,true,"works",action.resolve('failure',"test"),2,tempAction2])
                 .success(function(results){
                     expect("this").toEqual('not to happen.');
                 })
@@ -323,9 +323,9 @@ describe("Async Action",function() {
         });
 
         it('can resolve all with a mixture of AsyncAction and non-AsyncAction objects asynchronously',function(done){
-            var tempAction1 = new ozpIwc.AsyncAction().resolve('success',{foo:1});
-            var tempAction2 = new ozpIwc.AsyncAction().resolve('success',{foo:2});
-            ozpIwc.AsyncAction.all([tempAction1,true,"works",action,2,tempAction2])
+            var tempAction1 = new ozpIwc.util.AsyncAction().resolve('success',{foo:1});
+            var tempAction2 = new ozpIwc.util.AsyncAction().resolve('success',{foo:2});
+            ozpIwc.util.AsyncAction.all([tempAction1,true,"works",action,2,tempAction2])
                 .success(function(results){
                     expect(results[0]).toEqual({foo:1});
                     expect(results[1]).toEqual(true);
@@ -338,9 +338,9 @@ describe("Async Action",function() {
             action.resolve('success',1);
         });
         it('can reject all with a mixture of AsyncAction and non-AsyncAction objects asynchronously',function(done){
-            var tempAction1 = new ozpIwc.AsyncAction().resolve('success',{foo:1});
-            var tempAction2 = new ozpIwc.AsyncAction().resolve('success',{foo:2});
-            ozpIwc.AsyncAction.all([tempAction1,true,"works",action,2,tempAction2])
+            var tempAction1 = new ozpIwc.util.AsyncAction().resolve('success',{foo:1});
+            var tempAction2 = new ozpIwc.util.AsyncAction().resolve('success',{foo:2});
+            ozpIwc.util.AsyncAction.all([tempAction1,true,"works",action,2,tempAction2])
                 .success(function(results){
                     expect("this").toEqual('not to happen.');
                 })
@@ -352,7 +352,7 @@ describe("Async Action",function() {
         });
 
         it('will call a resolved callback immediately if the action had previously resolved', function(done){
-            var action = new ozpIwc.AsyncAction().resolve('success',{foo:1});
+            var action = new ozpIwc.util.AsyncAction().resolve('success',{foo:1});
             action.success(function(val){
                 expect(val).toEqual({foo:1});
                 done();
@@ -559,8 +559,8 @@ describe("General Utilities", function() {
 				"http://example.com/foo/bar": { foo: "foo/bar" }
 			}
 		};
-		ozpIwc.object.eachEntry(scenarios,function(template,tests){
-			ozpIwc.object.eachEntry(tests,function(answer,args){
+		ozpIwc.util.object.eachEntry(scenarios,function(template,tests){
+			ozpIwc.util.object.eachEntry(tests,function(answer,args){
 				it("Processes "+ template +" into " + answer,function(){
 					expect(ozpIwc.util.resolveUriTemplate(template,args)).toEqual(answer);
 				});

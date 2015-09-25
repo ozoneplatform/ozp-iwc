@@ -4,14 +4,14 @@ describe("with one pool", function() {
     var queue;
 
     beforeEach(function() {
-        queue=new ozpIwc.AjaxPersistenceQueue({poolSize:1});
+        queue=new ozpIwc.util.AjaxPersistenceQueue({poolSize:1});
         spyOn(ozpIwc.util,"ajax").and.callFake(function() {
             return Promise.resolve();
         });
     });
 
     pit("enqueues a persistence request",function() {
-        var exampleNode=new ozpIwc.ApiNode({
+        var exampleNode=new ozpIwc.api.base.Node({
             resource: "/foo/bar",
             self: "https://example.com/data/api/foo/bar"
         });
@@ -26,10 +26,10 @@ describe("with one pool", function() {
         });
     });
 		pit("creates the URI for a node without self",function() {
-				ozpIwc.uriTemplate=function() {
+				ozpIwc.api.uriTemplate=function() {
 					return "http://example.com/{+resource}";
 				};
-        var exampleNode=new ozpIwc.DataNode({
+        var exampleNode=new ozpIwc.api.data.Node({
             resource: "/foo/bar",
 						entity: {"foo":1}            
         });
@@ -47,7 +47,7 @@ describe("with one pool", function() {
     });
     pit("saves nodes in the order that they are enqueued",function() {
         for(var i=0;i<10;++i) {
-            queue.queueNode("data.api/"+i,new ozpIwc.ApiNode({
+            queue.queueNode("data.api/"+i,new ozpIwc.api.base.Node({
                 resource: "/foo/bar",
                 self: "https://example.com/"+i
             }));
@@ -63,11 +63,11 @@ describe("with one pool", function() {
     });
     pit("only saves a node once, even if queued multiple times",function() {
         for(var i=0;i<10;++i) {
-            queue.queueNode("data.api/"+i,new ozpIwc.ApiNode({
+            queue.queueNode("data.api/"+i,new ozpIwc.api.base.Node({
                 resource: "/foo/bar",
                 self: "https://example.com/"+i
             }));
-            queue.queueNode("data.api/"+i,new ozpIwc.ApiNode({
+            queue.queueNode("data.api/"+i,new ozpIwc.api.base.Node({
                 resource: "/foo/bar",
                 self: "https://example.com/"+i
             }));
@@ -84,7 +84,7 @@ describe("with one pool", function() {
     
     pit("intermingles saves and deletes",function() {
         for(var i=0;i<10;++i) {
-            var n=new ozpIwc.ApiNode({
+            var n=new ozpIwc.api.base.Node({
                 resource: "/foo/bar",
                 self: "https://example.com/"+i
             });
@@ -105,9 +105,9 @@ describe("with one pool", function() {
 
 });
 it("requeues a node to be saved if queue is called while the node is in-flight",function(done) {
-    var queue=new ozpIwc.AjaxPersistenceQueue({poolSize:1});
+    var queue=new ozpIwc.util.AjaxPersistenceQueue({poolSize:1});
     var firstCall=true;
-    var exampleNode=new ozpIwc.ApiNode({
+    var exampleNode=new ozpIwc.api.base.Node({
         resource: "/foo/bar",
         self: "https://example.com/data/api/foo/bar"
     });
@@ -135,7 +135,7 @@ describe("with multiple pools", function() {
     var queue;
 
     beforeEach(function() {
-        queue=new ozpIwc.AjaxPersistenceQueue({poolSize:4});
+        queue=new ozpIwc.util.AjaxPersistenceQueue({poolSize:4});
         spyOn(ozpIwc.util,"ajax").and.callFake(function() {
             return Promise.resolve();
         });
@@ -146,11 +146,11 @@ describe("with multiple pools", function() {
         var expectedUrls=[];
         for(var i=min;i<max;++i) {
             expectedUrls.push("https://example.com/"+i);
-            queue.queueNode("data.api/"+i,new ozpIwc.ApiNode({
+            queue.queueNode("data.api/"+i,new ozpIwc.api.base.Node({
                 resource: "/foo/bar",
                 self: "https://example.com/"+i
             }));
-            queue.queueNode("data.api/"+i,new ozpIwc.ApiNode({
+            queue.queueNode("data.api/"+i,new ozpIwc.api.base.Node({
                 resource: "/foo/bar",
                 self: "https://example.com/"+i
             }));

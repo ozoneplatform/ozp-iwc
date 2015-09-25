@@ -25,7 +25,7 @@ describe("Intents in Flight Value", function () {
 
     var makeNode = function (config) {
         config = config || {};
-        return new ozpIwc.IntentsInFlightNode({
+        return new ozpIwc.api.intents.InFlightNode({
             'resource': config.resource || '/ozpIntents/invocations/abcd',
             'invokePacket': invokePacket,
             'type': config.type || baseEntity.intent.type,
@@ -83,7 +83,7 @@ describe("Intents in Flight Value", function () {
 
     it("expects initial state to be delivering if there is only one handler choice", function () {
         var node = makeNode({'handlerChoices': [handlerChoices[0]]});
-        node = ozpIwc.InFlightIntentFSM.transition(node);
+        node = ozpIwc.api.intents.FSM.transition(node);
         stateValidation.deliveringOnlyOne(node);
         expect(node.entity.handler).toEqual({
             resource: handlerChoices[0].resource,
@@ -97,7 +97,7 @@ describe("Intents in Flight Value", function () {
     
     it("transitions from choosing to delivering on receiving a 'delivering' packet", function () {
         var node = makeNode();
-        node = ozpIwc.InFlightIntentFSM.transition(node,{'entity': {
+        node = ozpIwc.api.intents.FSM.transition(node,{'entity': {
                 'state': "delivering",
                 'handler' : {
                     'resource': handlerChoices[0].resource,
@@ -113,14 +113,14 @@ describe("Intents in Flight Value", function () {
     });
     it("transitions from choosing to error on receiving a error packet", function () {
         var node = makeNode();
-        node = ozpIwc.InFlightIntentFSM.transition(node,{'entity': {'state': "error", 'error': "Unknown Error" }});
+        node = ozpIwc.api.intents.FSM.transition(node,{'entity': {'state': "error", 'error': "Unknown Error" }});
         expect(node.entity.state).toEqual("error");
         expect(node.entity.reply).toEqual("Unknown Error");
     });
     it("throws badState if the set lacks resource or reason",function() {
         var node = makeNode();
         expect(function() {
-            ozpIwc.InFlightIntentFSM.transition(node,{'entity':{
+            ozpIwc.api.intents.FSM.transition(node,{'entity':{
                 'state': "delivering",
                 'handler' : {
                     'reason': "userSelected"
@@ -128,7 +128,7 @@ describe("Intents in Flight Value", function () {
             }});
         }).toThrow();
         expect(function() {
-            ozpIwc.InFlightIntentFSM.transition(node,{'entity':{
+            ozpIwc.api.intents.FSM.transition(node,{'entity':{
                 'state': "delivering",
                 'handler' : {
                     'resource': handlerChoices[0].resource
@@ -145,11 +145,11 @@ describe("Intents in Flight Value", function () {
         var node;
         beforeEach(function() {
             node = makeNode({'handlerChoices': [handlerChoices[0]]});
-            node = ozpIwc.InFlightIntentFSM.transition(node);
+            node = ozpIwc.api.intents.FSM.transition(node);
             stateValidation.deliveringOnlyOne(node);
         });
         it("on receiving a 'running' packet", function () {
-            node = ozpIwc.InFlightIntentFSM.transition(node,{
+            node = ozpIwc.api.intents.FSM.transition(node,{
                 'entity': {
                     'state': "running",
                     'handler': {
@@ -165,14 +165,14 @@ describe("Intents in Flight Value", function () {
         });
         
         it("transitions from delivering to error on receiving a error packet", function () {
-            node = ozpIwc.InFlightIntentFSM.transition(node,{'entity': {'state': "error", 'error': "Unknown Error" }});
+            node = ozpIwc.api.intents.FSM.transition(node,{'entity': {'state': "error", 'error': "Unknown Error" }});
             expect(node.entity.state).toEqual("error");
             expect(node.entity.reply).toEqual("Unknown Error");
         });
         
         it("throws badState if the set lacks an address",function() {
             expect(function() {
-                node = ozpIwc.InFlightIntentFSM.transition(node,{
+                node = ozpIwc.api.intents.FSM.transition(node,{
                     'entity': {
                         'state': "running",
                         'handler': {
@@ -191,9 +191,9 @@ describe("Intents in Flight Value", function () {
         var node;
         beforeEach(function() {
             node = makeNode({'handlerChoices': [handlerChoices[0]]});
-            node = ozpIwc.InFlightIntentFSM.transition(node);
+            node = ozpIwc.api.intents.FSM.transition(node);
             stateValidation.deliveringOnlyOne(node);
-            node = ozpIwc.InFlightIntentFSM.transition(node,{
+            node = ozpIwc.api.intents.FSM.transition(node,{
                 'entity': {
                     'state': "running",
                     'handler': {
@@ -206,7 +206,7 @@ describe("Intents in Flight Value", function () {
         });
         
         it("to error on receiving a error packet", function () {
-            node = ozpIwc.InFlightIntentFSM.transition(node,{
+            node = ozpIwc.api.intents.FSM.transition(node,{
                 'entity': {
                     'state': "error",
                     'error': "Unknown Error"
@@ -217,7 +217,7 @@ describe("Intents in Flight Value", function () {
         });
         
         it("to complete on receiving a 'complete' packet", function () {
-            node = ozpIwc.InFlightIntentFSM.transition(node,{
+            node = ozpIwc.api.intents.FSM.transition(node,{
                 'entity': {
                 'state': "complete",
                     'reply': {

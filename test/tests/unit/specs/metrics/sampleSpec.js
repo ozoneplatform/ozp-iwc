@@ -1,8 +1,8 @@
 describe("Sample Interface",function() {
 	var sampleClasses=[
-		["Sample",ozpIwc.metricsStats.Sample],
-		["Uniform Sample",ozpIwc.metricsStats.UniformSample],
-		["Exponentially Decaying Sample",ozpIwc.metricsStats.ExponentiallyDecayingSample]
+		["Sample",ozpIwc.metric.stats.Sample],
+		["Uniform Sample",ozpIwc.metric.stats.UniformSample],
+		["Exponentially Decaying Sample",ozpIwc.metric.stats.ExponentiallyDecayingSample]
 	];
     var sampleClassTests = function() {
 			var sample;
@@ -54,7 +54,7 @@ describe("Sample Interface",function() {
 describe("Uniform Sample Specific Functions",function() {
 	var sample;
 	beforeEach(function() {
-		sample=new ozpIwc.metricsStats.UniformSample(10);
+		sample=new ozpIwc.metric.stats.UniformSample(10);
 	});
 
 	it("gets no bigger than the max size",function() {
@@ -89,7 +89,7 @@ describe("Uniform Sample Specific Functions",function() {
 describe("Exponentially Decaying Sample functionality",function() {
 	var sample;
 	beforeEach(function() {
-		sample=new ozpIwc.metricsStats.ExponentiallyDecayingSample(10);
+		sample=new ozpIwc.metric.stats.ExponentiallyDecayingSample(10);
 	});
 
 	it("gets no bigger than the max size",function() {

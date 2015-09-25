@@ -12,7 +12,7 @@ describe("Policy Information Point",function() {
             });
         });
 
-        pip = new ozpIwc.policyAuth.PIP({
+        pip = new ozpIwc.policyAuth.points.PIP({
             attributes : {
                 'ozp:attributeCollection:fake': {
                     'ozp:val1': ["fakeVal"],

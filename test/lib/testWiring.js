@@ -8,12 +8,14 @@ ozpIwc.enableDefault = false;
 
 ozpIwc.log.setThreshold(ozpIwc.log.ALL);
 
-ozpIwc.defaultPeer = new ozpIwc.Peer();
-ozpIwc.defaultRouter = new ozpIwc.Router({
-    peer: ozpIwc.defaultPeer,
+ozpIwc.wiring = ozpIwc.wiring|| {};
+ozpIwc.wiring.peer = new ozpIwc.network.Peer();
+ozpIwc.wiring.router = new ozpIwc.transport.Router({
+    authorization: ozpIwc.wiring.authorization,
+    metrics: ozpIwc.wiring.metrics,
+    peer: ozpIwc.wiring.peer,
     heartbeatFrequency: 99999999
 });
-
 
 // All unit tests need to fake out the clock
 var now = function() {
@@ -26,7 +28,7 @@ beforeEach(function() {
 });
 afterEach(function() {
     jasmine.clock().uninstall();
-    ozpIwc.object.eachEntry(ozpIwc.util.eventListeners, function(type, listenerList) {
+    ozpIwc.util.object.eachEntry(ozpIwc.util.eventListeners, function(type, listenerList) {
         if (listenerList.length) {
             console.log("Dangling listeners on " + type, listenerList);
         }

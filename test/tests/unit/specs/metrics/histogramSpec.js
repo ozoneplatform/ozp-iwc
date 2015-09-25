@@ -2,7 +2,7 @@ describe("Metrics: Histogram",function() {
 	var histogram;
 	var rangedTolerance=0.05;
 	beforeEach(function() {
-		histogram=new ozpIwc.metricTypes.Histogram();
+		histogram=new ozpIwc.metric.types.Histogram();
 	});
 	
 	it("starts at zero",function() {

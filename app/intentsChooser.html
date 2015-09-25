@@ -121,7 +121,11 @@
       </div>
 
       <script type="text/javascript">
-        var participant=new ozpIwc.ClientParticipant({'name':"intentsChooser"});
+        var participant=new ozpIwc.transport.participant.Client({
+            'authorization': ozpIwc.wiring.authorization,
+            'name':"intentsChooser",
+            'router': ozpIwc.wiring.router
+        });
 
         var cancelButton, onceButton, alwaysButton,selection;
         function failure(msg) {

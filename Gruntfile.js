@@ -17,45 +17,46 @@ module.exports = function(grunt) {
                 'bower_components/es5-shim/es5-shim.js',
                 'bower_components/es5-shim/es5-sham.js',
                 'bower_components/es6-promise/promise.js',
+                'app/js/common/util.js',
                 'app/js/common/**/*.js'
             ],
             metrics: [
                 '<%= src.common %>',
-                'app/js/metrics/statistics/sample.js',
-                'app/js/metrics/statistics/binary_heap.js',
-                'app/js/metrics/statistics/exponentiallyDecayingSample.js',
-                'app/js/metrics/statistics/exponentiallyWeightedMovingAverage.js',
-                'app/js/metrics/baseMetric.js',
-                'app/js/metrics/types/*.js',
-                'app/js/metrics/metricsRegistry.js'
+                'app/js/metric/stats/sample.js',
+                'app/js/metric/stats/binary_heap.js',
+                'app/js/metric/stats/exponentiallyDecayingSample.js',
+                'app/js/metric/stats/exponentiallyWeightedMovingAverage.js',
+                'app/js/metric/baseMetric.js',
+                'app/js/metric/types/*.js',
+                'app/js/metric/registry.js'
             ],
             bus: [
                 '<%= src.common %>',
                 '<%= src.metrics %>',
                 'app/js/bus/util/**/*.js',
-                'app/js/bus/security/**/*.js',
+                'app/js/bus/wiring/configLoading.js',
+
+                'app/js/bus/policyAuth/**/*.js',
+
+                'app/js/bus/packet/**.*.js',
                 'app/js/bus/network/**/*.js',
-                'app/js/bus/transport/participant.js',
-                'app/js/bus/transport/internalParticipant.js',
+
+                'app/js/bus/transport/participant/base.js',
+                'app/js/bus/transport/participant/internal.js',
                 'app/js/bus/transport/router.js',
                 'app/js/bus/transport/**/*.js',
-                'app/js/bus/storage/**/*.js',
-                'app/js/bus/api/commonApiValue.js',
-                'app/js/bus/api/commonApiCollectionValue.js',
+
                 'app/js/bus/api/*.js',
-                'app/js/bus/api/locks/locksApiValue.js',
-                'app/js/bus/api/locks/locksApi.js',
+                'app/js/bus/api/base/*.js',
+                'app/js/bus/api/error/*.js',
+                'app/js/bus/api/filter/*.js',
                 'app/js/bus/api/**/*.js',
-                'app/js/bus/network/**/*.js',
-                'app/js/bus/security/**/*.js',
-                'app/js/bus/transport/**/*.js',
-                'app/js/services/*.js',
-                'app/js/services/node/**/*.js',
-                'app/js/services/api/**/*.js',
-                'app/js/bus/init/configLoading.js',
-                'app/js/bus/init/support/**/*.js',
-                'app/js/bus/init/init/baseInit.js',
-                'app/js/bus/init/init/defaultInit.js'
+
+                'app/js/services/**/*.js',
+
+                'app/js/bus/wiring/support/**/*.js',
+                'app/js/bus/wiring/init/base.js',
+                'app/js/bus/wiring/init/default.js'
             ],
             client: [
                 '<%= src.common %>',
@@ -128,9 +129,13 @@ module.exports = function(grunt) {
             allJsMin: ['<%=output.busJsMin %>', '<%=output.clientJsMin %>', '<%=output.metricsJsMin %>',
                        '<%=output.ngBusJsMin %>', '<%=output.ngClientJsMin %>', '<%=output.ngMetricsJsMin %>'],
             testUnit: [
+                'test/lib/test.conf.js',
                 '<%= output.busJsMin %>',
-                '<%= output.clientJsMin %>',
-                '<%= src.testLib %>',
+                'test/lib/testWiring.js',
+                'test/lib/testTools.js',
+                'test/lib/mockTime.js',
+                'test/lib/jasmine-promises.js',
+                'test/lib/mockObjects.js',
                 '<%= src.testUnit %>'
             ],
             testIntegrationClient: [
@@ -345,7 +350,7 @@ module.exports = function(grunt) {
         watch: {
             concatFiles: {
                 files: ['Gruntfile.js', '<%= src.all %>','app/**/*'],
-                tasks: ['jshint','concat_sourcemap', 'copy:dist'],
+                tasks: ['jshint','concat_sourcemap', 'yuidoc','copy:dist'],
                 options: {
                     interrupt: true,
                     spawn: false
@@ -549,7 +554,7 @@ module.exports = function(grunt) {
     });
     // Default task(s).
     grunt.registerTask('build', "Concat and minify the source code into dist",
-        ['copy:hackBootstrap', 'jshint', 'concat_sourcemap','uglify','concat', 'copy:dist','shell:buildVersionFile']
+        ['copy:hackBootstrap', 'jshint', 'concat_sourcemap','uglify','concat', 'yuidoc', 'copy:dist','shell:buildVersionFile']
     );
     grunt.registerTask('karmaTests', "Runs the unit and integration tests.",
         ['build','karma:unit','connect:testBus','connect:mockParticipant', 'karma:integrationClient', 'karma:integrationBus']

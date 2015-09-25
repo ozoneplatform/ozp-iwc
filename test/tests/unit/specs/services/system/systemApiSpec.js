@@ -51,16 +51,21 @@ describe("System API", function() {
         }
     };
     beforeEach(function() {
-        oldEndpoints=ozpIwc.endpoint;
-        ozpIwc.endpoint=function() {
+        oldEndpoints=ozpIwc.api.endpoint;
+        ozpIwc.api.endpoint=function() {
             return {
                 get: function() { return Promise.resolve(); }
             };            
         };
-        systemApi = new ozpIwc.SystemApi({
+        var fakeRouter = new FakeRouter();
+        systemApi = new ozpIwc.api.system.Api({
             'name': "system.test.api",
-            'participant': new TestClientParticipant(),
-            'router': new FakeRouter()
+            'authorization': ozpIwc.wiring.authorization,
+            'participant': new TestClientParticipant({
+                authorization: ozpIwc.wiring.authorization,
+                router: fakeRouter
+            }),
+            'router': fakeRouter
         });
         systemApi.isRequestQueueing = false;
         systemApi.leaderState = "leader";
@@ -70,7 +75,7 @@ describe("System API", function() {
 
     afterEach(function() {
         systemApi = null;
-       ozpIwc.endpoint=oldEndpoints;
+        ozpIwc.api.endpoint=oldEndpoints;
         systemApi=null;
         applicationNode=null;
         userNode=null;

@@ -3,7 +3,7 @@ describe("Metrics: Meter",function() {
 	
 	
 	beforeEach(function() {
-		meter=new ozpIwc.metricTypes.Meter();
+		meter=new ozpIwc.metric.types.Meter();
 	});
 	
 	

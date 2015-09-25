@@ -1,7 +1,7 @@
-describe("ApiNode",function() {
+describe("Base Node",function() {
 	var apiNode;
     beforeEach(function() {
-       apiNode=new ozpIwc.ApiNode({
+       apiNode=new ozpIwc.api.base.Node({
             resource: "/foo",
             version: 50,        
             self: "https://example.com/iwc/foo",
@@ -18,12 +18,12 @@ describe("ApiNode",function() {
     
     it("fails if constructed without a resource",function() {
         expect(function() {
-            new ozpIwc.ApiNode();
+            new ozpIwc.api.base.Node();
         }).toThrow();
     });
     it("deserializes and serializes live data with the same outcome",function() {
         var serialized=apiNode.serializeLive();
-        var node2=new ozpIwc.ApiNode({resource:"/foo"});
+        var node2=new ozpIwc.api.base.Node({resource:"/foo"});
         node2.deserializeLive(serialized);
         expect(node2).toEqual(apiNode);     
     });
@@ -38,7 +38,7 @@ describe("ApiNode",function() {
     });
     var serializedFields=["entity","resource","self"];
     it("deserializes and serializes persisted data with the same outcome",function() {
-        var node2=new ozpIwc.ApiNode({resource:"/foo"});
+        var node2=new ozpIwc.api.base.Node({resource:"/foo"});
         node2.deserializedEntity(apiNode.serializedEntity(),apiNode.serializedContentType());
         serializedFields.forEach(function(k) {
 					expect(node2[k]).toEqual(apiNode[k]);
@@ -47,7 +47,7 @@ describe("ApiNode",function() {
     });
     
     it("deserializes and serializes persisted data with the same outcome using the constructor",function() {
-        var node2=new ozpIwc.ApiNode({
+        var node2=new ozpIwc.api.base.Node({
             serializedEntity: apiNode.serializedEntity(),
             serializedContentType: apiNode.serializedContentType()
         });
@@ -57,7 +57,7 @@ describe("ApiNode",function() {
     });
     
     it("deserializes and serializes persisted data with the same outcome using the constructor without content type",function() {
-        var node2=new ozpIwc.ApiNode({
+        var node2=new ozpIwc.api.base.Node({
             serializedEntity: apiNode.serializedEntity()
         });
         serializedFields.forEach(function(k) {
@@ -67,10 +67,10 @@ describe("ApiNode",function() {
     it("sets up it's uri from a template",function(){
 			// only defined if initEndpoints is called, so we define it here
 			// rather than spyOn()
-			ozpIwc.uriTemplate=function() {
+			ozpIwc.api.uriTemplate=function() {
 				return "http://example.com/{+resource}";
 			};
-			var node=new ozpIwc.ApiNode({
+			var node=new ozpIwc.api.base.Node({
 					resource: "/foo",
 					version: 50,
 					uriTemplate:"doesn't matter since it's mocked",

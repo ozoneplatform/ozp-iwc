@@ -10,7 +10,7 @@ describe("Locks API Value", function() {
     var lock;
     
     beforeEach(function() {
-        lock=new ozpIwc.LocksNode({
+        lock=new ozpIwc.api.locks.Node({
             'resource': '/mutex/fake'
         });
     });

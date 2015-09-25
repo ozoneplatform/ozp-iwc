@@ -1,19 +1,60 @@
 var ozpIwc = ozpIwc || {};
 
+/**
+ * @module ozpIwc
+ */
+
+/**
+ * A Static collection of api to address/actions mapping.
+ *
+ * @class apiMap
+ * @namespace ozpIwc
+ * @static
+ * @type {Object}
+ */
 ozpIwc.apiMap = {
-    "data.api" : { 'address': 'data.api',
-        'actions': ["get","set","delete","watch","unwatch","list","bulkGet","addChild","removeChild"]
+    /**
+     * @property data.api
+     * @type Object
+     */
+    "data.api": {
+        'address': 'data.api',
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "addChild", "removeChild"]
     },
-    "intents.api" : { 'address': 'intents.api',
-        'actions': ["get","set","delete","watch","unwatch","list","bulkGet","register","invoke","broadcast"]
+
+    /**
+     * @property intents.api
+     * @type Object
+     */
+    "intents.api": {
+        'address': 'intents.api',
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "register", "invoke", "broadcast"]
     },
-    "names.api" : { 'address': 'names.api',
-        'actions': ["get","set","delete","watch","unwatch","list","bulkGet"]
+
+    /**
+     * @property names.api
+     * @type Object
+     */
+    "names.api": {
+        'address': 'names.api',
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet"]
     },
-    "system.api" : { 'address': 'system.api',
-        'actions': ["get","set","delete","watch","unwatch","list","bulkGet","launch"]
+
+    /**
+     * @property system.api
+     * @type Object
+     */
+    "system.api": {
+        'address': 'system.api',
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "launch"]
     },
-    "locks.api" : { 'address' : 'locks.api',
-        'actions': ["get","watch","unwatch","list","lock","unlock"]
+
+    /**
+     * @property locks.api
+     * @type Object
+     */
+    "locks.api": {
+        'address': 'locks.api',
+        'actions': ["get", "watch", "unwatch", "list", "lock", "unlock"]
     }
 };

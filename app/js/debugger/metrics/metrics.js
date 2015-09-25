@@ -48,7 +48,7 @@ debuggerModule.controller("metricsController",['$scope','$interval','$filter',fu
     scope.refresh=function(){
         var dataPoints=[];
         var nowDate=new Date();
-        ozpIwc.metrics.allMetrics().forEach(function(m) {
+        ozpIwc.wiring.metrics.allMetrics().forEach(function(m) {
             var value=m.get();
             if(typeof value==="object") {
                 for(var k in value) {

@@ -1,7 +1,7 @@
-describe("DataNode",function() {
+describe("Data Node",function() {
 	var dataNode;
     beforeEach(function() {
-       dataNode=new ozpIwc.DataNode({
+       dataNode=new ozpIwc.api.data.Node({
             resource: "/foo",
             version: 50,        
             self: "https://example.com/iwc/foo",
@@ -11,12 +11,12 @@ describe("DataNode",function() {
 	});
     it("fails if constructed without a resource",function() {
         expect(function() {
-            new ozpIwc.DataNode();
+            new ozpIwc.api.data.Node();
         }).toThrow();
     });
     it("deserializes and serializes live data with the same outcome",function() {
         var serialized=dataNode.serializeLive();
-        var node2=new ozpIwc.DataNode({resource:"/foo"});
+        var node2=new ozpIwc.api.data.Node({resource:"/foo"});
         node2.deserializeLive(serialized);
         expect(node2).toEqual(dataNode);     
     });
@@ -31,7 +31,7 @@ describe("DataNode",function() {
     });
     
     it("deserializes and serializes persisted data with the same outcome",function() {
-        var node2=new ozpIwc.DataNode({resource:"/foo"});
+        var node2=new ozpIwc.api.data.Node({resource:"/foo"});
         var serialized = { entity: dataNode.serializedEntity() };
         node2.deserializedEntity(serialized,dataNode.serializedContentType());
         expect(node2).toEqual(dataNode);
@@ -39,7 +39,7 @@ describe("DataNode",function() {
     
     it("deserializes and serializes persisted data with the same outcome using the constructor",function() {
         var serialized = { entity: dataNode.serializedEntity() };
-        var node2=new ozpIwc.DataNode({
+        var node2=new ozpIwc.api.data.Node({
             serializedEntity:serialized,
             serializedContentType: dataNode.serializedContentType()
         });
@@ -48,7 +48,7 @@ describe("DataNode",function() {
     
     it("deserializes and serializes persisted data with the same outcome using the constructor without content type",function() {
         var serialized = { entity: dataNode.serializedEntity() };
-        var node2=new ozpIwc.DataNode({
+        var node2=new ozpIwc.api.data.Node({
             serializedEntity:serialized
         });
         expect(node2).toEqual(dataNode);

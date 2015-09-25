@@ -2,7 +2,9 @@ describe("Client Participant",function() {
     var fakeRouter,participant,sentPackets;
 
     var makeParticipant = function(router) {
-        var l = new ozpIwc.ClientParticipant({
+        var l = new ozpIwc.transport.participant.Client({
+            authorization: ozpIwc.wiring.authorization,
+            metrics: new ozpIwc.metric.Registry(),
             router: router
         });
         return l;
@@ -10,7 +12,7 @@ describe("Client Participant",function() {
     };
 
     beforeEach(function () {
-        ozpIwc.metrics=new ozpIwc.MetricsRegistry();
+        ozpIwc.metrics=new ozpIwc.metric.Registry();
         fakeRouter= new FakeRouter();
         participant = makeParticipant(fakeRouter);
         ozpIwc.util.setImmediate = function(fn){

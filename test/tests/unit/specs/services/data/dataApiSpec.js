@@ -24,15 +24,20 @@ describe("Data API data loading",function() {
     }};
     
 	beforeEach(function() {
-        dataApi=new ozpIwc.DataApi({
-            'participant': new TestClientParticipant(),
+        var fakeRouter = new FakeRouter();
+        dataApi=new ozpIwc.api.data.Api({
+            authorization: ozpIwc.wiring.authorization,
+            'participant': new TestClientParticipant({
+                authorization: ozpIwc.wiring.authorization,
+                router: fakeRouter
+            }),
             'name': "testData.api",
-            'router': new FakeRouter()
+            'router': fakeRouter
         });
         dataApi.isRequestQueueing=false;
 
         endpoint=jasmine.createSpyObj('endpoint',['get','put','delete']);
-        ozpIwc.endpoint=function() { return endpoint; };
+        ozpIwc.api.endpoint=function() { return endpoint; };
         endpoint.get.and.callFake(function(url) {
             return Promise.resolve(data[url]);
          });

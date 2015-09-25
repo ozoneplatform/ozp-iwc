@@ -17,18 +17,23 @@ describe("Intent API Class", function () {
     }};
 
     beforeEach(function () {
-        apiBase = new ozpIwc.IntentsApi({
-            'participant': new TestClientParticipant(),
+        var fakeRouter = new FakeRouter();
+        apiBase = new ozpIwc.api.intents.Api({
+            'authorization': ozpIwc.wiring.authorization,
+            'participant': new TestClientParticipant({
+                authorization: ozpIwc.wiring.authorization,
+                router: fakeRouter
+            }),
             'name': "testIntents.api",
-            'router': new FakeRouter()
+            'router': fakeRouter
         });
         apiBase.isRequestQueueing=false;
         apiBase.leaderState = "leader";
 
         endpoint=jasmine.createSpyObj('endpoint',['get','put','delete']);
-//        ozpIwc.endpoint=function() { return endpoint; };
-        ozpIwc.endpoint=jasmine.createSpy("ozpIwc.endpoint");
-        ozpIwc.endpoint.and.returnValue(endpoint);
+//        ozpIwc.api.endpoint=function() { return endpoint; };
+        ozpIwc.api.endpoint=jasmine.createSpy("ozpIwc.api.endpoint");
+        ozpIwc.api.endpoint.and.returnValue(endpoint);
         spyOn(ozpIwc.util,"openWindow");
         
         endpoint.get.and.callFake(function(url) {

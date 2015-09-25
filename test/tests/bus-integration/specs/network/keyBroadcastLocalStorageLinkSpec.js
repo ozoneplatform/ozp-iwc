@@ -2,16 +2,16 @@ describe("IWC LocalStorage Key Broadcast", function() {
     var peerA, linkA, otherContext;
 
     var otherContextOnLoad = function(){
-        this.peerB = new ozpIwc.Peer();
+        this.peerB = new ozpIwc.network.Peer();
 
-        this.linkB = new ozpIwc.KeyBroadcastLocalStorageLink({
+        this.linkB = new ozpIwc.network.KeyBroadcastLocalStorageLink({
             peer: this.peerB
         });
     };
 
     beforeEach(function(){
-        peerA = new ozpIwc.Peer();
-        linkA = new ozpIwc.KeyBroadcastLocalStorageLink({
+        peerA = new ozpIwc.network.Peer();
+        linkA = new ozpIwc.network.KeyBroadcastLocalStorageLink({
             peer: peerA
         });
         otherContext = new ozpIwc.testUtil.BrowsingContext(otherContextOnLoad, function (message, scope) {

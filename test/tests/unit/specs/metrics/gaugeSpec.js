@@ -3,7 +3,7 @@ describe("Metrics: Gauge",function() {
 	var backingObject;
 	
 	beforeEach(function() {
-		metrics=new ozpIwc.MetricsRegistry();
+		metrics=new ozpIwc.metric.Registry();
 		backingObject={	x: 1, y:100	};
 		metrics.gauge("foo").set(function() {
 			return backingObject;

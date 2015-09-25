@@ -5,7 +5,7 @@ ozpIwc.test.MockParticipant=function(config) {
     this.clientUrl=config.clientUrl;
     this.client=config.client;
     
-    this.events=new ozpIwc.Event();
+    this.events=new ozpIwc.util.Event();
 	this.events.mixinOnOff(this);
     this.runId=0;
     

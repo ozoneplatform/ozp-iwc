@@ -1,11 +1,13 @@
 describe("Base Consensus",function() {
     var consensus = null;
     beforeEach(function(){
-        consensus = new ozpIwc.consensus.BaseConsensus({
+        consensus = new ozpIwc.transport.consensus.Base({
+            'authorization': ozpIwc.wiring.authorization,
             'name': "fake",
             'routePacket': function(){
                 //drop it
-            }
+            },
+            'router': new FakeRouter()
         });
     });
     afterEach(function(){
@@ -16,7 +18,7 @@ describe("Base Consensus",function() {
 
         it("requires a name",function(){
             try{
-                var foo = new ozpIwc.consensus.BaseConsensus();
+                var foo = new ozpIwc.transport.consensus.Base();
             } catch(e){
                 expect(e).toEqual("Consensus module expects a name.");
                 foo = null;

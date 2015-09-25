@@ -1,26 +1,29 @@
-var TestApi=ozpIwc.createApi(function() {});
-TestApi.useDefaultRoute(ozpIwc.ApiBase.allActions);
+var TestApi=ozpIwc.api.createApi("testApi.api",function() {});
+TestApi.useDefaultRoute(ozpIwc.api.base.Api.allActions);
 
 function createApiRequestObject(fakeRouter) {
     fakeRouter=fakeRouter || new FakeRouter();
 	var apiBase=new TestApi({
-        'participant': new TestClientParticipant(),
-        'name': "testApiBase.api",
+        authorization: ozpIwc.wiring.authorization,
+        'participant': new TestClientParticipant({
+            authorization: ozpIwc.wiring.authorization,
+            router: fakeRouter
+        }),
         'router': fakeRouter
     });
-    apiBase.data["/foo"]=new ozpIwc.ApiNode({
+    apiBase.data["/foo"]=new ozpIwc.api.base.Node({
         resource: "/foo",
         self: "https://example.com/iwc/foo",
         contentType: "text/plain",
         entity: "hello world"
     });
-    apiBase.data["/foo/1"]=new ozpIwc.ApiNode({
+    apiBase.data["/foo/1"]=new ozpIwc.api.base.Node({
         resource: "/foo/1",
         self: "https://example.com/iwc/foo/1",
         contentType: "text/plain",
         entity: "resource 1"
     });
-    apiBase.data["/foo/2"]=new ozpIwc.ApiNode({
+    apiBase.data["/foo/2"]=new ozpIwc.api.base.Node({
         resource: "/foo/2",
         self: "https://example.com/iwc/foo/2",
         contentType: "text/plain",
@@ -29,7 +32,7 @@ function createApiRequestObject(fakeRouter) {
     return apiBase;
 }
 
-describe("ApiBase request handling",function() {
+describe("Base Api request handling",function() {
 	var apiBase;
 	beforeEach(function() {
         apiBase=createApiRequestObject();
@@ -444,7 +447,7 @@ describe("ApiBase request handling",function() {
     });
 });    
 
-describe("ApiBase leadership handoff",function() {
+describe("Base Api leadership handoff",function() {
 	var apiBase;
     var fakeRouter;
 	beforeEach(function() {
@@ -477,8 +480,7 @@ describe("ApiBase leadership handoff",function() {
         pit("member transitions to ready->loading->master upon receiving deathscream",function() {
             spyOn(apiBase,"initializeData").and.callThrough();
             spyOn(apiBase,"transitionToMemberReady").and.callThrough();
-            spyOn(apiBase,"receiveCoordinationPacket").and.callThrough();
-            
+
             var deathScream=apiBase.createDeathScream();
             var deathScreamPacket=new TestPacketContext({
                 packet: {
@@ -492,7 +494,6 @@ describe("ApiBase leadership handoff",function() {
                 expect(apiBase.isRequestQueueing).toEqual(true);
                 expect(apiBase.deathScream).toEqual(deathScream);
                 expect(apiBase.transitionToMemberReady).toHaveBeenCalledWith(deathScream);
-                expect(apiBase.receiveCoordinationPacket).toHaveBeenCalled();
                 // simulates the lock being gained
                 return apiBase.transitionToLoading();
             }).then(function() {
@@ -511,8 +512,12 @@ describe("ApiBase leadership handoff",function() {
         
         pit("Initializes data from a deathScream",function() {
             var apiBase2=new TestApi({
-                'participant': new TestClientParticipant(),
-                'name': "testApiBase.api",
+                authorization: ozpIwc.wiring.authorization,
+                'participant': new TestClientParticipant({
+                    authorization: ozpIwc.wiring.authorization,
+                    router: fakeRouter
+                }),
+                'name': "testApi.api",
                 'router': fakeRouter
             });
             var deathScream=apiBase.createDeathScream();

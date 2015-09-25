@@ -2,7 +2,9 @@ describe("Post Message Participant",function() {
     var fakeRouter,participant,sentMeter,receivedMeter, forbiddenMeter;
 
     var makeParticipant = function() {
-        var l = new ozpIwc.PostMessageParticipant({
+        var l = new ozpIwc.transport.participant.PostMessage({
+            authorization: ozpIwc.wiring.authorization,
+            metrics: new ozpIwc.metric.Registry(),
             origin : "http://" + window.location.hostname + ":14000",
             sourceWindow : this.window,
             credentials : []

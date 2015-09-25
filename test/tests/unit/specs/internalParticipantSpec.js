@@ -2,7 +2,9 @@ describe("Internal Participant",function() {
     var fakeRouter,participant,sentPackets;
 
     var makeParticipant = function() {
-        var l = new ozpIwc.InternalParticipant({
+        var l = new ozpIwc.transport.participant.Internal({
+            metrics: ozpIwc.wiring.metrics,
+            authorization: ozpIwc.wiring.authorization,
             origin : "http://" + window.location.hostname + ":14000",
             sourceWindow : this.window,
             credentials : []
@@ -13,7 +15,6 @@ describe("Internal Participant",function() {
     };
 
     beforeEach(function () {
-        ozpIwc.metrics=new ozpIwc.MetricsRegistry();
         fakeRouter= new FakeRouter();
         participant = makeParticipant();
         ozpIwc.util.setImmediate = function(fn){
