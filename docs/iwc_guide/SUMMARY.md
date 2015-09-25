@@ -7,7 +7,7 @@
     * [Adding an IWC Client to an Application](getting_started/setup.md)
     * [Connecting to the Bus](getting_started/connecting.md)
     * [Quick Start](quickStart.md)
-    * [Bus Configuration](bus_configuration/overview.md)
+    * [Bus Configuration](getting_started/bus_configuration/overview.md)
     * [APIs](getting_started/api/apis.md)
         * [Sending Requests](getting_started/api/api_requests.md)
         * [Receiving Responses](getting_started/api/api_responses.md)

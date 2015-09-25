@@ -172,3 +172,14 @@ ozpIwc.config._busRoot = ozpIwc.util.ifUndef(ozpIwc.config._busRoot,(function(){
  * @default "width=330,height=500"
  */
 ozpIwc.config.intentChooserFeatures = ozpIwc.util.ifUndef(ozpIwc.config.intentChooserFeatures,"width=330,height=500");
+
+/**
+ * Root location for owf7 legacy preferences should this bus support legacy widgets through the ozp-iwc-owf7-adapter.
+ *
+ * @namespace ozpIwc
+ * @private
+ * @property ozpIwc.config.owf7PrefsUrl
+ * @type String
+ * @default "/owf/prefs"
+ */
+ozpIwc.config.owf7PrefsUrl = ozpIwc.util.ifUndef(ozpIwc.config.owf7PrefsUrl,"/owf/prefs");

@@ -69,6 +69,11 @@ information on their internal development.
 0 = NONE, 1 = DEFAULT, 3 = ERROR, 6 = INFO, 7 = DEBUG, 10 = ALL.
   - Type: Number
   - Default: 6
+  
+**ozpIwc.config.owf7PrefsUrl**: The root location for owf7 preference loading if supporting legacy owf7 widgets through
+the ozp-iwc-owf7-adapter. 
+  - Type: String
+  - Default: "/owf/prefs"
 
 
 
