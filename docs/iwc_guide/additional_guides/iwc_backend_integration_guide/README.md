@@ -5,5 +5,3 @@ This guide covers:
  * gathering the IWC components to host
  * configuring the IWC for individual purpose
  * setting connections for the IWC to the Ozone database.
-
-**This is not a guide for adding an IWC instance to an application**. For information on adding an IWC instance to an application please see [[IWC App Integration]].

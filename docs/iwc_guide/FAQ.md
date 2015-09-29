@@ -41,4 +41,4 @@ functionality, and watch listens to changes of a resource. The difference betwee
 aware. A watch registered function will be called when the resource value is changed with both the new value and old
 value of the resource. This gives developers the ability to do transitions in their applications without having to 
 retain state of data themselves. For examples of transitioning from publish/subscribe to set/watch, refer to the 
-[Migration Example](migration/pubsub_to_setwatch.md).
+[Migration Example](client/migration/pubsub_to_setwatch.md).

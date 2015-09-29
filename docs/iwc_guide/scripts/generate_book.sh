@@ -18,47 +18,34 @@ DEFAULT_OUTPUT_FORMAT="pdf"
 DEFAULT_OUTPUT_DIR=.
 
 
-ORDERED_SOURCE_LIST="getting_started/overview.md \
-					 getting_started/technologies.md \
-					 getting_started/serverComms.md \
-					 getting_started/setup.md \
-					 getting_started/connecting.md \
-					 quickStart.md \
-					 getting_started/api/apis.md \
-					 getting_started/api/api_requests.md \
-					 getting_started/api/api_responses.md \
-					 getting_started/api/api_error.md \
-					 getting_started/api/api_example.md \
-					 core_apis/overview.md \
-					 core_apis/common/overview.md \
-					 core_apis/common/storing.md \
-					 core_apis/common/retrieving.md \
-					 core_apis/common/removing.md \
-					 core_apis/common/listing.md \
-					 core_apis/common/watching.md \
-					 core_apis/data/overview.md \
-					 core_apis/data/children/overview.md \
-					 core_apis/data/children/storing.md \
-					 core_apis/data/children/retreiving.md \
-					 core_apis/data/children/removing.md \
-					 core_apis/intents/overview.md \
-					 core_apis/intents/registration.md \
-					 core_apis/intents/invocation.md \
-					 core_apis/system/overview.md \
-					 core_apis/system/launching.md \
-					 core_apis/names/overview.md \
+ORDERED_SOURCE_LIST="README.md \
+					 introduction/overview.md \
+					 introduction/quickStart.md \
+					 introduction/technologies.md \
+					 client/overview.md \
+					 client/connecting.md \
+					 client/resources.md \
+					 client/apis/data/overview.md \
+					 client/apis/intents/overview.md \
+					 client/apis/system/overview.md \
+					 client/apis/names/overview.md \
+					 client/api_commonalities/overview.md \
+					 client/api_commonalities/api_requests.md \
+					 client/api_commonalities/api_responses.md \
+					 client/api_commonalities/api_errors.md \
+					 client/migration/overview.md \
+					 client/migration/pubsub_to_setwatch.md \
+					 client/debugger/overview.md \
+					 bus/overview.md \
+					 bus/serverComms.md \
+					 bus/hostingReqs.md \
+					 bus/busConfiguration.md \
+					 bus/endpoints/overview.md \
+					 bus/endpoints/data.md \
+					 bus/endpoints/application.md \
+					 bus/endpoints/intents.md \
 					 FAQ.md \
-					 additional_guides/app_integration_guide/adding_an_iwc_client_to_an_application.md \
-					 additional_guides/app_integration_guide/connecting_iwc_client_to_an_iwc_bus.md \
-					 additional_guides/app_integration_guide/making_iwc_api_calls.md \
-					 additional_guides/app_integration_guide/iwc_client_files.md \
-					 additional_guides/app_integration_guide/making_iwc_api_calls_asynchronous_responses.md \
-					 additional_guides/iwc_backend_integration_guide/versioning_tool.md \
-					 additional_guides/iwc_backend_integration_guide/iwc_components.md \
-					 additional_guides/iwc_backend_integration_guide/iframe_peer_html.md \
-					 additional_guides/iwc_backend_integration_guide/gathering_iwc_components_to_host.md \
-					 additional_guides/iwc_backend_integration_guide/debugger_html.md"
-					 
+
 # !!! PANDOC (pandoc.org) is needed to generate the output file
 pandoc_cmd=$(command -v pandoc)
 if [ -z "$pandoc_cmd" ]; then
