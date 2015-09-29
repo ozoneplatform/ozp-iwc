@@ -1,0 +1,882 @@
+<!DOCTYPE HTML>
+<html lang="en-US" >
+    
+    <head>
+        
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
+        <title>Backend API Endpoint Requirements | Inter-Widget Communication (IWC)</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 1.5.0">
+        <meta name="HandheldFriendly" content="true"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+        <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+        
+        
+    
+    
+    <link rel="next" href="../../bus/endpoints/data.html" />
+    
+    
+    <link rel="prev" href="../../bus/busConfiguration.html" />
+    
+
+        
+    </head>
+    <body>
+        
+        
+<link rel="stylesheet" href="../../gitbook/style.css">
+
+
+        
+    <div class="book" data-level="2.4" data-basepath="../.." data-revision="1443555438151">
+    
+
+<div class="book-summary">
+    <div class="book-search">
+        <input type="text" placeholder="Type to search" class="form-control" />
+    </div>
+    <ul class="summary">
+        
+    	
+    	
+    	
+
+        
+
+        
+    
+        
+        <li class="chapter " data-level="0" data-path="index.html">
+            
+                
+                    <a href="../../index.html">
+                        <i class="fa fa-check"></i>
+                        
+                         Introduction
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="0.1" data-path="introduction/overview.html">
+            
+                
+                    <a href="../../introduction/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>0.1.</b>
+                        
+                         How it Works
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="0.2" data-path="introduction/quickStart.html">
+            
+                
+                    <a href="../../introduction/quickStart.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>0.2.</b>
+                        
+                         Quick Start
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="0.3" data-path="introduction/technologies.html">
+            
+                
+                    <a href="../../introduction/technologies.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>0.3.</b>
+                        
+                         Technology Stack
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1" data-path="client/overview.html">
+            
+                
+                    <a href="../../client/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.</b>
+                        
+                         Client (Application Developers)
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="1.1" data-path="client/connecting.html">
+            
+                
+                    <a href="../../client/connecting.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.1.</b>
+                        
+                         Connecting to the Bus
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.2" data-path="client/resources.html">
+            
+                
+                    <a href="../../client/resources.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.2.</b>
+                        
+                         What is an API Node?
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.3" data-path="client/apis/data/overview.html">
+            
+                
+                    <a href="../../client/apis/data/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.3.</b>
+                        
+                         Using the Data API
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.4" data-path="client/apis/intents/overview.html">
+            
+                
+                    <a href="../../client/apis/intents/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.4.</b>
+                        
+                         Using the Intents API
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.5" data-path="client/apis/system/overview.html">
+            
+                
+                    <a href="../../client/apis/system/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.5.</b>
+                        
+                         Using the System API
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.6" data-path="client/apis/names/overview.html">
+            
+                
+                    <a href="../../client/apis/names/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.6.</b>
+                        
+                         Using the Names API
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.7" data-path="client/api_commonalities/overview.html">
+            
+                
+                    <a href="../../client/api_commonalities/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.7.</b>
+                        
+                         Api Commonalities
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="1.7.1" data-path="client/api_commonalities/api_requests.html">
+            
+                
+                    <a href="../../client/api_commonalities/api_requests.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.7.1.</b>
+                        
+                         Requests
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.7.2" data-path="client/api_commonalities/api_responses.html">
+            
+                
+                    <a href="../../client/api_commonalities/api_responses.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.7.2.</b>
+                        
+                         Responses
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.7.3" data-path="client/api_commonalities/api_errors.html">
+            
+                
+                    <a href="../../client/api_commonalities/api_errors.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.7.3.</b>
+                        
+                         Errors
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.8" data-path="client/migration/overview.html">
+            
+                
+                    <a href="../../client/migration/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.8.</b>
+                        
+                         Migration from OWF7
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="1.8.1" data-path="client/migration/pubsub_to_setwatch.html">
+            
+                
+                    <a href="../../client/migration/pubsub_to_setwatch.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.8.1.</b>
+                        
+                         Publish/Subscribe to Set/Watch
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.9" data-path="client/debugger/overview.html">
+            
+                
+                    <a href="../../client/debugger/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.9.</b>
+                        
+                         Debugging
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2" data-path="bus/overview.html">
+            
+                
+                    <a href="../../bus/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.</b>
+                        
+                         Bus (Platform Hosts)
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="2.1" data-path="bus/serverComms.html">
+            
+                
+                    <a href="../../bus/serverComms.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.1.</b>
+                        
+                         Server Communication
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.2" data-path="bus/hostingReqs.html">
+            
+                
+                    <a href="../../bus/hostingReqs.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.2.</b>
+                        
+                         Hosting Requirements
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.3" data-path="bus/busConfiguration.html">
+            
+                
+                    <a href="../../bus/busConfiguration.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.3.</b>
+                        
+                         Bus Configuration
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter active" data-level="2.4" data-path="bus/endpoints/overview.html">
+            
+                
+                    <a href="../../bus/endpoints/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.4.</b>
+                        
+                         Backend API Endpoint Requirements
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="2.4.1" data-path="bus/endpoints/data.html">
+            
+                
+                    <a href="../../bus/endpoints/data.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.4.1.</b>
+                        
+                         Data API Nodes
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.4.2" data-path="bus/endpoints/application.html">
+            
+                
+                    <a href="../../bus/endpoints/application.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.4.2.</b>
+                        
+                         System API Application Nodes
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.4.3" data-path="bus/endpoints/intents.html">
+            
+                
+                    <a href="../../bus/endpoints/intents.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.4.3.</b>
+                        
+                         Intents API Handler Definition Nodes
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="3" data-path="FAQ.html">
+            
+                
+                    <a href="../../FAQ.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.</b>
+                        
+                         FAQs
+                    </a>
+                
+            
+            
+        </li>
+    
+
+
+        
+        <li class="divider"></li>
+        <li>
+            <a href="http://www.gitbook.io/" target="blank" class="gitbook-link">Published using GitBook</a>
+        </li>
+        
+    </ul>
+</div>
+
+    <div class="book-body">
+        <div class="body-inner">
+            <div class="book-header">
+    <!-- Actions Left -->
+    <a href="#" class="btn pull-left toggle-summary" aria-label="Toggle summary"><i class="fa fa-align-justify"></i></a>
+    <a href="#" class="btn pull-left toggle-search" aria-label="Toggle search"><i class="fa fa-search"></i></a>
+    
+    <div id="font-settings-wrapper" class="dropdown pull-left">
+        <a href="#" class="btn toggle-dropdown" aria-label="Toggle font settings"><i class="fa fa-font"></i>
+        </a>
+        <div class="dropdown-menu font-settings">
+    <div class="dropdown-caret">
+        <span class="caret-outer"></span>
+        <span class="caret-inner"></span>
+    </div>
+
+    <div class="buttons">
+        <button type="button" id="reduce-font-size" class="button size-2">A</button>
+        <button type="button" id="enlarge-font-size" class="button size-2">A</button>
+    </div>
+
+    <div class="buttons font-family-list">
+        <button type="button" data-font="0" class="button">Serif</button>
+        <button type="button" data-font="1" class="button">Sans</button>
+    </div>
+
+    <div class="buttons color-theme-list">
+        <button type="button" id="color-theme-preview-0" class="button size-3" data-theme="0">White</button>
+        <button type="button" id="color-theme-preview-1" class="button size-3" data-theme="1">Sepia</button>
+        <button type="button" id="color-theme-preview-2" class="button size-3" data-theme="2">Night</button>
+    </div>
+</div>
+
+    </div>
+
+    <!-- Actions Right -->
+    
+    <div class="dropdown pull-right">
+        <a href="#" class="btn toggle-dropdown" aria-label="Toggle share dropdown"><i class="fa fa-share-alt"></i>
+        </a>
+        <div class="dropdown-menu font-settings dropdown-left">
+            <div class="dropdown-caret">
+                <span class="caret-outer"></span>
+                <span class="caret-inner"></span>
+            </div>
+            <div class="buttons">
+                <button type="button" data-sharing="twitter" class="button">Twitter</button>
+                <button type="button" data-sharing="google-plus" class="button">Google</button>
+                <button type="button" data-sharing="facebook" class="button">Facebook</button>
+                <button type="button" data-sharing="weibo" class="button">Weibo</button>
+                <button type="button" data-sharing="instapaper" class="button">Instapaper</button>
+            </div>
+        </div>
+    </div>
+    
+
+    
+    <a href="#" target="_blank" class="btn pull-right google-plus-sharing-link sharing-link" data-sharing="google-plus" aria-label="Share on Google Plus"><i class="fa fa-google-plus"></i></a>
+    
+    
+    <a href="#" target="_blank" class="btn pull-right facebook-sharing-link sharing-link" data-sharing="facebook" aria-label="Share on Facebook"><i class="fa fa-facebook"></i></a>
+    
+    
+    <a href="#" target="_blank" class="btn pull-right twitter-sharing-link sharing-link" data-sharing="twitter" aria-label="Share on Twitter"><i class="fa fa-twitter"></i></a>
+    
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../../" >Inter-Widget Communication (IWC)</a>
+    </h1>
+</div>
+
+            <div class="page-wrapper" tabindex="-1">
+                <div class="page-inner">
+                
+                
+                    <section class="normal" id="section-gitbook_11">
+                    
+                        <h2 id="iwc-bus-api-endpoints">IWC Bus API Endpoints</h2>
+<p>The IWC Bus is configurable to load persisted API Nodes from it&#39;s hosting backend as well as save changes back to it.
+If configured to support backend communications, the IWC will reach out to the root endpoint for API communication,
+this endpoint is set by the <a href="../busConfiguration.html">configuration parameter</a> <code>ozpIwc.config.apiRootUrl</code>.</p>
+<h4 id="these-api-endpoint-documents-are-endpoints-relative-to-the-ozpiwcconfigapirooturl">These API Endpoint documents are endpoints relative to the ozpIwc.config.apiRootUrl</h4>
+<ul>
+<li>If an endpoint discussed is mentioned as <code>/data</code> and the <code>ozpIwc.config.apiRootUrl</code> equals <code>/api</code>, the endpoint path
+(from the root of the domain) is <code>/api/data</code>.</li>
+<li>The IWC uses custom link relations to access an API&#39;s endpoint at run time. This covered in more depth in the root 
+endpoint section, but the purpose is to give a common static-name (ozp:user-data) to a runtime determined endpoint 
+(/data for example). All variable path endpoints are referred to by their link relation in this document.</li>
+</ul>
+<h4 id="the-iwc-bus-schemas-are-written-for-hal-data">The IWC Bus Schemas are Written for HAL Data</h4>
+<p>The IWC expects data to be provided in <a href="http://stateless.co/hal_specification.html" target="_blank">HAL format</a>. This allows backend
+developers to utilize flexibility in endpoint data producing. HAL allows embedding of link related data in responses. 
+In other terms, in producing the root IWC endpoint (<code>/</code>) data, the backend can embed the System API User Information
+Nodes (ozp:user) to reduce the need for the IWC bus to make an additional HTTP request to gather it.</p>
+<hr>
+<h3 id="">/</h3>
+<h4 id="the-root-endpoint-of-the-iwc-bus-path-set-by-ozpiwcconfigapirooturl">The root endpoint of the IWC Bus. Path set by <code>ozpIwc.config.apiRootUrl</code></h4>
+<p><strong>Purpose</strong>: This endpoint provides the IWC bus with the pairing of link relations to their specific endpoint path.</p>
+<p><strong>Schema</strong>: <a href="https://github.com/ozone-development/ozp-data-schemas/blob/master/mock/api/index.json" target="_blank">vnd.ozp-iwc-root-v1+json</a> <strong>TODO:Undocumented linked to mock</strong> </p>
+<p><strong>Required to provide</strong>:</p>
+<ul>
+<li>_links<ul>
+<li><strong>ozp:user-data</strong> endpoint relation link</li>
+<li><strong>ozp:application</strong> endpoint relation link</li>
+<li><strong>ozp:user</strong> endpoint relation link</li>
+<li><strong>ozp:system</strong> endpoint relation link</li>
+<li><strong>ozp:intent</strong> endpoint relation link</li>
+</ul>
+</li>
+</ul>
+<p><strong>GET response(sample):</strong></p>
+<pre><code>{
+  &quot;_links&quot;: {
+    &quot;curies&quot;: {
+      &quot;href&quot;: &quot;http://ozoneplatform.org/docs/rels/{rel}&quot;,
+      &quot;name&quot;: &quot;ozp&quot;,
+      &quot;templated&quot;: true
+    },
+    &quot;ozp:application&quot;: {
+      &quot;href&quot;: &quot;https://localhost:13000/profile/7/application&quot;
+    },
+    &quot;ozp:intent&quot;: {
+      &quot;href&quot;: &quot;https://localhost:13000/intent&quot;
+    },
+    &quot;ozp:system&quot;: {
+      &quot;href&quot;: &quot;https://localhost:13000/system&quot;
+    },
+    &quot;ozp:user&quot;: {
+      &quot;href&quot;: &quot;https://localhost:13000/profile/7&quot;
+    },
+    &quot;ozp:user-data&quot;: {
+      &quot;href&quot;: &quot;https://localhost:13000/profile/7/data&quot;
+    },
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;https://localhost:13000&quot;
+    }
+  },
+  &quot;_embedded&quot;: {
+    &quot;ozp:system&quot;: {
+      &quot;version&quot;: &quot;1.0&quot;,
+      &quot;name&quot;: &quot;IWC Sample Backend&quot;,
+      &quot;_links&quot;: {
+        &quot;self&quot;: {
+          &quot;href&quot;: &quot;https://localhost:13000/system&quot;
+        }
+      }
+    },
+    &quot;ozp:user&quot;: {
+      &quot;userName&quot;: &quot;jsmith&quot;,
+      &quot;name&quot;: &quot;John Smith&quot;,
+      &quot;_links&quot;: {
+        &quot;self&quot;: {
+          &quot;href&quot;: &quot;https://localhost:13000/profile/7&quot;
+        }
+      }
+    }
+  }
+}
+</code></pre><hr>
+<h3 id="ozpuser-data-data-api-nodes">ozp:user-data (Data API Nodes)</h3>
+<p><strong>Purpose</strong>: Provides the IWC Bus with a list of Data API Node links for gathering.</p>
+<p><strong>Schema</strong>:  <a href="https://github.com/ozone-development/ozp-data-schemas/blob/master/mock/api/profile/v1/exampleUser/index.json" target="_blank">vnd.ozp-iwc-list-v1+json</a> <strong>TODO:Undocumented linked to mock</strong> </p>
+<p><strong>Required to provide</strong>:</p>
+<ul>
+<li>_links<ul>
+<li><strong>item</strong> Array of object-wrapped href&#39;s for Data API Nodes </li>
+<li><strong>self</strong> An object-wrapped href to this resource</li>
+</ul>
+</li>
+</ul>
+<p><strong>GET Response (sample):</strong></p>
+<pre><code>{
+  &quot;_links&quot;: {
+    &quot;item&quot;: [
+      {
+        &quot;href&quot;: &quot;https://localhost:13000/profile/7/data/dashboard-data&quot;
+      },
+      {
+        &quot;href&quot;: &quot;https://localhost:13000/profile/7/data/locationLister/listings&quot;
+      },
+      {
+        &quot;href&quot;: &quot;https://localhost:13000/profile/7/data/locationLister/listings/13ab7e80&quot;
+      },
+      {
+        &quot;href&quot;: &quot;https://localhost:13000/profile/7/data/locationLister/listings/6a49f259&quot;
+      }
+    ],
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;https://localhost:13000/profile/7/data&quot;
+    }
+  }
+}
+</code></pre><p><strong>See <a href="data.html">Data API Nodes</a> for GET/PUT format on individual nodes</strong> </p>
+<hr>
+<h3 id="ozpapplication-system-api-application-nodes">ozp:application (System API: Application Nodes)</h3>
+<p><strong>Purpose</strong>: Provides the IWC Bus with a list of System API Application Node links for gathering.</p>
+<p><strong>Schema</strong>:  <a href="https://github.com/ozone-development/ozp-data-schemas/blob/master/mock/api/profile/v1/exampleUser/application/index.json" target="_blank">vnd.ozp-iwc-list-v1+json</a> <strong>TODO:Undocumented linked to mock</strong> </p>
+<p><strong>Required to provide</strong>:</p>
+<ul>
+<li>_links<ul>
+<li><strong>item</strong> Array of object-wrapped href&#39;s for System API Application Nodes </li>
+<li><strong>self</strong> An object-wrapped href to this resource</li>
+</ul>
+</li>
+</ul>
+<p><strong>GET Response (sample):</strong></p>
+<pre><code>{
+  &quot;_links&quot;: {
+    &quot;item&quot;: [
+      {
+        &quot;href&quot;: &quot;https://localhost:13000/api/listing/25&quot;
+      },
+      {
+        &quot;href&quot;: &quot;https://localhost:13000/api/listing/22&quot;
+      },
+      {
+        &quot;href&quot;: &quot;https://localhost:13000/api/listing/34&quot;
+      }
+    ],
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;https://localhost:13000/api/application&quot;
+    }
+  }
+}
+</code></pre><p><strong>See <a href="application.html">System API Application Nodes</a> for GET format on individual nodes</strong> </p>
+<hr>
+<h3 id="ozpuser-system-api-user-information-nodes">ozp:user (System API: User Information Nodes)</h3>
+<p><strong>Purpose</strong>: Provides the IWC Bus with a list of System API User Node links for gathering.</p>
+<p><strong>Schema</strong>: <a href="https://github.com/ozone-development/ozp-data-schemas/blob/master/schema/vnd.ozp-profile-v1%2Bjson.json" target="_blank">vnd.ozp-profile-v1+json</a></p>
+<p><strong>Required to provide</strong>:</p>
+<ul>
+<li>_links<ul>
+<li><strong>self</strong> An object-wrapped href to this resource</li>
+</ul>
+</li>
+</ul>
+<p><strong>GET Response (sample):</strong></p>
+<pre><code>{
+  &quot;email&quot;: &quot;jsmith@nowhere.com&quot;,
+  &quot;bio&quot;: &quot;&quot;,
+  &quot;createdDate&quot;: &quot;2015-09-29T15:50:30.000+0000&quot;,
+  &quot;lastLogin&quot;: &quot;2015-09-29T16:26:31.000+0000&quot;,
+  &quot;highestRole&quot;: &quot;ADMIN&quot;,
+  &quot;launchInWebtop&quot;: false,
+  &quot;organizations&quot;: [],
+  &quot;stewardedOrganizations&quot;: [],
+  &quot;id&quot;: 7,
+  &quot;displayName&quot;: &quot;John&quot;,
+  &quot;username&quot;: &quot;jSmith&quot;,
+  &quot;_links&quot;: {
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;https://localhost:13000/api/profile/7&quot;
+    }
+  }
+}
+</code></pre><hr>
+<h3 id="ozpsystem-system-api-platform-information-node">ozp:system (System API: Platform Information Node)</h3>
+<p><strong>Purpose</strong>: Provides the IWC Bus with a System API Platform Information Node for gathering.</p>
+<p><strong>Schema</strong>: <a href="https://github.com/ozone-development/ozp-data-schemas/blob/master/mock/api/system/v1/index.json" target="_blank">vnd.ozp-server-v1+json</a> <strong>TODO: undocumented liked to mock</strong></p>
+<p><strong>Required to provide</strong>:</p>
+<ul>
+<li><strong>version</strong> A string representation of the version of backend </li>
+<li><strong>name</strong> A string representation of the name of backend</li>
+<li>_links<ul>
+<li><strong>item</strong> Array of object-wrapped href&#39;s for System API Platform Information Nodes </li>
+</ul>
+</li>
+</ul>
+<p><strong>GET Response (sample):</strong></p>
+<pre><code>{
+  &quot;version&quot;: &quot;1.0&quot;,
+  &quot;name&quot;: &quot;IWC Sample Backend&quot;,
+  &quot;_links&quot;: {
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;https://localhost:13000/api/system&quot;
+    }
+  }
+}
+</code></pre><hr>
+<h3 id="ozpintent-intents-api-common-handler-definition-nodes">ozp:intent (Intents API Common Handler Definition Nodes)</h3>
+<h4 id="future-implementation-not-used-in-current-iwc-version">Future implementation: Not used in current IWC version.</h4>
+<p><strong>Purpose</strong>: Provides the IWC Bus with a list of Intents API Common Handler Definition Node links for gathering. These
+nodes will fill the IWC bus with commonly used Intent definitions to aid the user when prompted to make a decision.</p>
+<p><strong>Schema</strong>:  <strong>TODO</strong></p>
+<p><strong>Required to provide</strong>:</p>
+<ul>
+<li>_links<ul>
+<li><strong>item</strong> Array of object-wrapped href&#39;s for Intent API Nodes </li>
+<li><strong>self</strong> An object-wrapped href to this resource</li>
+</ul>
+</li>
+</ul>
+<p><strong>GET Response (sample):</strong></p>
+<pre><code>{
+  &quot;_links&quot;: {
+    &quot;item&quot;: [
+      {
+        &quot;href&quot;: &quot;https://localhost:13000/api/intent/1&quot;
+      },
+      {
+        &quot;href&quot;: &quot;https://localhost:13000/api/intent/2&quot;
+      }
+    ],
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;https://localhost:13000/api/intent&quot;
+    }
+  }
+}
+</code></pre><p><strong>See <a href="application.html">Intents API Handler Definition Nodes</a> for GET format on individual nodes</strong> </p>
+
+                    
+                    </section>
+                
+                
+                </div>
+            </div>
+        </div>
+
+        
+        <a href="../../bus/busConfiguration.html" class="navigation navigation-prev " aria-label="Previous page: Bus Configuration"><i class="fa fa-angle-left"></i></a>
+        
+        
+        <a href="../../bus/endpoints/data.html" class="navigation navigation-next " aria-label="Next page: Data API Nodes"><i class="fa fa-angle-right"></i></a>
+        
+    </div>
+</div>
+
+        
+<script src="../../gitbook/app.js"></script>
+
+    
+    <script src="https://cdn.mathjax.org/mathjax/2.4-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+    
+    <script src="../../gitbook/plugins/gitbook-plugin-mathjax/plugin.js"></script>
+    
+
+<script>
+require(["gitbook"], function(gitbook) {
+    var config = {"fontSettings":{"theme":null,"family":"sans","size":2}};
+    gitbook.start(config);
+});
+</script>
+
+        
+    </body>
+    
+</html>
