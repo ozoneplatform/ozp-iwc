@@ -1,8 +1,8 @@
-##API Action: bulkGet(nodeKeyPartial)
+##Common API Action: bulkGet(nodeKeyPartial)
 * `nodeKeyPartial`: **String** - the partial string to match against all of an API's nodes to determine if a node 
 should be gathered. ([What is an API Node?](../../resources.md))
  
-#####Applies to All IWC APIs
+###Applies to All IWC APIs
     
 ###Retrieves a collection of nodes
 In some cases, gathering multiple resources at once is desired. The `bulkGet` action takes a partial node path, and 

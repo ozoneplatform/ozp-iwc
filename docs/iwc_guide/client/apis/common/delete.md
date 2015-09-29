@@ -1,7 +1,8 @@
-##API Action: delete(nodeKey)
+##Common API Action: delete(nodeKey)
 * `nodeKey`: **String** - the name of the API Node. ([What is an API Node?](../../resources.md))
  
-#####Applies to All IWC APIs
+###Applies to All IWC APIs
+
 ###Removes a Given Node from its API
     
     

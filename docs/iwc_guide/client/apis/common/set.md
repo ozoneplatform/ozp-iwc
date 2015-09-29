@@ -1,4 +1,4 @@
-##API Action: set(nodeKey,nodeValue)
+##Common API Action: set(nodeKey,nodeValue)
 * `nodeKey`: **String** - the name of the API Node. ([What is an API Node?](../../resources.md))
 * `nodeValue`: **Object** - the settings to store the node.
 * `[nodeValue.lifespan]`: **String** - (Optional) the lifespan of the node.     
@@ -18,7 +18,8 @@
 * `[nodeValue.contentType]`: **String** - (Optional) the content type of the object that will be set. This is an 
 optional parameter, in some APIs nodes have refined control based on the content they hold.
  
-#####Applies to All IWC APIs
+###Applies to All IWC APIs
+
 ###Creates/Updates a Given Node
     
     

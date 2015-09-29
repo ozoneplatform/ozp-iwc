@@ -26,8 +26,20 @@ ORDERED_SOURCE_LIST="README.md \
 					 client/connecting.md \
 					 client/resources.md \
 					 client/apis/data/overview.md \
+					 client/apis/common/get.md \
+					 client/apis/common/bulkGet.md \
+					 client/apis/common/list.md \
+					 client/apis/common/set.md \
+					 client/apis/common/delete.md \
+					 client/apis/common/watch.md \
+					 client/apis/common/unwatch.md \
+					 client/apis/data/addChild.md \
 					 client/apis/intents/overview.md \
+					 client/apis/intents/register.md \
+					 client/apis/intents/invoke.md \
+					 client/apis/intents/broadcast.md \
 					 client/apis/system/overview.md \
+					 client/apis/system/launch.md \
 					 client/apis/names/overview.md \
 					 client/api_commonalities/overview.md \
 					 client/api_commonalities/api_requests.md \

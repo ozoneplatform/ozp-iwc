@@ -1,7 +1,8 @@
-##API Action: get(nodeKey)
+##Common API Action: get(nodeKey)
 * `nodeKey`: **String** - the name of the API Node. ([What is an API Node?](../../resources.md))
  
-#####Applies to All IWC APIs
+###Applies to All IWC APIs
+
 ###Retrieves a Given Node
     
     

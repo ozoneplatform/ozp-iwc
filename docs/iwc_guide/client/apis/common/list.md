@@ -1,8 +1,8 @@
-##API Action: list(nodeKeyPartial)
+##Common API Action: list(nodeKeyPartial)
 * `nodeKeyPartial`: **String** - the partial string to match against all of an API's nodes to determine if a node's key
 should be gathered. ([What is an API Node?](../../resources.md))
  
-#####Applies to All IWC APIs
+###Applies to All IWC APIs
     
 ###Retrieves a collection of node keys
 Much like the [bulkGet](bulkGet.md) action, the `list` action takes a string to match against all node key's in an API

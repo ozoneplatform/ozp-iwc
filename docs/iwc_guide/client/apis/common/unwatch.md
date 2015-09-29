@@ -1,10 +1,10 @@
-##API Action: unwatch(nodeKey,unwatchData)
+##Common API Action: unwatch(nodeKey,unwatchData)
 * `nodeKey`: **String** - the name of the API Node. ([What is an API Node?](../../resources.md))
 * `unwatchData`: **Object** - the settings to store the node.
 * `unwatchData.src`: **String** - the address the watch is registered to.
 * `unwatchData.msgId`: **String** - the message Idthe watch is registered to.
  
-#####Applies to All IWC APIs
+###Applies to All IWC APIs
 
 ###Stopping a watch external to its callback
 In some cases, stopping a watch may be desired outside of the onChange callback. For this reason, there is the `unwatch`

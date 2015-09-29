@@ -1,4 +1,4 @@
-##API Action: invoke(nodeKey,nodeValue)
+##Intents API Action: invoke(nodeKey,nodeValue)
 * `nodeKey`: **String** - the name of the API Node. ([What is an API Node?](../../resources.md))
 * `nodeValue`: **Object** - the settings to store the node.
 * `nodeValue.entity`: **Object** - the registration value to store in the node.
@@ -9,7 +9,8 @@ type**. Currently there is only 1 version of the intent handler content type:
     * "application/vnd.ozp-iwc-intent-handler-v1+json"
 
  
-#####Applies to only the Intents API
+###Applies to only the Intents API
+
 ###Invoke an intent to be Handled by some IWC Intent Registration
 
 When a widget wants to offload operations to other widgets on the bus, intent invocations are used. Much like

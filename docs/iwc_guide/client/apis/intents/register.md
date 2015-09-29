@@ -1,4 +1,4 @@
-##API Action: register(nodeKey,nodeValue,invocationCallback)
+##Intents API Action: register(nodeKey,nodeValue,invocationCallback)
 * `nodeKey`: **String** - the name of the  API Node. ([What is an API Node?](../../resources.md))
 * `nodeValue`: **Object** - the settings to store the node.
 * `nodeValue.entity`: **Object** - the registration value to store in the node.
@@ -9,7 +9,8 @@ type**. Currently there is only 1 version of the intent handler content type:
     * "application/vnd.ozp-iwc-intent-handler-v1+json"
 
  
-#####Applies to only the Intents API
+###Applies to only the Intents API
+
 ###Registers an application to handle and IWC Intent
         
 To register to handle an intent, the `register` action is used.

@@ -1,12 +1,13 @@
-##API Action: launch(nodeKey,nodeValue)
+##System API Action: launch(nodeKey,nodeValue)
 * `nodeKey`: **String** - the name of the API Node. ([What is an API Node?](../../resources.md))
 * `nodeValue`: **Object** - the settings to store the node.
 * `[nodeValue.entity]`: **Object** - data to pass to the launched application. Obtainable in the launched application's
 connected client in the `launchParams` property.
 
  
-#####Applies to only the System API
-##Launch an Application Through the System API
+###Applies to only the System API
+
+###Launch an Application Through the System API
 Applications have the possibility to launch other applications in the IWC. Rather than just opening a link in a new tab,
 the System API can be used to pass important information to the launching application much like how Android allows
 passing serialized data to new activities.

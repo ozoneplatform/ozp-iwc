@@ -1,4 +1,4 @@
-##API Action: watch(nodeKey,nodeValue,callback)
+##Common API Action: watch(nodeKey,nodeValue,callback)
 * `nodeKey`: **String** - the name of the API Node. ([What is an API Node?](../../resources.md))
 * `nodeValue`: **Object** - the settings to store the node.
 * `[nodeValue.pattern]`: **String** - (Optional) A string matching a partial path of resources. This is used to allow 
@@ -20,7 +20,7 @@ optional parameter, it will only update on the node if you include it in the req
     * `done`: **Function** - A function to call if after this callback finishes the watch action is no longer needed. Called
     with `done()`.
  
-#####Applies to All IWC APIs
+###Applies to All IWC APIs
 
 ###Watches a Given Node 
 To watch a node stored in an API for changes, the **watch** action is used.
