@@ -5,7 +5,7 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
-        <title>Debugging | Inter-Widget Communication (IWC)</title>
+        <title>General | Inter-Widget Communication (IWC)</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="generator" content="GitBook 1.5.0">
@@ -19,10 +19,10 @@
         
     
     
-    <link rel="next" href="../../client/debugger/general.html" />
+    <link rel="next" href="../../client/debugger/traffic.html" />
     
     
-    <link rel="prev" href="../../client/migration/pubsub_to_setwatch.html" />
+    <link rel="prev" href="../../client/debugger/overview.html" />
     
 
         
@@ -34,7 +34,7 @@
 
 
         
-    <div class="book" data-level="1.9" data-basepath="../.." data-revision="1443560746146">
+    <div class="book" data-level="1.9.1" data-basepath="../.." data-revision="1443560746146">
     
 
 <div class="book-summary">
@@ -551,7 +551,7 @@
         </li>
     
         
-        <li class="chapter active" data-level="1.9" data-path="client/debugger/overview.html">
+        <li class="chapter " data-level="1.9" data-path="client/debugger/overview.html">
             
                 
                     <a href="../../client/debugger/overview.html">
@@ -568,7 +568,7 @@
                 
     
         
-        <li class="chapter " data-level="1.9.1" data-path="client/debugger/general.html">
+        <li class="chapter active" data-level="1.9.1" data-path="client/debugger/general.html">
             
                 
                     <a href="../../client/debugger/general.html">
@@ -956,16 +956,23 @@
                 <div class="page-inner">
                 
                 
-                    <section class="normal" id="section-gitbook_65">
+                    <section class="normal" id="section-gitbook_60">
                     
-                        <h2 id="iwc-debugger">IWC Debugger</h2>
-<p>The IWC distributables come with a build in IWC debugger. This is hosted with the IWC bus, so developers can open the
-debugger tools to check the state of the bus for which they are developing. The default location is <code>/debugger.html</code>,
-relative to the URL of the bus: <code>http://localhost:13000/debugger.html</code>.</p>
-<p><strong>If developing using the IWC provided sample bus, pointing your browser to <code>http://localhost:13000</code> will reach the
-debugger.</strong></p>
-<p><img src="../../assets/debugger_general.png" alt="img">
-<em>The homepage of the debugger utility.</em></p>
+                        <h2 id="iwc-debugger-general">IWC Debugger: General</h2>
+<p>Each Page of the debugger can split functionality into multiple tabs. With the general page, functionality is split
+between the following sections:</p>
+<h4 id="about">About</h4>
+<p>The homepage of the debugger. Gives users basic information about the debugger application.</p>
+<p><img src="../../assets/debugger_general.png" alt="img"></p>
+<h4 id="user">User</h4>
+<p><strong>TODO: Unimplemented.</strong> Basic information about the user account accessing the bus (if authentication used).</p>
+<h4 id="build">Build</h4>
+<p>Information about the backend server version (<strong>TODO: Unimplemented</strong>) and the <a href="../../bus/busConfiguration.html">bus&#39;s configuration</a>.</p>
+<p><img src="../../assets/debugger_general_build.png" alt="img"></p>
+<h4 id="endpoints">Endpoints</h4>
+<p>Information about IWC Bus API&#39;s endpoint links to the backend server (if utilized). Clicking a link 
+will will route to the <a href="hal.html">HAL Browser utility</a>
+<img src="../../assets/debugger_general_endpoints.png" alt="img"></p>
 
                     
                     </section>
@@ -976,10 +983,10 @@ debugger.</strong></p>
         </div>
 
         
-        <a href="../../client/migration/pubsub_to_setwatch.html" class="navigation navigation-prev " aria-label="Previous page: Publish/Subscribe to Set/Watch"><i class="fa fa-angle-left"></i></a>
+        <a href="../../client/debugger/overview.html" class="navigation navigation-prev " aria-label="Previous page: Debugging"><i class="fa fa-angle-left"></i></a>
         
         
-        <a href="../../client/debugger/general.html" class="navigation navigation-next " aria-label="Next page: General"><i class="fa fa-angle-right"></i></a>
+        <a href="../../client/debugger/traffic.html" class="navigation navigation-next " aria-label="Next page: Traffic Snooper"><i class="fa fa-angle-right"></i></a>
         
     </div>
 </div>

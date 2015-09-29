@@ -5,7 +5,7 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
-        <title>Debugging | Inter-Widget Communication (IWC)</title>
+        <title>Elections | Inter-Widget Communication (IWC)</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="generator" content="GitBook 1.5.0">
@@ -19,10 +19,10 @@
         
     
     
-    <link rel="next" href="../../client/debugger/general.html" />
+    <link rel="next" href="../../client/debugger/api/view.html" />
     
     
-    <link rel="prev" href="../../client/migration/pubsub_to_setwatch.html" />
+    <link rel="prev" href="../../client/debugger/metrics.html" />
     
 
         
@@ -34,7 +34,7 @@
 
 
         
-    <div class="book" data-level="1.9" data-basepath="../.." data-revision="1443560746146">
+    <div class="book" data-level="1.9.4" data-basepath="../.." data-revision="1443560746146">
     
 
 <div class="book-summary">
@@ -551,7 +551,7 @@
         </li>
     
         
-        <li class="chapter active" data-level="1.9" data-path="client/debugger/overview.html">
+        <li class="chapter " data-level="1.9" data-path="client/debugger/overview.html">
             
                 
                     <a href="../../client/debugger/overview.html">
@@ -616,7 +616,7 @@
         </li>
     
         
-        <li class="chapter " data-level="1.9.4" data-path="client/debugger/elections.html">
+        <li class="chapter active" data-level="1.9.4" data-path="client/debugger/elections.html">
             
                 
                     <a href="../../client/debugger/elections.html">
@@ -956,16 +956,21 @@
                 <div class="page-inner">
                 
                 
-                    <section class="normal" id="section-gitbook_65">
+                    <section class="normal" id="section-gitbook_58">
                     
-                        <h2 id="iwc-debugger">IWC Debugger</h2>
-<p>The IWC distributables come with a build in IWC debugger. This is hosted with the IWC bus, so developers can open the
-debugger tools to check the state of the bus for which they are developing. The default location is <code>/debugger.html</code>,
-relative to the URL of the bus: <code>http://localhost:13000/debugger.html</code>.</p>
-<p><strong>If developing using the IWC provided sample bus, pointing your browser to <code>http://localhost:13000</code> will reach the
-debugger.</strong></p>
-<p><img src="../../assets/debugger_general.png" alt="img">
-<em>The homepage of the debugger utility.</em></p>
+                        <h2 id="iwc-debugger-elections">IWC Debugger: Elections</h2>
+<p>The elections tool is a timeline plot of the IWC&#39;s distributed consensus algorithm determining which browser window
+should be taking &quot;leadership&quot; of running the IWC bus. As a designated leader closes, a new leader must be determined to
+retain the state of the bus. This plot gives a visual representation of what goes on during the eleciton process.</p>
+<p><img src="../../assets/debugger_election.png" alt="img">
+<em>An example of leadership determination of the current IWC Bus.</em></p>
+<hr>
+<h4 id="enable">Enable</h4>
+<p>This button will toggle the plotting of election events.</p>
+<h4 id="plot-received-packets">Plot Received Packets</h4>
+<p>Plots packets passing through the IWC along side the election events.</p>
+<h4 id="clear">Clear</h4>
+<p>Clears the Election timeline.</p>
 
                     
                     </section>
@@ -976,10 +981,10 @@ debugger.</strong></p>
         </div>
 
         
-        <a href="../../client/migration/pubsub_to_setwatch.html" class="navigation navigation-prev " aria-label="Previous page: Publish/Subscribe to Set/Watch"><i class="fa fa-angle-left"></i></a>
+        <a href="../../client/debugger/metrics.html" class="navigation navigation-prev " aria-label="Previous page: Metrics"><i class="fa fa-angle-left"></i></a>
         
         
-        <a href="../../client/debugger/general.html" class="navigation navigation-next " aria-label="Next page: General"><i class="fa fa-angle-right"></i></a>
+        <a href="../../client/debugger/api/view.html" class="navigation navigation-next " aria-label="Next page: API Node Viewing"><i class="fa fa-angle-right"></i></a>
         
     </div>
 </div>
