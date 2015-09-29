@@ -5,7 +5,7 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
-        <title>Errors | Inter-Widget Communication (IWC)</title>
+        <title>Migration from OWF7 | Inter-Widget Communication (IWC)</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="generator" content="GitBook 1.5.0">
@@ -19,10 +19,10 @@
         
     
     
-    <link rel="next" href="../../client/migration/overview.html" />
+    <link rel="next" href="../../client/migration/pubsub_to_setwatch.html" />
     
     
-    <link rel="prev" href="../../client/api_commonalities/api_responses.html" />
+    <link rel="prev" href="../../client/api_commonalities/api_errors.html" />
     
 
         
@@ -34,7 +34,7 @@
 
 
         
-    <div class="book" data-level="1.7.3" data-basepath="../.." data-revision="1443556650475">
+    <div class="book" data-level="1.8" data-basepath="../.." data-revision="1443556650475">
     
 
 <div class="book-summary">
@@ -492,7 +492,7 @@
         </li>
     
         
-        <li class="chapter active" data-level="1.7.3" data-path="client/api_commonalities/api_errors.html">
+        <li class="chapter " data-level="1.7.3" data-path="client/api_commonalities/api_errors.html">
             
                 
                     <a href="../../client/api_commonalities/api_errors.html">
@@ -513,7 +513,7 @@
         </li>
     
         
-        <li class="chapter " data-level="1.8" data-path="client/migration/overview.html">
+        <li class="chapter active" data-level="1.8" data-path="client/migration/overview.html">
             
                 
                     <a href="../../client/migration/overview.html">
@@ -816,33 +816,11 @@
                 <div class="page-inner">
                 
                 
-                    <section class="normal" id="section-gitbook_21">
+                    <section class="normal" id="section-gitbook_53">
                     
-                        <h2 id="error-handling">Error Handling</h2>
-<p>Not all requests are valid. In the event that a request cannot be handled, or should not be allowed, the promise will
-reject. This allows for a clean separation for error handling. The value of <strong>errRes</strong> follows the same format of
-a valid api response (see <a href="api_responses.html">API Responses</a>).</p>
-<h4 id="error-example">Error Example</h4>
-<p>In this example a get request is sent, but no node was specified in the <strong>get</strong> action  call ( <code>dataApi.get()</code> )</p>
-<pre><code>var dataApi = client.data();
+                        <h2 id="owf-7-application-to-iwc-application-transition">OWF 7 Application to IWC Application Transition</h2>
+<h3 id="todo">TODO</h3>
 
-var foo;
-
-dataApi.get().then(function(res){
-    foo = res.entity;
-}).catch(function(errRes){
-    // handle the error here.
-});
-</code></pre><p>Because of this, the response will be in the <code>catch</code> because it was a failed request. Further information about why the
-request failed can be found in the <code>response</code> field of <strong>errRes</strong>.</p>
-<p><strong>NOTE:</strong> If supporting IE 8, <code>catch</code> is a keyword and cannot be used. In this situation replacing <code>catch</code> with
-<code>[&#39;catch&#39;]</code> will prevent IE 8 from failing. See snippit below:</p>
-<pre><code>dataApi.get().then(function(res){
-    foo = res.entity;
-})[&#39;catch&#39;](function(errRes){
-    // handle the error here.
-});
-</code></pre>
                     
                     </section>
                 
@@ -852,10 +830,10 @@ request failed can be found in the <code>response</code> field of <strong>errRes
         </div>
 
         
-        <a href="../../client/api_commonalities/api_responses.html" class="navigation navigation-prev " aria-label="Previous page: Responses"><i class="fa fa-angle-left"></i></a>
+        <a href="../../client/api_commonalities/api_errors.html" class="navigation navigation-prev " aria-label="Previous page: Errors"><i class="fa fa-angle-left"></i></a>
         
         
-        <a href="../../client/migration/overview.html" class="navigation navigation-next " aria-label="Next page: Migration from OWF7"><i class="fa fa-angle-right"></i></a>
+        <a href="../../client/migration/pubsub_to_setwatch.html" class="navigation navigation-next " aria-label="Next page: Publish/Subscribe to Set/Watch"><i class="fa fa-angle-right"></i></a>
         
     </div>
 </div>
