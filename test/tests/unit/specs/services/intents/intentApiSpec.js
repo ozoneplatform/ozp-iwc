@@ -48,7 +48,7 @@ describe("Intent API Class", function () {
             expect(endpoint.get).toHaveBeenCalledWith("http://example.com/intents/1",[]);
         });
     });
-    pit("registers handlers",function() {
+    it("registers handlers",function() {
         var testPacket=new TestPacketContext({
             'packet': {
                 'resource': "/text/plain/view",
@@ -63,12 +63,11 @@ describe("Intent API Class", function () {
             },
             'leaderState': "leader"
         });
-        return apiBase.receivePacketContext(testPacket).then(function(){
-            expect(testPacket.responses[0]).toEqual(jasmine.objectContaining({
-                response: "ok"
-            }));
-            expect(testPacket.responses[0].entity.resource).toMatch(/text\/plain\/view\/.*/);
-        });
+        apiBase.receivePacketContext(testPacket);
+        expect(testPacket.responses[0]).toEqual(jasmine.objectContaining({
+            response: "ok"
+        }));
+        expect(testPacket.responses[0].entity.resource).toMatch(/text\/plain\/view\/.*/);
     });
 
     describe("invocation workflow",function() {
@@ -132,29 +131,34 @@ describe("Intent API Class", function () {
         
         pit("invokes handlers directly",function() {
             var invocationPacket=makeInvocationPacket(handlerResource);
-            return apiBase.receivePacketContext(invocationPacket).then(function() {
-                expect(invocationPacket).toHaveSent({
-                    dst: invocationPacket.packet.src,
-                    response: "ok"
-                });
-                var inflightNode=invocationPacket.responses[0].entity.inFlightIntent;
-                expect(inflightNode.entity.state).toEqual("delivering");
+            apiBase.receivePacketContext(invocationPacket);
+            expect(invocationPacket).toHaveSent({
+                dst: invocationPacket.packet.src,
+                response: "ok"
             });
+            jasmine.clock().tick(100);
+            return invocationPacket.responses[0].then(function(resp){
+                var inflightIntent = resp.entity.inFlightIntent;
+                expect(inflightIntent.entity.state).toEqual("delivering");
+            });
+
         });
+
         pit("sends the delivery packet on a direct invocation",function() {
             var invocationPacket=makeInvocationPacket(handlerResource);
-            return apiBase.receivePacketContext(invocationPacket).then(function() {
-                expect(invocationPacket).toHaveSent({
-                    dst: invocationPacket.packet.src,
-                    response: "ok"
-                });
-                var inflightNode=apiBase.data[invocationPacket.responses[0].entity.inFlightIntent.resource];
+            apiBase.receivePacketContext(invocationPacket);
+            expect(invocationPacket).toHaveSent({
+                dst: invocationPacket.packet.src,
+                response: "ok"
+            });
+            return invocationPacket.responses[0].then(function(resp) {
+                var inflightIntent = resp.entity.inFlightIntent;
                 expect(apiBase.participant).toHaveSent({
                     dst: "system.api",
                     resource: "/intentHandler",
                     action: "view",
                     entity: {
-                        inFlightIntent: inflightNode.toPacket()
+                        inFlightIntent: inflightIntent
                     }
                 });
             });
@@ -162,72 +166,78 @@ describe("Intent API Class", function () {
      
         pit("presents the chooser when there are multiple choices",function() {
             var invocationPacket=makeInvocationPacket("/text/plain/view");
-            return apiBase.receivePacketContext(invocationPacket).then(function() {
-                expect(invocationPacket).toHaveSent({
-                    dst: invocationPacket.packet.src,
-                    response: "ok"
-                });
-                var inflightNode=invocationPacket.responses[0].entity.inFlightIntent;
-                expect(inflightNode.entity.state).toEqual("choosing");
+            apiBase.receivePacketContext(invocationPacket);
+            expect(invocationPacket).toHaveSent({
+                dst: invocationPacket.packet.src,
+                response: "ok"
+            });
+            return invocationPacket.responses[0].then(function(resp) {
+                var inflightIntent = resp.entity.inFlightIntent;
+                expect(inflightIntent.entity.state).toEqual("choosing");
                 expect(ozpIwc.util.openWindow)
-                    .toHaveBeenCalledWith(ozpIwc.config.intentsChooserUri,jasmine.objectContaining({
+                    .toHaveBeenCalledWith(ozpIwc.config.intentsChooserUri, jasmine.objectContaining({
                         "ozpIwc.peer": ozpIwc.config._busRoot,
-                        "ozpIwc.intentSelection": "intents.api"+inflightNode.resource
-                    }),ozpIwc.config.intentChooserFeatures);
+                        "ozpIwc.intentSelection": "intents.api" + inflightIntent.resource
+                    }), ozpIwc.config.intentChooserFeatures);
             });
         });
+
         pit("uses a saved preference when one exists",function() {
             var invocationPacket=makeInvocationPacket("/text/plain/view");
             apiBase.getPreference=function() {return Promise.resolve(handlerResource);};
-            return apiBase.receivePacketContext(invocationPacket).then(function() {
-                expect(invocationPacket).toHaveSent({
-                    dst: invocationPacket.packet.src,
-                    response: "ok"
-                });
-                var inflightNode=invocationPacket.responses[0].entity.inFlightIntent;
-                expect(inflightNode.entity.state).toEqual("delivering");
+            apiBase.receivePacketContext(invocationPacket);
+            expect(invocationPacket).toHaveSent({
+                dst: invocationPacket.packet.src,
+                response: "ok"
+            });
+            return invocationPacket.responses[0].then(function(resp) {
+                var inflightIntent = resp.entity.inFlightIntent;
+                expect(inflightIntent.entity.state).toEqual("delivering");
                 expect(ozpIwc.util.openWindow)
                     .not.toHaveBeenCalled();
             });
         });
+
         pit("ignores a saved preference that's not valid",function() {
             var invocationPacket=makeInvocationPacket("/text/plain/view");
             apiBase.getPreference=function() {return Promise.resolve("/invalid/handler");};
-            return apiBase.receivePacketContext(invocationPacket).then(function() {
-                expect(invocationPacket).toHaveSent({
-                    dst: invocationPacket.packet.src,
-                    response: "ok"
-                });
-                var inflightNode=invocationPacket.responses[0].entity.inFlightIntent;
-                expect(inflightNode.entity.state).toEqual("choosing");
+            apiBase.receivePacketContext(invocationPacket);
+            expect(invocationPacket).toHaveSent({
+                dst: invocationPacket.packet.src,
+                response: "ok"
+            });
+            return invocationPacket.responses[0].then(function(resp) {
+                var inflightIntent = resp.entity.inFlightIntent;
+                expect(inflightIntent.entity.state).toEqual("choosing");
                 expect(ozpIwc.util.openWindow)
-                    .toHaveBeenCalledWith(ozpIwc.config.intentsChooserUri,jasmine.objectContaining({
+                    .toHaveBeenCalledWith(ozpIwc.config.intentsChooserUri, jasmine.objectContaining({
                         "ozpIwc.peer": ozpIwc.config._busRoot,
-                        "ozpIwc.intentSelection": "intents.api"+inflightNode.resource
-                    }),ozpIwc.config.intentChooserFeatures);
+                        "ozpIwc.intentSelection": "intents.api" + inflightIntent.resource
+                    }), ozpIwc.config.intentChooserFeatures);
             });
         });
         
         pit("marks the invocation as running when it receives a running packet",function() {
             var invocationPacket=makeInvocationPacket(handlerResource);
-            var inflightNode=null;
-            return apiBase.receivePacketContext(invocationPacket).then(function() {
-                inflightNode=invocationPacket.responses[0].entity.inFlightIntent;
-                var runningPacket=new TestPacketContext({'packet': {
-                    'resource': inflightNode.resource,
-                    'action': "set",
-                    'contentType': "application/vnd.ozp-iwc-intent-invocation-v1+json",
-                    'entity': {
-                        'state': "running",
-                        'handler': {
-                           'address': "someAddress",
-                           'resource': "/intentReceiver"
-                       }
+            apiBase.receivePacketContext(invocationPacket);
+            return invocationPacket.responses[0].then(function(resp) {
+                var inflightIntent = resp.entity.inFlightIntent;
+                var runningPacket = new TestPacketContext({
+                    'packet': {
+                        'resource': inflightIntent.resource,
+                        'action': "set",
+                        'contentType': "application/vnd.ozp-iwc-intent-invocation-v1+json",
+                        'entity': {
+                            'state': "running",
+                            'handler': {
+                                'address': "someAddress",
+                                'resource': "/intentReceiver"
+                            }
+                        }
                     }
-                }});
-                return apiBase.receivePacketContext(runningPacket);
-            }).then(function() {
-                expect(apiBase.data[inflightNode.resource].entity.state).toEqual("running");
+                });
+                apiBase.receivePacketContext(runningPacket);
+                expect(apiBase.data[inflightIntent.resource].entity.state).toEqual("running");
             });
         });
     });

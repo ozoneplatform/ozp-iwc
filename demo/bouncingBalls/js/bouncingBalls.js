@@ -26,17 +26,20 @@ $(document).ready(function(){
     });
 
 
-	window.setInterval(function() {
+    ozpIwc.util.setInterval(function() {
 		var elapsed=(ozpIwc.util.now()-client.startTime)/1000;
 
 		$('#averageLatencies').text(
 			"Pkt/sec [sent: " + (client.sentPackets/elapsed).toFixed(1) + ", " +
 			"received: " + (client.receivedPackets/elapsed).toFixed(1) + "]"
 		);
-	},500);
+	},1000);
 });
 
-var client=new ozpIwc.Client({peerUrl:"http://" + window.location.hostname + ":13000"});
+var client=new ozpIwc.Client({
+    peerUrl:"http://" + window.location.hostname + ":13000",
+    enhancedTimers: true
+});
 client.connect().then(function(){
 	// setup
 	var viewPort=$('#viewport');
@@ -63,7 +66,7 @@ client.connect().then(function(){
 		lastUpdate=now;
 	};
 
-	window.setInterval(animate,1000/fps);
+	ozpIwc.util.setInterval(animate,1000/fps);
 
 
     //=================================================================

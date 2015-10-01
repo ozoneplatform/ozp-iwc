@@ -62,7 +62,7 @@ var Ball=function(ballRef,svgElement,iwcClient) {
 			svgimg.setAttribute('y','-100');
 			self.el.appendChild(svgimg);
 			self.circle.setAttribute("class","svgHidden");
-			window.setTimeout(function(){
+			ozpIwc.util.setTimeout(function(){
 				self.remove();
 			},500);
 		}
@@ -177,7 +177,8 @@ var BallPublisher=function(config) {
 
 		self.iwc.data().set(this.resource,{
 			entity: ball,
-            respondOn: "error"
+            respondOn: "none",
+            'lifespan': "bound"
 		})['catch'](function(err){
             console.error(err);
         });

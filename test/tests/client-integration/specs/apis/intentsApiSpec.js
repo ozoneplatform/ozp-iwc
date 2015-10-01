@@ -1,32 +1,6 @@
-/**
- * Network Integration
- */
-describe("Intents API", function() {
-    var client;
-    var participant;
-
-    beforeEach(function(done) {
-        client = new ozpIwc.Client({
-            peerUrl: "http://" + window.location.hostname + ":14002"
-        });
-        participant = new ozpIwc.test.MockParticipant({
-            clientUrl: "http://localhost:14001",
-            'client': client
-        });
-
-        var gate = ozpIwc.testUtil.doneSemaphore(2, done);
-
-        participant.on("connected", gate);
-        client.connect().then(gate, gate);
-    });
-
-    afterEach(function() {
-        client.disconnect();
-        if (participant) {
-            participant.close();
-        }
-    });
-
+describe("Intents Api", function () {
+    var client, intentsApi;
+    var BUS_URL = "http://" + window.location.hostname + ":14002";
     var registerEntity = {
         type: "text/plain",
         action: "view",
@@ -35,8 +9,32 @@ describe("Intents API", function() {
         invokeIntent: "system.api/application/123-412"
     };
 
+    beforeAll(function (done) {
+        client = new ozpIwc.Client({peerUrl: BUS_URL});
+        client.connect().then(function () {
+            intentsApi = client.intents();
+            done();
+        });
+    });
+
+    afterEach(function (done) {
+        intentsApi.list('/').then(function (resp) {
+            var packets = [];
+            var resources = resp.entity || [];
+            resources.forEach(function (resource) {
+                packets.push(intentsApi.messageBuilder.delete(resource));
+            });
+            intentsApi.bulkSend(packets).then(function () {
+                Promise.all(packets).then(function () {
+                    done();
+                });
+            });
+        });
+    });
+
+
     pit('registers handlers', function() {
-        return client.api('intents.api').register('/text/plain/view', {
+        return intentsApi.register('/text/plain/view', {
             contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: registerEntity
         }).then(function(reply) {
@@ -46,7 +44,7 @@ describe("Intents API", function() {
     });
 
     pit('uses sane defaults to register handlers', function() {
-        return client.api('intents.api').register('/text/plain/view', {
+        return intentsApi.register('/text/plain/view', {
             contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: {
                 type: "text/plain",
@@ -57,7 +55,7 @@ describe("Intents API", function() {
         }).then(function(reply) {
             expect(reply.response).toEqual('ok');
             expect(reply.entity.resource).toMatch('/text/plain/view');
-            return client.api('intents.api').get(reply.entity.resource);
+            return intentsApi.get(reply.entity.resource);
         }).then(function(reply) {
             expect(reply.response).toEqual("ok");
             // What is returned needs to be tested.
@@ -72,18 +70,18 @@ describe("Intents API", function() {
     });
 
     pit('deletes handlers', function() {
-        return client.api('intents.api').register('/text/plain/view', {
+        return intentsApi.register('/text/plain/view', {
             contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: registerEntity
         }).then(function(reply) {
-            return client.api('intents.api').delete(reply.entity.resource);
+            return intentsApi.delete(reply.entity.resource);
         }).then(function(reply) {
             expect(reply.response).toEqual('ok');
         });
     });
 
     it('invokes handler directly', function(done) {
-        return client.api('intents.api').register('/text/plain/view', {
+        return intentsApi.register('/text/plain/view', {
             contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: {
                 type: "text/plain",
@@ -107,58 +105,10 @@ describe("Intents API", function() {
             expect(reply.response).toEqual('ok');
             expect(reply.entity.resource).toMatch('/text/plain/view');
 
-            return client.api('intents.api').invoke(reply.entity.resource, {
+            return intentsApi.invoke(reply.entity.resource, {
                 contentType: "text/plain",
                 entity: "This is some text"
             });
         });
     });
-
-// This will need to be re-enabled when we actually support broadcast.  Right
-// now, we don't, so no point in testing for it.
-// 
-//    pit('broadcasts to all handlers of a definition', function(done) {
-//        var gate = ozpIwc.testUtil.doneSemaphore(2, done);
-//
-//        return client.api('intents.api').register('/text/plain/view', {
-//            contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
-//            entity: {
-//                type: "text/plain",
-//                action: "view",
-//                icon: "http://example.com/view-text-plain.png",
-//                label: "View Plain Text 1",
-//                invokeIntent: {
-//                    dst: client.address,
-//                    resource: "/text/plain/view",
-//                    action: "intentsInvocation"
-//                }
-//            }
-//        }, function(response) {
-//            console.log(response);
-//            gate();
-//        }).then(function() {
-//            return client.api('intents.api').register('/text/plain/view', {
-//                contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
-//                entity: {
-//                    type: "text/plain",
-//                    action: "view",
-//                    icon: "http://example.com/view-text-plain.png",
-//                    label: "View Plain Text 2",
-//                    invokeIntent: {
-//                        dst: client.address,
-//                        resource: "/text/plain/view",
-//                        action: "intentsInvocation"
-//                    }
-//                }
-//            }, function(response) {
-//                console.log(response);
-//                gate();
-//            });
-//        }).then(function() {
-//            return client.api('intents.api').broadcast('/text/plain/view', {
-//                contentType: "text/plain",
-//                entity: "This is some text"
-//            });
-//        });
-//    });
 });

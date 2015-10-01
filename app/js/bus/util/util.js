@@ -10,16 +10,6 @@ var ozpIwc = ozpIwc || {};
  * @static
  */
 ozpIwc.util = (function (util) {
-    /**
-     * Generates a large hexidecimal string to serve as a unique ID.  Not a guid.
-     *
-     * @method generateId
-     * @static
-     * @return {String}
-     */
-    util.generateId = function () {
-        return Math.floor(Math.random() * 0xffffffff).toString(16);
-    };
 
     /**
      * Invokes the callback handler on another event loop as soon as possible.

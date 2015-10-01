@@ -59,176 +59,151 @@ describe("Locks API",function() {
         });
     };
 
-    pit("gives the lock to the first requester",function() {
-        return locksApi.receivePacketContext(lockPacket("12345")).then(function(){
-            expect(sentPacketObjs[0]).toEqual(ownerNotification("12345"));
-        });
+    it("gives the lock to the first requester",function() {
+        locksApi.receivePacketContext(lockPacket("12345"));
+        expect(sentPacketObjs[0]).toEqual(ownerNotification("12345"));
     });
 
-    pit("passes the lock down the queue when the owner unlocks",function() {
-        return Promise.all([
-            locksApi.receivePacketContext(lockPacket("12345")),
-            locksApi.receivePacketContext(lockPacket("12346")),
-            locksApi.receivePacketContext(lockPacket("12347")),
-            locksApi.receivePacketContext(unlockPacket("12345"))
-        ]).then(function(){
-            expect(sentPacketObjs.length).toEqual(2);
-            expect(sentPacketObjs[0]).toEqual(ownerNotification("12345"));
-            expect(sentPacketObjs[1]).toEqual(ownerNotification("12346"));
-        });
-
+    it("passes the lock down the queue when the owner unlocks",function() {
+        locksApi.receivePacketContext(lockPacket("12345"));
+        locksApi.receivePacketContext(lockPacket("12346"));
+        locksApi.receivePacketContext(lockPacket("12347"));
+        locksApi.receivePacketContext(unlockPacket("12345"));
+        expect(sentPacketObjs.length).toEqual(2);
+        expect(sentPacketObjs[0]).toEqual(ownerNotification("12345"));
+        expect(sentPacketObjs[1]).toEqual(ownerNotification("12346"));
     });
 
     
-    pit("removes a queued holder upon unlock, but doesn't change owner",function() {
+    it("removes a queued holder upon unlock, but doesn't change owner",function() {
         var context = getPacket("unitTest","i:300");
 
-        return Promise.all([
-            locksApi.receivePacketContext(lockPacket("12345")),
-            locksApi.receivePacketContext(lockPacket("12346")),
-            locksApi.receivePacketContext(lockPacket("12347")),
-            locksApi.receivePacketContext(unlockPacket("12346"))
-        ]).then(function(){
-            return locksApi.receivePacketContext(context);
-        }).then(function(){
-            expect(context.responses[0].entity).toEqual({
-                owner: queueEntry("12345"),
-                queue: [
-                    queueEntry("12345"),
-                    queueEntry("12347")
-                ]
-            });
+        locksApi.receivePacketContext(lockPacket("12345"));
+        locksApi.receivePacketContext(lockPacket("12346"));
+        locksApi.receivePacketContext(lockPacket("12347"));
+        locksApi.receivePacketContext(unlockPacket("12346"));
+
+        locksApi.receivePacketContext(context);
+        expect(context.responses[0].entity).toEqual({
+            owner: queueEntry("12345"),
+            queue: [
+                queueEntry("12345"),
+                queueEntry("12347")
+            ]
         });
-    });    
-    pit("removes an address from the queue upon disconnect",function() {
+    });
+
+    it("removes an address from the queue upon disconnect",function() {
         var context = getPacket("unitTest","i:300");
 
-        return Promise.all([
-            locksApi.receivePacketContext(lockPacket("12345")),
-            locksApi.receivePacketContext(lockPacket("12346")),
-            locksApi.receivePacketContext(lockPacket("12347")),
-            locksApi.receivePacketContext(lockPacket("12346","i:10")),
-            locksApi.receivePacketContext(lockPacket("12346","i:20"))
-        ]).then(function(){
-            return locksApi.receivePacketContext({
-                packet: {
-                    dst: "$bus.multicast",
-                    action: "disconnect",
-                    entity: {
-                        address: "12346",
-                        participantType: "testParticipant",
-                        namesResource: "/address/12346"
-                    }
+        locksApi.receivePacketContext(lockPacket("12345"));
+        locksApi.receivePacketContext(lockPacket("12346"));
+        locksApi.receivePacketContext(lockPacket("12347"));
+        locksApi.receivePacketContext(lockPacket("12346","i:10"));
+        locksApi.receivePacketContext(lockPacket("12346","i:20"));
+        locksApi.receivePacketContext({
+            packet: {
+                dst: "$bus.multicast",
+                action: "disconnect",
+                entity: {
+                    address: "12346",
+                    participantType: "testParticipant",
+                    namesResource: "/address/12346"
                 }
-            });
-        }).then(function(){
-            return locksApi.receivePacketContext(context);
-        }).then(function(){
-            expect(context.responses[0].entity).toEqual({
-                owner: queueEntry("12345"),
-                queue: [
-                    queueEntry("12345"),
-                    queueEntry("12347")
-                ]
-            });
+            }
         });
-    });  
-    
-    pit("passes down the lock when the leader disconnects",function() {
-        var context = getPacket("unitTest","i:300");
-
-        return Promise.all([
-            locksApi.receivePacketContext(lockPacket("12345")),
-            locksApi.receivePacketContext(lockPacket("12346")),
-            locksApi.receivePacketContext(lockPacket("12347"))
-        ]).then(function(){
-            return locksApi.receivePacketContext({
-                packet: {
-                    dst: "$bus.multicast",
-                    action: "disconnect",
-                    entity: {
-                        address: "12345",
-                        participantType: "testParticipant",
-                        namesResource: "/address/12345"
-                    }
-                }
-            });
-        }).then(function(){
-            locksApi.receivePacketContext(context);
-        }).then(function(){
-            expect(sentPacketObjs.length).toEqual(2);
-            expect(sentPacketObjs[1]).toEqual(ownerNotification("12346"));
+        locksApi.receivePacketContext(context);
+        expect(context.responses[0].entity).toEqual({
+            owner: queueEntry("12345"),
+            queue: [
+                queueEntry("12345"),
+                queueEntry("12347")
+            ]
         });
     });
     
-    pit("removes an address from ALL lock queues upon disconnect",function() {
+    it("passes down the lock when the leader disconnects",function() {
+        var context = getPacket("unitTest","i:300");
+
+        locksApi.receivePacketContext(lockPacket("12345"));
+        locksApi.receivePacketContext(lockPacket("12346"));
+        locksApi.receivePacketContext(lockPacket("12347"));
+        locksApi.receivePacketContext({
+            packet: {
+                dst: "$bus.multicast",
+                action: "disconnect",
+                entity: {
+                    address: "12345",
+                    participantType: "testParticipant",
+                    namesResource: "/address/12345"
+                }
+            }
+        });
+        locksApi.receivePacketContext(context);
+        expect(sentPacketObjs.length).toEqual(2);
+        expect(sentPacketObjs[1]).toEqual(ownerNotification("12346"));
+    });
+    
+    it("removes an address from ALL lock queues upon disconnect",function() {
         var context1 = getPacket("unitTest","i:300","/mutex/1");
         var context2 = getPacket("unitTest","i:300","/mutex/2");
 
-        return Promise.all([
-            locksApi.receivePacketContext(lockPacket("12345","i:1","/mutex/1")),
-            locksApi.receivePacketContext(lockPacket("12346","i:1","/mutex/1")),
-            locksApi.receivePacketContext(lockPacket("12347","i:1","/mutex/1")),
-            locksApi.receivePacketContext(lockPacket("12346","i:10","i:1","/mutex/1")),
-            locksApi.receivePacketContext(lockPacket("12346","i:20","i:1","/mutex/1")),
-            locksApi.receivePacketContext(lockPacket("12346","i:2","/mutex/2")),
-            locksApi.receivePacketContext(lockPacket("12349","i:2","/mutex/2")),
-            locksApi.receivePacketContext(lockPacket("12347","i:2","/mutex/2"))
-        ]).then(function() {
-            return locksApi.receivePacketContext({
-                packet: {
-                    dst: "$bus.multicast",
-                    action: "disconnect",
-                    entity: {
-                        address: "12346",
-                        participantType: "testParticipant",
-                        namesResource: "/address/12346"
-                    }
-                }
-            });
-        }).then(function(){
-            return Promise.all([
-                locksApi.receivePacketContext(context1),
-                locksApi.receivePacketContext(context2)
-            ]);
-        }).then(function(){
-            expect(context1.responses[0].entity).toEqual({
-                owner: queueEntry("12345","i:1"),
-                queue: [
-                    queueEntry("12345","i:1"),
-                    queueEntry("12347","i:1")
-                ]
-            });
+        locksApi.receivePacketContext(lockPacket("12345","i:1","/mutex/1"));
+        locksApi.receivePacketContext(lockPacket("12346","i:1","/mutex/1"));
+        locksApi.receivePacketContext(lockPacket("12347","i:1","/mutex/1"));
+        locksApi.receivePacketContext(lockPacket("12346","i:10","i:1","/mutex/1"));
+        locksApi.receivePacketContext(lockPacket("12346","i:20","i:1","/mutex/1"));
+        locksApi.receivePacketContext(lockPacket("12346","i:2","/mutex/2"));
+        locksApi.receivePacketContext(lockPacket("12349","i:2","/mutex/2"));
+        locksApi.receivePacketContext(lockPacket("12347","i:2","/mutex/2"));
 
-            expect(context2.responses[0].entity).toEqual({
-                owner: queueEntry("12349","i:2"),
-                queue: [
-                    queueEntry("12349","i:2"),
-                    queueEntry("12347","i:2")
-                ]
-            });
+        locksApi.receivePacketContext({
+            packet: {
+                dst: "$bus.multicast",
+                action: "disconnect",
+                entity: {
+                    address: "12346",
+                    participantType: "testParticipant",
+                    namesResource: "/address/12346"
+                }
+            }
+        });
+
+        locksApi.receivePacketContext(context1);
+        locksApi.receivePacketContext(context2);
+
+        expect(context1.responses[0].entity).toEqual({
+            owner: queueEntry("12345","i:1"),
+            queue: [
+                queueEntry("12345","i:1"),
+                queueEntry("12347","i:1")
+            ]
+        });
+
+        expect(context2.responses[0].entity).toEqual({
+            owner: queueEntry("12349","i:2"),
+            queue: [
+                queueEntry("12349","i:2"),
+                queueEntry("12347","i:2")
+            ]
         });
     });
 
 
-    pit("returns badAction on a set",function() {
+    it("returns badAction on a set",function() {
         var context = testPacket("unitTest", "set");
 
-        return locksApi.receivePacketContext(lockPacket("12345")).then(function () {
-            return locksApi.receivePacketContext(context);
-        }).then(function () {
-            expect(context.responses[0].response).toEqual("badAction");
-        });
+        locksApi.receivePacketContext(lockPacket("12345"));
+        locksApi.receivePacketContext(context);
+        expect(context.responses[0].response).toEqual("badAction");
     });
 
-    pit("returns badAction on a delete",function() {
+    it("returns badAction on a delete",function() {
         var context=testPacket("unitTest","delete");
 
-        return locksApi.receivePacketContext(lockPacket("12345")).then(function(){
-            return locksApi.receivePacketContext(context);
-        }).then(function(){
-            expect(context.responses[0].response).toEqual("badAction");
-        });
+        locksApi.receivePacketContext(lockPacket("12345"));
+        locksApi.receivePacketContext(context);
+        expect(context.responses[0].response).toEqual("badAction");
     });
 
 });
