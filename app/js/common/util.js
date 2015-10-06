@@ -11,6 +11,17 @@ var ozpIwc = ozpIwc || {};
  */
 ozpIwc.util = (function (util) {
     /**
+     * Generates a large hexidecimal string to serve as a unique ID.  Not a guid.
+     *
+     * @method generateId
+     * @static
+     * @return {String}
+     */
+    util.generateId = function () {
+        return Math.floor(Math.random() * 0xffffffff).toString(16);
+    };
+
+    /**
      * Used to get the current epoch time.  Tests overrides this
      * to allow a fast-forward on time-based actions.
      *
@@ -426,8 +437,12 @@ ozpIwc.util = (function (util) {
      * @return {Promise}
      */
     util.prerender = function () {
+        if (util.runningInWorker()) {
+            return Promise.resolve();
+        }
+
         return new Promise(function (resolve, reject) {
-            if (document.visibilityState === undefined || (document.visibilityState !== "prerender" &&
+            if (document === undefined || document.visibilityState === undefined || (document.visibilityState !== "prerender" &&
                 document.visibilityState !== "unload")) {
                 resolve();
             } else {
@@ -439,6 +454,18 @@ ozpIwc.util = (function (util) {
                 });
             }
         });
+    };
+
+    var runningInWorkerCache = (typeof WorkerGlobalScope !== 'undefined' && this instanceof WorkerGlobalScope);
+    /**
+     * A utility to determine if this code is running in a HTML5 Worker. Used to decide on browser technologies
+     * to use.
+     * @method runningInWorker
+     * @static
+     * @return {Boolean}
+     */
+    util.runningInWorker = function () {
+        return runningInWorkerCache;
     };
 
     return util;

@@ -1,4 +1,4 @@
-describe("System API", function() {
+describe("System API", function () {
 
     var systemApi;
     var applicationNode;
@@ -7,17 +7,17 @@ describe("System API", function() {
     var oldEndpoints;
     var applicationPacket = {
         'resource': "/application/abcApp",
-        'contentType' : "application/vnd.ozp-application-v1+json",
-        'version' : 1,
-        'entity' : {
-            "name" : "Blue Bouncing Ball",
-            "description" : "A blue bouncing ball",
-            "type" : "application",
-            "state" : "active",
+        'contentType': "application/vnd.ozp-application-v1+json",
+        'version': 1,
+        'entity': {
+            "name": "Blue Bouncing Ball",
+            "description": "A blue bouncing ball",
+            "type": "application",
+            "state": "active",
             "uiHints": {
-                "width" : 400,
-                "height" : 400,
-                "singleton" : false
+                "width": 400,
+                "height": 400,
+                "singleton": false
             },
             "tags": [
                 "demo"
@@ -30,32 +30,32 @@ describe("System API", function() {
                     "label": "Blue Ball"
                 }
             ],
-            "icons" : {
+            "icons": {
                 "small": "http://" + window.location.hostname + ":15000/largeIcon.png",
                 "large": "http://" + window.location.hostname + ":15000/smallIcon.png"
             },
-            "screenShots" : [
+            "screenShots": [
                 {
-                    "href" : "http://" + window.location.hostname + ":15000/screenShot.png",
-                    "title" : "A screenshot"
+                    "href": "http://" + window.location.hostname + ":15000/screenShot.png",
+                    "title": "A screenshot"
                 }
             ],
-            "launchUrls" : {
+            "launchUrls": {
                 "default": "http://" + window.location.hostname + ":15000/?color=blue",
-                "test" : "http://test.localhost:15000/?color=blue"
+                "test": "http://test.localhost:15000/?color=blue"
             },
             "_links": {
-                "self" : { "href": "/api/application/v1/12345"},
-                "describes" : { "href": "http://" + window.location.hostname + ":15000/?color=blue"}
+                "self": {"href": "/api/application/v1/12345"},
+                "describes": {"href": "http://" + window.location.hostname + ":15000/?color=blue"}
             }
         }
     };
-    beforeEach(function() {
-        oldEndpoints=ozpIwc.api.endpoint;
-        ozpIwc.api.endpoint=function() {
+    beforeEach(function () {
+        oldEndpoints = ozpIwc.api.endpoint;
+        ozpIwc.api.endpoint = function () {
             return {
-                get: function() { return Promise.resolve(); }
-            };            
+                get: function () { return Promise.resolve(); }
+            };
         };
         var fakeRouter = new FakeRouter();
         systemApi = new ozpIwc.api.system.Api({
@@ -73,16 +73,16 @@ describe("System API", function() {
         systemApi.createNode(applicationPacket);
     });
 
-    afterEach(function() {
+    afterEach(function () {
         systemApi = null;
-        ozpIwc.api.endpoint=oldEndpoints;
-        systemApi=null;
-        applicationNode=null;
-        userNode=null;
-        systemNode=null;
-     });
+        ozpIwc.api.endpoint = oldEndpoints;
+        systemApi = null;
+        applicationNode = null;
+        userNode = null;
+        systemNode = null;
+    });
 
-    pit("does not allow set on /application/{id}", function() {
+    it("does not allow set on /application/{id}", function () {
         var context = new TestPacketContext({
             'leaderState': "leader",
             'packet': {
@@ -97,12 +97,11 @@ describe("System API", function() {
                 }
             }
         });
-        return systemApi.receivePacketContext(context).then(function() {
-            expect(context.responses[0].response).toEqual("badAction");
-        });
+        systemApi.receivePacketContext(context);
+        expect(context.responses[0].response).toEqual("badAction");
     });
 
-    pit (" prevents user from deleting an application", function(){
+    it(" prevents user from deleting an application", function () {
         var context = new TestPacketContext({
             'leaderState': "leader",
             'packet': {
@@ -117,13 +116,12 @@ describe("System API", function() {
                 }
             }
         });
-        return systemApi.receivePacketContext(context).then(function() {
-            expect(context.responses[0].response).toEqual("badAction");
-        });
-		});
+        systemApi.receivePacketContext(context);
+        expect(context.responses[0].response).toEqual("badAction");
+    });
 
-    pit ("gets an application",function(){
-         var context = new TestPacketContext({
+    it("gets an application", function () {
+        var context = new TestPacketContext({
             'leaderState': "leader",
             'packet': {
                 'resource': "/application/abcApp",
@@ -137,47 +135,45 @@ describe("System API", function() {
                 }
             }
         });
-        return systemApi.receivePacketContext(context).then(function() {
-					var reply=context.responses[0];
-	        expect(reply.response).toEqual("ok");
-	        expect(reply.entity).toEqual(applicationPacket.entity);
-        });
+        systemApi.receivePacketContext(context);
+        var reply = context.responses[0];
+        expect(reply.response).toEqual("ok");
+        expect(reply.entity).toEqual(applicationPacket.entity);
     });
 
-    pit('handles launch actions', function(){
-        var launchData={
-                    'foo': 1
-                };
-        var packetContext=new TestPacketContext({
+    it('handles launch actions', function () {
+        var launchData = {
+            'foo': 1
+        };
+        var packetContext = new TestPacketContext({
             'packet': {
                 'resource': "/application/abcApp",
-                'entity' : launchData,
-								 action: 'launch'
+                'entity': launchData,
+                action: 'launch'
             }
         });
-        return systemApi.receivePacketContext(packetContext).then(function() {
-					var reply=packetContext.responses[0];
-					expect(reply.response).toEqual("ok");
-					expect(systemApi.participant).toHaveSent({
-						action: "invoke",
-						dst: "intents.api",
-						"entity": jasmine.objectContaining({
-							"url": "http://localhost:15000/?color=blue",
-							"applicationId": "/application/abcApp",
-							"launchData": {
-								"foo": 1
-							}
-						})
-					});
-				});
+        systemApi.receivePacketContext(packetContext);
+        var reply = packetContext.responses[0];
+        expect(reply.response).toEqual("ok");
+        expect(systemApi.participant).toHaveSent({
+            action: "invoke",
+            dst: "intents.api",
+            "entity": jasmine.objectContaining({
+                "url": "http://localhost:15000/?color=blue",
+                "applicationId": "/application/abcApp",
+                "launchData": {
+                    "foo": 1
+                }
+            })
+        });
     });
 
-    pit('handles invoke actions by launching applications', function(){
-        var packetContext=new TestPacketContext({
+    it('handles invoke actions by launching applications', function () {
+        var packetContext = new TestPacketContext({
             'packet': {
                 'resource': "/launchNewWindow",
                 action: 'invoke',
-                'entity' : {
+                'entity': {
                     'foo': 1,
                     'inFlightIntent': {
                         'resource': '/intents/invocation/123',
@@ -189,20 +185,19 @@ describe("System API", function() {
                             }
                         }
                     }
-                      
+
                 }
             }
         });
-        spyOn( ozpIwc.util,"openWindow");
-        return systemApi.receivePacketContext(packetContext).then(function() {
-                expect(packetContext).toHaveSent({
-                    "response":"ok"
-                });
+        spyOn(ozpIwc.util, "openWindow");
+        systemApi.receivePacketContext(packetContext);
+        expect(packetContext).toHaveSent({
+            "response": "ok"
+        });
 
-                expect(ozpIwc.util.openWindow.calls.mostRecent().args[0]).toEqual("http://" + window.location.hostname + ":15000/?color=blue");
-                var params=ozpIwc.util.openWindow.calls.mostRecent().args[1];
-                expect(params['ozpIwc.peer']).toEqual(ozpIwc.config._busRoot);
-                expect(params['ozpIwc.inFlightIntent']).toEqual(packetContext.packet.entity.inFlightIntent.resource);
-            });
+        expect(ozpIwc.util.openWindow.calls.mostRecent().args[0]).toEqual("http://" + window.location.hostname + ":15000/?color=blue");
+        var params = ozpIwc.util.openWindow.calls.mostRecent().args[1];
+        expect(params['ozpIwc.peer']).toEqual(ozpIwc.config._busRoot);
+        expect(params['ozpIwc.inFlightIntent']).toEqual(packetContext.packet.entity.inFlightIntent.resource);
     });
 });

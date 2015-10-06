@@ -14,6 +14,7 @@ module.exports = function(grunt) {
 
         src: {
             common: [
+                'app/js/common/initials.js',
                 'bower_components/es5-shim/es5-shim.js',
                 'bower_components/es5-shim/es5-sham.js',
                 'bower_components/es6-promise/promise.js',
@@ -98,6 +99,10 @@ module.exports = function(grunt) {
                 'bower_components/vis/dist/vis.css',
                 'app/css/debugger/**/*.css'
             ],
+            workerTimerJs: [
+                'app/js/worker/timerThrottleUnlock.js',
+                'app/js/worker/timerThrottleUnlockRunner.js'
+            ],
             all: [
                 '<%= src.metrics %>',
                 '<%= src.bus %>',
@@ -114,6 +119,7 @@ module.exports = function(grunt) {
             ngMetricsJs: 'dist/js/<%= pkg.name %>-metrics-angular.js',
             debuggerJs: 'dist/js/debugger.js',
             debuggerCss: 'dist/css/debugger.css',
+            workerTimerJs: 'dist/js/ozpIwc.timer.js',
 
             busJsMin: 'dist/js/<%= pkg.name %>-bus.min.js',
             clientJsMin: 'dist/js/<%= pkg.name %>-client.min.js',
@@ -170,6 +176,10 @@ module.exports = function(grunt) {
             debugger: {
                 src: '<%= src.debugger %>',
                 dest: '<%= output.debuggerJs %>'
+            },
+            workerTimer: {
+                src: '<%= src.workerTimerJs %>',
+                dest: '<%= output.workerTimerJs %>'
             },
             debuggerCss: {
                 src: '<%= src.debuggerCss %>',
@@ -267,7 +277,7 @@ module.exports = function(grunt) {
                         expand: true,
                         nonull:true
                     },{
-                        src: ['ozpIwc.conf.js'],
+                        src: ['ozpIwc.conf.js', 'ozpIwc.loader.js'],
                         dest: './dist/js',
                         cwd: 'app/js',
                         expand: true,
@@ -374,7 +384,9 @@ module.exports = function(grunt) {
             all: [
                 'Gruntfile.js',
                 '<%= src.all %>',
-                '!bower_components/**/*'
+                '!bower_components/**/*',
+                '!app/js/client/timerThrottleUnlock.js',
+                '!app/js/worker/timerThrottleUnlock.js'
             ],
             test: {
                 src: ['<%= src.test %>']

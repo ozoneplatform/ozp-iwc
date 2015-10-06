@@ -23,6 +23,9 @@ ozpIwc.Client = (function (util) {
     var Client = function (config) {
         config = config || {};
 
+        if(config.enhancedTimers){
+            util.enabledEnhancedTimers();
+        }
         util.addEventListener('beforeunload', this.disconnect);
         this.genPeerUrlCheck(config.peerUrl);
         util.ApiPromiseMixin(this, config.autoConnect);
@@ -100,28 +103,6 @@ ozpIwc.Client = (function (util) {
                 self.peerUrl = self.peerUrlCheck(self.launchParams.peer);
                 self.peerOrigin = util.determineOrigin(self.peerUrl);
                 return self.createIframePeer();
-            }).then(function () {
-                // start listening to the bus and ask for an address
-                self.postMessageHandler = function (event) {
-                    if (event.origin !== self.peerOrigin) {
-                        return;
-                    }
-                    try {
-                        var message = event.data;
-                        if (typeof(message) === 'string') {
-                            message = JSON.parse(event.data);
-                        }
-                        // Calls APIPromiseMixin receive handler
-                        self.receiveFromRouterImpl(message);
-                        self.receivedBytes += (event.data.length * 2);
-                        self.receivedPackets++;
-                    } catch (e) {
-                        // ignore!
-                    }
-                };
-                // receive postmessage events
-                util.addEventListener("message", self.postMessageHandler);
-                return self.send({dst: "$transport"});
             }).then(function (message) {
                 self.address = message.dst;
 
@@ -171,6 +152,28 @@ ozpIwc.Client = (function (util) {
             } else {
                 util.addEventListener("load", createIframeShim);
             }
+        }).then(function () {
+            // start listening to the bus and ask for an address
+            self.postMessageHandler = function (event) {
+                if (!self.peer || event.origin !== self.peerOrigin || event.source !== self.peer){
+                    return;
+                }
+                try {
+                    var message = event.data;
+                    if (typeof(message) === 'string') {
+                        message = JSON.parse(event.data);
+                    }
+                    // Calls APIPromiseMixin receive handler
+                    self.receiveFromRouterImpl(message);
+                    self.receivedBytes += (event.data.length * 2);
+                    self.receivedPackets++;
+                } catch (e) {
+                    // ignore!
+                }
+            };
+            // receive postmessage events
+            util.addEventListener("message", self.postMessageHandler);
+            return self.send({dst: "$transport"});
         });
     };
 

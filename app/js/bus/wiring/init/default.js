@@ -10,7 +10,7 @@ ozpIwc.wiring = ozpIwc.wiring || {};
  * @static
  * @namespace ozpIwc
  */
-ozpIwc.wiring = (function (wiring, api, transport, network, config) {
+ozpIwc.wiring = (function (wiring, api, transport, network, config, util) {
     // Instantiate default wiring if not in integration test mode (default false)
     if (!config._testMode) {
         var markReady = function () {};
@@ -20,10 +20,14 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config) {
         wiring.peer = new network.Peer({
             metrics: wiring.metrics
         });
-        wiring.link = new network.KeyBroadcastLocalStorageLink({
-            metrics: wiring.metrics,
-            peer: wiring.peer
-        });
+
+        //Dont use localStorage if using a Shared Web Worker
+        if (!util.runningInWorker()) {
+            wiring.link = new network.KeyBroadcastLocalStorageLink({
+                metrics: wiring.metrics,
+                peer: wiring.peer
+            });
+        }
 
         wiring.router = new transport.Router({
             authorization: wiring.authorization,
@@ -34,13 +38,21 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config) {
 
         // Enable post message participants (default true)
         if (config.allowLocalClients) {
-            wiring.postMessageListener = new transport.participant.PostMessageListener({
-                authorization: wiring.authorization,
-                router: wiring.router,
-                ready: new Promise(function (resolve) {
-                    markReady = resolve;
-                })
-            });
+
+            if (!util.runningInWorker()) {
+                wiring.postMessageListener = new transport.participant.PostMessageListener({
+                    authorization: wiring.authorization,
+                    router: wiring.router,
+                    ready: new Promise(function (resolve) {
+                        markReady = resolve;
+                    })
+                });
+            } else {
+                wiring.sharedWorkerListener = new transport.participant.SharedWorkerListener({
+                    authorization: wiring.authorization,
+                    router: wiring.router
+                });
+            }
         }
 
         // Configure APIs post prerender (default true)
@@ -80,4 +92,4 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config) {
     }
 
     return wiring;
-})(ozpIwc.wiring, ozpIwc.api, ozpIwc.transport, ozpIwc.network, ozpIwc.config);
+})(ozpIwc.wiring, ozpIwc.api, ozpIwc.transport, ozpIwc.network, ozpIwc.config, ozpIwc.util);

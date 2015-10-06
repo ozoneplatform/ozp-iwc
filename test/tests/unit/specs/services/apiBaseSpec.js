@@ -54,24 +54,21 @@ describe("Base Api request handling",function() {
 // Basic Actions: Get
 //=====================================================================
     describe("action get",function() {
-        pit("returns a valid resource",function() {
+        it("returns a valid resource",function() {
             var context=testPacket({action:"get",resource:"/foo"});
-            console.log(apiBase);
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses.length).toEqual(1);
-                expect(context.responses[0].response).toEqual("ok");
-                expect(context.responses[0].contentType).toEqual("text/plain");
-                expect(context.responses[0].entity).toEqual("hello world");
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses.length).toEqual(1);
+            expect(context.responses[0].response).toEqual("ok");
+            expect(context.responses[0].contentType).toEqual("text/plain");
+            expect(context.responses[0].entity).toEqual("hello world");
         });
 
-        pit("returns noResource for non-existent resource",function() {
+        it("returns noResource for non-existent resource",function() {
             var context=testPacket({action:"get",resource:"/does-not-exist"});
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses.length).toEqual(1);
-                expect(context.responses[0].response).toEqual("noResource");
-                expect(context.responses[0].entity).toBeDefined();
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses.length).toEqual(1);
+            expect(context.responses[0].response).toEqual("noResource");
+            expect(context.responses[0].entity).toBeDefined();
         });
     });
     
@@ -81,27 +78,25 @@ describe("Base Api request handling",function() {
 //=====================================================================
 
     describe("action list",function() {
-        pit("returns an array of matching resources",function() {
+        it("returns an array of matching resources",function() {
             var context=testPacket({action:"list",resource:"/foo/"});
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses.length).toEqual(1);
-                expect(context.responses[0].response).toEqual("ok");
-                expect(context.responses[0]).toEqual(jasmine.objectContaining({
-                    contentType: "application/json",
-                    entity: ["/foo/1","/foo/2"]
-                }));
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses.length).toEqual(1);
+            expect(context.responses[0].response).toEqual("ok");
+            expect(context.responses[0]).toEqual(jasmine.objectContaining({
+                contentType: "application/json",
+                entity: ["/foo/1","/foo/2"]
+            }));
         });
-        pit("returns an empty list if nothing matches",function() {
+        it("returns an empty list if nothing matches",function() {
             var context=testPacket({action:"list",resource:"/does-not-exist/"});
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses.length).toEqual(1);
-                expect(context.responses[0].response).toEqual("ok");
-                expect(context.responses[0]).toEqual(jasmine.objectContaining({
-                    contentType: "application/json",
-                    entity: []
-                }));
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses.length).toEqual(1);
+            expect(context.responses[0].response).toEqual("ok");
+            expect(context.responses[0]).toEqual(jasmine.objectContaining({
+                contentType: "application/json",
+                entity: []
+            }));
         });
     });
 //=====================================================================
@@ -109,28 +104,26 @@ describe("Base Api request handling",function() {
 //=====================================================================
 
     describe("action bulkGet",function() {
-        pit("returns an array of matching resources",function() {
+        it("returns an array of matching resources",function() {
             var context=testPacket({action:"bulkGet",resource:"/foo/"});
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses.length).toEqual(1);
-                expect(context.responses[0].response).toEqual("ok");
-                expect(context.responses[0].entity[0]).toEqual(jasmine.objectContaining({
-                    contentType: "text/plain",
-                    entity: "resource 1"
-                }));
-                expect(context.responses[0].entity[1]).toEqual(jasmine.objectContaining({
-                    contentType: "text/plain",
-                    entity: "resource 2"
-                }));
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses.length).toEqual(1);
+            expect(context.responses[0].response).toEqual("ok");
+            expect(context.responses[0].entity[0]).toEqual(jasmine.objectContaining({
+                contentType: "text/plain",
+                entity: "resource 1"
+            }));
+            expect(context.responses[0].entity[1]).toEqual(jasmine.objectContaining({
+                contentType: "text/plain",
+                entity: "resource 2"
+            }));
         });
-        pit("returns an empty list if nothing matches",function() {
+        it("returns an empty list if nothing matches",function() {
             var context=testPacket({action:"bulkGet",resource:"/does-not-exist/"});
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses.length).toEqual(1);
-                expect(context.responses[0].response).toEqual("ok");
-                expect(context.responses[0].entity).toEqual([]);
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses.length).toEqual(1);
+            expect(context.responses[0].response).toEqual("ok");
+            expect(context.responses[0].entity).toEqual([]);
         });
 
     
@@ -140,46 +133,42 @@ describe("Base Api request handling",function() {
 // Basic Actions: set
 //=====================================================================
     describe("action set",function() {
-        pit("modifies an existant resource",function() {
+        it("modifies an existant resource",function() {
             var context=testPacket({
                     'resource': "/foo",
                     'action': "set",
                     'entity': { foo:1}
             });
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses.length).toEqual(1);
-                expect(context.responses[0].response).toEqual("ok");
-                expect(apiBase.data["/foo"].entity).toEqual({foo:1});
-                
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses.length).toEqual(1);
+            expect(context.responses[0].response).toEqual("ok");
+            expect(apiBase.data["/foo"].entity).toEqual({foo:1});
         });
 
-        pit("creates a non-existent resource",function() {
+        it("creates a non-existent resource",function() {
             var context=testPacket({
                     'resource': "/does-not-exist",
                     'action': "set",
                     'entity': { foo:1}
             });
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses.length).toEqual(1);
-                expect(context.responses[0].response).toEqual("ok");
-                expect(apiBase.data["/does-not-exist"].entity).toEqual({foo:1});
-                
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses.length).toEqual(1);
+            expect(context.responses[0].response).toEqual("ok");
+            expect(apiBase.data["/does-not-exist"].entity).toEqual({foo:1});
         });
-        pit("returns noMatch for a bad version pre-condition",function() {
+
+        it("returns noMatch for a bad version pre-condition",function() {
             var context=testPacket({
                     'resource': "/foo",
                     'action': "set",
                     'ifTag': 20,
                     'entity': { foo:1}
             });
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses.length).toEqual(1);
-                expect(context.responses[0].response).toEqual("noMatch");
-                expect(context.responses[0].entity.expectedVersion).toEqual(20);
-                expect(context.responses[0].entity.actualVersion).toEqual(1);
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses.length).toEqual(1);
+            expect(context.responses[0].response).toEqual("noMatch");
+            expect(context.responses[0].entity.expectedVersion).toEqual(20);
+            expect(context.responses[0].entity.actualVersion).toEqual(1);
         });
     });
 //=====================================================================
@@ -187,7 +176,7 @@ describe("Base Api request handling",function() {
 //=====================================================================
     describe("action bulkSend",function() {
 
-        pit("returns ok when receiving a formatted bulkSend",function(){
+        it("returns ok when receiving a formatted bulkSend",function(){
             var context = [];
             context.push(testPacket({
                 'resource': "/foo",
@@ -203,16 +192,14 @@ describe("Base Api request handling",function() {
                 'action': "bulkSend",
                 'entity': context
             });
-            return apiBase.receivePacketContext(bulkSendPacket).then(function() {
-                expect(bulkSendPacket.responses.length).toEqual(1);
-                expect(bulkSendPacket.responses[0].response).toEqual("ok");
-                expect(apiBase.data["/foo"].entity).toEqual({foo:1});
-                expect(apiBase.data["/foo1"].entity).toEqual({foo:2});
-
-            });
+            apiBase.receivePacketContext(bulkSendPacket);
+            expect(bulkSendPacket.responses.length).toEqual(1);
+            expect(bulkSendPacket.responses[0].response).toEqual("ok");
+            expect(apiBase.data["/foo"].entity).toEqual({foo:1});
+            expect(apiBase.data["/foo1"].entity).toEqual({foo:2});
         });
 
-        pit("returns ok when receiving a bulkSend with an error producing request",function(){
+        it("returns ok when receiving a bulkSend with an error producing request",function(){
             var context = [];
             context.push(testPacket({
                 'resource': "/foo",
@@ -228,50 +215,44 @@ describe("Base Api request handling",function() {
                 'action': "bulkSend",
                 'entity': context
             });
-            return apiBase.receivePacketContext(bulkSendPacket).then(function() {
-                expect(bulkSendPacket.responses.length).toEqual(1);
-                expect(bulkSendPacket.responses[0].response).toEqual("ok");
-                expect(apiBase.data["/foo"].entity).toEqual({foo:1});
-                expect(apiBase.data["/foo1"]).not.toBeDefined();
-
-            });
+            apiBase.receivePacketContext(bulkSendPacket);
+            expect(bulkSendPacket.responses.length).toEqual(1);
+            expect(bulkSendPacket.responses[0].response).toEqual("ok");
+            expect(apiBase.data["/foo"].entity).toEqual({foo:1});
+            expect(apiBase.data["/foo1"]).not.toBeDefined();
         });
     });
 //=====================================================================
 // Basic Actions: delete
 //=====================================================================
     describe("action delete",function() {
-        pit("deletes an existant resource",function() {
+        it("deletes an existant resource",function() {
             var context=testPacket({action:"delete",resource:"/foo"});
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses.length).toEqual(1);
-                expect(context.responses[0].response).toEqual("ok");
-                expect(apiBase.data["/foo"].deleted).toEqual(true);
-                
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses.length).toEqual(1);
+            expect(context.responses[0].response).toEqual("ok");
+            expect(apiBase.data["/foo"].deleted).toEqual(true);
         });
 
-        pit("deletes a non-existent resource",function() {
+        it("deletes a non-existent resource",function() {
             var context=testPacket({action:"delete",resource:"/does-not-exist"});
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses.length).toEqual(1);
-                expect(context.responses[0].response).toEqual("ok");
-                expect(apiBase.data["/does-not-exist"]).toBeUndefined();
-                
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses.length).toEqual(1);
+            expect(context.responses[0].response).toEqual("ok");
+            expect(apiBase.data["/does-not-exist"]).toBeUndefined();
         });
-        pit("returns noMatch for a bad version pre-condition",function() {
+
+        it("returns noMatch for a bad version pre-condition",function() {
             var context=testPacket({
                 action: "delete",
                 resource:"/foo",
                 ifTag: 20
             });
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses.length).toEqual(1);
-                expect(context.responses[0].response).toEqual("noMatch");
-                expect(context.responses[0].entity.expectedVersion).toEqual(20);
-                expect(context.responses[0].entity.actualVersion).toEqual(1);
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses.length).toEqual(1);
+            expect(context.responses[0].response).toEqual("noMatch");
+            expect(context.responses[0].entity.expectedVersion).toEqual(20);
+            expect(context.responses[0].entity.actualVersion).toEqual(1);
         });
     });
 //=====================================================================
@@ -291,57 +272,53 @@ describe("Base Api request handling",function() {
         afterEach(function() {
             watchContext=null;
         });
-        pit("returns the current value",function() {
-            return apiBase.receivePacketContext(watchContext).then(function() {
-                expect(watchContext.responses.length).toEqual(1);
-                expect(watchContext.responses[0].response).toEqual("ok");
-                expect(watchContext.responses[0].contentType).toEqual("text/plain");
-                expect(watchContext.responses[0].entity).toEqual("hello world");
-            });
+        it("returns the current value",function() {
+            apiBase.receivePacketContext(watchContext);
+            expect(watchContext.responses.length).toEqual(1);
+            expect(watchContext.responses[0].response).toEqual("ok");
+            expect(watchContext.responses[0].contentType).toEqual("text/plain");
+            expect(watchContext.responses[0].entity).toEqual("hello world");
         });
         
-        pit("notifies watchers when the resource value changes",function() {
+        it("notifies watchers when the resource value changes",function() {
             var context=testPacket({
                 resource: "/foo",
                 action: "set",
                 entity: { foo:1}
             });
-            return apiBase.receivePacketContext(watchContext).then(function() {
-                console.log("Sending set packet");
-                return apiBase.receivePacketContext(context);
-            }).then(pauseForPromiseResolution).then(function() {
-                console.log("Checking for change packet");
-                expect(apiBase.participant).toHaveSent({
-                    resource: "/foo",
-                    dst: "unitTest",
-                    replyTo: "i:100",
-                    entity: {
-                        newValue: { foo:1},
-                        oldValue: "hello world",
-                        newCollection: [],
-                        oldCollection: [],
-                        deleted: false
-                    }
-                });
+            apiBase.receivePacketContext(watchContext);
+            console.log("Sending set packet");
+            apiBase.receivePacketContext(context);
+            console.log("Checking for change packet");
+            expect(apiBase.participant).toHaveSent({
+                resource: "/foo",
+                dst: "unitTest",
+                replyTo: "i:100",
+                entity: {
+                    newValue: { foo:1},
+                    oldValue: "hello world",
+                    newCollection: [],
+                    oldCollection: [],
+                    deleted: false
+                }
             });
         });
-        pit("deleting the resource broadcasts to watchers",function() {
+
+        it("deleting the resource broadcasts to watchers",function() {
             var context=testPacket({action:"delete",resource:"/foo"});
-            return apiBase.receivePacketContext(watchContext).then(function() {
-                return apiBase.receivePacketContext(context);
-            }).then(pauseForPromiseResolution).then(function() {
-                expect(apiBase.participant).toHaveSent({
-                    resource: "/foo",
-                    dst: "unitTest",
-                    replyTo: "i:100",
-                    entity: {
-                        newValue: null,
-                        oldValue: "hello world",
-                        newCollection: null,
-                        oldCollection: [],
-                        deleted: true
-                    }
-                });
+            apiBase.receivePacketContext(watchContext);
+            apiBase.receivePacketContext(context);
+            expect(apiBase.participant).toHaveSent({
+                resource: "/foo",
+                dst: "unitTest",
+                replyTo: "i:100",
+                entity: {
+                    newValue: null,
+                    oldValue: "hello world",
+                    newCollection: null,
+                    oldCollection: [],
+                    deleted: true
+                }
             });
         });
     });
@@ -359,47 +336,44 @@ describe("Base Api request handling",function() {
             watchContext=null;
         });
         
-        pit("returns a null value",function() {
-            return apiBase.receivePacketContext(watchContext).then(function() {
-                expect(watchContext.responses.length).toEqual(1);
-                expect(watchContext.responses[0].response).toEqual("ok");
-                expect(watchContext.responses[0].contentType).toBeUndefined();
-                expect(watchContext.responses[0].entity).toBeUndefined();
-            });
+        it("returns a null value",function() {
+            apiBase.receivePacketContext(watchContext);
+            expect(watchContext.responses.length).toEqual(1);
+            expect(watchContext.responses[0].response).toEqual("ok");
+            expect(watchContext.responses[0].contentType).toBeUndefined();
+            expect(watchContext.responses[0].entity).toBeUndefined();
         });
-        pit("broadcasts to watchers when the resource is created",function() {
+
+        it("broadcasts to watchers when the resource is created",function() {
             var context=testPacket({
                 resource: "/does-not-exist",
                 action: "set",
                 entity: { foo:1}
             });
-            return apiBase.receivePacketContext(watchContext).then(function() {
-                return apiBase.receivePacketContext(context);
-            }).then(pauseForPromiseResolution).then(function() {
-                expect(apiBase.participant).toHaveSent({
-                    resource: "/does-not-exist",
-                    dst: "unitTest",
-                    replyTo: "i:100",
-                    entity: {
-                        newValue: { foo:1},
-                        oldValue: undefined,
-                        newCollection: [],
-                        oldCollection: [],
-                        deleted: false
-                    }
-                });
+            apiBase.receivePacketContext(watchContext);
+            apiBase.receivePacketContext(context);
+            expect(apiBase.participant).toHaveSent({
+                resource: "/does-not-exist",
+                dst: "unitTest",
+                replyTo: "i:100",
+                entity: {
+                    newValue: { foo:1},
+                    oldValue: undefined,
+                    newCollection: [],
+                    oldCollection: [],
+                    deleted: false
+                }
             });
         });
-        pit("a watch on a non-existant resource does not create that resource",function() {
+
+        it("a watch on a non-existant resource does not create that resource",function() {
             var context=testPacket({
                 resource: "/does-not-exist",
                 action: "get"
             });
-            return apiBase.receivePacketContext(watchContext).then(function() {
-                return apiBase.receivePacketContext(context);
-            }).then(pauseForPromiseResolution).then(function() {
-                expect(context.responses[0].response).toEqual("noResource");
-            });
+            apiBase.receivePacketContext(watchContext);
+            apiBase.receivePacketContext(context);
+            expect(context.responses[0].response).toEqual("noResource");
         });
 
     });
@@ -421,27 +395,25 @@ describe("Base Api request handling",function() {
             watchContext=null;
         });
         
-        pit("removes an existant watch",function() {
+        it("removes an existant watch",function() {
             var context=testPacket({
                 resource: "/foo",
                 action: "unwatch"
             });
-            return apiBase.receivePacketContext(watchContext).then(function() {
-                return apiBase.receivePacketContext(context);
-            }).then(function() {
-                expect(context.responses[0].response).toEqual("ok");
-                expect(apiBase.watchers["/foo"].length).toEqual(0);
-            });
+            apiBase.receivePacketContext(watchContext);
+            apiBase.receivePacketContext(context);
+            expect(context.responses[0].response).toEqual("ok");
+            expect(apiBase.watchers["/foo"].length).toEqual(0);
         });
-        pit("is a NOP if there is no watch",function() {
+
+        it("is a NOP if there is no watch",function() {
             var context=testPacket({
                 resource: "/foo",
                 action: "unwatch"
             });
-            return apiBase.receivePacketContext(context).then(function() {
-                expect(context.responses[0].response).toEqual("ok");
-                expect(apiBase.watchers["/foo"]).toBeUndefined(0);
-            });
+            apiBase.receivePacketContext(context);
+            expect(context.responses[0].response).toEqual("ok");
+            expect(apiBase.watchers["/foo"]).toBeUndefined(0);
         });
 
     });
@@ -488,15 +460,14 @@ describe("Base Api leadership handoff",function() {
                     action: "deathScream",
                     entity: deathScream
             }});
-            return apiBase.receivePacketContext(deathScreamPacket).then(function() {
-                // Check for ready state-- queueing packets as member, holding deathscream data
-                expect(apiBase.leaderState).toEqual("member");
-                expect(apiBase.isRequestQueueing).toEqual(true);
-                expect(apiBase.deathScream).toEqual(deathScream);
-                expect(apiBase.transitionToMemberReady).toHaveBeenCalledWith(deathScream);
-                // simulates the lock being gained
-                return apiBase.transitionToLoading();
-            }).then(function() {
+            apiBase.receivePacketContext(deathScreamPacket);
+            // Check for ready state-- queueing packets as member, holding deathscream data
+            expect(apiBase.leaderState).toEqual("member");
+            expect(apiBase.isRequestQueueing).toEqual(true);
+            expect(apiBase.deathScream).toEqual(deathScream);
+            expect(apiBase.transitionToMemberReady).toHaveBeenCalledWith(deathScream);
+            // simulates the lock being gained
+            return apiBase.transitionToLoading().then(function() {
                 expect(apiBase.leaderState).toEqual("leader");
                 expect(apiBase.initializeData).toHaveBeenCalledWith(deathScream);
             });
@@ -528,10 +499,9 @@ describe("Base Api leadership handoff",function() {
                     action: "deathScream",
                     entity: deathScream
             }});
-            return apiBase2.receivePacketContext(deathScreamPacket).then(function() {
+            apiBase2.receivePacketContext(deathScreamPacket);
                 // simulates the lock being gained
-                return apiBase2.transitionToLoading();
-            }).then(function() {
+            return apiBase2.transitionToLoading().then(function() {
                 expect(apiBase2.leaderState).toEqual("leader");
                 expect(apiBase2.data).toEqual(apiBase.data);
                 expect(apiBase2.watchers).toEqual(apiBase.watchers);

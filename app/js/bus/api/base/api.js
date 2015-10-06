@@ -144,7 +144,12 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
 
         util.addEventListener("beforeunload", function () { self.shutdown(); });
         this.transitionToMemberReady();
-        queueForCoordination(this, config.leaderPromise);
+        if(util.runningInWorker()){
+            this.leaderPromise = Promise.resolve();
+            this.transitionToLoading();
+        } else {
+            queueForCoordination(this, config.leaderPromise);
+        }
     };
 
 //--------------------------------------------------
@@ -271,6 +276,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
                 'dst': watcher.src,
                 'replyTo': watcher.replyTo,
                 'response': 'changed',
+                'respondOn': 'none',
                 'resource': node.resource,
                 'permissions': permissions,
                 'contentType': node.contentType,
@@ -415,36 +421,31 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
 
         if (apiBase.isRequestQueueing) {
             apiBase.requestQueue.push(packetContext);
-            return Promise.resolve();
+            return;
         }
         if (apiBase.leaderState !== "leader") {
-            return Promise.resolve();
+            return;
         }
 
-        return new Promise(function (resolve, reject) {
-            try {
-                packetContext.node = apiBase.data[packet.resource];
-                resolve(apiBase.routePacket(packet, packetContext));
-            } catch (e) {
-                reject(e);
-            }
-        }).then(function (packetFragment) {
-                if (packetFragment) {
-                    packetFragment.response = packetFragment.response || "ok";
-                    packetContext.replyTo(packetFragment);
-                }
-                resolveChangedNodes(apiBase, packetContext);
-            }, function (e) {
-                if (!e || !e.errorAction) {
-                    log.error(apiBase.logPrefix, "Unexpected error: ", e, " packet= ", packet);
-                }
-                var packetFragment = {
-                    'src': apiBase.name,
-                    'response': e.errorAction || "errorUnknown",
-                    'entity': e.message
-                };
+        try {
+            packetContext.node = apiBase.data[packet.resource];
+            var packetFragment = apiBase.routePacket(packet, packetContext);
+            if (packetFragment) {
+                packetFragment.response = packetFragment.response || "ok";
                 packetContext.replyTo(packetFragment);
-            });
+            }
+            resolveChangedNodes(apiBase, packetContext);
+        } catch (e) {
+            if (!e || !e.errorAction) {
+                log.error(apiBase.logPrefix, "Unexpected error: ", e, " packet= ", packet);
+            }
+            var errorFragment = {
+                'src': apiBase.name,
+                'response': e.errorAction || "errorUnknown",
+                'entity': e.message
+            };
+            packetContext.replyTo(errorFragment);
+        }
 
     };
 

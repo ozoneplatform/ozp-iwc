@@ -19,6 +19,8 @@
   "trailing": true,
   "smarttabs": true,
   "globals": {
+    "self": false,
+    "WorkerGlobalScope": false,
     "angular": false,
     "ozpIwc": true,
     "File" : false,
@@ -29,6 +31,8 @@
     "xdescribe": false,
     "beforeEach": false,
     "afterEach": false,
+    "beforeAll": false,
+    "afterAll": false,
     "inject": false,
     "it": false,
     "xit": false,

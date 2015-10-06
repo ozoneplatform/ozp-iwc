@@ -131,9 +131,9 @@ ozpIwc.transport.participant.Internal = (function (transport, util) {
         }
         var self = this;
         var send = transport.participant.Base.prototype.send;
-        util.setImmediate(function () {
+        //util.setImmediate(function () {
             send.call(self, packet);
-        });
+        //});
 
         return packet;
     };
