@@ -6,7 +6,7 @@ describe("Internal Participant",function() {
             metrics: ozpIwc.wiring.metrics,
             authorization: ozpIwc.wiring.authorization,
             origin : "http://" + window.location.hostname + ":14000",
-            sourceWindow : this.window,
+            source : this.window,
             credentials : []
         });
         fakeRouter.registerParticipant(l);

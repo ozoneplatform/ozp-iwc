@@ -10,6 +10,12 @@ var ozpIwc=ozpIwc || {};
  */
 ozpIwc.config = ozpIwc.config || {};
 
+
+//If this is in a worker the config file needs to be loaded.
+if(ozpIwc.util.runningInWorker()){
+    importScripts('ozpIwc.conf.js');
+}
+
 /**
  * A configurable version string used by the debugger to give easy access to current IWC build. If modifying
  * IWC code outside of distribution, add version references to ozpIwc.conf.js for distinguishing, otherwise IWC
