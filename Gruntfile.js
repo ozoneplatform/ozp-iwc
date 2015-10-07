@@ -44,6 +44,8 @@ module.exports = function(grunt) {
 
                 'app/js/bus/transport/participant/base.js',
                 'app/js/bus/transport/participant/internal.js',
+                'app/js/bus/transport/participant/sharedWorker.js',
+                'app/js/bus/transport/participant/postMessage.js',
                 'app/js/bus/transport/router.js',
                 'app/js/bus/transport/**/*.js',
 
@@ -82,7 +84,6 @@ module.exports = function(grunt) {
                 '<%= src.testIntegrationClient %>'
             ],
             debugger: [
-                '<%= src.bus %>',
                 'bower_components/bootstrap/dist/boostrap.js',
                 'bower_components/jquery/dist/jquery.js',
                 'bower_components/angular/angular.js',

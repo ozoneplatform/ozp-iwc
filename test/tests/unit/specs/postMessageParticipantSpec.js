@@ -6,7 +6,7 @@ describe("Post Message Participant",function() {
             authorization: ozpIwc.wiring.authorization,
             metrics: new ozpIwc.metric.Registry(),
             origin : "http://" + window.location.hostname + ":14000",
-            sourceWindow : this.window,
+            source : this.window,
             credentials : []
         });
         fakeRouter.registerParticipant(l);

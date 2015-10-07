@@ -16,7 +16,7 @@ ozpIwc.transport.participant.PostMessage = (function (log, transport, util) {
      *
      * @param {Object} config
      * @param {String} config.origin
-     * @param {Object} config.sourceWindow
+     * @param {Object} config.source
      * @param {Object} config.credentials
      * @param {Promise} [config.ready]
      */
@@ -35,10 +35,10 @@ ozpIwc.transport.participant.PostMessage = (function (log, transport, util) {
 
         /**
          * The window of the Participant.
-         * @property sourceWindow
+         * @property source
          * @type Window
          */
-        this.sourceWindow = config.sourceWindow;
+        this.source = config.source;
 
         /**
          * @property credentials
@@ -76,37 +76,37 @@ ozpIwc.transport.participant.PostMessage = (function (log, transport, util) {
 //--------------------------------------------------
 //          Private Methods
 //--------------------------------------------------
-    /**
-     * The participant hijacks anything addressed to "$transport" and serves it
-     * directly.  This isolates basic connection checking from the router, itself.
-     *
-     * @method handleTransportpacket
-     * @private
-     * @static
-     * @param {ozpIwc.transport.packet.PostMessage} participant
-     * @param {Object} packet
-     */
-    var handleTransportPacket = function (participant, packet) {
-        var reply = {
-            'ver': 1,
-            'dst': participant.address,
-            'src': '$transport',
-            'replyTo': packet.msgId,
-            'msgId': participant.generateMsgId(),
-            'entity': {
-                "address": participant.address
-            }
-        };
 
-        participant.readyPromise.then(function () {
-            participant.sendToRecipient(reply);
-        });
-    };
 
 
 //--------------------------------------------------
 //          Public Methods
 //--------------------------------------------------
+    /**
+     * The participant hijacks anything addressed to "$transport" and serves it
+     * directly.  This isolates basic connection checking from the router, itself.
+     *
+     * @method handleTransportpacket
+     * @param {ozpIwc.transport.packet.PostMessage} participant
+     * @param {Object} packet
+     */
+    PostMessage.prototype.handleTransportPacket = function (packet) {
+        var reply = {
+            'ver': 1,
+            'dst': this.address,
+            'src': '$transport',
+            'replyTo': packet.msgId,
+            'msgId': this.generateMsgId(),
+            'entity': {
+                "address": this.address
+            }
+        };
+
+        var self = this;
+        this.readyPromise.then(function () {
+            self.sendToRecipient(reply);
+        });
+    };
     /**
      * Receives a packet on behalf of this participant and forwards it via PostMessage.
      *
@@ -126,7 +126,7 @@ ozpIwc.transport.participant.PostMessage = (function (log, transport, util) {
      * @todo Only IE requires the packet to be stringified before sending, should use feature detection?
      */
     PostMessage.prototype.sendToRecipient = function (packet) {
-        util.safePostMessage(this.sourceWindow, packet, this.origin);
+        util.safePostMessage(this.source, packet, this.origin);
     };
 
 
@@ -157,7 +157,7 @@ ozpIwc.transport.participant.PostMessage = (function (log, transport, util) {
 
         // if it's addressed to $transport, hijack it
         if (packet.dst === "$transport") {
-            handleTransportPacket(this, packet);
+            this.handleTransportPacket(packet);
         } else {
             this.router.send(packet, this);
         }

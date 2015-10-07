@@ -360,5 +360,16 @@ ozpIwc.transport.participant.Base = (function (log, policyAuth, transport, util)
         }
 
     };
+
+    /**
+     * Destroys this participant. The router will no longer reference it.
+     * @method destroy
+     */
+    Base.prototype.destroy = function() {
+        if(this.router && this.router.participants[this.address]){
+            delete this.router.participants[this.address];
+        }
+    };
+
     return Base;
 }(ozpIwc.log, ozpIwc.policyAuth, ozpIwc.transport, ozpIwc.util));

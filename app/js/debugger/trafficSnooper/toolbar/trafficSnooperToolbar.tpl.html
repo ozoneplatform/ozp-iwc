@@ -1,6 +1,8 @@
 <form class="form-inline">
     <div class="btn-group">
             <button class="btn" ng-class="{true:'btn-danger',false:'btn-primary'}[logging]"
+                    ng-disabled="blockBtns"
+                    ng-click="logToggle()"
                     btn-checkbox ng-model="logging"
                     tooltip-placement="bottom" tooltip="Start/Stop packet capture.">
                 {{ logging ? 'Enabled' : 'Disabled' }}({{packets.length}})
