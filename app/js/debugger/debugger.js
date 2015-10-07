@@ -48,31 +48,14 @@ var debuggerModule=angular.module("ozpIwc.debugger",[
 
 
 debuggerModule.factory("iwcClient",function() {
-    var part = new ozpIwc.transport.participant.Client({
-        authorization: ozpIwc.wiring.authorization,
-        name: "debuggerClient",
-        router: ozpIwc.wiring.router,
-        autoConnect: false});
 
-    part.connect = function(){
-        if(!this.connectPromise) {
-            var self = this;
-            /**
-             * Promise to chain off of for client connection asynchronous actions.
-             * @property connectPromise
-             *
-             * @type Promise
-             */
-            this.connectPromise = new Promise(function(resolve,reject){
-                resolve(self.router.registerParticipant(self));
-            }).then(function(addr){
-                return self.afterConnected(addr);
-            });
-        }
-        return this.connectPromise;
-    };
-    part.connect();
-    return part;
+    var dbg = new ozpIwc.Debugger({
+        peerUrl: "http://" + window.location.hostname + ":13000"
+    });
+
+    dbg.connect();
+
+    return dbg;
 });
         
         

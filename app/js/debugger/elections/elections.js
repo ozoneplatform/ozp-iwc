@@ -1,54 +1,53 @@
 /* global debuggerModule */
 
-debuggerModule.controller('ElectionCtrl',['$scope',function($scope){
-    $scope.enableOrNot = false;
-    $scope.recvToggle = false;
-    $scope.ELECTION_TIME = ozpIwc.config.consensusTimeout;
+debuggerModule.controller('ElectionCtrl', ['$scope', 'iwcClient', function (scope, client) {
+    scope.logging = false;
+    scope.blockBtns = false;
+    scope.recvToggle = false;
+    scope.ELECTION_TIME = ozpIwc.config.consensusTimeout;
 
-    function isNewestPacket(packet,api){
-        { return api.lastElectionTS < packet.time; }
+    function isNewestPacket(packet, api) {
+        {
+            return api.lastElectionTS < packet.time;
+        }
     }
-    //function outOfElectionWindow(packet,api){
-    //    { return api.lastElectionTS +  $scope.ELECTION_TIME < Date.now(); }
-    //
-    //}
 
-    $scope.graphData= {
+    scope.graphData = {
         value: 'locks.api',
         title: 'locks Api',
         elections: new vis.DataSet(),
         electionGroups: new vis.DataSet(),
-        packets: {},
-        storageEvents: {},
+        electionPackets: {},
+        busPackets: {},
         lastElectionTS: -Number.MAX_VALUE
     };
 
-    $scope.selectedElection = $scope.graphData;
+    scope.selectedElection = scope.graphData;
 
-    $scope.clear = function(){
-        $scope.graphData.elections = new vis.DataSet();
-        $scope.graphData.electionGroups = new vis.DataSet();
-        $scope.graphData.packets = {};
-        $scope.graphData.storageEvents = {};
+    scope.clear = function () {
+        scope.graphData.elections.clear();
+        scope.graphData.electionGroups.clear();
+        scope.graphData.electionPackets = {};
+        scope.graphData.busPackets = {};
     };
 
-    function genTimelineData(packet){
+    function genTimelineData(packet) {
         var state = (packet.action === "election" && typeof(packet.entity.state) !== 'undefined' && Object.keys(packet.entity.state).length > 0);
         var timelineData = {
             id: packet.time,
             content: 'Election',
             start: new Date(packet.debuggerTime),
-            end: new Date(packet.time + $scope.ELECTION_TIME),
+            end: new Date(packet.time + scope.ELECTION_TIME),
             group: packet.src,
             subgroup: "actual"
         };
 
-        if (packet.entity.priority === -Number.MAX_VALUE){
+        if (packet.entity.priority === -Number.MAX_VALUE) {
             timelineData.style = "background-color: gray";
             timelineData.content += '<label> Quitting </label> ';
         }
 
-        switch(packet.action){
+        switch (packet.action) {
             case "query":
                 timelineData.style = "background-color: purple";
                 timelineData.content = "<label>Leader Query</label>";
@@ -59,41 +58,30 @@ debuggerModule.controller('ElectionCtrl',['$scope',function($scope){
                 break;
         }
 
-        if(state){
+        if (state) {
             timelineData.style = "background-color: orange";
             timelineData.content += '</br><label> Contains State </label>';
         }
-        if(packet.src === packet.entity.previousLeader){
+        if (packet.src === packet.entity.previousLeader) {
             timelineData.content += '</br><label> Was Leader </label>';
 
         }
         return timelineData;
     }
 
-    function genTimelineOOS(packet){
+    function genTimelineOOS(packet) {
         return {
             id: packet.time,
             content: ' Out of Sync',
             start: new Date(packet.debuggerTime),
-            end: new Date(packet.time + $scope.ELECTION_TIME),
+            end: new Date(packet.time + scope.ELECTION_TIME),
             group: packet.src,
             style: "background-color: yellow",
             subgroup: "actual"
         };
     }
-    //function genTimelineDrop(packet){
-    //    return {
-    //        id: packet.time,
-    //        content: ' Out of Election Window',
-    //        start: new Date(packet.debuggerTime),
-    //        end: new Date(packet.time + $scope.ELECTION_TIME),
-    //        group: packet.src,
-    //        style: "background-color: red",
-    //        subgroup: "actual"
-    //    };
-    //}
 
-    function updateApiTimeline(packet,api){
+    function updateApiTimeline(packet, api) {
         var timelineGroup = {
             id: packet.src,
             content: packet.src
@@ -107,86 +95,94 @@ debuggerModule.controller('ElectionCtrl',['$scope',function($scope){
 
         api.electionGroups.update(timelineGroup);
 
-        if(isNewestPacket(packet,api)) {
+        if (isNewestPacket(packet, api)) {
             api.elections.add(genTimelineData(packet));
-        //} else if(outOfElectionWindow(packet,api)){
-        //    api.elections.add(genTimelineDrop(packet));
+            //} else if(outOfElectionWindow(packet,api)){
+            //    api.elections.add(genTimelineDrop(packet));
         } else {
             api.elections.add(genTimelineOOS(packet));
         }
-        if(packet.action === 'victory'){
+        if (packet.action === 'victory') {
             api.lastElectionTS = packet.time;
         }
-        api.packets[packetData.id] = packetData.data;
+        api.electionPackets[packetData.id] = packetData.data;
     }
 
     function logPacket(msg) {
-        if($scope.enableOrNot === "disabled") {
+        if (!scope.logging) {
             return;
         }
-        var packet = msg.packet.data;
+        var packet = msg.data;
         packet.debuggerTime = Date.now();
-        var actions = ['election','victory','query'];
-        if(actions.indexOf(packet.action) < 0) {
+        var actions = ['election', 'victory', 'query'];
+        if (actions.indexOf(packet.action) < 0) {
+            if (scope.recvToggle) {
+                plotNonElection(packet);
+            }
             return;
         }
 
-        if(packet.dst === "locks.api.consensus" || packet.src === "locks.api.consensus") {
-            $scope.$apply(function() {
-                updateApiTimeline(packet,$scope.graphData);
+        if (packet.dst === "locks.api.consensus" || packet.src === "locks.api.consensus") {
+            scope.$apply(function () {
+                updateApiTimeline(packet, scope.graphData);
             });
         }
     }
 
-    var storeEvt =  function(event){
-        if(event.newValue && $scope.recvToggle && $scope.enableOrNot){
-            var date = Date.now();
-            var id = date +'_'+ Math.floor(Math.random() * 10000);
-            var packet = JSON.parse(event.newValue);
-            $scope.graphData.electionGroups.update({
-                id: 'storageEvent',
-                content: 'storageEvent'
-            });
-            $scope.graphData.elections.add({
-                id: id,
-                content: packet.data.action || packet.data.response,
-                style: (packet.data.action) ? "" : "background-color: yellow",
-                start: date,
-                group: 'storageEvent'
-            });
-            $scope.graphData.storageEvents[id] =packet;
-        }
-    };
+    scope.evtListener = null;
 
-    $scope.evtListener = null;
+    function plotNonElection(packet) {
+        var date = Date.now();
+        var id = date + '_' + Math.floor(Math.random() * 10000);
+        scope.graphData.electionGroups.update({
+            id: 'busPacket',
+            content: 'Non-Election Packet'
+        });
+        scope.graphData.elections.add({
+            id: id,
+            content: packet.action || packet.response,
+            style: (packet.action) ? "" : "background-color: yellow",
+            start: date,
+            group: 'busPacket'
+        });
+        scope.graphData.busPackets[id] = packet;
+    }
 
-    $scope.toggle = function(){
-        $scope.enableOrNot = !$scope.enableOrNot;
-        if ($scope.enableOrNot){
-            $scope.evtListener = ozpIwc.util.addEventListener("storage",storeEvt);
+    scope.logToggle = function(){
+        scope.blockBtns = true;
+        scope.logging = !scope.logging;
+        var promise;
+        if(scope.logging){
+            promise = client.logTraffic(logPacket).then(function(msgId){
+                scope.logId = msgId;
+            });
         } else {
-            ozpIwc.util.removeEventListener("storage",$scope.evtListener);
+            promise = client.cancelLogTraffic(scope.logId);
         }
-        ozpIwc.wiring.peer.on("receive",logPacket);
-        ozpIwc.wiring.peer.on("send",logPacket);
+
+        promise.then(function(){
+            scope.$apply(function(){
+                scope.blockBtns = false;
+            });
+        });
     };
 }]);
 
-debuggerModule.directive( "elections", [function() {
+debuggerModule.directive("elections", [function () {
     return {
         restrict: 'E',
         templateUrl: 'templates/elections.tpl.html'
     };
 }]);
 
-debuggerModule.directive( "electionsContent", [function() {
+debuggerModule.directive("electionsContent", [function () {
     return {
         restrict: 'E',
         templateUrl: 'templates/electionsContent.tpl.html'
     };
 }]);
 
-debuggerModule.directive( "electionsToolbar", [function() {
+debuggerModule.directive("electionsToolbar", [function () {
     return {
         restrict: 'E',
         templateUrl: 'templates/electionsToolbar.tpl.html'

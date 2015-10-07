@@ -144,12 +144,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
 
         util.addEventListener("beforeunload", function () { self.shutdown(); });
         this.transitionToMemberReady();
-        if(util.runningInWorker()){
-            this.leaderPromise = Promise.resolve();
-            this.transitionToLoading();
-        } else {
-            queueForCoordination(this, config.leaderPromise);
-        }
+        queueForCoordination(this, config.leaderPromise);
     };
 
 //--------------------------------------------------

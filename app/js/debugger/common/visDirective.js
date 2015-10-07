@@ -106,13 +106,13 @@ debuggerModule.directive('visTimeline', function() {
 
                 if(properties.items.length > 0){
 
-                    var electionMsg = $scope.$parent.selectedElection.packets[properties.items[0]];
+                    var electionMsg = $scope.$parent.selectedElection.electionPackets[properties.items[0]];
                     if(electionMsg){
                         $scope.$apply(function() {
                             $scope.$parent.packetContents = electionMsg;
                         });
                     } else{
-                        var storageEvent = $scope.$parent.selectedElection.storageEvents[properties.items[0]];
+                        var storageEvent = $scope.$parent.selectedElection.busPackets[properties.items[0]];
                         $scope.$apply(function() {
                             $scope.$parent.packetContents = storageEvent;
                         });

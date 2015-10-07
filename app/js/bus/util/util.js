@@ -65,34 +65,6 @@ ozpIwc.util = (function (util) {
     };
 
     /**
-     * Wraps window.open.  If the bus is running in a worker, then
-     * it doesn't have access to the window object and needs help from
-     * a participant.
-     * @see window.open documentation for what the parameters actually do
-     *
-     * @method openWindow
-     * @static
-     * @param {String} url The URL to open in a new window
-     * @param {String} windowName The window name to open with.
-     * @param {String} [features] The window features.
-     */
-    util.openWindow = function (url, windowName, features) {
-        if (typeof windowName === "object") {
-            var str = "";
-            for (var k in windowName) {
-                str += k + "=" + encodeURIComponent(windowName[k]) + "&";
-            }
-            windowName = str;
-        }
-        try {
-            window.open(url, windowName, features);
-        } catch (e) {
-            //fallback for IE
-            window.open(url + "?" + windowName, null, features);
-        }
-    };
-
-    /**
      * IWC alert handler.
      * @todo fill with some form of modal popup regarding the alert.
      * @todo store a list of alerts to not notify if the user selects "don't show me this again" in the data.api

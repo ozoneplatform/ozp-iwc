@@ -223,7 +223,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 // If no packet, it is likely a $transport packet.
                 var packet = packetContext.packet || packetContext;
                 //Try and handle this packet as a reply message
-                if (packet.src === "$transport" || packet.replyTo && this.promiseCallbacks[packet.replyTo]) {
+                if (packet.replyTo && this.promiseCallbacks[packet.replyTo]) {
 
                     var replyCancel = false;
                     var replyDone = function () {
@@ -655,8 +655,9 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     this.registeredCallbacks[packet.msgId] = function (reply, done) {
                         // We've received a message that was a promise response but we've aready handled our promise
                         // response.
-                        if (reply.src === "$transport" || /(ok).*/.test(reply.response) || /(bad|no).*/.test(reply.response)) {
-                            // Do noting and let it get sent to the event handler
+                        if (/(ok).*/.test(reply.response) || /(bad|no).*/.test(reply.response)) {
+                            // Do nothing and let it get sent to the event handler (this is to filter out registration
+                            // of callback responses)
                             return false;
                         } else if (reply.entity && reply.entity.inFlightIntent) {
                             self.intentInvocationHandling(packet, reply.entity.inFlightIntent, callback);

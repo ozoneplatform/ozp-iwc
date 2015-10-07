@@ -156,9 +156,14 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
             var tryChooser = function (chooser) {
                 var packet = util.clone(chooser.entity.invokeIntent);
                 packet.entity = packet.entity || {};
+                packet.src = packet.src || packet.dst;
                 packet.replyTo = chooser.entity.replyTo;
                 packet.entity.inFlightIntent = intentNode.toPacket();
                 packet.entity.force = (util.getInternetExplorerVersion() === 11);
+                if(util.runningInWorker()) {
+                    packet.entity.config = ozpConfig;
+                    packet.entity.config.intentSelection = "intents.api" + node.resource;
+                }
 
                 return self.invokeIntentHandler(packet, '/inFlightIntent/chooser', 'choose', [chooser], '/inFlightIntent/chooser/choose/').then(function (packet) {
                     //This is because we are manually using the packetRouter route.
@@ -218,10 +223,12 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
 
                 if (util.getInternetExplorerVersion() !== 11) {
                     log.info("launching popup chooser because: ", err);
-                    util.openWindow(ozpConfig.intentsChooserUri, {
-                        "ozpIwc.peer": ozpConfig._busRoot,
-                        "ozpIwc.intentSelection": "intents.api" + node.resource
-                    }, ozpConfig.intentChooserFeatures);
+                    if(!util.runningInWorker()) {
+                        util.openWindow(ozpConfig.intentsChooserUri, {
+                            "ozpIwc.peer": ozpConfig._busRoot,
+                            "ozpIwc.intentSelection": "intents.api" + node.resource
+                        }, ozpConfig.intentChooserFeatures);
+                    }
                 } else {
                     log.error("Failed to handle intent choosing: Internet Explorer 11 is not supported" +
                         " for the default intent chooser.");
