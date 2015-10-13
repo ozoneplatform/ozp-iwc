@@ -16,7 +16,7 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config, util) {
         var markReady = function () {};
         var busInit = function () {markReady();};
 
-        api.initEndpoints(config.apiRootUrl);
+        wiring.endpointInitPromise = api.initEndpoints(config.apiRootUrl);
         wiring.peer = new network.Peer({
             metrics: wiring.metrics
         });
@@ -38,9 +38,9 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config, util) {
 
         // Enable post message participants (default true)
         if (config.allowLocalClients) {
-
+            wiring.listeners = wiring.listeners || {};
             if (!util.runningInWorker()) {
-                wiring.postMessageListener = new transport.participant.PostMessageListener({
+                wiring.listeners.postMessage= new transport.listener.PostMessage({
                     authorization: wiring.authorization,
                     router: wiring.router,
                     ready: new Promise(function (resolve) {
@@ -48,9 +48,12 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config, util) {
                     })
                 });
             } else {
-                wiring.sharedWorkerListener = new transport.participant.SharedWorkerListener({
+                wiring.listeners.sharedWorker = new transport.listener.SharedWorker({
                     authorization: wiring.authorization,
-                    router: wiring.router
+                    router: wiring.router,
+                    ready: new Promise(function (resolve) {
+                        markReady = resolve;
+                    })
                 });
             }
         }

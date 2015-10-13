@@ -26,6 +26,8 @@ ozpIwc.Client = (function (util) {
         if(config.enhancedTimers){
             util.enabledEnhancedTimers();
         }
+        this.type = "default";
+
         util.addEventListener('beforeunload', this.disconnect);
         this.genPeerUrlCheck(config.peerUrl);
         util.ApiPromiseMixin(this, config.autoConnect);
@@ -135,6 +137,9 @@ ozpIwc.Client = (function (util) {
                 if (self.launchParams.log) {
                     url += "?log=" + self.launchParams.log;
                 }
+                if (self.type){
+                    url += "?type="+ self.type;
+                }
                 self.iframe.src = url;
                 self.iframe.height = 1;
                 self.iframe.width = 1;
@@ -173,7 +178,7 @@ ozpIwc.Client = (function (util) {
             };
             // receive postmessage events
             util.addEventListener("message", self.postMessageHandler);
-            return self.send({dst: "$transport"});
+            return self.send({dst: "$transport", type: self.type});
         });
     };
 

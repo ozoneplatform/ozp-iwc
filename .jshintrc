@@ -21,6 +21,7 @@
   "globals": {
     "self": false,
     "WorkerGlobalScope": false,
+    "importScripts": false,
     "angular": false,
     "ozpIwc": true,
     "File" : false,

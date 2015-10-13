@@ -40,6 +40,10 @@ ozpIwc.api= (function (api) {
         api.uriTemplate = function (name) {
             return registry.template[name];
         };
+
+        api.endpointPromise = registry.loadPromise;
+
+        return api.endpointPromise;
     };
 
     /**
