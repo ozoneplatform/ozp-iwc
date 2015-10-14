@@ -2,13 +2,7 @@
 <html>
 <head>
     <title>Choose an Intent</title>
-    <script type="text/javascript" src="js/ozpIwc.conf.js">
-        // Intent chooser will never takeover control of the bus because it is bound to its opener.
-        ozpIwc.config = ozpIwc.config || {};
-        ozpIwc.config.runApis=false;
-        ozpIwc.config.allowLocalClients=false;
-    </script>
-    <script type="text/javascript" src="js/ozpIwc-bus.js"></script>
+    <script type="text/javascript" src="js/ozpIwc-client.js"></script>
     <style>
         body{
             margin: 0;
@@ -121,19 +115,58 @@
       </div>
 
       <script type="text/javascript">
-        var participant=new ozpIwc.transport.participant.Client({
-            'authorization': ozpIwc.wiring.authorization,
-            'name':"intentsChooser",
-            'router': ozpIwc.wiring.router
-        });
 
         var cancelButton, onceButton, alwaysButton,selection;
+        var m=/ozpIwc.intentSelection=([^&#]+)/.exec(window.name);
+
+        if(!m) {
+            //Fallback for IE
+            m=/ozpIwc.intentSelection=([^&#]+)/.exec(window.location.search);
+        }
+
+        if(!m){
+            failure("This page is intended to be launch only by the Ozone Platform intents API.");
+        }
+        var loc=ozpIwc.util.parseOzpUrl(m[1]);
+        loc.action = "watch";
+        var client =new ozpIwc.Client({ peerUrl: window.location.origin });
+
+
+        client.send(loc,onHandlerChange).then(function(reply) {
+            var action,type;
+            if(reply.entity && reply.entity.intent) {
+                action = reply.entity.intent.action;
+                type = reply.entity.intent.type;
+            }
+            showTitle(action,type);
+            showFooter(reply);
+            getHandlers(reply.collection).then(showHandlers);
+        },failure);
+
+
+        function getHandlers(array){
+            var promises = [];
+            for(var i in array){
+                promises.push(client.intents().get(array[i]));
+            }
+            return Promise.all(promises);
+        }
+
+        function onHandlerChange(reply,done){
+            if(reply.entity.deleted){
+                done();
+                window.close();
+            }
+            var collection = reply.entity.newCollection || [];
+            getHandlers(collection).then(showHandlers);
+        }
+
         function failure(msg) {
             document.getElementById("handlerList").textContent=msg;
         }
 
         function handleSelection(handler,intentInvocation){
-            participant.intents().set(intentInvocation.resource,{
+            client.intents().set(intentInvocation.resource,{
                 contentType: intentInvocation.contentType,
                 entity: {
                 'state': "delivering",
@@ -222,7 +255,7 @@
 
             cancelButton = document.getElementById("cancelButton");
             cancelButton.addEventListener("click",function(evt) {
-                participant.intents().set(intentInvocation.resource,{
+                client.intents().set(intentInvocation.resource,{
                     contentType: intentInvocation.contentType,
                     entity: {
                         reply:{
@@ -242,47 +275,6 @@
                 handleSelection(selection,intentInvocation);
             });
         }
-
-        var m=/ozpIwc.intentSelection=([^&#]+)/.exec(window.name);
-
-        if(!m) {
-            //Fallback for IE
-            m=/ozpIwc.intentSelection=([^&#]+)/.exec(window.location.search);
-        }
-
-        if(!m){
-            failure("This page is intended to be launch only by the Ozone Platform intents API.");
-        }
-        var loc=ozpIwc.util.parseOzpUrl(m[1]);
-        loc.action = "watch";
-
-        var getHandlers = function(array){
-            var promises = [];
-            for(var i in array){
-                promises.push(participant.intents().get(array[i]));
-            }
-            return Promise.all(promises);
-        };
-
-        var onHandlerChange = function(reply,done){
-            if(reply.entity.deleted){
-                done();
-                window.close();
-            }
-            var collection = reply.entity.newCollection || [];
-            getHandlers(collection).then(showHandlers);
-        };
-
-        participant.send(loc,onHandlerChange).then(function(reply) {
-            var action,type;
-            if(reply.entity && reply.entity.intent) {
-                action = reply.entity.intent.action;
-                type = reply.entity.intent.type;
-            }
-            showTitle(action,type);
-            showFooter(reply);
-            getHandlers(reply.collection).then(showHandlers);
-        },failure);
     </script>
   </body>
 </html>

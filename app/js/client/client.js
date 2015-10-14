@@ -31,6 +31,8 @@ ozpIwc.Client = (function (util) {
         util.addEventListener('beforeunload', this.disconnect);
         this.genPeerUrlCheck(config.peerUrl);
         util.ApiPromiseMixin(this, config.autoConnect);
+
+        this.registerIntentChooser();
     };
 
     /**
@@ -184,6 +186,29 @@ ozpIwc.Client = (function (util) {
 
     Client.prototype.sendImpl = function (packet) {
         util.safePostMessage(this.peer, packet, '*');
+    };
+
+    var sharedWorkerRegistrationData = {
+        contentType: 'application/vnd.ozp-iwc-intent-handler-v1+json',
+        entity: {
+            label: 'SharedWorker\'s intent chooser'
+        }
+    };
+
+    Client.prototype.registerIntentChooser= function (event) {
+        if(window.SharedWorker) {
+            var self = this;
+            this.connect().then(function () {
+                var sharedWorkerIntentChooser = function(data){
+                    var cfg = data.entity.config || {};
+                    util.openWindow(self.peerUrl + "/" + cfg.intentsChooserUri, {
+                        "ozpIwc.peer": self.peerUrl,
+                        "ozpIwc.intentSelection": cfg.intentSelection
+                    }, cfg.intentChooserFeatures);
+                };
+                self.intents().register('/inFlightIntent/chooser/choose', sharedWorkerRegistrationData, sharedWorkerIntentChooser);
+            });
+        }
     };
 
     return Client;
