@@ -23,7 +23,7 @@ ozpIwc.Client = (function (util) {
     var Client = function (config) {
         config = config || {};
 
-        if(config.enhancedTimers){
+        if (config.enhancedTimers) {
             util.enabledEnhancedTimers();
         }
         this.type = "default";
@@ -32,7 +32,9 @@ ozpIwc.Client = (function (util) {
         this.genPeerUrlCheck(config.peerUrl);
         util.ApiPromiseMixin(this, config.autoConnect);
 
-        this.registerIntentChooser();
+        if (window.SharedWorker) {
+            registerIntentHandlers(this);
+        }
     };
 
     /**
@@ -139,8 +141,8 @@ ozpIwc.Client = (function (util) {
                 if (self.launchParams.log) {
                     url += "?log=" + self.launchParams.log;
                 }
-                if (self.type){
-                    url += "?type="+ self.type;
+                if (self.type) {
+                    url += "?type=" + self.type;
                 }
                 self.iframe.src = url;
                 self.iframe.height = 1;
@@ -160,28 +162,28 @@ ozpIwc.Client = (function (util) {
                 util.addEventListener("load", createIframeShim);
             }
         }).then(function () {
-            // start listening to the bus and ask for an address
-            self.postMessageHandler = function (event) {
-                if (!self.peer || event.origin !== self.peerOrigin || event.source !== self.peer){
-                    return;
-                }
-                try {
-                    var message = event.data;
-                    if (typeof(message) === 'string') {
-                        message = JSON.parse(event.data);
+                // start listening to the bus and ask for an address
+                self.postMessageHandler = function (event) {
+                    if (!self.peer || event.origin !== self.peerOrigin || event.source !== self.peer) {
+                        return;
                     }
-                    // Calls APIPromiseMixin receive handler
-                    self.receiveFromRouterImpl(message);
-                    self.receivedBytes += (event.data.length * 2);
-                    self.receivedPackets++;
-                } catch (e) {
-                    // ignore!
-                }
-            };
-            // receive postmessage events
-            util.addEventListener("message", self.postMessageHandler);
-            return self.send({dst: "$transport", type: self.type});
-        });
+                    try {
+                        var message = event.data;
+                        if (typeof(message) === 'string') {
+                            message = JSON.parse(event.data);
+                        }
+                        // Calls APIPromiseMixin receive handler
+                        self.receiveFromRouterImpl(message);
+                        self.receivedBytes += (event.data.length * 2);
+                        self.receivedPackets++;
+                    } catch (e) {
+                        // ignore!
+                    }
+                };
+                // receive postmessage events
+                util.addEventListener("message", self.postMessageHandler);
+                return self.send({dst: "$transport", type: self.type});
+            });
     };
 
     Client.prototype.sendImpl = function (packet) {
@@ -191,24 +193,46 @@ ozpIwc.Client = (function (util) {
     var sharedWorkerRegistrationData = {
         contentType: 'application/vnd.ozp-iwc-intent-handler-v1+json',
         entity: {
-            label: 'SharedWorker\'s intent chooser'
+            label: 'SharedWorker\'s intent handler'
         }
     };
 
-    Client.prototype.registerIntentChooser= function (event) {
-        if(window.SharedWorker) {
-            var self = this;
-            this.connect().then(function () {
-                var sharedWorkerIntentChooser = function(data){
-                    var cfg = data.entity.config || {};
-                    util.openWindow(self.peerUrl + "/" + cfg.intentsChooserUri, {
-                        "ozpIwc.peer": self.peerUrl,
-                        "ozpIwc.intentSelection": cfg.intentSelection
-                    }, cfg.intentChooserFeatures);
-                };
-                self.intents().register('/inFlightIntent/chooser/choose', sharedWorkerRegistrationData, sharedWorkerIntentChooser);
-            });
-        }
+    /**
+     * A utility method for Clients to register to handle application & intent-chooser launching.
+     * @method registerIntentHandlers
+     * @private
+     * @static
+     * @param {Client} client
+     */
+    var registerIntentHandlers = function (client) {
+        client.connect().then(function () {
+            //-----------------------------------------
+            // Intent Chooser Opening Intent Handler
+            //-----------------------------------------
+            var sharedWorkerIntentChooser = function (data) {
+                var cfg = data.entity.config || {};
+                util.openWindow(client.peerUrl + "/" + cfg.intentsChooserUri, {
+                    "ozpIwc.peer": client.peerUrl,
+                    "ozpIwc.intentSelection": cfg.intentSelection
+                }, cfg.intentChooserFeatures);
+            };
+            var intentChooserResource = '/inFlightIntent/chooser/choose/' + client.address;
+            client.intents().register(intentChooserResource, sharedWorkerRegistrationData, sharedWorkerIntentChooser);
+
+            //-----------------------------------------
+            // Application Launching Intent Handler
+            //-----------------------------------------
+            var sharedWorkerLauncher = function (data, inFlightIntent) {
+                var cfg = data.entity || {};
+                util.openWindow(cfg.url, {
+                    "ozpIwc.peer": client.peerUrl,
+                    "ozpIwc.inFlightIntent": inFlightIntent.resource
+                });
+            };
+            var launcherResource = '/application/vnd.ozp-iwc-launch-data-v1+json/run/' + client.address;
+            client.intents().register(launcherResource, sharedWorkerRegistrationData, sharedWorkerLauncher);
+
+        });
     };
 
     return Client;

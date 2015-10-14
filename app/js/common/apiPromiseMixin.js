@@ -437,7 +437,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     });
                 }).then(function () {
                     // Run the intent handler. Wrapped in a promise chain in case the callback itself is async.
-                    return callback(res.entity);
+                    return callback(res.entity,inFlightIntent);
                 }).then(function (result) {
 
                     // Respond to the inflight resource
@@ -778,7 +778,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     }
                     self.events.trigger("connected");
                 })['catch'](function (e) {
-                    log.error(self.launchParams.inFlightIntent, " not handled, reason: ", e);
+                    console.error(self.launchParams.inFlightIntent, " not handled, reason: ", e);
                     self.events.trigger("connected");
                 });
             }

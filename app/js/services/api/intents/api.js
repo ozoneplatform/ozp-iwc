@@ -397,11 +397,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         var definitionFilter = Api.registerDefinitionFilter(null, "application/vnd.ozp-iwc-intent-handler-v1+json");
         definitionFilter.unshift(generateDefinitionResource);
 
-        var handlerFilter = api.filter.standard.setFilters(nodeType, contentType);
-        handlerFilter.unshift(generateHandlerResource);
-
-        // Concat the two filters together, run through the definition then the handler.
-        definitionFilter.push.apply(definitionFilter, handlerFilter);
+        definitionFilter.push(generateHandlerResource);
 
         return definitionFilter;
     };
@@ -438,13 +434,17 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         resource: "/{major}/{minor}/{action}/{handlerId}",
         filters: Api.registerHandlerFilter(null, "application/vnd.ozp-iwc-intent-handler-v1+json")
     }, function (packet, context, pathParams) {
-        context.node.set(packet);
+        var childNode = this.createNode({
+            'resource': packet.resource,
+            'src': packet.src
+        }, api.intents.HandlerNode);
+        childNode.set(packet);
 
         log.debug(this.logPrefix + " registered ", context.node);
         return {
             'response': 'ok',
             'entity': {
-                'resource': context.node.resource
+                'resource': childNode.resource
             }
         };
     });
