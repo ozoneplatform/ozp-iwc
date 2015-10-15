@@ -1,5 +1,5 @@
 if (window.SharedWorker) {
-    var worker = new SharedWorker('/js/ozpIwc-bus.js');
+    var worker = new SharedWorker('js/ozpIwc-bus.js');
 
     // Receive messages from the client and forward to the IWC Bus (shared worker)
     window.addEventListener('message', function (evt) {
