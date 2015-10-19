@@ -439,7 +439,11 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     // Run the intent handler. Wrapped in a promise chain in case the callback itself is async.
                     return callback(res.entity,inFlightIntent);
                 }).then(function (result) {
-
+                    // Allow the callback to override the intent state (usefull for preventing intent resolution if
+                    // chained operations are performed.
+                    if(result && result.intentIncomplete){
+                        return Promise.resolve();
+                    }
                     // Respond to the inflight resource
                     return self.send({
                         dst: "intents.api",

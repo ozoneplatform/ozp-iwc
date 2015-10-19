@@ -228,6 +228,7 @@ ozpIwc.Client = (function (util) {
                     "ozpIwc.peer": client.peerUrl,
                     "ozpIwc.inFlightIntent": inFlightIntent.resource
                 });
+                return {intentIncomplete: true};
             };
             var launcherResource = '/application/vnd.ozp-iwc-launch-data-v1+json/run/' + client.address;
             client.intents().register(launcherResource, sharedWorkerRegistrationData, sharedWorkerLauncher);
