@@ -8,7 +8,7 @@ ozpIwc.wiring = ozpIwc.wiring || {};
  */
 
 
-ozpIwc.transport.participant = (function (log, participant, transport, util, wiring) {
+ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport, util, wiring) {
 
     var debuggerGen = function (Base) {
         /**
@@ -25,6 +25,8 @@ ozpIwc.transport.participant = (function (log, participant, transport, util, wir
             this.name = "DebuggerParticipant";
             this.router = config.router;
             this.peer = this.router.peer;
+
+            this.on("receive",this.handleReceivePacket);
         });
 
         //----------------------------------------------------------------
@@ -40,7 +42,7 @@ ozpIwc.transport.participant = (function (log, participant, transport, util, wir
          */
         var debuggerResponse = function (participant, packet) {
             packet = packet || {};
-            packet.src = packet.src || "$transport";
+            packet.src = packet.src || participant.address;
             packet.response = packet.response || "ok";
             packet = participant.fixPacket(packet);
             participant.sendToRecipient(packet);
@@ -225,6 +227,39 @@ ozpIwc.transport.participant = (function (log, participant, transport, util, wir
             debuggerResponse(participant, {replyTo: packet.msgId, entity: metrics});
         };
 
+        //----------------------------------------------------------------
+        // dst: $transport, resource: config
+        //----------------------------------------------------------------
+        /**
+         * Routing of $transport packets for the resource "config"
+         * @method handleConfigPacket
+         * @private
+         * @static
+         * @param {Debugger} participant
+         * @param {ozpIwc.transport.PacketContext} packet
+         */
+        var handleConfigPacket = function (participant, packet) {
+            switch (packet.action.trim().toLowerCase()) {
+                case "getall":
+                    handleConfigGather(participant, packet);
+                    break;
+            }
+        };
+        //----------------------------------------------------------------
+        // dst: $transport, resource: config, action: getAll
+        //----------------------------------------------------------------
+        /**
+         * A handler for the $transport packet action "getAll" on resource "config".
+         * Sends a copy of the ozpIwc.config to the client-side debugger.
+         * @method handleConfigGather
+         * @private
+         * @static
+         * @param {Debugger} participant
+         * @param {ozpIwc.transport.PacketContext} packet
+         */
+        var handleConfigGather = function (participant, packet) {
+            debuggerResponse(participant, {replyTo: packet.msgId, entity: ozpConfig});
+        };
         //----------------------------------------------------------------------
         // Public Properties
         //----------------------------------------------------------------------
@@ -236,7 +271,7 @@ ozpIwc.transport.participant = (function (log, participant, transport, util, wir
          * @param {Object} packet
          * @param {Event} event
          */
-        Debugger.prototype.handleTransportPacket = function (packet, event) {
+        Debugger.prototype.handleReceivePacket = function (packet, event) {
             if (typeof(packet.resource) !== "string") {
                 transport.participant.SharedWorker.prototype.handleTransportPacket.call(this, packet);
                 return;
@@ -252,16 +287,35 @@ ozpIwc.transport.participant = (function (log, participant, transport, util, wir
                 case "apis":
                     handleApiPacket(this, packet);
                     break;
+                case "config":
+                    handleConfigPacket(this, packet);
+                    break;
                 default:
                     break;
             }
         };
+        /**
+         * Receives a packet on behalf of this participant and forwards it via SharedWorker.
+         *
+         * @method receiveFromRouterImpl
+         * @param {ozpIwc.transport.PacketContext} packetContext
+         */
+        Debugger.prototype.receiveFromRouterImpl = function (packetContext) {
+            // If the source address was the client connected to the participant handle its specific request.
+            // Routed through router to apply policies (otherwise would have hijacked on the MessageChannel receive).
+            if(packetContext.packet.src === packetContext.packet.dst) {
+                this.handleReceivePacket(packetContext.packet);
+            } else {
+                this.sendToRecipient(packetContext.packet);
+            }
+        };
 
         return Debugger;
+
     };
 
     participant.SWDebugger = debuggerGen(participant.SharedWorker);
     participant.PMDebugger = debuggerGen(participant.PostMessage);
 
     return participant;
-}(ozpIwc.log, ozpIwc.transport.participant || {}, ozpIwc.transport, ozpIwc.util, ozpIwc.wiring));
+}(ozpIwc.log,ozpIwc.config, ozpIwc.transport.participant || {}, ozpIwc.transport, ozpIwc.util, ozpIwc.wiring));

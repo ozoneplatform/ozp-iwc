@@ -29,6 +29,17 @@ ozpIwc.Debugger = (function (Client, util) {
     });
 
     //----------------------------------------------------------------------
+    // Private Properties
+    //----------------------------------------------------------------------
+
+    var sendSelf = function(dbg,packet,cb){
+        return dbg.connect().then(function(){
+            packet.dst = dbg.address;
+            return dbg.send(packet,cb);
+        });
+    };
+
+    //----------------------------------------------------------------------
     // Public Properties
     //----------------------------------------------------------------------
 
@@ -51,8 +62,7 @@ ozpIwc.Debugger = (function (Client, util) {
             }
         };
 
-        return this.send({
-            dst: "$transport",
+        return sendSelf(this,{
             resource: "traffic",
             action: "start"
         },unwrap).then(function (response) {
@@ -71,8 +81,7 @@ ozpIwc.Debugger = (function (Client, util) {
             return Promise.reject();
         }
 
-        return this.send({
-            dst: "$transport",
+        return sendSelf(this, {
             resource: "traffic",
             action: "stop",
             entity: {
@@ -87,11 +96,7 @@ ozpIwc.Debugger = (function (Client, util) {
      * @returns {Promise} a promise that will resolve with array of api endpoint data.
      */
     Debugger.prototype.getApiEndpoints = function () {
-        return this.send({
-            dst: "$transport",
-            resource: "apis",
-            action: "getEndpoints"
-        }).then(function(response){
+        return sendSelf(this,{resource: "apis",action: "getEndpoints"}).then(function(response){
             return response.entity;
         });
     };
@@ -102,11 +107,18 @@ ozpIwc.Debugger = (function (Client, util) {
      * @returns {Promise} a promise that will resolve with an array of metrics
      */
     Debugger.prototype.getMetrics = function () {
-        return this.send({
-            dst: "$transport",
-            resource: "metrics",
-            action: "getAll"
-        }).then(function(response){
+        return sendSelf(this,{resource: "metrics",action: "getAll"}).then(function(response){
+            return response.entity;
+        });
+    };
+
+    /**
+     * Gathers a snapshot of the IWC Bus config settings
+     * @method getConfig
+     * @returns {Promise} a promise that will resolve with an object of configurations
+     */
+    Debugger.prototype.getConfig = function () {
+        return sendSelf(this,{resource: "config",action: "getAll"}).then(function(response){
             return response.entity;
         });
     };

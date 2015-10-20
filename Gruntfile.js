@@ -8,6 +8,19 @@ module.exports = function(grunt) {
         }
     };
 
+    var mockBackendMiddleware = function(connect, options, middlewares) {
+        // inject a custom middleware into the array of default middlewares
+        middlewares.unshift(function(req, res, next) {
+
+            if (req.method !== 'PUT' && req.method !== 'POST' && req.method !== 'DELETE') {
+                return next();
+            }
+            res.end('The ozp-iwc test backend drops all write actions.');
+        });
+
+        return middlewares;
+    };
+
     // Project configuration.
     var config = {
         pkg: grunt.file.readJSON('package.json'),
@@ -398,18 +411,7 @@ module.exports = function(grunt) {
                 options: {
                     port: 13000,
                     base: ['dist',sampleDataBase],
-                    middleware:  function(connect, options, middlewares) {
-                        // inject a custom middleware into the array of default middlewares
-                        middlewares.unshift(function(req, res, next) {
-
-                            if (req.method !== 'PUT' && req.method !== 'POST' && req.method !== 'DELETE') {
-                                return next();
-                            }
-                            res.end('The ozp-iwc test backend drops all write actions.');
-                        });
-
-                        return middlewares;
-                    }
+                    middleware:  mockBackendMiddleware
                 }
             },
             tests: {
@@ -419,7 +421,7 @@ module.exports = function(grunt) {
                 options: {port: 14001, base: ["dist","test/mockParticipant"]}
             },
             testBus: {
-                options:{ port: 14002, base: ['dist',sampleDataBase] }
+                options:{ port: 14002, base: ['dist',sampleDataBase], middleware:  mockBackendMiddleware}
             },
             demo1: {
                 options: { port: 15000, base: ["dist","demo/bouncingBalls"] }
