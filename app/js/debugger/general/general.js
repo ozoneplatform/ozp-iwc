@@ -6,8 +6,12 @@ debuggerModule.controller('GeneralCtrl', ['$scope', '$state', 'iwcClient', funct
         state.go('hal-browser', {url: endpoint});
     };
     scope.endpointTabulated = [];
-    scope.config = ozpIwc.config;
+    scope.config = {};
+
     client.connect().then(function () {
+        client.getConfig().then(function(config){
+            scope.config = config;
+        });
         client.getApiEndpoints().then(function (apis) {
             apis.forEach(function (resp) {
                 scope.$apply(function () {

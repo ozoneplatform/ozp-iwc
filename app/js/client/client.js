@@ -29,7 +29,7 @@ ozpIwc.Client = (function (util) {
         this.type = "default";
 
         util.addEventListener('beforeunload', this.disconnect);
-        this.genPeerUrlCheck(config.peerUrl);
+        genPeerUrlCheck(this, config.peerUrl);
         util.ApiPromiseMixin(this, config.autoConnect);
 
         if (window.SharedWorker) {
@@ -37,15 +37,118 @@ ozpIwc.Client = (function (util) {
         }
     };
 
+    //----------------------------------------------------------
+    // Private Properties
+    //----------------------------------------------------------
+    /**
+     * A utility method for handshaking the client's connection to the bus.
+     * Resolves an external promise.
+     * @method initPing
+     * @private
+     * @static
+     * @param {Client} client
+     * @param {Promise.resolve} resolve
+     * @param {Promise.rej} reject
+     */
+    var initPing = function (client,resolve,reject) {
+        client.send({dst: "$transport", type: client.type}).then(function (response) {
+            resolve(response);
+        }).catch(function (err) {
+            reject(err);
+        });
+    };
+
+    /**
+     * A handler function generator. Creates the post message event "message" handler for the client for its Iframe.
+     * Requires an external promise resolve/reject reference to call when the client's postMessage handler has connected
+     * to the bus.
+     *
+     * @method genPostMessageHandler
+     * @private
+     * @static
+     * @param {Client} client
+     * @param {Promise.resolve} resolve
+     * @param {Promise.rej} reject
+     * @returns {Function}
+     */
+    var genPostMessageHandler = function(client,resolve,reject){
+
+        return function (event) {
+            if (!client.peer || event.origin !== client.peerOrigin || event.source !== client.peer) {
+                return;
+            }
+            try {
+                var message = event.data;
+                if (typeof(message) === 'string') {
+                    message = JSON.parse(event.data);
+                }
+                // Calls APIPromiseMixin receive handler
+                if (message.iwcInit && client.address === "$nobody") {
+                    initPing(client,resolve,reject);
+                } else {
+                    client.receiveFromRouterImpl(message);
+                    client.receivedBytes += (event.data.length * 2);
+                    client.receivedPackets++;
+                }
+            } catch (e) {
+                // ignore!
+            }
+        };
+    };
+
+    /**
+     * Generates the Iframe for the client for IWC bus-domain communication.
+     * Due to race condition issues with Chrome, this is an asynchronous task with a slight delay to prevent
+     * broken bus connections with Chrome/SharedWorker.
+     *
+     * @method createIframeShim
+     * @private
+     * @static
+     * @properties {Client} client
+     */
+    var createIframeShim = function (client,resolve,reject) {
+
+        client.postMessageHandler = genPostMessageHandler(client,resolve,reject);
+        util.addEventListener("message", client.postMessageHandler );
+
+        window.setTimeout(function () {
+            client.iframe = document.createElement("iframe");
+            var url = client.peerUrl + "/iframe_peer.html";
+            if (client.launchParams.log) {
+                url += "?log=" + client.launchParams.log;
+            }
+            if (client.type) {
+                url += "?type=" + client.type;
+            }
+            client.iframe.src = url;
+            client.iframe.height = 1;
+            client.iframe.width = 1;
+            client.iframe.setAttribute("area-hidden", true);
+            client.iframe.setAttribute("hidden", true);
+            client.iframe.style.setProperty("display", "none", "important");
+            document.body.appendChild(client.iframe);
+            client.peer = client.iframe.contentWindow;
+
+            if(!window.SharedWorker){
+                client.iframe.addEventListener("load", function () {
+                    initPing(client,resolve,reject);
+                });
+            }
+        }, 200);
+    };
+
     /**
      * Generates the Peer URL checking logic based on the data type received.
      * @method genPeerUrlCheck
-     * @property {String|Array|Function} configUrl the url(s) to connect the client on. If function, the output of the
+     * @private
+     * @static
+     * @param {Client} client
+     * @param {String|Array|Function} configUrl the url(s) to connect the client on. If function, the output of the
      *                                   function will be used.
      */
-    Client.prototype.genPeerUrlCheck = function (configUrl) {
+    var genPeerUrlCheck = function (client, configUrl) {
         if (typeof(configUrl) === "string") {
-            this.peerUrlCheck = function (url) {
+            client.peerUrlCheck = function (url) {
                 if (typeof url !== 'undefined') {
                     return url;
                 } else {
@@ -54,7 +157,7 @@ ozpIwc.Client = (function (util) {
 
             };
         } else if (Array.isArray(configUrl)) {
-            this.peerUrlCheck = function (url) {
+            client.peerUrlCheck = function (url) {
                 if (configUrl.indexOf(url) >= 0) {
                     return url;
                 }
@@ -65,131 +168,19 @@ ozpIwc.Client = (function (util) {
              * @property peerUrlCheck
              * @type String
              */
-            this.peerUrlCheck = configUrl;
+            client.peerUrlCheck = configUrl;
         } else {
             throw new Error("PeerUrl must be a string, array of strings, or function");
         }
     };
 
     /**
-     * Disconnects the client from the IWC bus.
-     *
-     * @method disconnect
+     * Meta-data for registration to function with SharedWorkers.
+     * @private
+     * @static
+     * @property sharedWorkerRegistrationData
+     * @type {{contentType: string, entity: {label: string}}}
      */
-    Client.prototype.disconnect = function () {
-        if (this.iframe) {
-            this.iframe.src = "about:blank";
-            var self = this;
-            window.setTimeout(function () {
-                self.iframe.remove();
-                self.iframe = null;
-            }, 0);
-        }
-    };
-
-
-    /**
-     * Connects the client from the IWC bus.
-     * Fires: {{#crossLink "ozpIwc.Client/connected:event"}}{{/crossLink}}
-     *
-     * @method connect
-     */
-    Client.prototype.connect = function () {
-        if (!this.connectPromise) {
-            var self = this;
-
-            /**
-             * Promise to chain off of for client connection asynchronous actions.
-             * @property connectPromise
-             * @type Promise
-             */
-            this.connectPromise = util.prerender().then(function () {
-                // now that we know the url to connect to, find a peer element
-                // currently, this is only via creating an iframe.
-                self.peerUrl = self.peerUrlCheck(self.launchParams.peer);
-                self.peerOrigin = util.determineOrigin(self.peerUrl);
-                return self.createIframePeer();
-            }).then(function (message) {
-                self.address = message.dst;
-
-                /**
-                 * Fired when the client receives its address.
-                 * @event #gotAddress
-                 */
-                self.events.trigger("gotAddress", self);
-
-                return self.afterConnected();
-            });
-        }
-        return this.connectPromise;
-    };
-
-    /**
-     * Creates an invisible iFrame Peer for IWC bus communication.
-     *
-     * @method createIframePeer
-     */
-    Client.prototype.createIframePeer = function () {
-        var self = this;
-        return new Promise(function (resolve, reject) {
-            var createIframeShim = function () {
-                self.iframe = document.createElement("iframe");
-                self.iframe.addEventListener("load", function () {
-                    resolve();
-                });
-                var url = self.peerUrl + "/iframe_peer.html";
-                if (self.launchParams.log) {
-                    url += "?log=" + self.launchParams.log;
-                }
-                if (self.type) {
-                    url += "?type=" + self.type;
-                }
-                self.iframe.src = url;
-                self.iframe.height = 1;
-                self.iframe.width = 1;
-                self.iframe.setAttribute("area-hidden", true);
-                self.iframe.setAttribute("hidden", true);
-                self.iframe.style.setProperty("display", "none", "important");
-                document.body.appendChild(self.iframe);
-                self.peer = self.iframe.contentWindow;
-
-
-            };
-            // need at least the body tag to be loaded, so wait until it's loaded
-            if (document.readyState === 'complete') {
-                createIframeShim();
-            } else {
-                util.addEventListener("load", createIframeShim);
-            }
-        }).then(function () {
-                // start listening to the bus and ask for an address
-                self.postMessageHandler = function (event) {
-                    if (!self.peer || event.origin !== self.peerOrigin || event.source !== self.peer) {
-                        return;
-                    }
-                    try {
-                        var message = event.data;
-                        if (typeof(message) === 'string') {
-                            message = JSON.parse(event.data);
-                        }
-                        // Calls APIPromiseMixin receive handler
-                        self.receiveFromRouterImpl(message);
-                        self.receivedBytes += (event.data.length * 2);
-                        self.receivedPackets++;
-                    } catch (e) {
-                        // ignore!
-                    }
-                };
-                // receive postmessage events
-                util.addEventListener("message", self.postMessageHandler);
-                return self.send({dst: "$transport", type: self.type});
-            });
-    };
-
-    Client.prototype.sendImpl = function (packet) {
-        util.safePostMessage(this.peer, packet, '*');
-    };
-
     var sharedWorkerRegistrationData = {
         contentType: 'application/vnd.ozp-iwc-intent-handler-v1+json',
         entity: {
@@ -234,6 +225,104 @@ ozpIwc.Client = (function (util) {
             client.intents().register(launcherResource, sharedWorkerRegistrationData, sharedWorkerLauncher);
 
         });
+    };
+
+    //----------------------------------------------------------
+    // Public Properties
+    //----------------------------------------------------------
+
+    /**
+     * Disconnects the client from the IWC bus.
+     *
+     * @method disconnect
+     */
+    Client.prototype.disconnect = function () {
+        var resolve,reject;
+        var retPromise = new Promise(function(res,rej){
+            resolve = res;
+            reject = rej;
+        });
+        if (this.iframe) {
+            this.iframe.src = "about:blank";
+            var self = this;
+            window.setTimeout(function () {
+                self.iframe.remove();
+                self.iframe = null;
+                resolve();
+            }, 0);
+        } else {
+            reject();
+        }
+
+        return retPromise;
+    };
+
+    /**
+     * Connects the client from the IWC bus.
+     * Fires: {{#crossLink "ozpIwc.Client/connected:event"}}{{/crossLink}}
+     *
+     * @method connect
+     */
+    Client.prototype.connect = function () {
+        if (!this.connectPromise) {
+            var self = this;
+
+            /**
+             * Promise to chain off of for client connection asynchronous actions.
+             * @property connectPromise
+             * @type Promise
+             */
+            this.connectPromise = util.prerender().then(function () {
+                // now that we know the url to connect to, find a peer element
+                // currently, this is only via creating an iframe.
+                self.peerUrl = self.peerUrlCheck(self.launchParams.peer);
+                self.peerOrigin = util.determineOrigin(self.peerUrl);
+                return self.createIframePeer();
+            }).then(function (message) {
+                self.address = message.dst;
+
+                /**
+                 * Fired when the client receives its address.
+                 * @event #gotAddress
+                 */
+                self.events.trigger("gotAddress", self);
+                return self.afterConnected();
+            });
+        }
+        return this.connectPromise;
+    };
+
+    /**
+     * Creates an invisible iFrame Peer for IWC bus communication. Resolves when iFrame communication has been
+     * initialized.
+     *
+     * @method createIframePeer
+     * @returns {Promise}
+     */
+    Client.prototype.createIframePeer = function () {
+        var self = this;
+        return new Promise(function (resolve, reject) {
+            // start listening to the bus and ask for an address
+
+            // need at least the body tag to be loaded, so wait until it's loaded
+            if (document.readyState === 'complete') {
+                createIframeShim(self,resolve,reject);
+            } else {
+                util.addEventListener("load", function(){
+                    createIframeShim(self,resolve,reject);
+                });
+            }
+        });
+    };
+
+    /**
+     * Client to Bus sending implementation. Not to be used directly.
+     * @private
+     * @method sendImpl.
+     * @param {ozpIwc.TransportPacket} packet
+     */
+    Client.prototype.sendImpl = function (packet) {
+        util.safePostMessage(this.peer, packet, '*');
     };
 
     return Client;

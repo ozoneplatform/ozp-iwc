@@ -48,12 +48,11 @@ var debuggerModule=angular.module("ozpIwc.debugger",[
 
 
 debuggerModule.factory("iwcClient",function() {
+    var domain = ozpIwc.util.parseQueryParams().peerUrl || window.location.origin;
 
     var dbg = new ozpIwc.Debugger({
-        peerUrl: "http://" + window.location.hostname + ":13000"
+        peerUrl: domain
     });
-
-    dbg.connect();
 
     return dbg;
 });
@@ -61,11 +60,18 @@ debuggerModule.factory("iwcClient",function() {
         
 debuggerModule.controller("debuggerController",["$scope","iwcClient",function(scope,client) {
     scope.ozpIwc = ozpIwc;
-    scope.apiRootUrl = ozpIwc.config.apiRootUrl;
     scope.tab = 'general';
-    client.connect().then(function(){
-        scope.address = client.address;
+    scope.loading = true;
+
+    client.getConfig().then(function(config){
+        scope.$evalAsync(function(){
+            scope.apiRootUrl = config.apiRootUrl;
+            scope.address = client.address;
+
+            scope.loading = false;
+        });
     });
+
 }]);
 debuggerModule.service("apiSettingService",function(){
     this.apis={

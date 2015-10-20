@@ -47,6 +47,12 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
         this.credentials = config.credentials;
 
         /**
+         * @property readyPromise
+         * @type {Promise}
+         */
+        this.readyPromise = config.ready || Promise.resolve();
+
+        /**
          * The type of the participant.
          * @property participantType
          * @type  String
@@ -83,6 +89,7 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
             }
             self.forwardFromMessageChannel(data, e);
         }, false);
+        util.safePostMessage(this.port,{iwcInit:true});
     });
 
 //--------------------------------------------------
@@ -113,7 +120,10 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
             }
         };
 
-        this.sendToRecipient(reply);
+        var self = this;
+        this.readyPromise.then(function () {
+            self.sendToRecipient(reply);
+        });
     };
 
     /**

@@ -71,6 +71,8 @@ ozpIwc.transport.participant.PostMessage = (function (log, transport, util) {
          * @type String
          */
         this.heartBeatStatus.origin = this.origin;
+
+        util.safePostMessage(this.source,{iwcInit:true});
     });
 
 //--------------------------------------------------

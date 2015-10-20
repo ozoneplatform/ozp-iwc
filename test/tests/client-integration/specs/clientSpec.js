@@ -35,31 +35,29 @@ describe("IWC Client", function () {
             return client2.connect().then(function () {
                 expect(client2.address).not.toEqual("$nobody");
                 expect(client2.address).not.toEqual(client.address);
-                client2.disconnect();
+                return client2.disconnect();
             });
         });
 
-        it("allows requests before connection established.", function (done) {
+        pit("allows requests before connection established.", function () {
             var client2 = new ozpIwc.Client({peerUrl: BUS_URL});
 
-            client2.names().get('/address').then(function (response) {
+            return client2.names().get('/address').then(function (response) {
                 expect(response).toBeDefined();
-                client2.disconnect();
-                done();
+                return client2.disconnect();
             });
         });
 
-        it("allows clients to share resources", function (done) {
+        pit("allows clients to share resources", function () {
             var client2 = new ozpIwc.Client({peerUrl: BUS_URL});
-            client2.connect().then(function () {
-                client.data().set("/foo", {entity: "cow"}).then(function () {
+            return client2.connect().then(function () {
+                return client.data().set("/foo", {entity: "cow"});
+            }).then(function () {
                     return client2.data().get("/foo");
-                }).then(function (reply) {
-                    expect(reply.dst).toEqual(client2.address);
-                    expect(reply.entity).toEqual("cow");
-                    client2.disconnect();
-                    done();
-                });
+            }).then(function (reply) {
+                expect(reply.dst).toEqual(client2.address);
+                expect(reply.entity).toEqual("cow");
+                return client2.disconnect();
             });
         });
     });
@@ -278,7 +276,7 @@ describe("IWC Client", function () {
             return client2.data().set("/foo", {lifespan: "bound"}).then(function () {
                 return client2.data().get("/foo");
             }).then(function (resp) {
-                client2.disconnect();
+                return client2.disconnect();
             }).then(function () {
                 return client.data().get("/foo");
             }).then(function (resp) {
