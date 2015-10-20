@@ -25,6 +25,20 @@ ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport
             this.name = "DebuggerParticipant";
             this.router = config.router;
             this.peer = this.router.peer;
+            var self = this;
+            this.logging = {
+                enabled: false,
+                watchList: {},
+                notifyListeners: function ( event) {
+                    for (var i in self.logging.watchList) {
+                        debuggerResponse(self, {
+                            response: "changed",
+                            replyTo: self.logging.watchList[i].msgId,
+                            entity: event
+                        });
+                    }
+                }
+            };
 
             this.on("receive",this.handleReceivePacket);
         });
@@ -75,20 +89,6 @@ ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport
         //----------------------------------------------------------------
         // dst: $transport, resource: traffic, action: start
         //----------------------------------------------------------------
-        var logging = {
-            enabled: false,
-            watchList: [],
-            eventHandler: undefined,
-            notifyListeners: function (participant, event) {
-                for (var i in logging.watchList) {
-                    debuggerResponse(participant, {
-                        response: "changed",
-                        replyTo: logging.watchList[i].msgId,
-                        entity: event
-                    });
-                }
-            }
-        };
 
         /**
          *
@@ -100,15 +100,12 @@ ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport
          * @param {ozpIwc.transport.PacketContext} packet
          */
         var enableLogging = function (participant, packet) {
-            logging.watchList[packet.msgId] = packet;
+            participant.logging.watchList[packet.msgId] = packet;
 
-            if (!logging.enabled) {
-                logging.enabled = true;
-                logging.eventHandler = function(event){
-                    logging.notifyListeners(participant,event);
-                };
-                participant.peer.on("receive", logging.eventHandler);
-                participant.peer.on("send", logging.eventHandler);
+            if (!participant.logging.enabled) {
+                participant.logging.enabled = true;
+                participant.peer.on("receive", participant.logging.notifyListeners);
+                participant.peer.on("send", participant.logging.notifyListeners);
             }
 
             debuggerResponse(participant, {replyTo: packet.msgId});
@@ -125,13 +122,13 @@ ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport
         var disableLogging = function (participant, packet) {
             packet = packet || {};
             packet.entity = packet.entity || {};
-            if (packet.entity.msgId && logging.watchList[packet.entity.msgId]) {
-                delete logging.watchList[packet.entity.msgId];
+            if (packet.entity.msgId && participant.logging.watchList[packet.entity.msgId]) {
+                delete participant.logging.watchList[packet.entity.msgId];
             }
-            if(logging.enabled && logging.watchList.length === 0){
-                logging.enabled = false;
-                participant.peer.off("receive", logging.eventHandler);
-                participant.peer.off("send", logging.eventHandler);
+            if(participant.logging.enabled && Object.keys(participant.logging.watchList).length === 0){
+                participant.logging.enabled = false;
+                participant.peer.off("receive", participant.logging.notifyListeners);
+                participant.peer.off("send", participant.logging.notifyListeners);
             }
 
             debuggerResponse(participant, {replyTo: packet.msgId});
