@@ -34,7 +34,7 @@
 
 
         
-    <div class="book" data-level="1.5.1" data-basepath="../../.." data-revision="1445382281721">
+    <div class="book" data-level="1.5.1" data-basepath="../../.." data-revision="1445450963405">
     
 
 <div class="book-summary">
@@ -979,11 +979,30 @@ systemApi.launch(&quot;/application/ea0c6018-4f12-410d-93b7-fe925b3a6ca2&quot;);
     &quot;Hello&quot;: &quot;world!&quot;
 };
 systemApi.launch(&quot;/application/ea0c6018-4f12-410d-93b7-fe925b3a6ca2&quot;,{entity: data});
-</code></pre><p>The launched application can gather the launch data after it&#39;s client has connected as so:</p>
-<pre><code>var launchParams = {};
-client.connect().then(function(){
-    launchParams = client.launchParams;
+</code></pre><p>The launched application can gather the launch data using the <code>getLaunchData</code> method. It uses promises to resolve after
+the client has connected:</p>
+<pre><code>var launchData = {};
+client.getLaunchData().then(function(data){
+    launchData= data;
 });
+</code></pre><h3 id="passing-launch-parameters-without-using-the-system-api">Passing launch parameters Without using the System API</h3>
+<p>Alternatively, launch data can be passed to the opening application in the following places so long as the <code>key</code> is 
+<code>ozpIwc.launchData</code>:</p>
+<ul>
+<li>window.name</li>
+<li>Url query parameter: <code>(?launchData=&lt;stringified &amp; URI-encoded object&gt;)</code><ul>
+<li>LaunchData persists through browser refresh (good for when sharing a URL of a application occurs).</li>
+</ul>
+</li>
+<li>Url hash: <code>(#launchData=&lt;stringified &amp; URIencoded  object&gt;)</code><ul>
+<li>LaunchData does not persist through browser refresh (good for when launching an application to handle the launch data for a unique one-time need).</li>
+</ul>
+</li>
+</ul>
+<p>To stringify and URI-encode a value in javascript:</p>
+<pre><code>var obj = {&#39;a&#39;: 1};
+var stringified = JSON.stringify(obj);
+var uriEncoded = encodeURIcomponent(stringified);
 </code></pre>
                     
                     </section>
