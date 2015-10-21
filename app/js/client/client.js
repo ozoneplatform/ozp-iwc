@@ -318,11 +318,27 @@ ozpIwc.Client = (function (util) {
     /**
      * Client to Bus sending implementation. Not to be used directly.
      * @private
-     * @method sendImpl.
+     * @method sendImpl
      * @param {ozpIwc.TransportPacket} packet
      */
     Client.prototype.sendImpl = function (packet) {
         util.safePostMessage(this.peer, packet, '*');
+    };
+
+    /**
+     * Gathers the launch data passed to the opened application. Launch data can be passed as a query parameter, inside
+     * window.name, or inside window.hash as long as it's key is "launchData".
+     *
+     * Promise resolve with the launchData object.
+     *
+     * @method getLaunchData
+     * @returns {Promise}
+     */
+    Client.prototype.getLaunchData = function(){
+        var self = this;
+        return this.connect().then(function() {
+            return self.launchParams.launchData;
+        });
     };
 
     return Client;

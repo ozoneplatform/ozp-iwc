@@ -60,6 +60,19 @@ describe("IWC Client", function () {
                 return client2.disconnect();
             });
         });
+
+        pit("gets launchData from hash", function(){
+            client.readLaunchParams("#ozpIwc.launchData=%7B%22channel%22%3A1%7D");
+            return client.getLaunchData().then(function(launchData){
+                expect(launchData).toEqual({'channel':1});
+            });
+        });
+        pit("gets launchData from query", function(){
+            client.readLaunchParams("?ozpIwc.launchData=%7B%22channel%22%3A1%7D");
+            return client.getLaunchData().then(function(launchData){
+                expect(launchData).toEqual({'channel':1});
+            });
+        });
     });
 
     describe("launch parameters", function () {
