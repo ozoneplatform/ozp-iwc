@@ -48,7 +48,8 @@ var debuggerModule=angular.module("ozpIwc.debugger",[
 
 
 debuggerModule.factory("iwcClient",function() {
-    var domain = ozpIwc.util.parseQueryParams().peerUrl || window.location.origin;
+    var path = window.location.href.replace(window.location.hash,"");
+    var domain = ozpIwc.util.parseQueryParams().peerUrl || path.substr(0,path.lastIndexOf('/'));
 
     var dbg = new ozpIwc.Debugger({
         peerUrl: domain
