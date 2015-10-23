@@ -44,7 +44,7 @@ describe("Data Api", function () {
 
         pit("responds to a bulk get with matching entities", function () {
             var packetOne = {'resource': "/family", 'entity': "value1"};
-            var packetTwo = {'resource': "/family_a", 'entity': "value2", 'contentType': "application/fake+b+json"};
+            var packetTwo = {'resource': "/family_a", 'entity': "value2", 'contentType': "application/vnd.ozp-iwc-data-object+json;version=2"};
             var packetThree = {'resource': "/family_b", 'entity': "value3"};
             var packetFour = {'resource': "/notfamily", 'entity': "value4"};
 

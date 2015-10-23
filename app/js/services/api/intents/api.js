@@ -22,22 +22,8 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
      * @param {ozpIwc.transport.Router} config.router
      */
     var Api = api.createApi("intents.api", function (config) {
-        /**
-         * @property persistenceQueue
-         * @type {ozpIwc.AjaxPersistenceQueue|*}
-         */
-        this.persistenceQueue = config.persistenceQueue || new util.AjaxPersistenceQueue();
-
-        /**
-         * @property endpoints
-         * @type {Object[]}
-         */
-        this.endpoints = config.endpoints || [
-                {
-                    link: ozpConfig.linkRelPrefix + ":intent",
-                    headers: []
-                }
-            ];
+        this.endpoints = config.endpoints || [{link: ozpConfig.linkRelPrefix + ":intent",headers: []}];
+        this.contentTypeMappings = util.genContentTypeMappings(api.intents.node);
     });
 
     Api.prototype.initializeData = function (deathScream) {
@@ -64,8 +50,8 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
             var self = this;
             return Promise.all(this.endpoints.map(function (u) {
                 var e = api.endpoint(u.link);
-                return self.loadFromEndpoint(e, u.headers).catch(function (e) {
-                    log.error(self.logPrefix, "load from endpoint ", e, " failed: ", e);
+                return self.loadFromEndpoint(e, u.headers).catch(function (err) {
+                    log.error(self.logPrefix, "load from endpoint failed. Reason: ", err);
                 });
             }));
         } else {
@@ -95,7 +81,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
      */
     Api.prototype.invokeIntentHandler = function (packet, type, action, handlers, pattern) {
         var self = this;
-        var inflightNode = new api.intents.InFlightNode({
+        var inflightNode = new api.intents.node.InFlightNode({
             resource: this.createKey("/inFlightIntent/"),
             src: packet.src,
             invokePacket: packet,
@@ -300,7 +286,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
     Api.declareRoute({
         action: "set",
         resource: "/inFlightIntent/{id}",
-        filters: api.filter.standard.setFilters(api.intents.InFlightNode)
+        filters: api.filter.standard.setFilters(api.intents.node.InFlightNode)
     }, function (packet, context, pathParams) {
         context.node = api.intents.FSM.transition(context.node, packet);
         return this.handleInflightIntentState(context.node).then(function () {
@@ -414,7 +400,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         var childNode = this.createNode({
             'resource': this.createKey(context.node.resource + "/"),
             'src': packet.src
-        }, api.intents.HandlerNode);
+        }, api.intents.node.HandlerNode);
         childNode.set(packet);
 
         log.debug(this.logPrefix + " registered ", context.node);
@@ -437,7 +423,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         var childNode = this.createNode({
             'resource': packet.resource,
             'src': packet.src
-        }, api.intents.HandlerNode);
+        }, api.intents.node.HandlerNode);
         childNode.set(packet);
 
         log.debug(this.logPrefix + " registered ", context.node);

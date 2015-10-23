@@ -65,7 +65,8 @@ describe("System API", function () {
                 authorization: ozpIwc.wiring.authorization,
                 router: fakeRouter
             }),
-            'router': fakeRouter
+            'router': fakeRouter,
+            'ajaxQueue': new ozpIwc.util.AjaxPersistenceQueue()
         });
         systemApi.isRequestQueueing = false;
         systemApi.leaderState = "leader";

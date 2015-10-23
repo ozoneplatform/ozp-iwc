@@ -1,18 +1,19 @@
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.intents = ozpIwc.api.intents || {};
+ozpIwc.api.intents.node = ozpIwc.api.intents.node || {};
 
 /**
- * @module ozpIwc.api
- * @submodule ozpIwc.api.intents
+ * @module ozpIwc.api.intents
+ * @submodule ozpIwc.api.intents.node
  */
 
 
-ozpIwc.api.intents.HandlerNode = (function (api, log, util) {
+ozpIwc.api.intents.node.HandlerNode = (function (api, log, util) {
     /**
      }
      * @class HandlerNode
-     * @namespace ozpIwc.api.intents
+     * @namespace ozpIwc.api.intents.node
      * @extends ozpIwc.api.base.Node
      * @constructor
      */

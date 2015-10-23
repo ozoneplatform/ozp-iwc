@@ -10,7 +10,7 @@ var ozpIwc = ozpIwc || {};
  * @namespace ozpIwc
  * @static
  */
-ozpIwc.util = (function (util) {
+ozpIwc.util = (function (log, util) {
 
     /**
      * Sends an AJAX request. A promise is returned to handle the response.
@@ -64,20 +64,30 @@ ozpIwc.util = (function (util) {
                     } catch (e) {
                         entity = this.reponseText || this.responseXML;
                     }
+
+                    log.info("[AJAX] ["+config.method+"] [" + config.href + "] [RESOLVE]");
                     resolve({
                         "response": entity,
-                        "header": util.ajaxResponseHeaderToJSON(this.getAllResponseHeaders())
-
+                        "header": util.ajaxResponseHeaderToJSON(this.getAllResponseHeaders()),
+                        'url': this.responseURL
                     });
                 } else {
+                    log.info("[AJAX] ["+config.method+"] [" + config.href + "] [REJECT] ("+this.status+")");
                     reject(this);
                 }
             };
 
-            request.onerror = function (e) {
+            request.ontimeout = function (e) {
+                log.info("[AJAX] ["+config.method+"] [" + config.href + "] [REJECT] ("+e+")");
                 reject(this);
             };
 
+            request.onerror = function (e) {
+                log.info("[AJAX] ["+config.method+"] [" + config.href + "] [REJECT] ("+e+")");
+                reject(this);
+            };
+
+            log.info("[AJAX] ["+config.method+"] [" + config.href + "]");
             try {
                 if ((config.method === "POST") || (config.method === "PUT")) {
                     request.send(config.data);
@@ -112,4 +122,4 @@ ozpIwc.util = (function (util) {
     };
 
     return util;
-}(ozpIwc.util || {}));
+}(ozpIwc.log, ozpIwc.util || {}));

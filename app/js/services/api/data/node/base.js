@@ -1,16 +1,17 @@
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.data = ozpIwc.api.data || {};
+ozpIwc.api.data.node = ozpIwc.api.data.node || {};
 
 /**
- * @module ozpIwc.api
- * @submodule ozpIwc.api.data
+ * @module ozpIwc.api.data
+ * @submodule ozpIwc.api.data.node
  */
 
-ozpIwc.api.data.Node = (function (api, util) {
+ozpIwc.api.data.node.Node = (function (api,  util) {
     /**
      * @class Node
-     * @namespace ozpIwc.api.data
+     * @namespace ozpIwc.api.data.node
      * @extends ozpIwc.api.base.Node
      * @constructor
      */
@@ -21,6 +22,8 @@ ozpIwc.api.data.Node = (function (api, util) {
         if (!config.lifespan) {
             this.lifespan = new api.Lifespan.Persistent();
         }
+
+        this.contentType = Node.serializedContentType;
     });
 
     /**
@@ -32,10 +35,10 @@ ozpIwc.api.data.Node = (function (api, util) {
     /**
      * Serializes the node for persistence to the server.
      *
-     * @method serializedEntity
+     * @method serialize
      * @return {String}
      */
-    Node.prototype.serializedEntity = function () {
+    Node.prototype.serialize = function () {
         return JSON.stringify({
             key: this.resource,
             entity: this.entity,
@@ -44,59 +47,63 @@ ozpIwc.api.data.Node = (function (api, util) {
             contentType: this.contentType,
             permissions: this.permissions,
             version: this.version,
-            _links: {
-                self: {
-                    href: this.self
-                }
-            }
+            self: this.self
         });
     };
 
     /**
-     * The content type of the data returned by serializedEntity()
+     * The content type of the data returned by serialize()
      *
      * @method serializedContentType
+     * @static
      * @return {string}
      */
-    Node.prototype.serializedContentType = function () {
-        return "application/vnd.ozp-iwc-data-object+json";
-    };
+    Node.serializedContentType = "application/vnd.ozp-iwc-data-object-v1+json";
 
     /**
      * Sets the api node from the serialized form.
      *
      * @method deserializedEntity
-     * @param {String} serializedForm
+     * @param {Object} data
      * @param {String} contentType
      */
-    Node.prototype.deserializedEntity = function (serializedForm, contentType) {
-        var data;
-        if (typeof(serializedForm.entity) === "string") {
-            data = JSON.parse(serializedForm.entity);
-        } else {
-            data = serializedForm.entity;
-        }
-
-        this.entity = data.entity;
-        this.collection = data.collection;
-        this.pattern = data.pattern;
-        this.contentType = data.contentType;
-        this.permissions = data.permissions;
-        this.version = data.version;
-        data._links = data._links || {};
-        if (data._links.self) {
-            this.self = data._links.self.href;
-        }
-
-        if (!this.resource) {
-            if (data._links["ozp:iwcSelf"]) {
-                this.resource = data._links["ozp:iwcSelf"].href.replace(/web\+ozp:\/\/[^/]+/, "");
-            } else {
-                this.resource = this.resourceFallback(data);
+    Node.prototype.deserializedEntity = function (data, contentType) {
+        if(typeof data.entity === "string"){
+            try {
+                return JSON.parse(data.entity);
+            } catch(e){
+                return data.entity;
             }
+        } else {
+            return data.entity;
         }
     };
 
+    /**
+     * Sets the api node from the serialized form.
+     * Deserializes permissions and versions ontop of base implementation.
+     *
+     * @method deserialize
+     * @param {String} data A string serialization of the object
+     * @param {String} contentType The contentType of the object
+     * @return {Object}
+     */
+    Node.prototype.deserialize = function(data,contentType) {
+        try{
+            data = JSON.parse(data);
+        } catch(e){
+
+        }
+        api.base.Node.prototype.deserialize.apply(this, [data.entity, contentType]);
+
+        if(typeof this.permissions === "string"){
+            this.permissions = JSON.parse(this.permissions);
+        }
+
+        if(typeof this.version === "string"){
+            this.version = JSON.parse(this.version);
+        }
+    };
     /**
      * If a resource path isn't given, this takes the best guess at assigning it.
      * @override

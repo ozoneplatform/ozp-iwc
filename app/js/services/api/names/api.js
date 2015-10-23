@@ -21,6 +21,7 @@ ozpIwc.api.names.Api = (function (api, apiMap, ozpConfig, util) {
      * @param {ozpIwc.transport.Router} config.router
      */
     var Api = api.createApi("names.api", function (config) {
+        this.contentTypeMappings = util.genContentTypeMappings(api.names.node);
         for (var key in apiMap) {
             var apiObj = apiMap[key];
             var resourceName = '/api/' + apiObj.address;
@@ -45,6 +46,20 @@ ozpIwc.api.names.Api = (function (api, apiMap, ozpConfig, util) {
         });
     });
 
+    /**
+     * Names API resources are not loaded from server, thus use the default IWC Node structure by default.
+     * @override
+     * @method createNodeObject
+     * @param {type} config
+     * @return {ozpIwc.api.base.Node}
+     */
+    Api.prototype.createNodeObject = function (config, NodeType) {
+        if(NodeType){
+            return new NodeType(config);
+        } else {
+            return new api.base.Node(config);
+        }
+    };
     /**
      * Cycles through all /address/{address} resources and disconnects them from the bus if they have not responded in
      * the last 2 heartbeats.

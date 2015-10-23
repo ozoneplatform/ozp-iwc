@@ -25,7 +25,7 @@ describe("Intents in Flight Value", function () {
 
     var makeNode = function (config) {
         config = config || {};
-        return new ozpIwc.api.intents.InFlightNode({
+        return new ozpIwc.api.intents.node.InFlightNode({
             'resource': config.resource || '/ozpIntents/invocations/abcd',
             'invokePacket': invokePacket,
             'type': config.type || baseEntity.intent.type,

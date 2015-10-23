@@ -13,19 +13,19 @@ function createApiRequestObject(fakeRouter) {
     });
     apiBase.data["/foo"]=new ozpIwc.api.base.Node({
         resource: "/foo",
-        self: "https://example.com/iwc/foo",
+        self: {href: "https://example.com/iwc/foo"},
         contentType: "text/plain",
         entity: "hello world"
     });
     apiBase.data["/foo/1"]=new ozpIwc.api.base.Node({
         resource: "/foo/1",
-        self: "https://example.com/iwc/foo/1",
+        self: {href: "https://example.com/iwc/foo/1"},
         contentType: "text/plain",
         entity: "resource 1"
     });
     apiBase.data["/foo/2"]=new ozpIwc.api.base.Node({
         resource: "/foo/2",
-        self: "https://example.com/iwc/foo/2",
+        self: {href: "https://example.com/iwc/foo/2"},
         contentType: "text/plain",
         entity: "resource 2"
     });
@@ -313,9 +313,9 @@ describe("Base Api request handling",function() {
                 dst: "unitTest",
                 replyTo: "i:100",
                 entity: {
-                    newValue: null,
+                    newValue: undefined,
                     oldValue: "hello world",
-                    newCollection: null,
+                    newCollection: undefined,
                     oldCollection: [],
                     deleted: true
                 }

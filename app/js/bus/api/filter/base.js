@@ -51,9 +51,15 @@ ozpIwc.api.filter.base = (function (api, util) {
                     if (!context.node) {
                         context.node = this.createNode({
                             resource: packet.resource,
+                            contentType: packet.contentType,
                             pattern: packet.pattern,
                             lifespan: packet.lifespan,
                             src: packet.src
+                        });
+                    }
+                    if(!context.node){
+                        throw new api.error.BadContentError({
+                            'provided': packet.contentType
                         });
                     }
                     return next();

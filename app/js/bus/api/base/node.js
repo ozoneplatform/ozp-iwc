@@ -49,7 +49,7 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
          * @property contentType
          * @type String
          */
-        this.contentType = config.contentType;
+        this.contentType = config.contentType || Node.serializedContentType;
 
         /**
          * @property uriTemplate
@@ -115,10 +115,11 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
          * @property self - The url backing this node
          * @type String
          */
-        this.self = config.self;
+        this.self = config.self || {};
+        this.self.type = this.self.type ||this.contentType;
 
         if (config.serializedEntity) {
-            this.deserializedEntity(config.serializedEntity, config.serializedContentType);
+            this.deserialize(config.serializedEntity, config.contentType);
         }
 
         if (!this.resource) {
@@ -132,16 +133,19 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
      * @return {String}
      */
     Node.prototype.getSelfUri = function () {
-        if (this.self) {
+        if (this.self && this.self.href) {
             return this.self;
         }
         if (this.uriTemplate && api.uriTemplate) {
             var template = api.uriTemplate(this.uriTemplate);
             if (template) {
-                this.self = util.resolveUriTemplate(template, this);
+                this.self = {
+                    href: util.resolveUriTemplate(template.href, this),
+                    type: template.type
+                };
+                return this.self;
             }
         }
-        return this.self;
     };
 
     /**
@@ -156,13 +160,12 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
     Node.prototype.serializeLive = function () {
         return this.toPacket({
             deleted: this.deleted,
+            contentType: this.contentType,
             pattern: this.pattern,
             collection: this.collection,
             lifespan: this.lifespan,
             allowedContentTypes: this.allowedContentTypes,
-            _links: {
-                self: {href: this.self}
-            }
+            self: this.self
         });
     };
 
@@ -179,11 +182,12 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
         serializedForm.contentType = serializedForm.contentType || serializedContentType;
         this.set(serializedForm);
         if (serializedForm._links && serializedForm._links.self) {
-            this.self = serializedForm._links.self.href;
+            this.self = serializedForm._links.self;
         }
         if (!this.resource) {
             this.resource = serializedForm.resource || this.resourceFallback(serializedForm);
         }
+        this.self = serializedForm.self || serializedForm._links.self || this.self;
         this.deleted = serializedForm.deleted;
         this.lifespan = serializedForm.lifespan;
         this.allowedContentTypes = serializedForm.allowedContentTypes;
@@ -210,56 +214,79 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
      *
      * __Intended to be overridden by subclasses__
      *
-     * @method serializedEntity
+     * @method serialize
      * @return {String} a string serialization of the object
      */
-    Node.prototype.serializedEntity = function () {
-        return JSON.stringify(this.entity);
+    Node.prototype.serialize = function () {
+        return JSON.stringify({
+            entity: this.entity,
+            resource: this.resource,
+            self: this.self
+        });
     };
 
     /**
-     * The content type of the data returned by serializedEntity()
-     *
-     * __Intended to be overridden by subclasses__
-     *
-     * @method serializedContentType
-     * @return {String} the content type of the serialized data
+     * The content type of the data returned by serialize()
+     * @Property {string} serializedContentType
      */
-    Node.prototype.serializedContentType = function () {
-        return this.contentType;
-    };
+    Node.serializedContentType = "application/json";
 
     /**
      * Sets the api node from the serialized form.
      *
      * __Intended to be overridden by subclasses__
      *
-     * @method serializedEntity
-     * @param {String} serializedForm A string serialization of the object
+     * @method deserialize
+     * @param {String} data A string serialization of the object
      * @param {String} contentType The contentType of the object
      * @return {Object}
      */
-    Node.prototype.deserializedEntity = function (serializedForm, contentType) {
-        if (typeof(serializedForm) === "string") {
-            serializedForm = JSON.parse(serializedForm);
+    Node.prototype.deserialize = function (data, contentType) {
+        if (typeof(data) === "string") {
+            data = JSON.parse(data);
         }
-        this.entity = serializedForm;
+        data = data || {};
+        data._links = data._links || {};
+
+        this.self = data.self || data._links.self || this.self;
         this.contentType = contentType;
-        if (this.entity && this.entity._links) {
-            var links = this.entity._links;
-            if (!this.self && links.self) {
-                this.self = links.self.href;
-            }
-            if (!this.resource) {
-                if (links["ozp:iwcSelf"]) {
-                    this.resource = links["ozp:iwcSelf"].href.replace(/web\+ozp:\/\/[^/]+/, "");
-                } else {
-                    this.resource = this.resourceFallback(serializedForm);
-                }
-            }
+        this.pattern = data.pattern;
+        this.version = data.version ||  this.version;
+        this.permissions = data.permissions || {};
+        this.collection = data.collection || [];
+
+        this.entity = this.deserializedEntity(data,contentType);
+
+        if (!this.resource && !this.useIwcSelf()) {
+            this.resource = this.resourceFallback(data);
         }
     };
 
+    /**
+     * Gathers api node's entity from the serialized form.
+     *
+     * __Intended to be overridden by subclasses__
+     *
+     * @method deserializedEntity
+     * @param {Object} data
+     */
+    Node.prototype.deserializedEntity = function (data) {
+        return data.entity;
+    };
+
+    /**
+     * A static helper function for setting the resource of a node if it has an "ozp:iwcSelf" link.
+     * Returns true if the resource was set.
+     * @method useIwcSelf
+     * @static
+     * @returns {boolean}
+     */
+    Node.prototype.useIwcSelf= function(){
+        if(this.self["ozp:iwcSelf"]) {
+            this.resource = this.self["ozp:iwcSelf"].href.replace(/web\+ozp:\/\/[^/]+/, "");
+            return true;
+        }
+    };
 
     /**
      * If a resource path isn't given, this takes the best guess at assigning it.
@@ -267,7 +294,7 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
      * @param serializedForm
      */
     Node.prototype.resourceFallback = function (serializedForm) {
-        // do nothing, override if desired.
+        return serializedForm.resource;
     };
 
     /**
@@ -307,7 +334,7 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
             }
         }
         this.lifespan = api.Lifespan.getLifespan(this, packet) || this.lifespan;
-        this.contentType = packet.contentType;
+        this.contentType = packet.contentType || this.contentType;
         this.entity = packet.entity;
         this.pattern = packet.pattern || this.pattern;
         this.deleted = false;
@@ -326,9 +353,9 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
     Node.prototype.markAsDeleted = function (packet) {
         this.version++;
         this.deleted = true;
-        this.entity = null;
-        this.pattern = null;
-        this.collection = null;
+        this.entity = undefined;
+        this.pattern = undefined;
+        this.collection = undefined;
     };
 
     /**
