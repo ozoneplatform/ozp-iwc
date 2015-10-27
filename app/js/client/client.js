@@ -28,7 +28,10 @@ ozpIwc.Client = (function (util) {
         }
         this.type = "default";
 
-        util.addEventListener('beforeunload', this.disconnect);
+        var self = this;
+        util.addEventListener('beforeunload', function(){
+            self.disconnect();
+        });
         genPeerUrlCheck(this, config.peerUrl);
         util.ApiPromiseMixin(this, config.autoConnect);
 
