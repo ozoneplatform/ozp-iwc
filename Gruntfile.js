@@ -492,11 +492,13 @@ module.exports = function(grunt) {
             },
             tarDate: {
                 command: [
+                    './packageRelease.sh iwc-prod dist',
                     './packageRelease.sh new-backend-iwc-prod dist'
                 ].join('&&')
             },
             tarVersion: {
                 command: [
+                    './packageRelease.sh iwc-prod dist <%= pkg.version %>',
                     './packageRelease.sh new-backend-iwc-prod dist <%= pkg.version %>'
                 ].join('&&')
             }
