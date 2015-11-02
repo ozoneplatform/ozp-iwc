@@ -314,6 +314,14 @@ ozpIwc.api.EndpointRegistry = (function (api, log, util) {
                     type: api.data.node.Node.serializedContentType
                 });
             }
+
+            if (!self.template["ozp:application-item"]) {
+                generateTemplate(self, {
+                    name: "ozp:application-item",
+                    href: self.endpoint().endpointRegistry.apiRoot + "/listing/{+resource}",
+                    type: api.system.node.ApplicationNode.serializedContentType
+                });
+            }
             //END HUGLY HAX
         })['catch'](function (err) {
             log.debug(Error("Endpoint " + self.apiRoot + " " + err.statusText + ". Status: " + err.status));
