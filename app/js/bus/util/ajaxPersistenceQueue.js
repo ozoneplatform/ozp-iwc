@@ -34,15 +34,52 @@ ozpIwc.util.AjaxPersistenceQueue = (function (log, util) {
     };
 
     /**
+     * Calls the callback when a slot in the ajax sync pool becomes available.
+     * Returns a promise that resolve when the slotted operation begins.
+     * Rejects if the unique id is already slotted.
+     *
+     * @method acquireSlot
+     * @private
+     * @static
+     * @param {AjaxPersistenceQueue} queue
+     * @param {String|Number} uuid
+     * @param {Function} cb
+     * @returns {*}
+     */
+    var acquireSlot = function(queue, uuid,cb){
+        // If the slot requested is filled reject to notify caller.
+        if(!queue.queuedSyncs[uuid]){
+            queue.nextSlot = (queue.nextSlot + 1) % queue.poolSize;
+            queue.syncPool[queue.nextSlot] = queue.queuedSyncs[uuid] = queue.syncPool[queue.nextSlot].then(function () {
+                return cb();
+            }).then(function(resp){
+                delete queue.queuedSyncs[uuid];
+
+                return resp;
+            });
+            return queue.queuedSyncs[uuid];
+        } else {
+            return queue.queuedSyncs[uuid];
+        }
+
+
+    };
+
+    /**
      * A Promise wrapped implementation of AJAX PUT for an IWC node.
      *
-     * @method doSync
-     * @param {String} iwcUri @TODO unused
+     * @method syncNode
+     * @private
      * @param {ozpIwc.api.base.Node} node
      * @return {Promise} Returns a promise that will resolve after AJAX is complete.
      */
-    AjaxPersistenceQueue.prototype.doSync = function (iwcUri, node) {
-        var uri = node.getSelfUri();
+    var syncNode = function (node) {
+        var self = node.getSelfUri() || {};
+        var uri = self.href;
+        var contentType = self.type;
+
+        //If the node cannot provide the needed information for sending to the server
+        //continue silently and resolve.
         if (!uri) {
             return Promise.resolve();
         }
@@ -52,7 +89,7 @@ ozpIwc.util.AjaxPersistenceQueue = (function (log, util) {
                 method: 'DELETE'
             });
         } else {
-            var entity = node.serializedEntity();
+            var entity = node.serialize();
             if (typeof(entity) !== "string") {
                 entity = JSON.stringify(entity);
             }
@@ -63,10 +100,11 @@ ozpIwc.util.AjaxPersistenceQueue = (function (log, util) {
                 data: entity,
                 headers: [{
                     name: "Content-Type",
-                    value: node.serializedContentType()
+                    value: contentType
                 }]
             }).then(function (result) {
                 log.debug("  saving to " + uri, result);
+                return result;
             }, function (error) {
                 log.error("  FAILED saving to " + uri, error);
             });
@@ -94,24 +132,41 @@ ozpIwc.util.AjaxPersistenceQueue = (function (log, util) {
      * @return {*}
      */
     AjaxPersistenceQueue.prototype.queueNode = function (iwcUri, node) {
-        var self = this;
-        // the value of node is captured immediately before it is saved to the backend
-        // only add it to the queue if it isn't already there
-        if (!this.queuedSyncs[iwcUri]) {
-            // round robin between slots
-            this.nextSlot = (this.nextSlot + 1) % this.poolSize;
+        var slotCall = function(){
+            return syncNode(node).catch(function(){
+                log.info("[AJAX] ["+iwcUri+"] Ignoring persist, as one is already queued.");
+            });
+        };
+        return acquireSlot(this,"Node:"+iwcUri,slotCall);
+    };
 
-            // chain off the syncPool, update the sync pool tail,
-            // and save it for the iwcUri for this node
-            this.syncPool[this.nextSlot] = this.queuedSyncs[iwcUri] =
-                this.syncPool[this.nextSlot].then(function () {
-                    // since doSync serializes the node, remove it from the queue now
-                    // to capture post-serialization changes
-                    delete self.queuedSyncs[iwcUri];
-                    return self.doSync(iwcUri, node);
-                });
-        }
-        return this.queuedSyncs[iwcUri];
+    /**
+     * An ajax sync pool wrapped AJAX call. Pools AJAX requests so requests do not get dropped
+     * if too many connections are open.
+     *
+     * @method queueAjax
+     * @param {Object} config
+     * @param {String} config.href
+     * @param {String} config.method
+     *
+     * @returns {Promise}
+     */
+    AjaxPersistenceQueue.prototype.queueAjax = function (config){
+        config = config || {};
+        if(!config.href){ throw "Ajax queue requires href";}
+        if(!config.method){ throw "Ajax queue requires method";}
+
+        var resolve;
+        var retPromise = new Promise(function(res,rej){
+            resolve = res;
+        });
+        var slotCall = function(){
+            return util.ajax(config).then(resolve);
+        };
+
+        acquireSlot(this,config.method+":"+config.href+":"+Date.now(),slotCall);
+
+        return retPromise;
     };
 
     return AjaxPersistenceQueue;

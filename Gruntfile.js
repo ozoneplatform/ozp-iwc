@@ -68,7 +68,9 @@ module.exports = function(grunt) {
                 'app/js/bus/api/filter/*.js',
                 'app/js/bus/api/**/*.js',
 
-                'app/js/services/**/*.js',
+                'app/js/services/api/*/node/**/*.js',
+                'app/js/services/api/**/*.js',
+
 
                 'app/js/bus/wiring/support/**/*.js',
                 'app/js/bus/wiring/init/base.js',
@@ -423,6 +425,9 @@ module.exports = function(grunt) {
             testBus: {
                 options:{ port: 14002, base: ['dist',sampleDataBase], middleware:  mockBackendMiddleware}
             },
+            noDB: {
+                options: {port: 16000, base: ["dist"]}
+            },
             demo1: {
                 options: { port: 15000, base: ["dist","demo/bouncingBalls"] }
             },
@@ -487,12 +492,12 @@ module.exports = function(grunt) {
             },
             tarDate: {
                 command: [
-                    './packageRelease.sh iwc-prod dist'
+                    './packageRelease.sh new-backend-iwc-prod dist'
                 ].join('&&')
             },
             tarVersion: {
                 command: [
-                    './packageRelease.sh iwc-prod dist <%= pkg.version %>'
+                    './packageRelease.sh new-backend-iwc-prod dist <%= pkg.version %>'
                 ].join('&&')
             }
         },
@@ -585,6 +590,9 @@ module.exports = function(grunt) {
     );
     grunt.registerTask('connect-all', "Runs tests and demos locally",
         ['build','connect','watch']
+    );
+    grunt.registerTask('connect-noDB', "Runs tests and demos locally",
+        ['build','connect:noDB','watch']
     );
     grunt.registerTask('serve', "Launches the IWC & Backend",
         ['concurrent:server']

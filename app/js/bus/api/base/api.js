@@ -33,8 +33,8 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      * @constructor
      * @param {Object} config
      * @param {String} config.name The api address (e.g. "names.api")
-     * @param {ozpIwc.transport.participant.Client} [config.participant= new ozpIwc.transport.participant.Client()] The connection to use for
-     *     communication
+     * @param {ozpIwc.transport.participant.Client} [config.participant= new ozpIwc.transport.participant.Client()] The
+     *     connection to use for communication
      * @param {ozpIwc.policyAuth.PDP} config.authorization The authorization component for this module.
      * @param {ozpIwc.transport.Router} config.router The router to connect to
      */
@@ -48,7 +48,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
             throw Error("API must be configured with a router");
         }
 
-        if(!config.authorization){
+        if (!config.authorization) {
             throw Error("API must be configured with an authorization module");
         }
 
@@ -141,6 +141,8 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
          * @type {String}
          */
         this.logPrefix = "[" + this.name + "/" + this.participant.address + "] ";
+
+        this.ajaxQueue = config.ajaxQueue;
 
         util.addEventListener("beforeunload", function () { self.shutdown(); });
         this.transitionToMemberReady();
@@ -486,8 +488,8 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
     Api.prototype.changedHandler = function (node, entity, packetContext) {
         //var culprit = packetContext.src;
         var lifespanFns = api.Lifespan.getLifespanFunctionality(node.lifespan);
-        if (lifespanFns.shouldPersist()) {
-            this.persistenceQueue.queueNode(this.name + "/" + node.resource, node);
+        if (lifespanFns.shouldPersist() && this.ajaxQueue) {
+            this.ajaxQueue.queueNode(this.name + "/" + node.resource, node);
         }
     };
 
@@ -565,7 +567,8 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         this.watchers = deathScream.watchers;
         this.collectors = deathScream.collectors;
         deathScream.data.forEach(function (packet) {
-            this.createNode({resource: packet.resource}).deserializeLive(packet);
+            var selfLink = packet.self || {};
+            this.createNode({resource: packet.resource, contentType: selfLink.type}).deserializeLive(packet);
         }, this);
 
         this.updateCollections();
@@ -573,13 +576,26 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
             var self = this;
             return Promise.all(this.endpoints.map(function (u) {
                 var e = api.endpoint(u.link);
-                return self.loadFromEndpoint(e, u.headers).catch(function (e) {
-                    log.error(self.logPrefix, "load from endpoint ", e, " failed: ", e);
+                return self.loadFromEndpoint(e, u.headers).catch(function (err) {
+                    log.error(self.logPrefix, "load from endpoint failed. Reason: ", err);
                 });
             }));
         } else {
             return Promise.resolve();
         }
+    };
+
+
+    /**
+     * Maps a content-type to an IWC Node type. Overriden in APIs.
+     * @method findNodeType
+     * @param {Object} contentTypeObj an object-formatted content-type
+     * @param {String} contentTypeObj.name the content-type without any variables
+     * @param {Number} [contentTypeObj.version] the version of the content-type.
+     * @returns {undefined}
+     */
+    Api.prototype.findNodeType = function (contentTypeObj) {
+        return undefined;
     };
 
     /**
@@ -591,10 +607,14 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      * @return {ozpIwc.api.base.Node}
      */
     Api.prototype.createNode = function (config, NodeType) {
+        NodeType = NodeType || this.findNodeType(config.contentType);
+
         var n = this.createNodeObject(config, NodeType);
-        this.data[n.resource] = n;
-        this.events.trigger("createdNode", n);
-        return n;
+        if (n) {
+            this.data[n.resource] = n;
+            this.events.trigger("createdNode", n);
+            return n;
+        }
     };
 
 
@@ -664,6 +684,8 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         this.on("createdNode", this.createdHandler, this);
         this.on("changed", this.changedHandler, this);
         this.on("addressDisconnects", this.disconnectHandler, this);
+
+        log.info(this.logPrefix + " Now operating");
     };
 
     /**
@@ -1024,6 +1046,107 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
 // Load data from the server
 //===============================================================
 
+
+    /**
+     * Recursive HAL resource parser.
+     *
+     * @method handleResource
+     * @private
+     * @static
+     * @param {Api} api
+     * @param {ozpIwc.api.endpoint} endpoint
+     * @param {Object} resourceObj the body of the Resource
+     */
+    var handleResource = function (api, endpoint, resourceObj,headers) {
+        resourceObj = resourceObj || {};
+        resourceObj._links = resourceObj._links || {};
+        resourceObj._embedded = resourceObj._embedded || {};
+        resourceObj._embedded.item = util.ensureArray(resourceObj._embedded.item || []);
+        var selfLink = resourceObj._links.self || {};
+        var NodeType = api.findNodeType(selfLink.type);
+
+        if (NodeType) {
+            try {
+                api.createNode({
+                    serializedEntity: resourceObj,
+                    contentType: selfLink.type
+                }, NodeType);
+            } catch (e) {
+                log.info(api.logPrefix + "[" + selfLink.type + "] [" + selfLink.href + "] No node created from resource, reason: ", e.message);
+            }
+        } else {
+            log.info(api.logPrefix + "[" + selfLink.type + "] [" + selfLink.href + "] No node created from resource, reason: no node type for this content-type.");
+        }
+        if (resourceObj._embedded.item.length) {
+            log.info(api.logPrefix + "[" + selfLink.href + "] Processing " + resourceObj._embedded.item.length + " embedded items.");
+        }
+
+        return handleEmbedded(api, endpoint, resourceObj._embedded,headers).then(function () {
+            return handleLinks(api, endpoint, resourceObj._links,headers);
+        });
+    };
+
+    /**
+     * Recursive HAL _links parser
+     *
+     * @method handleLinks
+     * @private
+     * @static
+     * @param {Api} api
+     * @param {ozpIwc.api.endpoint} endpoint
+     * @param {Object} _links the _links object of the HAL resource
+     */
+    var handleLinks = function (api, endpoint, _links,headers) {
+        var linkedItems = util.ensureArray((_links && _links.item) || []);
+        var unknownLinks = linkedItems.filter(function (link) {
+            return util.object.values(api.data, function (k, node) {
+                    node.self = node.self || {};
+                    return node.self.href === link.href;
+                }).length === 0;
+        });
+
+        var linkGather = function (obj) {
+            var hdrs = headers.slice(0);
+            if(obj.type) {
+                hdrs.push({'name': "Accept", 'value': obj.type});
+            }
+            return loadResource(api, endpoint, obj.href, hdrs).catch(function (err) {
+                log.info("failed to gather link: ", obj.href, " reason: ", err);
+            });
+        };
+
+        if (unknownLinks.length) {
+            log.info(api.logPrefix + " Processing " + unknownLinks.length + " linked items.");
+        }
+
+        return Promise.all(unknownLinks.map(linkGather));
+    };
+
+    /**
+     * Recursive HAL _embedded parser
+     *
+     * @method handleLinks
+     * @private
+     * @static
+     * @param {Api} api
+     * @param {ozpIwc.api.endpoint} endpoint
+     * @param {Object} _embedded the _embedded object of the HAL resource
+     */
+    var handleEmbedded = function (api, endpoint, _embedded,headers) {
+        var embeddedItems = util.ensureArray((_embedded && _embedded.item) || []);
+        var embeddedGather = function (obj) {
+            obj._links = obj._links || {};
+            obj._links.self = obj._links.self || {};
+            // We can only knowingly handle an embedded object if we know its type.
+            if (obj._links.self.type) {
+                return handleResource(api, endpoint, obj,headers);
+            } else {
+                return Promise.resolve();
+            }
+        };
+        return Promise.all(embeddedItems.map(embeddedGather));
+    };
+
     /**
      * Loads data from the provided endpoint.  The endpoint must point to a HAL JSON document
      * that embeds or links to all resources for this api.
@@ -1033,50 +1156,22 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      * @param {Array} headers
      * @return {Promise} resolved when all data has been loaded.
      */
-    Api.prototype.loadFromEndpoint = function (endpoint, headers) {
-        var self = this;
-        log.debug(self.logPrefix + " loading from ", endpoint.name, " -- ", endpoint.baseUrl);
-        return endpoint.get("/").then(function (data) {
+    var loadResource = function (api, endpoint, path, headers) {
+        log.info(api.logPrefix + "[" + endpoint.name + "] Headers:" +JSON.stringify(headers) + " Loading: " + path);
 
-            var response = data.response;
-            var embeddedItems = util.ensureArray((response._embedded && response._embedded.item) || []);
-            var linkedItems = util.ensureArray((response._links && response._links.item) || []);
+        return endpoint.get(path,headers).then(function (data) {
+            data.response._embedded = data.response._embedded || {};
+            data.response._links = data.response._links || {};
+            data.response._links.self = data.response._links.self || {};
+            data.response._links.self.type = data.response._links.self.type || data.header['Content-Type'];
+            data.response._links.self.href = data.response._links.self.href || data.url;
 
-            // load all the embedded items
-            embeddedItems.forEach(function (i) {
-                self.createNode({
-                    serializedEntity: i
-                });
-            });
-            log.debug(self.logPrefix + " processed " + embeddedItems.length + " items embedded in the endoint");
-            var unknownLinks = linkedItems.map(function (i) { return i.href;});
-            unknownLinks = unknownLinks.filter(function (href) {
-                return util.object.values(self.data, function (k, node) {
-                        return node.self === href;
-                    }).length === 0;
-            });
-            log.debug(self.logPrefix + " loading " + unknownLinks.length + " linked items");
-
-            // empty array resolves immediately, so no check needed
-            return Promise.all(unknownLinks.map(function (l) {
-                return endpoint.get(l, headers).then(function (data) {
-
-                    var contentType = data.header['Content-Type'] || "";
-
-                    //split off the charset if given.
-                    contentType = contentType.split(';')[0];
-                    self.createNode({
-                        serializedEntity: data.response,
-                        serializedContentType: contentType
-                    });
-                }).catch(function (err) {
-                    log.info(self.logPrefix + "Could not load from " + l + " -- ", err);
-                });
-            }));
-
-        }).catch(function (err) {
-            log.info(self.logPrefix + " couldn't load from endpoint " + endpoint.name + " -- ", err);
+            return handleResource(api, endpoint, data.response,headers);
         });
+    };
+
+    Api.prototype.loadFromEndpoint = function (endpoint, headers) {
+        return loadResource(this, endpoint, "/", headers);
     };
 
 

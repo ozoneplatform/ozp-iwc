@@ -21,31 +21,55 @@ ozpIwc.api.data.Api = (function (api, ozpConfig, util) {
      * @param {ozpIwc.transport.Router} config.router
      */
     var Api = api.createApi("data.api", function (config) {
-        this.persistenceQueue = config.persistenceQueue || new util.AjaxPersistenceQueue();
-        this.endpoints = config.endpoints || [
-                {
-                    link: ozpConfig.linkRelPrefix + ":user-data",
-                    headers: []
-                }
-            ];
-
+        this.endpoints = config.endpoints || [{link: ozpConfig.linkRelPrefix + ":user-data",headers: []}];
+        this.contentTypeMappings = util.genContentTypeMappings(api.data.node);
     });
 
     // Default handlers are fine anything
     Api.useDefaultRoute(api.base.Api.allActions);
 
     /**
-     * Override the default node type to be a Data Api Node.
-     * @override
-     * @method createNodeObject
-     * @param {type} config
-     * @return {ozpIwc.api.data.Node}
+     * Maps a content-type to an IWC Node type. Overriden in APIs.
+     * @method findNodeType
+     * @param {Object} contentTypeObj an object-formatted content-type
+     * @param {String} contentTypeObj.name the content-type without any variables
+     * @param {Number} [contentTypeObj.version] the version of the content-type.
+     * @returns {undefined}
      */
-    Api.prototype.createNodeObject = function (config) {
-        return new api.data.Node(config);
+    Api.prototype.findNodeType = function(contentType){
+        var formattedContentType = util.getFormattedContentType(contentType);
+        if(!formattedContentType.name){
+            var template = api.uriTemplate('ozp:data-item') || {};
+            formattedContentType = util.getFormattedContentType(template.type);
+        }
+
+        var type = this.contentTypeMappings[formattedContentType.name];
+        if(type){
+            if(formattedContentType.version) {
+                return type[formattedContentType.version];
+            }else{
+                return type;
+            }
+        }
+        return api.data.node.NodeV2;
     };
 
-
+    /**
+     * Creates a node appropriate for the given config.  This does
+     * NOT add the node to this.data.
+     *
+     * Calls findNodeType to gather NodeType from contentType.
+     *
+     * @method createNodeObject
+     * @param {Object} config The node configuration configuration.
+     * @param {Function} NodeType The contructor call for the given node type to be created.
+     * @return {ozpIwc.api.base.Node}
+     */
+    Api.prototype.createNodeObject = function (config, NodeType) {
+        if(NodeType) {
+            return new NodeType(config);
+        }
+    };
 //============================================
 // Add/Remove Child:
 //============================================
@@ -57,14 +81,14 @@ ozpIwc.api.data.Api = (function (api, ozpConfig, util) {
      */
     Api.addChildFilters = function () {
         var childData = {};
-        var filters = api.filter.standard.createAndCollectFilters(api.data.Node);
+        var filters = api.filter.standard.createAndCollectFilters(api.data.node.Node);
 
         //Stash the child's pattern for now and create the parent.
         filters.unshift(function (packet, context, pathParams, next) {
             childData.pattern = packet.pattern;
             childData.lifespan = packet.lifespan;
-            packet.pattern = null;
-            packet.lifespan = null;
+            packet.pattern = undefined;
+            packet.lifespan = undefined;
             return next();
         });
         //Make sure the parent node has it's pattern set then replace the childs pattern at the end of the filter chain
@@ -91,7 +115,7 @@ ozpIwc.api.data.Api = (function (api, ozpConfig, util) {
             resource: key,
             lifespan: packet.lifespan,
             src: packet.src
-        }, api.data.Node);
+        }, api.data.node.Node);
         this.markForChange(childNode);
         childNode.set(packet);
 

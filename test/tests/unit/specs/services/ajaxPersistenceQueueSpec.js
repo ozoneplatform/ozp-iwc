@@ -2,6 +2,7 @@ describe("Ajax Persistence Queue",function() {
 
 describe("with one pool", function() {
     var queue;
+    var NodeType = ozpIwc.api.base.Node;
 
     beforeEach(function() {
         queue=new ozpIwc.util.AjaxPersistenceQueue({poolSize:1});
@@ -11,27 +12,33 @@ describe("with one pool", function() {
     });
 
     pit("enqueues a persistence request",function() {
-        var exampleNode=new ozpIwc.api.base.Node({
+        var exampleNode=new NodeType({
             resource: "/foo/bar",
-            self: "https://example.com/data/api/foo/bar"
+            self: {
+                href: "https://example.com/data/api/foo/bar"
+            }
         });
         return queue.queueNode("data.api/foo/bar",exampleNode).then(function() {
             expect(ozpIwc.util.ajax).toHaveBeenCalledWith(jasmine.objectContaining({
-                href: exampleNode.self,
+                href: exampleNode.self.href,
                 headers: [{
                     name:"Content-Type",
-                    value:exampleNode.serializedContentType()
+                    value:NodeType.serializedContentType
                 }]
             }));
         });
     });
 		pit("creates the URI for a node without self",function() {
-				ozpIwc.api.uriTemplate=function() {
-					return "http://example.com/{+resource}";
-				};
-        var exampleNode=new ozpIwc.api.data.Node({
+        ozpIwc.api.uriTemplate=function() {
+            return {
+                name: "ozp:data-item",
+                href: "http://example.com/{+resource}",
+                type: ozpIwc.api.data.node.Node.serializedContentType
+            };
+        };
+        var exampleNode=new ozpIwc.api.data.node.Node({
             resource: "/foo/bar",
-						entity: {"foo":1}            
+            entity: {"foo":1}
         });
         return queue.queueNode("data.api/foo/bar",exampleNode).then(function() {
             return Promise.all(queue.syncPool);
@@ -40,7 +47,7 @@ describe("with one pool", function() {
                 href: "http://example.com/foo/bar",
                 headers: [{
                     name:"Content-Type",
-                    value:exampleNode.serializedContentType()
+                    value:ozpIwc.api.data.node.Node.serializedContentType
                 }]
             }));
         });
@@ -49,7 +56,7 @@ describe("with one pool", function() {
         for(var i=0;i<10;++i) {
             queue.queueNode("data.api/"+i,new ozpIwc.api.base.Node({
                 resource: "/foo/bar",
-                self: "https://example.com/"+i
+                self: {href: "https://example.com/"+i }
             }));
         }
         
@@ -65,11 +72,11 @@ describe("with one pool", function() {
         for(var i=0;i<10;++i) {
             queue.queueNode("data.api/"+i,new ozpIwc.api.base.Node({
                 resource: "/foo/bar",
-                self: "https://example.com/"+i
+                self: {href: "https://example.com/"+i }
             }));
             queue.queueNode("data.api/"+i,new ozpIwc.api.base.Node({
                 resource: "/foo/bar",
-                self: "https://example.com/"+i
+                self: {href: "https://example.com/"+i }
             }));
         }
         
@@ -86,7 +93,7 @@ describe("with one pool", function() {
         for(var i=0;i<10;++i) {
             var n=new ozpIwc.api.base.Node({
                 resource: "/foo/bar",
-                self: "https://example.com/"+i
+                self: {href: "https://example.com/"+i }
             });
             n.deleted=(i%2===0);
             queue.queueNode("data.api/"+i,n);
@@ -109,7 +116,7 @@ it("requeues a node to be saved if queue is called while the node is in-flight",
     var firstCall=true;
     var exampleNode=new ozpIwc.api.base.Node({
         resource: "/foo/bar",
-        self: "https://example.com/data/api/foo/bar"
+        self: {href: "https://example.com/data/api/foo/bar" }
     });
     spyOn(ozpIwc.util,"ajax").and.callFake(function() {
         if(firstCall) {
@@ -117,9 +124,8 @@ it("requeues a node to be saved if queue is called while the node is in-flight",
             console.log("Queuing from inside of ajax call");
             
             queue.queueNode("data.api/foo/bar",exampleNode).then(function() {
-                expect(ozpIwc.util.ajax.calls.count()).toEqual(2);    
-                expect(ozpIwc.util.ajax.calls.argsFor(0)[0].href).toEqual(exampleNode.self);
-                expect(ozpIwc.util.ajax.calls.argsFor(1)[0].href).toEqual(exampleNode.self);
+                expect(ozpIwc.util.ajax.calls.count()).toEqual(1);
+                expect(ozpIwc.util.ajax.calls.argsFor(0)[0].href).toEqual(exampleNode.self.href);
             }).catch(function(error) {
                 expect(error).toNotHaveHappended();
             }).then(done);
@@ -148,11 +154,11 @@ describe("with multiple pools", function() {
             expectedUrls.push("https://example.com/"+i);
             queue.queueNode("data.api/"+i,new ozpIwc.api.base.Node({
                 resource: "/foo/bar",
-                self: "https://example.com/"+i
+                self: {href:"https://example.com/"+i}
             }));
             queue.queueNode("data.api/"+i,new ozpIwc.api.base.Node({
                 resource: "/foo/bar",
-                self: "https://example.com/"+i
+                self: {href:"https://example.com/"+i}
             }));
         }
         

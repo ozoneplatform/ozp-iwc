@@ -19,8 +19,41 @@ ozpIwc.api.Endpoint = (function (util) {
          * @type ozpIwc.api.EndpointRegistry
          */
         this.endpointRegistry = endpointRegistry;
+        this.ajaxQueue = endpointRegistry.ajaxQueue;
     };
 
+    /**
+     * Returns necessary Accept headers for a given endpoint path. Mixes accept header of the path with any supplied
+     * Accept headers.
+     *
+     * @method templateContentType
+     * @static
+     * @private
+     * @param {Endpoint} endpoint
+     * @param {String} path
+     * @param {Array} headers
+     * @returns {Array}
+     */
+    var templateContentType = function(endpoint,path,headers){
+        headers = headers || [];
+        var contentType = endpoint.findContentType(path);
+        if(contentType) {
+            if(headers.length === 0){
+                headers.push({ 'name': "Accept", 'value': contentType});
+            } else {
+                for (var i in headers) {
+                    if (headers[i].name === "Accept") {
+                        headers[i].value = contentType;
+                        //Also add this endpoint's content type as we want to accept lists of lists of resources.
+                        if(endpoint.type){
+                            headers[i].value += "," + endpoint.type;
+                        }
+                    }
+                }
+            }
+        }
+        return headers;
+    };
     /**
      * Performs an AJAX request of GET for specified resource href.
      *
@@ -36,6 +69,17 @@ ozpIwc.api.Endpoint = (function (util) {
         var self = this;
         resource = resource || '';
         return this.endpointRegistry.loadPromise.then(function () {
+            //If a template states the content type to gather let it be enforced
+            var templateHeaders = templateContentType(self, resource, requestHeaders);
+
+            if(self.type) {
+                for (var i in templateHeaders) {
+                    if(templateHeaders[i].name === "Accept"){
+                        templateHeaders[i].value = templateHeaders[i].value + ";," + self.type;
+                    }
+                }
+            }
+
             if (!self.endpointRegistry.loaded) {
                 throw Error("Endpoint " + self.endpointRegistry.apiRoot + " could not be reached. Skipping GET of " + resource);
             }
@@ -44,12 +88,12 @@ ozpIwc.api.Endpoint = (function (util) {
                 resource = self.baseUrl;
             }
             if (!resource) {
-                return Promise.reject();
+                return Promise.reject("no url assigned to endpoint " + self.name);
             }
-            return util.ajax({
+            return self.ajaxQueue.queueAjax({
                 href: resource,
                 method: 'GET',
-                headers: requestHeaders
+                headers: templateHeaders
             });
         });
     };
@@ -71,14 +115,19 @@ ozpIwc.api.Endpoint = (function (util) {
         var self = this;
 
         return this.endpointRegistry.loadPromise.then(function () {
+
+            //If a template states the content type to put let it be enforced
+            var templateHeaders = templateContentType(self, resource, requestHeaders);
+
             if (resource.indexOf(self.baseUrl) !== 0) {
                 resource = self.baseUrl + resource;
             }
-            return util.ajax({
+
+            return self.ajaxQueue.queueAjax({
                 href: resource,
                 method: 'PUT',
                 data: data,
-                headers: requestHeaders
+                headers: templateHeaders
             });
         });
     };
@@ -99,16 +148,20 @@ ozpIwc.api.Endpoint = (function (util) {
         var self = this;
 
         return this.endpointRegistry.loadPromise.then(function () {
+
+            //If a template states the content type to put let it be enforced
+            var templateHeaders = templateContentType(self, resource, requestHeaders);
+
             if (!self.baseUrl) {
                 throw Error("The server did not define a relation of type " + this.name + " for retrivieving " + resource);
             }
             if (resource.indexOf(self.baseUrl) !== 0) {
                 resource = self.baseUrl + resource;
             }
-            return util.ajax({
+            return self.ajaxQueue.queueAjax({
                 href: resource,
                 method: 'DELETE',
-                headers: requestHeaders
+                headers: templateHeaders
             });
         });
     };
@@ -128,6 +181,15 @@ ozpIwc.api.Endpoint = (function (util) {
         }
     };
 
+    Endpoint.prototype.findContentType = function(path){
+        path = path.substring(path.indexOf(ozpIwc.config.apiRootUrl));
+        for(var i in this.endpointRegistry.template){
+            var check = this.endpointRegistry.template[i].isMatch(path);
+            if(check){
+                return this.endpointRegistry.template[i].type;
+            }
+        }
+    };
     return Endpoint;
 }(ozpIwc.util));
 
@@ -143,6 +205,8 @@ ozpIwc.api.EndpointRegistry = (function (api, log, util) {
      */
     var EndpointRegistry = function (config) {
         config = config || {};
+        if(!config.ajaxQueue) { throw "Endpoints require AjaxPersistenceQueue.";}
+
         var apiRoot = config.apiRoot || '/api';
 
         /**
@@ -152,6 +216,13 @@ ozpIwc.api.EndpointRegistry = (function (api, log, util) {
          * @default '/api'
          */
         this.apiRoot = apiRoot;
+
+
+        /**
+         * @property ajaxQueue
+         * @type {ozpIwc.util.AjaxPersistenceQueue}
+         */
+        this.ajaxQueue = config.ajaxQueue;
 
         /**
          * The collection of api endpoints
@@ -176,7 +247,7 @@ ozpIwc.api.EndpointRegistry = (function (api, log, util) {
          * @property loadPromise
          * @type Promise
          */
-        this.loadPromise = util.ajax({
+        this.loadPromise = this.ajaxQueue.queueAjax({
             href: apiRoot,
             method: 'GET'
         }).then(function (data) {
@@ -185,6 +256,7 @@ ozpIwc.api.EndpointRegistry = (function (api, log, util) {
             payload._links = payload._links || {};
             payload._embedded = payload._embedded || {};
 
+            //Generate any endpoints/templates from _links
             for (var linkEp in payload._links) {
                 if (linkEp !== 'self') {
                     var link = payload._links[linkEp];
@@ -192,25 +264,85 @@ ozpIwc.api.EndpointRegistry = (function (api, log, util) {
                         link = payload._links[linkEp][0].href;
                     }
                     if (link.templated) {
-                        self.template[linkEp] = link.href;
+                        generateTemplate(self, {
+                            name: linkEp,
+                            type: link.type,
+                            href: link.href
+                        });
                     } else {
                         self.endpoint(linkEp).baseUrl = link.href;
+                        self.endpoint(linkEp).type = link.type;
                     }
                 }
             }
+
+            //Generate any endpoints/templates from _embedded links
             for (var embEp in payload._embedded) {
-                var embLink = payload._embedded[embEp]._links.self.href;
-                self.endpoint(embEp).baseUrl = embLink;
+                var embSelf = payload._embedded[embEp]._links.self;
+                self.endpoint(embEp).baseUrl = embSelf.href;
+                self.endpoint(embEp).type = embSelf.type;
             }
+
+            //Generate any templates from the ozpIwc.conf.js file
+            for(var i in config.templates){
+                var template = ozpIwc.config.templates[i];
+                var url = false;
+
+                if(template.endpoint && template.pattern){
+                    var baseUrl= self.endpoint(template.endpoint).baseUrl;
+                    if(baseUrl) {
+                        url = baseUrl + template.pattern;
+                    }
+                }
+
+                if (!url){
+                    url = template.href;
+                }
+
+                generateTemplate(self, {
+                    name: i,
+                    href: url,
+                    type: template.type
+                });
+            }
+
             // UGLY HAX
             if (!self.template["ozp:data-item"]) {
-                self.template["ozp:data-item"] = self.endpoint("ozp:user-data").baseUrl + "/{+resource}";
+                generateTemplate(self, {
+                    name: "ozp:data-item",
+                    href: self.endpoint("ozp:user-data").baseUrl + "/{+resource}",
+                    type: api.data.node.Node.serializedContentType
+                });
             }
             //END HUGLY HAX
         })['catch'](function (err) {
             log.debug(Error("Endpoint " + self.apiRoot + " " + err.statusText + ". Status: " + err.status));
             self.loaded = false;
         });
+    };
+
+    /**
+     * Creates a template in the given registry given a name, href, and type.
+     * @method generateTemplate
+     * @private
+     * @static
+     * @param {EndpointRegistry} registry
+     * @param {Object} config
+     * @param {String} config.href
+     * @param {String} config.name
+     * @param {String} config.type
+     */
+    var generateTemplate = function(registry, config){
+        config = config || {};
+        if(typeof config.href !== "string"){
+            return;
+        }
+
+        registry.template[config.name] = {
+            href: config.href,
+            type: config.type,
+            isMatch: util.PacketRouter.uriTemplate(config.href)
+        };
     };
 
     /**

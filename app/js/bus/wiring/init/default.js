@@ -16,7 +16,11 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config, util) {
         var markReady = function () {};
         var busInit = function () {markReady();};
 
-        wiring.endpointInitPromise = api.initEndpoints(config.apiRootUrl);
+        wiring.endpointInitPromise = api.initEndpoints({
+            apiRoot: config.apiRootUrl,
+            ajaxQueue: wiring.ajaxQueue,
+            templates: config.templates
+        });
         wiring.peer = new network.Peer({
             metrics: wiring.metrics
         });
@@ -74,17 +78,20 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config, util) {
                 wiring.apis.data = new api.data.Api({
                     'authorization': wiring.authorization,
                     'endpoints': ozpIwc.endpointConfig.dataApi,
-                    'router': wiring.router
+                    'router': wiring.router,
+                    'ajaxQueue': wiring.ajaxQueue
                 });
                 wiring.apis.intents = new api.intents.Api({
                     'authorization': wiring.authorization,
                     'endpoints': ozpIwc.endpointConfig.intentsApi,
-                    'router': wiring.router
+                    'router': wiring.router,
+                    'ajaxQueue': wiring.ajaxQueue
                 });
                 wiring.apis.system = new api.system.Api({
                     'authorization': wiring.authorization,
                     'endpoints': ozpIwc.endpointConfig.systemApi,
-                    'router': wiring.router
+                    'router': wiring.router,
+                    'ajaxQueue': wiring.ajaxQueue
                 });
 
                 markReady();

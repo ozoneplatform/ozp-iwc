@@ -83,7 +83,8 @@ debuggerModule.service("apiSettingService",function(){
             'address': "intents.api",
             'actions': [{
                 action: "invoke",
-                contentTypes: ['application/vnd.ozp-iwc-intent-definition-v1+json',
+                contentTypes: [
+                    'application/vnd.ozp-iwc-intent-definition-v1+json',
                     'application/vnd.ozp-iwc-intent-handler-v1+json']
             },{
                 action: "broadcast",
@@ -95,7 +96,10 @@ debuggerModule.service("apiSettingService",function(){
             'address': "system.api",
             'actions': [{
                 action: "launch",
-                contentTypes: ['application/vnd.ozp-application-v1+json']
+                contentTypes: [
+                    'application/vnd.ozp-application-v1+json',
+                    'application/vnd.ozp-iwc-application+json;version=2'
+                ]
             }]
         },
         'names.api': {

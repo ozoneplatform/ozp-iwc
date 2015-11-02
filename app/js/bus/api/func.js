@@ -19,8 +19,10 @@ ozpIwc.api= (function (api) {
      * @static
      * @param {String} apiRoot
      */
-    api.initEndpoints = function (apiRoot) {
-        var registry = new api.EndpointRegistry({'apiRoot': apiRoot});
+    api.initEndpoints = function (config) {
+        config = config || {};
+
+        var registry = new api.EndpointRegistry(config);
         /**
          * A static method for gathering an endpoint from the EndpointRegistry.
          * @method endpoint
@@ -35,7 +37,7 @@ ozpIwc.api= (function (api) {
         /**
          * A static method for gathering the uri template of an endpoint name in the EndpointRegistry
          * @param {String} name
-         * @returns {String}
+         * @returns {Object}
          */
         api.uriTemplate = function (name) {
             return registry.template[name];

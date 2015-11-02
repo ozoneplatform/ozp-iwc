@@ -1,22 +1,23 @@
 describe("Data Node",function() {
 	var dataNode;
+    var NodeType = ozpIwc.api.data.node.Node;
     beforeEach(function() {
-       dataNode=new ozpIwc.api.data.Node({
+       dataNode=new NodeType({
             resource: "/foo",
             version: 50,        
-            self: "https://example.com/iwc/foo",
+            self: {href: "https://example.com/iwc/foo"},
             contentType: "text/plain",
             entity: "hello world"
        });
 	});
     it("fails if constructed without a resource",function() {
         expect(function() {
-            new ozpIwc.api.data.Node();
+            new NodeType();
         }).toThrow();
     });
     it("deserializes and serializes live data with the same outcome",function() {
         var serialized=dataNode.serializeLive();
-        var node2=new ozpIwc.api.data.Node({resource:"/foo"});
+        var node2=new NodeType({resource:"/foo"});
         node2.deserializeLive(serialized);
         expect(node2).toEqual(dataNode);     
     });
@@ -31,24 +32,27 @@ describe("Data Node",function() {
     });
     
     it("deserializes and serializes persisted data with the same outcome",function() {
-        var node2=new ozpIwc.api.data.Node({resource:"/foo"});
-        var serialized = { entity: dataNode.serializedEntity() };
-        node2.deserializedEntity(serialized,dataNode.serializedContentType());
+        var node2=new NodeType({resource:"/foo"});
+        // server format
+        var serialized = JSON.stringify({entity: dataNode.serialize()});
+        node2.deserialize(serialized,NodeType.serializedContentType);
         expect(node2).toEqual(dataNode);
     });
     
     it("deserializes and serializes persisted data with the same outcome using the constructor",function() {
-        var serialized = { entity: dataNode.serializedEntity() };
-        var node2=new ozpIwc.api.data.Node({
+        // server format
+        var serialized = JSON.stringify({entity: dataNode.serialize()});
+        var node2=new NodeType({
             serializedEntity:serialized,
-            serializedContentType: dataNode.serializedContentType()
+            serializedContentType: NodeType.serializedContentType
         });
         expect(node2).toEqual(dataNode);
     });
     
     it("deserializes and serializes persisted data with the same outcome using the constructor without content type",function() {
-        var serialized = { entity: dataNode.serializedEntity() };
-        var node2=new ozpIwc.api.data.Node({
+        // server format
+        var serialized = JSON.stringify({entity: dataNode.serialize()});
+        var node2=new NodeType({
             serializedEntity:serialized
         });
         expect(node2).toEqual(dataNode);

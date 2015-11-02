@@ -29,19 +29,12 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
          * @type {Object[]}
          */
         this.endpoints = config.endpoints || [
-                {
-                    link: ozpConfig.linkRelPrefix + ":application",
-                    headers: [{name: "Accept", value: "application/vnd.ozp-application-v1+json"}]
-                },
-                {
-                    link: ozpConfig.linkRelPrefix + ":user",
-                    headers: []
-                },
-                {
-                    link: ozpConfig.linkRelPrefix + ":system",
-                    headers: []
-                }
+                {link: ozpConfig.linkRelPrefix + ":user",headers: []},
+                {link: ozpConfig.linkRelPrefix + ":system",headers: []},
+                {link: ozpConfig.linkRelPrefix + ":application", headers: []}
             ];
+
+        this.contentTypeMappings = util.genContentTypeMappings(api.system.node);
         var self = this;
         this.on("createdNode", this.updateIntents, this);
 
@@ -113,13 +106,32 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
 
     };
 
+    /**
+     * Maps a content-type to an IWC System Node type.
+     * @method findNodeType
+     * @param {Object} contentTypeObj an object-formatted content-type
+     * @param {String} contentTypeObj.name the content-type without any variables
+     * @param {Number} [contentTypeObj.version] the version of the content-type.
+     * @returns {undefined}
+     */
+    Api.prototype.findNodeType = function(contentType){
+        var formattedContentType = util.getFormattedContentType(contentType);
+        var type = this.contentTypeMappings[formattedContentType.name];
+        if(type){
+            if(formattedContentType.version) {
+                return type[formattedContentType.version];
+            }else{
+                return type;
+            }
+        }
+    };
 //====================================================================
 // Collection endpoints
 //====================================================================
     Api.useDefaultRoute(["bulkGet", "list"]);
     Api.declareRoute({
         action: "get",
-        resource: "/{collection:user|application|system}",
+        resource: "/{collection:application}",
         filters: []
     }, function (packet, context, pathParams) {
         return {
@@ -218,10 +230,13 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
      * @override
      * @method createNodeObject
      * @param {type} config
+     * @param {Function} NodeType
      * @return {ozpIwc.api.system.Node}
      */
-    Api.prototype.createNodeObject = function (config) {
-        return new api.system.Node(config);
+    Api.prototype.createNodeObject = function (config,NodeType) {
+        if(NodeType){
+            return new NodeType(config);
+        }
     };
 
     return Api;

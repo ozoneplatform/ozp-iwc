@@ -117,6 +117,9 @@ ozpIwc.config.legacySupport = ozpIwc.util.ifUndef(ozpIwc.config.legacySupport,tr
  * @default false
  */
 ozpIwc.config.backendSupport = ozpIwc.util.ifUndef(ozpIwc.config.backendSupport,false);
+ozpIwc.config.defaultContentTypes = ozpIwc.util.ifUndef(ozpIwc.config.requiredContentType,{});
+ozpIwc.config.defaultContentTypes["ozp:data-item"] =
+    ozpIwc.util.ifUndef(ozpIwc.config.defaultContentTypes["ozp:data-item"], "application/vnd.ozp-iwc-data-object+json;version=2");
 
 /**
  * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js instantiates the Api modules.
@@ -189,3 +192,42 @@ ozpIwc.config.intentChooserFeatures = ozpIwc.util.ifUndef(ozpIwc.config.intentCh
  * @default "/owf/prefs"
  */
 ozpIwc.config.owf7PrefsUrl = ozpIwc.util.ifUndef(ozpIwc.config.owf7PrefsUrl,"/owf/prefs");
+
+/**
+ *
+ * A configuration variable for the ozpIwc.config.js file. Denotes the max number of ajax requests that can
+ * be open at any given time.
+ * @namespace ozpIwc
+ * @private
+ * @property ozpIwc.config.ajaxPoolSize
+ * @type Number
+ * @default 1
+ */
+ozpIwc.config.ajaxPoolSize = ozpIwc.util.ifUndef(ozpIwc.config.ajaxPoolSize,1);
+
+/**
+ * A configuration variable for the ozpIwc.config.js file. Templates for the IWC to use to map content-types to hrefs
+ * for endpoints. This is usually served from the backend itself in the HAL data, but is also available to be set by
+ * in the IWC.
+ *
+ * Mapping can be done between either href and type or endpoint/pattern and type:
+ *
+ *   {
+ *      'ozp:data-item': {
+ *          endpoint: "ozp:user-data",
+ *          pattern: "/{+resource}",
+ *          type:"application/vnd.ozp-iwc-data-object-v1+json"
+ *      },
+ *      'ozp:application-item': {
+ *          href: "/marketplace/api/listing/{+resource}",
+ *          type: "application/vnd.ozp-application-v1+json"
+ *      }
+ *   }
+ *
+ * @namespace ozpIwc
+ * @private
+ * @property ozpIwc.config.templates
+ * @type Object
+ * @default {}
+ */
+ozpIwc.config.templates = ozpIwc.util.ifUndef(ozpIwc.config.templates,{});

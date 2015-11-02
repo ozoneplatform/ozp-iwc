@@ -117,6 +117,16 @@ ozpIwc.util = (function (util) {
     };
 
     /**
+     * Ensures the variable passed in is an object. For error mitigation, if the variable is not an object, an empty
+     * object is returned.
+     * @method ensureObject
+     * @param obj
+     * @returns {*}
+     */
+    util.ensureObject = function(obj){
+        return (typeof obj === "object" && obj !== null) ? obj : {};
+    };
+    /**
      * A key for data transmission over localStorage.
      *
      * @property localStorageKey
@@ -136,6 +146,59 @@ ozpIwc.util = (function (util) {
      */
     util.ifUndef = function (value, defaultVal) {
         return (typeof value === 'undefined') ? defaultVal : value;
+    };
+    /**
+     * Returns an object representation of the content-type string
+     * @method getFormattedContentType
+     * @private
+     * @static
+     * @param {String} contentType
+     * @returns {Object}
+     */
+    util.getFormattedContentType = function (contentType) {
+        var result = {};
+        if (typeof contentType === "string") {
+            var contentTypeArr = contentType.split(";");
+            if (contentTypeArr.length > 0) {
+                result.name = contentTypeArr[0];
+                for (var i = 1; i < contentTypeArr.length; i++) {
+                    var kv = contentTypeArr[i].replace(" ", "").split('=');
+                    if (kv[0] !== "name") {
+                        try {
+                            result[kv[0]] = JSON.parse(kv[1]);
+                        } catch (e) {
+                            // its not parseable so the value is a string
+                            result[kv[0]] = kv[1];
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    };
+
+
+    /**
+     * Returns the content-types for all node types in a node namespace.
+     * @method genContentTypeMappings
+     * @param {Object} nodeNamespace
+     * @returns {Object}
+     */
+    util.genContentTypeMappings = function(nodeNamespace){
+        var formats = {};
+        for (var i in nodeNamespace){
+            var contentType = nodeNamespace[i].serializedContentType;
+            if(contentType){
+                var formatted = util.getFormattedContentType(contentType);
+                formats[formatted.name] = formats[formatted.name] || {};
+                if(formatted.version) {
+                    formats[formatted.name][formatted.version] = nodeNamespace[i];
+                } else {
+                    formats[formatted.name] = nodeNamespace[i];
+                }
+            }
+        }
+        return formats;
     };
 
     return util;

@@ -3,7 +3,7 @@
  * defaultWiring.js follows baseInit.js in load order.
  */
 var ozpIwc=ozpIwc || {};
-ozpIwc.wiring = (function (wiring, log) {
+ozpIwc.wiring = (function (config, wiring, log) {
     // Configure logging, take precedence of query param over config param.
     var params = ozpIwc.util.parseQueryParams();
 
@@ -24,9 +24,13 @@ ozpIwc.wiring = (function (wiring, log) {
     wiring.authorization = new ozpIwc.policyAuth.points.PDP({
         'pip': new ozpIwc.policyAuth.points.PIP(),
         'prp': new ozpIwc.policyAuth.points.PRP(),
-        'setsEndpoint': ozpIwc.config.policyRootUrl
+        'setsEndpoint': config.policyRootUrl
+    });
+
+    wiring.ajaxQueue = new ozpIwc.util.AjaxPersistenceQueue({
+        poolSize: config.ajaxPoolSize
     });
 
     return wiring;
 
-})(ozpIwc.wiring || {}, ozpIwc.log);
+})(ozpIwc.config, ozpIwc.wiring || {}, ozpIwc.log);
