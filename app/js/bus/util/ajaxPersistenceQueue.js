@@ -54,8 +54,10 @@ ozpIwc.util.AjaxPersistenceQueue = (function (log, util) {
                 return cb();
             }).then(function(resp){
                 delete queue.queuedSyncs[uuid];
-
                 return resp;
+            },function(err){
+                delete queue.queuedSyncs[uuid];
+                throw err;
             });
             return queue.queuedSyncs[uuid];
         } else {
@@ -156,12 +158,13 @@ ozpIwc.util.AjaxPersistenceQueue = (function (log, util) {
         if(!config.href){ throw "Ajax queue requires href";}
         if(!config.method){ throw "Ajax queue requires method";}
 
-        var resolve;
+        var resolve,reject;
         var retPromise = new Promise(function(res,rej){
             resolve = res;
+            reject = rej;
         });
         var slotCall = function(){
-            return util.ajax(config).then(resolve);
+            return util.ajax(config).then(resolve,reject);
         };
 
         acquireSlot(this,config.method+":"+config.href+":"+Date.now(),slotCall);
