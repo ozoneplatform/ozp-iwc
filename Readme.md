@@ -22,7 +22,7 @@ presentation, including a tiny client library that adds a single, invisible elem
 
 Links
 --------------
-  * [Quick Start](http://ozone-development.github.io/ozp-iwc/quickStart.html)
+  * [Quick Start](http://ozone-development.github.io/ozp-iwc/introduction/quickStart.html)
   * [FAQ](http://ozone-development.github.io/ozp-iwc/FAQ.html)
 
 
