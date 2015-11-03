@@ -1167,6 +1167,8 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
             data.response._links.self.href = data.response._links.self.href || data.url;
 
             return handleResource(api, endpoint, data.response,headers);
+        }).catch(function(err){
+            log.error(api.logPrefix + "[" + endpoint.name + "] ["+ path +"] Failed to load: ", err.status);
         });
     };
 

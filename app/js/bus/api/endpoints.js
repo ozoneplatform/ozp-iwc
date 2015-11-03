@@ -22,6 +22,93 @@ ozpIwc.api.Endpoint = (function (util) {
         this.ajaxQueue = endpointRegistry.ajaxQueue;
     };
 
+
+    //----------------------------------------
+    // Content Type formatting helpers
+    //----------------------------------------
+    /**
+     * removes whitespace of the given content-type.
+     * @method trimWhiteSpace
+     * @private
+     * @tatic
+     * @param ct
+     * @returns {*}
+     */
+    var trimWhiteSpace = function(ct){
+        return ct.replace(/ /g, '');
+    };
+
+    /**
+     * Sets the template content-type as the preferred content type in the Accept header.
+     * Returns formatted header array.
+     * @method preferContentType
+     * @private
+     * @static
+     * @param contentType
+     * @param endpoint
+     * @param headers
+     * @returns {*}
+     */
+    var preferContentType = function(contentType,endpoint,headers){
+        contentType = contentType.replace(/ /g, '');
+
+        if(headers.length === 0){
+            //Also add this endpoint's content type as we want to accept lists of lists of resources.
+            headers.push({ 'name': "Accept", 'value': contentType});
+        } else {
+            var filterCt = function(ct){
+                return (ct.replace(/ /g, '') !== contentType);
+            };
+            for (var i in headers) {
+                if (headers[i].name === "Accept") {
+                    if(headers[i].value) {
+                        var arr = headers[i].value.split(',').map(trimWhiteSpace);
+
+                        var filtered = arr.filter(filterCt);
+                        filtered.unshift(contentType);
+
+                        headers[i].value = filtered.join(',');
+                    } else {
+                        headers[i].value = contentType;
+                    }
+                }
+            }
+        }
+        return headers;
+    };
+
+    /**
+     * Appends the endpoint type if it exists and not already in the Accept header.
+     * Returns formatted header array.
+     * @method appendEndpointType
+     * @private
+     * @static
+     * @param endpoint
+     * @param headers
+     * @returns {Array}
+     */
+    var appendEndpointType = function(endpoint,headers){
+        if(headers.length === 0){
+            headers.push({ 'name': "Accept", 'value': endpoint.type});
+        }else {
+            for(var i in headers){
+                if (headers[i].name === "Accept") {
+                    if(headers[i].value) {
+                        var arr = headers[i].value.split(',').map(trimWhiteSpace);
+
+                        if(arr.indexOf(endpoint.type) === -1){
+                            arr.push(endpoint.type);
+                        }
+                        headers[i].value = arr.join(',');
+                    } else {
+                        headers[i].value = endpoint.type;
+                    }
+                }
+            }
+        }
+        return headers;
+    };
+
     /**
      * Returns necessary Accept headers for a given endpoint path. Mixes accept header of the path with any supplied
      * Accept headers.
@@ -37,23 +124,16 @@ ozpIwc.api.Endpoint = (function (util) {
     var templateContentType = function(endpoint,path,headers){
         headers = headers || [];
         var contentType = endpoint.findContentType(path);
+
         if(contentType) {
-            if(headers.length === 0){
-                headers.push({ 'name': "Accept", 'value': contentType});
-            } else {
-                for (var i in headers) {
-                    if (headers[i].name === "Accept") {
-                        headers[i].value = contentType;
-                        //Also add this endpoint's content type as we want to accept lists of lists of resources.
-                        if(endpoint.type){
-                            headers[i].value += "," + endpoint.type;
-                        }
-                    }
-                }
-            }
+            headers = preferContentType(contentType,endpoint,headers);
+        }
+        if(endpoint.type){
+            headers = appendEndpointType(endpoint,headers);
         }
         return headers;
     };
+
     /**
      * Performs an AJAX request of GET for specified resource href.
      *
@@ -70,15 +150,8 @@ ozpIwc.api.Endpoint = (function (util) {
         resource = resource || '';
         return this.endpointRegistry.loadPromise.then(function () {
             //If a template states the content type to gather let it be enforced
-            var templateHeaders = templateContentType(self, resource, requestHeaders);
 
-            if(self.type) {
-                for (var i in templateHeaders) {
-                    if(templateHeaders[i].name === "Accept"){
-                        templateHeaders[i].value = templateHeaders[i].value + ";," + self.type;
-                    }
-                }
-            }
+            var templateHeaders = templateContentType(self, resource, requestHeaders);
 
             if (!self.endpointRegistry.loaded) {
                 throw Error("Endpoint " + self.endpointRegistry.apiRoot + " could not be reached. Skipping GET of " + resource);
@@ -147,9 +220,6 @@ ozpIwc.api.Endpoint = (function (util) {
 
         return this.endpointRegistry.loadPromise.then(function () {
 
-            //If a template states the content type to put let it be enforced
-            var templateHeaders = templateContentType(self, resource, requestHeaders);
-
             if (!self.baseUrl) {
                 throw Error("The server did not define a relation of type " + this.name + " for retrivieving " + resource);
             }
@@ -159,7 +229,7 @@ ozpIwc.api.Endpoint = (function (util) {
             return self.ajaxQueue.queueAjax({
                 href: resource,
                 method: 'DELETE',
-                headers: templateHeaders
+                headers: requestHeaders
             });
         });
     };
@@ -179,10 +249,17 @@ ozpIwc.api.Endpoint = (function (util) {
         }
     };
 
+    /**
+     * Checks the path against the endpoint templates to see if an enforced content type exists. Returns
+     * the content type if a match is found.
+     * @method findContentType
+     * @param {String} path
+     * @returns {String}
+     */
     Endpoint.prototype.findContentType = function(path){
-        path = path.substring(path.indexOf(ozpIwc.config.apiRootUrl));
         for(var i in this.endpointRegistry.template){
-            var check = this.endpointRegistry.template[i].isMatch(path);
+            var check = this.endpointRegistry.template[i].isMatch(path) ||
+                this.endpointRegistry.template[i].isMatch(path.substring(path.indexOf(ozpIwc.config.apiRootUrl)));
             if(check){
                 return this.endpointRegistry.template[i].type;
             }
