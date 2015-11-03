@@ -116,8 +116,6 @@ ozpIwc.api.Endpoint = (function (util) {
 
         return this.endpointRegistry.loadPromise.then(function () {
 
-            //If a template states the content type to put let it be enforced
-            var templateHeaders = templateContentType(self, resource, requestHeaders);
 
             if (resource.indexOf(self.baseUrl) !== 0) {
                 resource = self.baseUrl + resource;
@@ -127,7 +125,7 @@ ozpIwc.api.Endpoint = (function (util) {
                 href: resource,
                 method: 'PUT',
                 data: data,
-                headers: templateHeaders
+                headers: requestHeaders
             });
         });
     };
