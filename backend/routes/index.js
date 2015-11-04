@@ -20,6 +20,11 @@ router.get("/", function(req,res){
             "name": "ozp",
             "templated": true
         },
+        "ozp:data-item": {
+            "href": utils.getFullUrl(req,true) + ServerConfig.DATA_ROUTE + "/{+resource}",
+            "type": "application/vnd.ozp-iwc-data-object-v1+json",
+            "templated": true
+        },
         "ozp:application": {"href": utils.getFullUrl(req,true) + ServerConfig.LISTING_ROUTE},
         "ozp:user-data": {"href": utils.getFullUrl(req,true) + ServerConfig.DATA_ROUTE},
         "self": {"href": utils.getFullUrl(req)}

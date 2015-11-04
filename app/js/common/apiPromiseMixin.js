@@ -516,7 +516,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                             for (var i in client.launchedIntents) {
                                 var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
                                 if (resource === loadedResource) {
-                                    client.intentInvocationHandling(packet, client.launchedIntents[i].resource, message.callback);
+                                    client.intentInvocationHandling(packet, client.launchedIntents[i], message.callback);
                                     delete client.launchedIntents[i];
                                 }
                             }
@@ -767,11 +767,10 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     // If there is an inflight intent that has not already been handled (i.e. page refresh driving to
                     // here)
                     if (response && response.entity && response.entity.intent) {
-                        self.launchedIntents.push(response);
-                        var launchData = response.entity.entity || {};
+                        var launchParams = response.entity.entity || {};
                         if (response.response === 'ok') {
-                            for (var k in launchData) {
-                                self.launchParams[k] = launchData[k];
+                            for (var k in launchParams) {
+                                self.launchParams[k] = launchParams[k];
                             }
                         }
                         self.intents().set(self.launchParams.inFlightIntent, {
@@ -779,6 +778,10 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                                 state: "complete"
                             }
                         });
+
+                        if(self.launchParams.launchData && self.launchParams.launchData.inFlightIntent){
+                            self.launchedIntents.push(self.launchParams.launchData.inFlightIntent);
+                        }
                     }
                     self.events.trigger("connected");
                 })['catch'](function (e) {

@@ -44,6 +44,7 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
                 log.debug("System.api registering for the launch intent");
                 var registerData = {
                     'contentType': "application/vnd.ozp-iwc-intent-handler-v1+json",
+                    'lifespan': "ephemeral",
                     'entity': {
                         'type': "application/vnd.ozp-iwc-launch-data-v1+json",
                         'action': "run",
@@ -82,6 +83,7 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
             var resource = "/" + i.type + "/" + i.action + "/system.api" + node.resource.replace(/\//g, '.');
             var payload = {
                 'contentType': "application/vnd.ozp-iwc-intent-handler-v1+json",
+                'lifespan': "ephemeral",
                 'entity': {
                     'type': i.type,
                     'action': i.action,
@@ -90,12 +92,13 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
                     '_links': node.entity._links,
                     'invokeIntent': {
                         'action': 'launch',
+                        'dst': 'system.api',
                         'resource': node.resource
                     }
                 }
             };
 
-            packets.push(this.participant.intents().messageBuilder.set(resource, payload));
+            packets.push(this.participant.intents().messageBuilder.register(resource, payload));
         }, this);
 
         //Send out all intent messages in bulk
@@ -190,11 +193,19 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
             "launchData": packet.entity,
             "id": context.node.entity.id
         };
-        var resource;
+        var resource = "/application/vnd.ozp-iwc-launch-data-v1+json/run";
+
         if(util.runningInWorker()){
-            resource = "/application/vnd.ozp-iwc-launch-data-v1+json/run/"+packet.src;
-        } else {
-            resource = "/application/vnd.ozp-iwc-launch-data-v1+json/run";
+            resource+= "/";
+
+            //if this is launching a routed intent make the source of the intent invoke open it.
+            if(packet.entity && packet.entity.inFlightIntent && packet.entity.inFlightIntent.entity &&
+                packet.entity.inFlightIntent.entity.invokePacket &&
+                packet.entity.inFlightIntent.entity.invokePacket.src) {
+                   resource +=  packet.entity.inFlightIntent.entity.invokePacket.src;
+            }else {
+                resource += packet.src;
+            }
         }
 
         this.participant.send({

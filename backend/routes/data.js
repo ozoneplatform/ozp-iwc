@@ -55,6 +55,7 @@ router.get(/\/(.*)/, function(req,res){
         }
 
         var wrapped = utils.hateoas(result, { 'self': {'href': utils.getFullUrl(req,true)}});
+        res.setHeader('Content-Type', "application/vnd.ozp-iwc-data-object-v1+json");
         res.status(200).json(wrapped);
     });
 });
