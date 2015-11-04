@@ -5,7 +5,7 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
-        <title>Data API Nodes | Inter-Widget Communication (IWC)</title>
+        <title>Data API Schemas | Inter-Widget Communication (IWC)</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="generator" content="GitBook 1.5.0">
@@ -22,7 +22,7 @@
     <link rel="next" href="../../bus/endpoints/application.html" />
     
     
-    <link rel="prev" href="../../bus/endpoints/overview.html" />
+    <link rel="prev" href="../../bus/endpoints/hal.html" />
     
 
         
@@ -34,7 +34,7 @@
 
 
         
-    <div class="book" data-level="2.4.1" data-basepath="../.." data-revision="1446589328941">
+    <div class="book" data-level="2.5.1" data-basepath="../.." data-revision="1446665899099">
     
 
 <div class="book-summary">
@@ -790,19 +790,35 @@
                 
             
             
+        </li>
+    
+        
+        <li class="chapter " data-level="2.5" data-path="bus/endpoints/hal.html">
+            
+                
+                    <a href="../../bus/endpoints/hal.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.</b>
+                        
+                         HAL Schemas
+                    </a>
+                
+            
+            
             <ul class="articles">
                 
     
         
-        <li class="chapter active" data-level="2.4.1" data-path="bus/endpoints/data.html">
+        <li class="chapter active" data-level="2.5.1" data-path="bus/endpoints/data.html">
             
                 
                     <a href="../../bus/endpoints/data.html">
                         <i class="fa fa-check"></i>
                         
-                            <b>2.4.1.</b>
+                            <b>2.5.1.</b>
                         
-                         Data API Nodes
+                         Data API Schemas
                     </a>
                 
             
@@ -810,13 +826,13 @@
         </li>
     
         
-        <li class="chapter " data-level="2.4.2" data-path="bus/endpoints/application.html">
+        <li class="chapter " data-level="2.5.2" data-path="bus/endpoints/application.html">
             
                 
                     <a href="../../bus/endpoints/application.html">
                         <i class="fa fa-check"></i>
                         
-                            <b>2.4.2.</b>
+                            <b>2.5.2.</b>
                         
                          System API Application Nodes
                     </a>
@@ -826,13 +842,45 @@
         </li>
     
         
-        <li class="chapter " data-level="2.4.3" data-path="bus/endpoints/intents.html">
+        <li class="chapter " data-level="2.5.3" data-path="bus/endpoints/user.html">
+            
+                
+                    <a href="../../bus/endpoints/user.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.3.</b>
+                        
+                         System API User Nodes
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.5.4" data-path="bus/endpoints/system.html">
+            
+                
+                    <a href="../../bus/endpoints/system.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.4.</b>
+                        
+                         System API System Nodes
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.5.5" data-path="bus/endpoints/intents.html">
             
                 
                     <a href="../../bus/endpoints/intents.html">
                         <i class="fa fa-check"></i>
                         
-                            <b>2.4.3.</b>
+                            <b>2.5.5.</b>
                         
                          Intents API Handler Definition Nodes
                     </a>
@@ -956,83 +1004,288 @@
                 <div class="page-inner">
                 
                 
-                    <section class="normal" id="section-gitbook_6">
+                    <section class="normal" id="section-gitbook_7">
                     
-                        <h2 id="data-api-node-endpoints">Data API Node Endpoints</h2>
-<p>The Data API requests Data API Nodes listed from the <a href="overview.html">ozp:user-data</a> endpoint. The IWC does not care
-how the data is handled on the backend rather that it meets its requirements for a GET and PUT request.</p>
-<h3 id="these-content-types-are-being-updated">These Content-Types are being updated</h3>
-<p>vnd.ozp-iwc-data-object-v1+json is handled by the IWC Bus, a more coherent vnd.ozp-iwc-data-object-v2+json is currently
-in development. Both will be valid to the IWC.</p>
+                        <h2 id="ozpuser-data">ozp:user-data</h2>
+<h2 id="data-api-node-endpoints">Data API Node Endpoints</h2>
+<p>The Data API requests Data API Nodes listed from the <code>ozp:user-data</code> endpoint. <code>ozp:user-data</code> is a relational link to
+the href provided in the <code>_links</code> of the <a href="overview.html">api root</a>. The IWC does not care how the data is handled on the 
+backend rather that it meets/handles its required content-types.</p>
+<p>The root of <code>ozp:user-data</code> supplies links to data node resources(application/vnd.ozp-iwc-data-objects+json;version=2).It must provide a 
+<code>_link.item</code> array of linked data node resources. Optionally these resources can be provided in the <code>_embedded.item</code> array
+to reduce network communication.</p>
+<h3 id="supported-content-types">Supported Content Types</h3>
+<p>The following content-types can be handled if linked from the <code>ozp:user-data</code> or from an resource that is chain linked from 
+<code>ozp:user-data</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Content-Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>application/vnd.ozp-iwc-data-objects-v1+json</td>
+<td>The IWC&#39;s current corresponding ozone backend <a href="https://github.com/ozone-development/ozp-rest" target="_blank">ozp-rest</a> uses this content-type. A HAL resource only containing link objects for other resources. This content-type will be deprecated in 2016 as it lacks providing content-type of its links.</td>
+</tr>
+<tr>
+<td>application/vnd.ozp-iwc-data-objects+json;version=2</td>
+<td>The IWC&#39;s new ozone backend <a href="https://github.com/ozone-development/ozp-backend" target="_blank">ozp-backend</a> uses this content-type.</td>
+</tr>
+<tr>
+<td>application/vnd.ozp-iwc-data-object-v1+json</td>
+<td>The IWC&#39;s current corresponding ozone backend <a href="https://github.com/ozone-development/ozp-rest" target="_blank">ozp-rest</a> matches this content-type. This content-type will be deprecated in 2016 as it lacks providing content-type of its links</td>
+</tr>
+<tr>
+<td>application/vnd.ozp-iwc-data-object+json;version=2</td>
+<td>The IWC&#39;s default content-type for data node resources. Used in the new ozone backend <a href="https://github.com/ozone-development/ozp-backend" target="_blank">ozp-backend</a>.</td>
+</tr>
+</tbody>
+</table>
 <hr>
-<h3 id="get-response">GET Response</h3>
-<ul>
-<li><strong>Content-Type</strong>: <a href="https://github.com/ozone-development/ozp-data-schemas/blob/master/schema/vnd.ozp-iwc-data-object-v1%2Bjson.json" target="_blank">application/vnd.ozp-iwc-data-object-v1+json</a></li>
-</ul>
-<h3 id="response-body">Response Body</h3>
-<ul>
-<li><strong>entity</strong> A Object (or stringified Object) of the Data API Node</li>
-<li><strong>contentType</strong> The Content-Type of the node.</li>
-<li><strong>key</strong> The key used to store this node in the backend</li>
-</ul>
+<h3 id="data-node-list-resources">Data Node List Resources</h3>
+<h4 id="applicationvndozp-iwc-data-objectsjsonversion2">application/vnd.ozp-iwc-data-objects+json;version=2</h4>
+<p><strong>Resource</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Links</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>self</td>
+<td>Object</td>
+<td>the link object for this resource.</td>
+</tr>
+<tr>
+<td>self.href</td>
+<td>String</td>
+<td>the url of this resource.</td>
+</tr>
+<tr>
+<td>self.type</td>
+<td>String</td>
+<td>the content-type of this resource.</td>
+</tr>
+<tr>
+<td>item</td>
+<td>Array</td>
+<td>An array of linked items. Of a supported <code>ozp:user-data</code> type</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Embedded Resources</strong>
+Commonly, the <code>application/vnd.ozp-iwc-data-object+json;version=2</code> content-type resources are provided both in the 
+<code>_embedded.item</code> arrays. This is to reduce network communication to gather resources.</p>
+<p><strong>Example</strong></p>
 <pre><code>{
-  &quot;entity&quot;: {
-      &quot;resource&quot;: &quot;/locationLister/listings/13ab7e80&quot;,
-      &quot;entity&quot;: {
-        &quot;title&quot;: &quot;test&quot;,
-        &quot;coords&quot;: {
-          &quot;lat&quot;: 1,
-          &quot;long&quot;: 2
+  &quot;_embedded&quot;: {
+    &quot;item&quot;: [
+      {
+        &quot;username&quot;: &quot;wsmith&quot;,
+        &quot;key&quot;: &quot;/test&quot;,
+        &quot;entity&quot;: &quot;\&quot;Hello World!\&quot;&quot;,
+        &quot;content_type&quot;: &quot;application/vnd.ozp-iwc-data-object+json;version=2&quot;,
+        &quot;version&quot;: &quot;2&quot;,
+        &quot;pattern&quot;: null,
+        &quot;permissions&quot;: &quot;{}&quot;,
+        &quot;_links&quot;: {
+          &quot;self&quot;: {
+            &quot;href&quot;: &quot;http://localhost:1212/iwc-api/self/data/test&quot;,
+            &quot;type&quot;: &quot;application/vnd.ozp-iwc-data-object+json;version=2&quot;
+          }
         },
-        &quot;description&quot;: &quot;aaa&quot;
-      },
-      &quot;permissions&quot;: {
-
-      },
-      &quot;version&quot;: 2,
-      &quot;lifespan&quot;: {
-        &quot;type&quot;: &quot;Persistent&quot;
-      },
-      &quot;deleted&quot;: false,
-      &quot;pattern&quot;: &quot;/locationLister/listings/13ab7e80/&quot;,
-      &quot;collection&quot;: [
-
-      ],
-      &quot;self&quot;: &quot;https://localhost:13000/api/profile/7/data/locationLister/listings/13ab7e80&quot;
+        &quot;_embedded&quot;: {}
+      }
+    ]
   },
-  &quot;contentType&quot;: &quot;application/vnd.ozp-iwc-data-object+json&quot;,
-  &quot;key&quot;: &quot;locationLister/listings/13ab7e80&quot;
-}
-</code></pre><hr>
-<h3 id="put-request">PUT Request</h3>
-<p>API Nodes are persisted back to the server with a PUT request on their <code>self</code> URL. This is a PUT request on Data API
-resource <code>/locationLister/listings/8c7d7002</code>.</p>
-<h4 id="headers">Headers</h4>
-<ul>
-<li><strong>Content-Type</strong>: application/vnd.ozp-iwc-data-object+json</li>
-</ul>
-<h4 id="request-payload">Request Payload</h4>
-<pre><code>{
-  &quot;key&quot;: &quot;/locationLister/listings/8c7d7022&quot;,
-  &quot;entity&quot;: {
-    &quot;title&quot;: &quot;test&quot;,
-    &quot;coords&quot;: {
-      &quot;lat&quot;: 1,
-      &quot;long&quot;: 2
-    },
-    &quot;description&quot;: &quot;a&quot;
-  },
-  &quot;collection&quot;: [],
-  &quot;pattern&quot;: &quot;/locationLister/listings/8c7d7022/&quot;,
-  &quot;permissions&quot;: {
-
-  },
-  &quot;version&quot;: 2,
   &quot;_links&quot;: {
+    &quot;item&quot;: [
+      {
+        &quot;href&quot;: &quot;http://localhost:1212/iwc-api/self/data/test&quot;,
+        &quot;type&quot;: &quot;application/vnd.ozp-iwc-data-object+json;version=2&quot;
+      }
+    ],
     &quot;self&quot;: {
-      &quot;href&quot;: &quot;https://localhost:13000/api/profile/7/data/locationLister/listings/8c7d7022&quot;
+      &quot;href&quot;: &quot;http://localhost:1212/iwc-api/self/data/&quot;,
+      &quot;type&quot;: &quot;application/json;version=2&quot;
     }
   }
+}
+</code></pre><h4 id="applicationvndozp-iwc-data-objects-v1json">application/vnd.ozp-iwc-data-objects-v1+json</h4>
+<p>This content-type does not provide <code>type</code> properties to its link objects. The IWC can handle making decisions
+for what content-type to treat a resource as, but this functionality will be deprecated and replaced with a strong
+content-type based resource handling in 2016.</p>
+<p><strong>Resource</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Links</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>self</td>
+<td>Object</td>
+<td>the link object for this resource.</td>
+</tr>
+<tr>
+<td>self.href</td>
+<td>String</td>
+<td>the url of this resource.</td>
+</tr>
+<tr>
+<td>item</td>
+<td>Array</td>
+<td>An array of linked items. Of a supported <code>ozp:user-data</code> type</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Embedded Resources</strong>
+Commonly, the <code>application/vnd.ozp-iwc-data-object-v1+json</code> content-type resources are provided both in the 
+<code>_embedded.item</code> arrays. This is to reduce network communication to gather resources.</p>
+<p><strong>Example</strong></p>
+<pre><code>{
+  &quot;_links&quot;: {
+    &quot;item&quot;: [
+      {
+        &quot;href&quot;: &quot;https://localhost:1313/marketplace/api/profile/7/data/dashboard-data&quot;
+      },
+      {
+        &quot;href&quot;: &quot;https://localhost:1313/marketplace/api/profile/7/data/test&quot;
+      }
+    ],
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;https://localhost:1313/marketplace/api/profile/7/data&quot;
+    }
+  }
+}
+</code></pre><hr>
+<h3 id="data-node-resources">Data Node Resources</h3>
+<h4 id="applicationvndozp-iwc-data-object-v1json">application/vnd.ozp-iwc-data-object-v1+json</h4>
+<p>TODO</p>
+<h4 id="applicationvndozp-iwc-data-objectjsonversion2">application/vnd.ozp-iwc-data-object+json;version=2</h4>
+<p><strong>Resource</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>key</td>
+<td>String</td>
+<td>An identifier for the resource.</td>
+</tr>
+<tr>
+<td>version</td>
+<td>Number</td>
+<td>The version number of the resource. This increases in the IWC every time the resource changes.</td>
+</tr>
+<tr>
+<td>pattern</td>
+<td>String</td>
+<td>A URI Pattern for this resource to match for watching other resources.</td>
+</tr>
+<tr>
+<td>permissions</td>
+<td>String</td>
+<td>A stringified object of ABAC policies pertaining to the resource.</td>
+</tr>
+<tr>
+<td>entity</td>
+<td>String</td>
+<td>A stringified payload of the resource.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Links</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>self</td>
+<td>Object</td>
+<td>the link object for this resource.</td>
+</tr>
+<tr>
+<td>self.href</td>
+<td>String</td>
+<td>the url of this resource.</td>
+</tr>
+<tr>
+<td>self.type</td>
+<td>String</td>
+<td>the content-type of this resource.</td>
+</tr>
+<tr>
+<td>item</td>
+<td>Array</td>
+<td>An array of linked items. Of a supported <code>ozp:user-data</code> type</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<pre><code>{
+  &quot;username&quot;: &quot;wsmith&quot;,
+  &quot;key&quot;: &quot;/test&quot;,
+  &quot;entity&quot;: &quot;\&quot;Hello World!\&quot;&quot;,
+  &quot;content_type&quot;: &quot;application/vnd.ozp-iwc-data-object+json;version=2&quot;,
+  &quot;version&quot;: &quot;2&quot;,
+  &quot;pattern&quot;: null,
+  &quot;permissions&quot;: &quot;{}&quot;,
+  &quot;_links&quot;: {
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;http://localhost:1212/iwc-api/self/data/test/&quot;,
+      &quot;type&quot;: &quot;application/vnd.ozp-iwc-data-object+json;version=2&quot;
+    }
+  },
+  &quot;_embedded&quot;: {}
 }
 </code></pre>
                     
@@ -1044,7 +1297,7 @@ resource <code>/locationLister/listings/8c7d7002</code>.</p>
         </div>
 
         
-        <a href="../../bus/endpoints/overview.html" class="navigation navigation-prev " aria-label="Previous page: Backend API Endpoint Requirements"><i class="fa fa-angle-left"></i></a>
+        <a href="../../bus/endpoints/hal.html" class="navigation navigation-prev " aria-label="Previous page: HAL Schemas"><i class="fa fa-angle-left"></i></a>
         
         
         <a href="../../bus/endpoints/application.html" class="navigation navigation-next " aria-label="Next page: System API Application Nodes"><i class="fa fa-angle-right"></i></a>

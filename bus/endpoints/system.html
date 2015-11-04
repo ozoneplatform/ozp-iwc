@@ -5,7 +5,7 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
-        <title>Metrics | Inter-Widget Communication (IWC)</title>
+        <title>System API System Nodes | Inter-Widget Communication (IWC)</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="generator" content="GitBook 1.5.0">
@@ -19,10 +19,10 @@
         
     
     
-    <link rel="next" href="../../client/debugger/elections.html" />
+    <link rel="next" href="../../bus/endpoints/intents.html" />
     
     
-    <link rel="prev" href="../../client/debugger/traffic.html" />
+    <link rel="prev" href="../../bus/endpoints/user.html" />
     
 
         
@@ -34,7 +34,7 @@
 
 
         
-    <div class="book" data-level="1.9.3" data-basepath="../.." data-revision="1446665899099">
+    <div class="book" data-level="2.5.4" data-basepath="../.." data-revision="1446665899099">
     
 
 <div class="book-summary">
@@ -600,7 +600,7 @@
         </li>
     
         
-        <li class="chapter active" data-level="1.9.3" data-path="client/debugger/metrics.html">
+        <li class="chapter " data-level="1.9.3" data-path="client/debugger/metrics.html">
             
                 
                     <a href="../../client/debugger/metrics.html">
@@ -858,7 +858,7 @@
         </li>
     
         
-        <li class="chapter " data-level="2.5.4" data-path="bus/endpoints/system.html">
+        <li class="chapter active" data-level="2.5.4" data-path="bus/endpoints/system.html">
             
                 
                     <a href="../../bus/endpoints/system.html">
@@ -1004,31 +1004,151 @@
                 <div class="page-inner">
                 
                 
-                    <section class="normal" id="section-gitbook_67">
+                    <section class="normal" id="section-gitbook_20">
                     
-                        <h2 id="iwc-debugger-metrics">IWC Debugger: Metrics</h2>
-<p>The metrics tool is a timeline plot of metrics gathered from the IWC Bus. The metrics are gathered as a singleton under
-the <code>ozpIwc.wiring.metrics</code> module.</p>
-<p><img src="../../assets/debugger_metrics.png" alt="img">
-<em>An example of tracking all packets sent out by the IWC Bus&#39;s Data Api module.</em></p>
+                        <h2 id="ozpuser">ozp:user</h2>
+<h2 id="system-api-system-node-endpoints">System API System Node Endpoints</h2>
+<p>The System API requests a system nodelisted from the <a href="overview.html">ozp:system</a> endpoint. The IWC does not care
+how the data is handled on the backend rather that it meets/handles its required content-types.</p>
+<p>The root of <code>ozp:system</code> <strong>is the resource to be gathered</strong>. Any subsequent resource gathered via either
+<code>_links.item</code> or <code>_embedded.item</code> will override the system node.</p>
+<p>The system node is a reference point for information pertaining to the backend hosting the IWC. This is
+set to the static System API resource <code>/user</code></p>
+<h3 id="supported-content-types">Supported Content Types</h3>
+<p>The following content-types can be handled if linked under the <code>ozp:system</code> endpoint.</p>
+<table>
+<thead>
+<tr>
+<th>Content-Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>application/json</td>
+<td>The IWC&#39;s current corresponding ozone backend <a href="https://github.com/ozone-development/ozp-rest" target="_blank">ozp-rest</a> matches this content-type.</td>
+</tr>
+<tr>
+<td>application/vnd.ozp-iwc-system+json;version=2</td>
+<td>Used in the new ozone backend <a href="https://github.com/ozone-development/ozp-backend" target="_blank">ozp-backend</a>.</td>
+</tr>
+</tbody>
+</table>
 <hr>
-<h4 id="disable0">Disable(0)</h4>
-<p>This button will toggle the plotting of metrics from the metrics module that are enabled in the <strong>Metrics</strong> list.</p>
-<h4 id="gather">Gather</h4>
-<p>Plots the current metrics from the metrics module on the enabled metrics in the <strong>Metrics</strong> list.</p>
-<h4 id="clear">Clear</h4>
-<p>Clears the Metrics timeline but not the metrics.</p>
-<h4 id="every-second-dropdown">&quot;Every Second&quot; Dropdown</h4>
-<p>A dropdown to note how often to plot updates from the metrics module</p>
-<h4 id="1-minute-dropdown">&quot;1 minute&quot; Dropdown</h4>
-<p>How long to retain points on the plot. By default after a plotted point has existed for 1 minute it will be removed.</p>
-<h4 id="filter">Filter</h4>
-<p>Filters the <strong>Metrics</strong> list using string matching.</p>
-<h4 id="select-filtered">Select Filtered</h4>
-<p>Enables plotting on all of the metrics currently shown in the <strong>Metrics</strong> list.</p>
-<h4 id="deselect-filtered">Deselect Filtered</h4>
-<p>Disables plotting on all of the metrics currently shown in the <strong>Metrics</strong> list.</p>
-
+<h3 id="user-node-resources">User Node Resources</h3>
+<h4 id="applicationjson">application/json</h4>
+<p><strong>Resource</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>A human readable name of the backend.</td>
+</tr>
+<tr>
+<td>version</td>
+<td>String</td>
+<td>the version of the backend.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Links</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>self</td>
+<td>Object</td>
+<td>the link object for this resource.</td>
+</tr>
+<tr>
+<td>self.href</td>
+<td>String</td>
+<td>the url of this resource.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<pre><code>{
+  &quot;version&quot;: &quot;1.0&quot;,
+  &quot;name&quot;: &quot;IWC Demo Site&quot;,
+  &quot;_links&quot;: {
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;https://localhost:1313/marketplace/api/system/&quot;
+    }
+  }
+}
+</code></pre><h4 id="applicationvndozp-iwc-systemjsonversion2">application/vnd.ozp-iwc-system+json;version=2</h4>
+<p><strong>Resource</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>A human readable name of the backend.</td>
+</tr>
+<tr>
+<td>version</td>
+<td>String</td>
+<td>the version of the backend.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Links</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>self</td>
+<td>Object</td>
+<td>the link object for this resource.</td>
+</tr>
+<tr>
+<td>self.href</td>
+<td>String</td>
+<td>the url of this resource.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<pre><code>{
+  &quot;_embedded&quot;: {},
+  &quot;_links&quot;: {
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;http://localhost:1212/iwc-api/system/&quot;,
+      &quot;type&quot;: &quot;application/vnd.ozp-iwc-system+json;version=2&quot;
+    }
+  },
+  &quot;version&quot;: &quot;1.0&quot;,
+  &quot;name&quot;: &quot;TBD&quot;
+}
+</code></pre>
                     
                     </section>
                 
@@ -1038,10 +1158,10 @@ the <code>ozpIwc.wiring.metrics</code> module.</p>
         </div>
 
         
-        <a href="../../client/debugger/traffic.html" class="navigation navigation-prev " aria-label="Previous page: Traffic Snooper"><i class="fa fa-angle-left"></i></a>
+        <a href="../../bus/endpoints/user.html" class="navigation navigation-prev " aria-label="Previous page: System API User Nodes"><i class="fa fa-angle-left"></i></a>
         
         
-        <a href="../../client/debugger/elections.html" class="navigation navigation-next " aria-label="Next page: Elections"><i class="fa fa-angle-right"></i></a>
+        <a href="../../bus/endpoints/intents.html" class="navigation navigation-next " aria-label="Next page: Intents API Handler Definition Nodes"><i class="fa fa-angle-right"></i></a>
         
     </div>
 </div>

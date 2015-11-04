@@ -19,7 +19,7 @@
         
     
     
-    <link rel="next" href="../../bus/endpoints/intents.html" />
+    <link rel="next" href="../../bus/endpoints/user.html" />
     
     
     <link rel="prev" href="../../bus/endpoints/data.html" />
@@ -34,7 +34,7 @@
 
 
         
-    <div class="book" data-level="2.4.2" data-basepath="../.." data-revision="1446589328941">
+    <div class="book" data-level="2.5.2" data-basepath="../.." data-revision="1446665899099">
     
 
 <div class="book-summary">
@@ -790,19 +790,35 @@
                 
             
             
+        </li>
+    
+        
+        <li class="chapter " data-level="2.5" data-path="bus/endpoints/hal.html">
+            
+                
+                    <a href="../../bus/endpoints/hal.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.</b>
+                        
+                         HAL Schemas
+                    </a>
+                
+            
+            
             <ul class="articles">
                 
     
         
-        <li class="chapter " data-level="2.4.1" data-path="bus/endpoints/data.html">
+        <li class="chapter " data-level="2.5.1" data-path="bus/endpoints/data.html">
             
                 
                     <a href="../../bus/endpoints/data.html">
                         <i class="fa fa-check"></i>
                         
-                            <b>2.4.1.</b>
+                            <b>2.5.1.</b>
                         
-                         Data API Nodes
+                         Data API Schemas
                     </a>
                 
             
@@ -810,13 +826,13 @@
         </li>
     
         
-        <li class="chapter active" data-level="2.4.2" data-path="bus/endpoints/application.html">
+        <li class="chapter active" data-level="2.5.2" data-path="bus/endpoints/application.html">
             
                 
                     <a href="../../bus/endpoints/application.html">
                         <i class="fa fa-check"></i>
                         
-                            <b>2.4.2.</b>
+                            <b>2.5.2.</b>
                         
                          System API Application Nodes
                     </a>
@@ -826,13 +842,45 @@
         </li>
     
         
-        <li class="chapter " data-level="2.4.3" data-path="bus/endpoints/intents.html">
+        <li class="chapter " data-level="2.5.3" data-path="bus/endpoints/user.html">
+            
+                
+                    <a href="../../bus/endpoints/user.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.3.</b>
+                        
+                         System API User Nodes
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.5.4" data-path="bus/endpoints/system.html">
+            
+                
+                    <a href="../../bus/endpoints/system.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.4.</b>
+                        
+                         System API System Nodes
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.5.5" data-path="bus/endpoints/intents.html">
             
                 
                     <a href="../../bus/endpoints/intents.html">
                         <i class="fa fa-check"></i>
                         
-                            <b>2.4.3.</b>
+                            <b>2.5.5.</b>
                         
                          Intents API Handler Definition Nodes
                     </a>
@@ -958,91 +1006,460 @@
                 
                     <section class="normal" id="section-gitbook_4">
                     
-                        <h2 id="system-api-application-node-endpoints">System API Application Node Endpoints</h2>
+                        <h2 id="ozpapplication">ozp:application</h2>
+<h2 id="system-api-application-node-endpoints">System API Application Node Endpoints</h2>
 <p>The System API requests Application Nodes listed from the <a href="overview.html">ozp:application</a> endpoint. The IWC does not care
-how the data is handled on the backend rather that it meets its requirements for a GET and PUT request.</p>
-<h3 id="these-content-types-are-being-updated">These Content-Types are being updated</h3>
-<p>application/vnd.ozp-application-v1+json is handled by the IWC Bus, a more coherent 
-application/vnd.ozp-application-v2+json is currently in development. Only a subset of the v1 schema is used for the IWC,
-so take note of the required response properties below.</p>
+how the data is handled on the backend rather that it meets/handles its required content-types.</p>
+<p>The root of <code>ozp:application</code> supplies links to application node resources(application/vnd.ozp-iwc-data-objects+json;version=2).It must provide a 
+<code>_link.item</code> array of linked applicationnode resources. Optionally these resources can be provided in the <code>_embedded.item</code> array
+to reduce network communication.</p>
+<h3 id="supported-content-types">Supported Content Types</h3>
+<p>The following content-types can be handled if linked from the <code>ozp:application</code> or from an resource that is chain linked from 
+<code>ozp:application</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Content-Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>application/vnd.ozp-iwc-applications-v1+json</td>
+<td>The IWC&#39;s current corresponding ozone backend <a href="https://github.com/ozone-development/ozp-rest" target="_blank">ozp-rest</a> uses this content-type. A HAL resource only containing link objects for other resources. This content-type will be deprecated in 2016 as it lacks providing content-type of its links.</td>
+</tr>
+<tr>
+<td>application/vnd.ozp-iwc-applications+json;version=2</td>
+<td>The IWC&#39;s new ozone backend <a href="https://github.com/ozone-development/ozp-backend" target="_blank">ozp-backend</a> uses this content-type.</td>
+</tr>
+<tr>
+<td>application/vnd.ozp-application-v1+json</td>
+<td>The IWC&#39;s current corresponding ozone backend <a href="https://github.com/ozone-development/ozp-rest" target="_blank">ozp-rest</a> matches this content-type. This content-type will be deprecated in 2016 as it lacks providing content-type of its links</td>
+</tr>
+<tr>
+<td>application/vnd.ozp-iwc-application+json;version=2</td>
+<td>The IWC&#39;s default content-type for application node resources. Used in the new ozone backend <a href="https://github.com/ozone-development/ozp-backend" target="_blank">ozp-backend</a>.</td>
+</tr>
+</tbody>
+</table>
 <hr>
-<h3 id="get-request">GET Request</h3>
-<ul>
-<li><strong>Accept</strong>: application/vnd.ozp-application-v1+json</li>
-</ul>
-<h3 id="get-response">GET Response</h3>
-<ul>
-<li><strong>Content-Type</strong>: <a href="https://github.com/ozone-development/ozp-data-schemas/blob/master/schema/vnd.ozp-application-v1%2Bjson.json" target="_blank">application/vnd.ozp-application-v1+json</a></li>
-</ul>
-<h3 id="response-body">Response Body</h3>
-<p>The following properties are required in the response. Other properties can be undefined.</p>
-<ul>
-<li><strong>state</strong> A Object (or stringified Object) of the Data API Node</li>
-<li><strong>descriptionShort</strong> The Content-Type of the node</li>
-<li><strong>launchUrls</strong> Urls for launching this application<ul>
-<li><strong>launchUrls.default</strong> The default launch url</li>
-</ul>
-</li>
-<li><strong>icons</strong> An Object of icon links<ul>
-<li><strong>icons.small</strong> A url for a small icon for this application</li>
-</ul>
-</li>
-<li><strong>name</strong> The name of the application</li>
-<li><em>*id</em>: The GUID of the application</li>
-<li><strong>_links</strong> </li>
-</ul>
+<h3 id="application-node-list-resources">Application Node List Resources</h3>
+<h4 id="applicationvndozp-iwc-applications-v1json">application/vnd.ozp-iwc-applications-v1+json</h4>
+<p><strong>Resource</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Links</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>self</td>
+<td>Object</td>
+<td>the link object for this resource.</td>
+</tr>
+<tr>
+<td>self.href</td>
+<td>String</td>
+<td>the url of this resource.</td>
+</tr>
+<tr>
+<td>item</td>
+<td>Array</td>
+<td>An array of linked items. Of a supported <code>ozp:application</code> type</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
 <pre><code>{
-  &quot;state&quot;: &quot;Active&quot;,
-  &quot;descriptionShort&quot;: &quot;The best bouncing green ball you&#39;ve ever seen&quot;,
-  &quot;approvalStatus&quot;: &quot;APPROVED&quot;,
-  &quot;screenshots&quot;: [
-    {
-      &quot;href&quot;: &quot;https://localhost:13000/api/image/06c144c7-73d4-4c28-8644-26d0f7030106.png&quot;
+  &quot;_links&quot;: {
+    &quot;item&quot;: [
+      {
+        &quot;href&quot;: &quot;https://localhost:1313/marketplace/api/listing/22&quot;
+      },
+      {
+        &quot;href&quot;: &quot;https://localhost:1313/marketplace/api/listing/52&quot;
+      },
+      {
+        &quot;href&quot;: &quot;https://localhost:1313/marketplace/api/listing/51&quot;
+      },
+      {
+        &quot;href&quot;: &quot;https://localhost:1313/marketplace/api/listing/24&quot;
+      }
+    ],
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;https://localhost:1313/marketplace/api/profile/7/application&quot;
     }
-  ],
+  }
+}
+</code></pre><h4 id="applicationvndozp-iwc-applicationsjsonversion2">application/vnd.ozp-iwc-applications+json;version=2</h4>
+<p><strong>Resource</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Links</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>self</td>
+<td>Object</td>
+<td>the link object for this resource.</td>
+</tr>
+<tr>
+<td>self.href</td>
+<td>String</td>
+<td>the url of this resource.</td>
+</tr>
+<tr>
+<td>self.type</td>
+<td>String</td>
+<td>the content-type of this resource.</td>
+</tr>
+<tr>
+<td>item</td>
+<td>Array</td>
+<td>An array of linked items. Of a supported <code>ozp:application</code> type</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Embedded Resources</strong>
+Commonly, the <code>application/vnd.ozp-application+json;version=2</code> content-type resources are provided both in the 
+<code>_embedded.item</code> arrays. This is to reduce network communication to gather resources.</p>
+<p><strong>Example</strong></p>
+<pre><code>{
+  &quot;_embedded&quot;: {
+    &quot;item&quot;: [
+      {
+       &quot;id&quot;: 1,
+        &quot;intents&quot;: [],
+        &quot;small_icon&quot;: {
+          &quot;url&quot;: &quot;http://localhost:1212/iwc-api/image/6/&quot;,
+        },
+        &quot;large_icon&quot;: {
+          &quot;url&quot;: &quot;http://localhost:1212/iwc-api/image/7/&quot;,
+        },
+        &quot;title&quot;: &quot;Air Mail&quot;,
+        &quot;launch_url&quot;: &quot;http://localhost:1212/demo_apps/centerSampleListings/airMail/index.html&quot;,
+        &quot;unique_name&quot;: &quot;ozp.test.air_mail&quot;,
+        &quot;description_short&quot;: &quot;Sends airmail&quot;,
+        &quot;_links&quot;: {
+          &quot;self&quot;: {
+            &quot;href&quot;: &quot;http://localhost:1212/iwc-api/listing/1/&quot;,
+            &quot;type&quot;: &quot;application/vnd.ozp-iwc-application+json;version=2&quot;
+          }
+      },
+      {
+        &quot;id&quot;: 2,
+        &quot;intents&quot;: [],
+        &quot;small_icon&quot;: {
+                  &quot;url&quot;: &quot;http://localhost:1212/iwc-api/image/8/&quot;,
+                },
+                &quot;large_icon&quot;: {
+                  &quot;url&quot;: &quot;http://localhost:1212/iwc-api/image/9/&quot;,
+                },
+        &quot;title&quot;: &quot;Bread Basket&quot;,
+        &quot;launch_url&quot;: &quot;http://localhost:1212/demo_apps/centerSampleListings/breadBasket/index.html&quot;,
+        &quot;unique_name&quot;: &quot;ozp.test.bread_basket&quot;,
+        &quot;description_short&quot;: &quot;Basket of bread.&quot;,
+        &quot;_links&quot;: {
+          &quot;self&quot;: {
+            &quot;href&quot;: &quot;http://localhost:1212/iwc-api/listing/2/&quot;,
+            &quot;type&quot;: &quot;application/vnd.ozp-iwc-application+json;version=2&quot;
+          }
+        }
+      }
+    ]
+  },
+  &quot;_links&quot;: {
+    &quot;item&quot;: [
+      {
+        &quot;href&quot;: &quot;http://localhost:1212/iwc-api/listing/1/&quot;,
+        &quot;type&quot;: &quot;application/vnd.ozp-iwc-application+json;version=2&quot;
+      },
+      {
+        &quot;href&quot;: &quot;http://localhost:1212/iwc-api/listing/2/&quot;,
+        &quot;type&quot;: &quot;application/vnd.ozp-iwc-application+json;version=2&quot;
+      }
+    ],
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;http://localhost:1212/iwc-api/self/application/&quot;,
+      &quot;type&quot;: &quot;application/vnd.ozp-iwc-applications+json;version=2&quot;
+    }
+  }
+}
+</code></pre><hr>
+<h4 id="applicationvndozp-iwc-application-v1json">application/vnd.ozp-iwc-application-v1+json</h4>
+<p><strong>Resource</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>String</td>
+<td>An identifier for the resource. Used for database indexing.</td>
+</tr>
+<tr>
+<td>intents</td>
+<td>Array</td>
+<td>An array of intent definitions associated with the application.</td>
+</tr>
+<tr>
+<td>title</td>
+<td>String</td>
+<td>A title associated with the application.</td>
+</tr>
+<tr>
+<td>launchUrl</td>
+<td>Object</td>
+<td>A collection of launch urls.</td>
+</tr>
+<tr>
+<td>launchUrl.default</td>
+<td>String</td>
+<td>The url path of the application.</td>
+</tr>
+<tr>
+<td>description_short</td>
+<td>String</td>
+<td>A short description of the application.</td>
+</tr>
+<tr>
+<td>icons</td>
+<td>Object</td>
+<td>A collection of icon urls.</td>
+</tr>
+<tr>
+<td>icons.small</td>
+<td>String</td>
+<td>The href of the small icon.</td>
+</tr>
+<tr>
+<td>icons.large</td>
+<td>String</td>
+<td>The href of the large icon.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Links</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>self</td>
+<td>Object</td>
+<td>the link object for this resource.</td>
+</tr>
+<tr>
+<td>self.href</td>
+<td>String</td>
+<td>the url of this resource.</td>
+</tr>
+<tr>
+<td>self.type</td>
+<td>String</td>
+<td>the content-type of this resource.</td>
+</tr>
+<tr>
+<td>item</td>
+<td>Array</td>
+<td>An array of linked items. Of a supported <code>ozp:application</code> type</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<pre><code>{
+  &quot;icons&quot;: {
+    &quot;small&quot;: &quot;https://localhost:1313/marketplace/api/image/24375765-749a-4fd7-8946-dfcf4bb8bcca.png&quot;,
+    &quot;large&quot;: &quot;https://localhost:1313/marketplace/api/image/40a1bc92-d4a7-4428-b786-861d6cca96ca.png&quot;,
+  },
+  &quot;launchUrls&quot;: {
+    &quot;default&quot;: &quot;https://localhost:1313/demo_apps/bouncingBalls/index.html?color=blue&quot;
+  },
+  &quot;descriptionShort&quot;: &quot;The best bouncing blue ball you&#39;ve ever seen&quot;,
   &quot;intents&quot;: [
-    {
-      &quot;type&quot;: &quot;application/json&quot;,
-      &quot;action&quot;: &quot;edit&quot;,
-      &quot;icon&quot;: &quot;&quot;,
-      &quot;label&quot;: null
-    },
     {
       &quot;type&quot;: &quot;application/json&quot;,
       &quot;action&quot;: &quot;view&quot;,
       &quot;icon&quot;: &quot;&quot;,
       &quot;label&quot;: null
+    },
+    {
+      &quot;type&quot;: &quot;application/json&quot;,
+      &quot;action&quot;: &quot;edit&quot;,
+      &quot;icon&quot;: &quot;https://localhost:1313/marketplace/api/image/acd738e2-e633-4e90-8f92-7eb1bb3c9386.png&quot;,
+      &quot;label&quot;: &quot;test&quot;
     }
   ],
-  &quot;launchUrls&quot;: {
-    &quot;default&quot;: &quot;https://localhost:13000/applications/bouncingBalls/index.html?color=green&quot;
-  },
-  &quot;uiHints&quot;: {
-    &quot;width&quot;: null,
-    &quot;height&quot;: null,
-    &quot;singleton&quot;: false
-  },
-  &quot;icons&quot;: {
-    &quot;small&quot;: &quot;https://localhost:13000/api/image/9cb7749c-dba2-4cef-93c5-5ddd1e48e8fc.png&quot;,
-    &quot;large&quot;: &quot;https://localhost:13000/api/image/5eb1e8f3-dc86-43de-9546-96ca7af8cd1c.png&quot;,
-    &quot;banner&quot;: &quot;https://localhost:13000/api/image/b17c1ba2-4a16-4c80-a0fa-929609f4fa25.png&quot;,
-    &quot;featuredBanner&quot;: &quot;https://localhost:13000/api/image/076f2784-faab-4599-8ad1-115a1bb1be67.png&quot;
-  },
-  &quot;description&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit.&quot;,
-  &quot;tags&quot;: [
-    &quot;demo&quot;
-  ],
-  &quot;name&quot;: &quot;Bouncing Green Ball&quot;,
-  &quot;id&quot;: &quot;10ee10cd-7a02-4b07-a72c-cc1e9c1ee4fb&quot;,
-  &quot;type&quot;: &quot;Web Application&quot;,
+  &quot;id&quot;: &quot;69e73883-41af-45ac-b924-a89f777e3612&quot;,
   &quot;_links&quot;: {
-    &quot;describes&quot;: {
-      &quot;href&quot;: &quot;https://localhost:13000/applications/bouncingBalls/index.html?color=green&quot;
-    },
     &quot;self&quot;: {
-      &quot;href&quot;: &quot;https://localhost:13000/api/listing/25&quot;
+      &quot;href&quot;: &quot;https://localhost:1313/marketplace/api/listing/22&quot;
     }
   }
+}
+</code></pre><h4 id="applicationvndozp-iwc-applicationjsonversion2">application/vnd.ozp-iwc-application+json;version=2</h4>
+<p><strong>Resource</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>String</td>
+<td>An identifier for the resource. Used for database indexing.</td>
+</tr>
+<tr>
+<td>intents</td>
+<td>Array</td>
+<td>An array of intent definitions associated with the application.</td>
+</tr>
+<tr>
+<td>title</td>
+<td>String</td>
+<td>A title associated with the application.</td>
+</tr>
+<tr>
+<td>unique_name</td>
+<td>String</td>
+<td>A uuid for the application. Used for application searching.</td>
+</tr>
+<tr>
+<td>launch_url</td>
+<td>String</td>
+<td>The url path of the application.</td>
+</tr>
+<tr>
+<td>description_short</td>
+<td>String</td>
+<td>A short description of the application.</td>
+</tr>
+<tr>
+<td>small_icon</td>
+<td>Object</td>
+<td>A small icon for the application.</td>
+</tr>
+<tr>
+<td>small_icon.url</td>
+<td>String</td>
+<td>The href of the icon.</td>
+</tr>
+<tr>
+<td>large_icon</td>
+<td>Object</td>
+<td>A lage icon for the application.</td>
+</tr>
+<tr>
+<td>large_icon.url</td>
+<td>String</td>
+<td>The href of the icon.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Links</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>self</td>
+<td>Object</td>
+<td>the link object for this resource.</td>
+</tr>
+<tr>
+<td>self.href</td>
+<td>String</td>
+<td>the url of this resource.</td>
+</tr>
+<tr>
+<td>self.type</td>
+<td>String</td>
+<td>the content-type of this resource.</td>
+</tr>
+<tr>
+<td>item</td>
+<td>Array</td>
+<td>An array of linked items. Of a supported <code>ozp:application</code> type</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<pre><code>{
+  &quot;id&quot;: 1,
+  &quot;intents&quot;: [],
+  &quot;small_icon&quot;: {
+    &quot;url&quot;: &quot;http://localhost:1212/iwc-api/image/6/&quot;,
+  },
+  &quot;large_icon&quot;: {
+    &quot;url&quot;: &quot;http://localhost:1212/iwc-api/image/7/&quot;,
+  },
+  &quot;title&quot;: &quot;Air Mail&quot;,
+  &quot;launch_url&quot;: &quot;http://localhost:1212/demo_apps/centerSampleListings/airMail/index.html&quot;,
+  &quot;unique_name&quot;: &quot;ozp.test.air_mail&quot;,
+  &quot;description_short&quot;: &quot;Sends airmail&quot;,
+  &quot;_links&quot;: {
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;http://localhost:1212/iwc-api/listing/1/&quot;,
+      &quot;type&quot;: &quot;application/vnd.ozp-iwc-application+json;version=2&quot;
+    }
+  },
+  &quot;_embedded&quot;: {}
 }
 </code></pre>
                     
@@ -1054,10 +1471,10 @@ so take note of the required response properties below.</p>
         </div>
 
         
-        <a href="../../bus/endpoints/data.html" class="navigation navigation-prev " aria-label="Previous page: Data API Nodes"><i class="fa fa-angle-left"></i></a>
+        <a href="../../bus/endpoints/data.html" class="navigation navigation-prev " aria-label="Previous page: Data API Schemas"><i class="fa fa-angle-left"></i></a>
         
         
-        <a href="../../bus/endpoints/intents.html" class="navigation navigation-next " aria-label="Next page: Intents API Handler Definition Nodes"><i class="fa fa-angle-right"></i></a>
+        <a href="../../bus/endpoints/user.html" class="navigation navigation-next " aria-label="Next page: System API User Nodes"><i class="fa fa-angle-right"></i></a>
         
     </div>
 </div>

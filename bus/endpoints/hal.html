@@ -5,7 +5,7 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
-        <title>Metrics | Inter-Widget Communication (IWC)</title>
+        <title>HAL Schemas | Inter-Widget Communication (IWC)</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="generator" content="GitBook 1.5.0">
@@ -19,10 +19,10 @@
         
     
     
-    <link rel="next" href="../../client/debugger/elections.html" />
+    <link rel="next" href="../../bus/endpoints/data.html" />
     
     
-    <link rel="prev" href="../../client/debugger/traffic.html" />
+    <link rel="prev" href="../../bus/endpoints/overview.html" />
     
 
         
@@ -34,7 +34,7 @@
 
 
         
-    <div class="book" data-level="1.9.3" data-basepath="../.." data-revision="1446665899099">
+    <div class="book" data-level="2.5" data-basepath="../.." data-revision="1446665899099">
     
 
 <div class="book-summary">
@@ -600,7 +600,7 @@
         </li>
     
         
-        <li class="chapter active" data-level="1.9.3" data-path="client/debugger/metrics.html">
+        <li class="chapter " data-level="1.9.3" data-path="client/debugger/metrics.html">
             
                 
                     <a href="../../client/debugger/metrics.html">
@@ -793,7 +793,7 @@
         </li>
     
         
-        <li class="chapter " data-level="2.5" data-path="bus/endpoints/hal.html">
+        <li class="chapter active" data-level="2.5" data-path="bus/endpoints/hal.html">
             
                 
                     <a href="../../bus/endpoints/hal.html">
@@ -1004,30 +1004,201 @@
                 <div class="page-inner">
                 
                 
-                    <section class="normal" id="section-gitbook_67">
+                    <section class="normal" id="section-gitbook_10">
                     
-                        <h2 id="iwc-debugger-metrics">IWC Debugger: Metrics</h2>
-<p>The metrics tool is a timeline plot of metrics gathered from the IWC Bus. The metrics are gathered as a singleton under
-the <code>ozpIwc.wiring.metrics</code> module.</p>
-<p><img src="../../assets/debugger_metrics.png" alt="img">
-<em>An example of tracking all packets sent out by the IWC Bus&#39;s Data Api module.</em></p>
-<hr>
-<h4 id="disable0">Disable(0)</h4>
-<p>This button will toggle the plotting of metrics from the metrics module that are enabled in the <strong>Metrics</strong> list.</p>
-<h4 id="gather">Gather</h4>
-<p>Plots the current metrics from the metrics module on the enabled metrics in the <strong>Metrics</strong> list.</p>
-<h4 id="clear">Clear</h4>
-<p>Clears the Metrics timeline but not the metrics.</p>
-<h4 id="every-second-dropdown">&quot;Every Second&quot; Dropdown</h4>
-<p>A dropdown to note how often to plot updates from the metrics module</p>
-<h4 id="1-minute-dropdown">&quot;1 minute&quot; Dropdown</h4>
-<p>How long to retain points on the plot. By default after a plotted point has existed for 1 minute it will be removed.</p>
-<h4 id="filter">Filter</h4>
-<p>Filters the <strong>Metrics</strong> list using string matching.</p>
-<h4 id="select-filtered">Select Filtered</h4>
-<p>Enables plotting on all of the metrics currently shown in the <strong>Metrics</strong> list.</p>
-<h4 id="deselect-filtered">Deselect Filtered</h4>
-<p>Disables plotting on all of the metrics currently shown in the <strong>Metrics</strong> list.</p>
+                        <h3 id="hal">HAL</h3>
+<p>The IWC&#39;s utilization of HAL formatted data gathering allows for flexibility in data loading as well as simple 
+integration of future resource content-types.</p>
+<h4 id="hal-links-and-embedded-resources">HAL Links and Embedded Resources</h4>
+<p>Each IWC endpoint and its children are expected to serve HAL formatted data. The IWC&#39;s HAL parser will walk through 
+<code>_embedded.item</code> properties as well as <code>_links.item</code> properties recursively to load all data associated with an endpoint.
+When receiving a HAL response, the body of the HAL object associates with the IWC resource created in relation to the
+response&#39;s HREF.</p>
+<p>If a link to a resource is provided that was received during the recursive process, the link will not be gathered. This
+means commonly returned resources can be passed in the <code>_embedded.item</code> field of the HAL data for an endpoint to reduce
+the amount of AJAX calls.</p>
+<p>For example, if the IWC had some endpoint <code>ozp:sample</code> that was loaded with the data below, 3 resources would be handled
+as embedded resources (<code>/resource1</code>, <code>/resource2</code>, <code>/resource3</code>) and require no additional AJAX request. Two resource
+paths in the <code>_links.item</code> are not included in the embedded resources (<code>/resource4</code>, <code>/resource5</code>) which would open
+an AJAX request each to be gathered.</p>
+<pre><code>{
+  &quot;_links&quot;:{
+    &quot;item&quot;: [
+       {
+         &quot;type&quot;: &quot;application/vnd.ozp.sample+json&quot;,
+         &quot;href&quot;: &quot;/resource1&quot;
+       },
+       {
+         &quot;type&quot;: &quot;application/vnd.ozp.sample+json&quot;,
+         &quot;href&quot;: &quot;/resource2&quot;
+       },
+       {
+         &quot;type&quot;: &quot;application/vnd.ozp.sample+json&quot;,
+         &quot;href&quot;: &quot;/resource3&quot;
+       },
+       {
+         &quot;type&quot;: &quot;application/vnd.ozp.sample+json&quot;,
+         &quot;href&quot;: &quot;/resource4&quot;
+       },
+       {
+         &quot;type&quot;: &quot;application/vnd.ozp.sample+json&quot;,
+         &quot;href&quot;: &quot;/resource5&quot;
+       }
+     ],
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;/&quot;
+    }
+  },
+
+  &quot;_embedded&quot;:{
+    &quot;item&quot;: [
+      {
+        &quot;id&quot;: &quot;1cc16131-d013-4dee-bc8c-82ffae60042b&quot;,
+        &quot;title&quot;: &quot;Sample 1&quot;,
+        &quot;body&quot;: &quot;some text.&quot;
+        &quot;_links&quot;: {
+          &quot;self&quot;: {
+            &quot;type&quot;: &quot;application/vnd.ozp.sample+json&quot;,
+            &quot;href&quot;: &quot;/resource1&quot;
+          }
+        }
+      },
+      {
+        &quot;id&quot;: &quot;6f460796-55e0-45c4-924d-ddf54c101efa&quot;,
+        &quot;title&quot;: &quot;Sample 2&quot;,
+        &quot;body&quot;: &quot;some text.&quot;
+        &quot;_links&quot;: {
+          &quot;self&quot;: {
+            &quot;type&quot;: &quot;application/vnd.ozp.sample+json&quot;,
+            &quot;href&quot;: &quot;/resource2&quot;
+          }
+        }
+      },
+      {
+        &quot;id&quot;: &quot;3c46e645-8545-4398-9e6c-822013fbf4a4&quot;,
+        &quot;title&quot;: &quot;Sample 3&quot;,
+        &quot;body&quot;: &quot;some text.&quot;
+        &quot;_links&quot;: {
+          &quot;self&quot;: {
+            &quot;type&quot;: &quot;application/vnd.ozp.sample+json&quot;,
+            &quot;href&quot;: &quot;/resource3&quot;
+          }
+        }
+      }    
+    ]  
+
+  }
+}
+</code></pre><p><strong>/resource4</strong></p>
+<pre><code>{
+  &quot;_links&quot;:{
+   &quot;self&quot;: {
+      &quot;href&quot;: &quot;/resource3&quot;,
+      &quot;type&quot;: &quot;application/vnd.ozp.sample+json&quot;
+    }
+  },
+  &quot;_embedded&quot;: {},
+  &quot;id&quot;: &quot;a6194bae-3ac7-4641-b0d2-6b0debce64a7&quot;,
+  &quot;title&quot;: &quot;Sample 4&quot;,
+  &quot;body&quot;: &quot;some text.&quot;
+}
+</code></pre><p><strong>/resource5</strong></p>
+<pre><code>{
+  &quot;_links&quot;:{
+   &quot;self&quot;: {
+      &quot;href&quot;: &quot;/resource4&quot;,
+      &quot;type&quot;: &quot;application/vnd.ozp.sample+json&quot;
+    }
+  },
+  &quot;_embedded&quot;: {},
+  &quot;id&quot;: &quot;a6194bae-3ac7-4641-b0d2-6b0debce64a7&quot;,
+  &quot;title&quot;: &quot;Sample 5&quot;,
+  &quot;body&quot;: &quot;some text.&quot;
+}
+</code></pre><h4 id="hal-links">HAL Links</h4>
+<p>As seen in in the sample endpoint data above, all link objects (including nested <code>_links</code> of <code>_embedded</code> resources)
+have both a <code>href</code> and <code>type</code> property. <strong>The IWC requires both properties in all link objects.</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>href</td>
+<td>the url path associated with the resource.</td>
+</tr>
+<tr>
+<td>type</td>
+<td>the content-type associated with the resource, will be used in GET request if resource is not embedded.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="schemas">Schemas</h4>
+<p>The <code>type</code> of a IWC Resource is mapped to the node creation process in the IWC. It is important to follow the given
+schemas for resource types as IWC nodes will not be created if the received data does not match its type.</p>
+<p><strong>IWC Schemas do not dictate <code>_embedded</code> resources</strong>. A schema only dictates what is in the body of the
+HAL response (the root of the HAL object) as well as any links needed. </p>
+<p>The schema for the example type used above can be found below. It is split into thtrr tables:</p>
+<pre><code>1. **Resource**: Properties pertaining to the body of the HAL response.
+2. **Links**: Properties pertaining to the `_links` object of the HAL response.
+</code></pre><h4 id="applicationvndsamplejson">application/vnd.sample+json</h4>
+<p><strong>Resource</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>String</td>
+<td>A UUID pertaining to the resource.</td>
+</tr>
+<tr>
+<td>title</td>
+<td>String</td>
+<td>A title string.</td>
+</tr>
+<tr>
+<td>body</td>
+<td>String</td>
+<td>A body of text.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Links</strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>self</td>
+<td>Object</td>
+<td>the link object for this resource.</td>
+</tr>
+<tr>
+<td>self.href</td>
+<td>String</td>
+<td>the url of this resource.</td>
+</tr>
+<tr>
+<td>self.type</td>
+<td>String</td>
+<td>the content-type of this resource.</td>
+</tr>
+</tbody>
+</table>
 
                     
                     </section>
@@ -1038,10 +1209,10 @@ the <code>ozpIwc.wiring.metrics</code> module.</p>
         </div>
 
         
-        <a href="../../client/debugger/traffic.html" class="navigation navigation-prev " aria-label="Previous page: Traffic Snooper"><i class="fa fa-angle-left"></i></a>
+        <a href="../../bus/endpoints/overview.html" class="navigation navigation-prev " aria-label="Previous page: Backend API Endpoint Requirements"><i class="fa fa-angle-left"></i></a>
         
         
-        <a href="../../client/debugger/elections.html" class="navigation navigation-next " aria-label="Next page: Elections"><i class="fa fa-angle-right"></i></a>
+        <a href="../../bus/endpoints/data.html" class="navigation navigation-next " aria-label="Next page: Data API Schemas"><i class="fa fa-angle-right"></i></a>
         
     </div>
 </div>

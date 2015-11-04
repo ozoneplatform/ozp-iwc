@@ -15,19 +15,19 @@
 |  self                   | Object  | the link object for this resource.        |
 |  self.href              | String  | the url of this resource.                 |
 |  self.type              | String  | the content-type of this resource.        |
-|  [ozp:user-data](          | Object  | the link object for the Data.api. Denotes the URL for IWC components accesing the Data.api backend.|
+|  [ozp:user-data](data.md)| Object  | the link object for the Data.api. Denotes the URL for IWC components accesing the Data.api backend.|
 |  ozp:user-data.href     | String  |                                           |
 |  ozp:user-data.type     | String  |                                           |
-|  ozp:application        | Object  | the link object for the System.api's Applications.|
+|  [ozp:application](application.md)| Object  | the link object for the System.api's Applications.|
 |  ozp:application.href   | String  |                                           |
 |  ozp:application.type   | String  |                                           |
-|  ozp:user               | Object  | the link object for the System.api's User information.        |
+|  [ozp:user](user.md)    | Object  | the link object for the System.api's User information.        |
 |  ozp:user.href          | String  |                                           |
 |  ozp:user.type          | String  |                                           |
-|  ozp:system             | Object  | the link object for the System.api's Baackend information.        |
+|  [ozp:system](system.md)| Object  | the link object for the System.api's Baackend information.        |
 |  ozp:system.href        | String  |                                           |
 |  ozp:systemtype         | String  |                                           |
-|  ozp:intent             | Object  | the link object for the Intents.api.        |
+|  [ozp:intent](intents.md)| Object  | the link object for the Intents.api.        |
 |  ozp:intent.href        | String  |                                           |
 |  ozp:intent.type        | String  |                                           |
 |  ozp:data-item          | Object  | the *template* link object for the creation of Data Api resources. Notes the content-type and path for the IWC to store nodes in.|
@@ -42,7 +42,7 @@
 
 ####Embedded Resources
 Commonly, the `ozp:user` and `ozp:system` endpoints are loaded in the `_embedded` properties as they are single resource
-endpoints. 
+endpoints (no links). 
 
 ####GET response(sample)
 ```
