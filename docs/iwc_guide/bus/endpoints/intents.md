@@ -8,14 +8,3 @@ decision. Currently the IWC does not have a preset list of intent definitions, a
 defined.
 
 ***
-### GET Request
-
-* **Accept**: application/vnd.ozp-?
-
-### GET Response
-
-* **Content-Type**: application/vnd.ozp-?
-
-### Response Body
-The following properties are required in the response. Other properties can be undefined.
-

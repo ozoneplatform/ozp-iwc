@@ -28,5 +28,21 @@ ozpIwc.api.system.node.UserNodeV2 = (function (api, util) {
      */
     Node.serializedContentType = "application/vnd.ozp-iwc-user+json;version=2";
 
+    /**
+     * Sets the api node from the serialized form.
+     *
+     * @method deserializedEntity
+     * @param {Object} data
+     */
+    Node.prototype.deserializedEntity = function (data) {
+        /*jshint camelcase: false */
+        data = data  || {};
+
+        return {
+            displayName : data.display_name,
+            id: data.id,
+            username: data.username
+        };
+    };
     return Node;
 }(ozpIwc.api, ozpIwc.util));

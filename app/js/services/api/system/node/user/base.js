@@ -38,7 +38,7 @@ ozpIwc.api.system.node.UserNode = (function (api, util) {
         data = data  || {};
 
         return {
-            displayName : data.display_name,
+            displayName : data.displayName,
             id: data.id,
             username: data.username
         };

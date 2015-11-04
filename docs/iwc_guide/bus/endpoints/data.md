@@ -1,82 +1,171 @@
+##ozp:user-data
 ##Data API Node Endpoints
-The Data API requests Data API Nodes listed from the [ozp:user-data](overview.md) endpoint. The IWC does not care
-how the data is handled on the backend rather that it meets its requirements for a GET and PUT request.
+The Data API requests Data API Nodes listed from the `ozp:user-data` endpoint. `ozp:user-data` is a relational link to
+the href provided in the `_links` of the [api root](overview.md). The IWC does not care how the data is handled on the 
+backend rather that it meets/handles its required content-types.
 
-### These Content-Types are being updated
-vnd.ozp-iwc-data-object-v1+json is handled by the IWC Bus, a more coherent vnd.ozp-iwc-data-object-v2+json is currently
-in development. Both will be valid to the IWC.
+The root of `ozp:user-data` supplies links to data node resources(application/vnd.ozp-iwc-data-objects+json;version=2).It must provide a 
+`_link.item` array of linked data node resources. Optionally these resources can be provided in the `_embedded.item` array
+to reduce network communication.
+
+
+###Supported Content Types
+The following content-types can be handled if linked from the `ozp:user-data` or from an resource that is chain linked from 
+`ozp:user-data`.
+
+| Content-Type| Description|
+|-------------|------------|
+|application/vnd.ozp-iwc-data-objects-v1+json| The IWC's current corresponding ozone backend [ozp-rest](https://github.com/ozone-development/ozp-rest) uses this content-type. A HAL resource only containing link objects for other resources. This content-type will be deprecated in 2016 as it lacks providing content-type of its links.|
+|application/vnd.ozp-iwc-data-objects+json;version=2| The IWC's new ozone backend [ozp-backend](https://github.com/ozone-development/ozp-backend) uses this content-type.|
+|application/vnd.ozp-iwc-data-object-v1+json| The IWC's current corresponding ozone backend [ozp-rest](https://github.com/ozone-development/ozp-rest) matches this content-type. This content-type will be deprecated in 2016 as it lacks providing content-type of its links|
+|application/vnd.ozp-iwc-data-object+json;version=2| The IWC's default content-type for data node resources. Used in the new ozone backend [ozp-backend](https://github.com/ozone-development/ozp-backend).|
 
 ***
-### GET Response
+###Data Node List Resources
+####application/vnd.ozp-iwc-data-objects+json;version=2
+**Resource**
 
-* **Content-Type**: [application/vnd.ozp-iwc-data-object-v1+json](https://github.com/ozone-development/ozp-data-schemas/blob/master/schema/vnd.ozp-iwc-data-object-v1%2Bjson.json)
+| property | type    | description                               |
+|------------|---------|-------------------------------------------|
 
-### Response Body
-* **entity** A Object (or stringified Object) of the Data API Node
-* **contentType** The Content-Type of the node.
-* **key** The key used to store this node in the backend
+**Links**
 
+| property   | type    | description                               |
+|------------|---------|-------------------------------------------|
+|  self                   | Object  | the link object for this resource.        |
+|  self.href              | String  | the url of this resource.                 |
+|  self.type              | String  | the content-type of this resource.        |
+|  item                   | Array   | An array of linked items. Of a supported `ozp:user-data` type|
+
+
+**Embedded Resources**
+Commonly, the `application/vnd.ozp-iwc-data-object+json;version=2` content-type resources are provided both in the 
+`_embedded.item` arrays. This is to reduce network communication to gather resources.
+
+
+**Example**
 ```
 {
-  "entity": {
-      "resource": "/locationLister/listings/13ab7e80",
-      "entity": {
-        "title": "test",
-        "coords": {
-          "lat": 1,
-          "long": 2
+  "_embedded": {
+    "item": [
+      {
+        "username": "wsmith",
+        "key": "/test",
+        "entity": "\"Hello World!\"",
+        "content_type": "application/vnd.ozp-iwc-data-object+json;version=2",
+        "version": "2",
+        "pattern": null,
+        "permissions": "{}",
+        "_links": {
+          "self": {
+            "href": "http://localhost:1212/iwc-api/self/data/test",
+            "type": "application/vnd.ozp-iwc-data-object+json;version=2"
+          }
         },
-        "description": "aaa"
-      },
-      "permissions": {
-        
-      },
-      "version": 2,
-      "lifespan": {
-        "type": "Persistent"
-      },
-      "deleted": false,
-      "pattern": "/locationLister/listings/13ab7e80/",
-      "collection": [
-        
-      ],
-      "self": "https://localhost:13000/api/profile/7/data/locationLister/listings/13ab7e80"
+        "_embedded": {}
+      }
+    ]
   },
-  "contentType": "application/vnd.ozp-iwc-data-object+json",
-  "key": "locationLister/listings/13ab7e80"
+  "_links": {
+    "item": [
+      {
+        "href": "http://localhost:1212/iwc-api/self/data/test",
+        "type": "application/vnd.ozp-iwc-data-object+json;version=2"
+      }
+    ],
+    "self": {
+      "href": "http://localhost:1212/iwc-api/self/data/",
+      "type": "application/json;version=2"
+    }
+  }
 }
 ```
 
-***
-### PUT Request
-API Nodes are persisted back to the server with a PUT request on their `self` URL. This is a PUT request on Data API
-resource `/locationLister/listings/8c7d7002`.
+####application/vnd.ozp-iwc-data-objects-v1+json
+This content-type does not provide `type` properties to its link objects. The IWC can handle making decisions
+for what content-type to treat a resource as, but this functionality will be deprecated and replaced with a strong
+content-type based resource handling in 2016.
 
-#### Headers
-* **Content-Type**: application/vnd.ozp-iwc-data-object+json
+**Resource**
 
-#### Request Payload
+| property | type    | description                               |
+|------------|---------|-------------------------------------------|
+
+**Links**
+
+| property   | type    | description                               |
+|------------|---------|-------------------------------------------|
+|  self                   | Object  | the link object for this resource.        |
+|  self.href              | String  | the url of this resource.                 |
+|  item                   | Array   | An array of linked items. Of a supported `ozp:user-data` type|
+
+**Embedded Resources**
+Commonly, the `application/vnd.ozp-iwc-data-object-v1+json` content-type resources are provided both in the 
+`_embedded.item` arrays. This is to reduce network communication to gather resources.
+
+**Example**
 ```
 {
-  "key": "/locationLister/listings/8c7d7022",
-  "entity": {
-    "title": "test",
-    "coords": {
-      "lat": 1,
-      "long": 2
-    },
-    "description": "a"
-  },
-  "collection": [],
-  "pattern": "/locationLister/listings/8c7d7022/",
-  "permissions": {
-    
-  },
-  "version": 2,
   "_links": {
+    "item": [
+      {
+        "href": "https://localhost:1313/marketplace/api/profile/7/data/dashboard-data"
+      },
+      {
+        "href": "https://localhost:1313/marketplace/api/profile/7/data/test"
+      }
+    ],
     "self": {
-      "href": "https://localhost:13000/api/profile/7/data/locationLister/listings/8c7d7022"
+      "href": "https://localhost:1313/marketplace/api/profile/7/data"
     }
   }
+}
+```
+***
+
+###Data Node Resources
+
+####application/vnd.ozp-iwc-data-object-v1+json
+TODO
+
+####application/vnd.ozp-iwc-data-object+json;version=2
+
+**Resource**
+
+| property   | type    | description                               |
+|------------|---------|-------------------------------------------|
+| key        | String  | An identifier for the resource.           |
+| version    | Number  | The version number of the resource. This increases in the IWC every time the resource changes.|
+| pattern    | String  | A URI Pattern for this resource to match for watching other resources.|
+| permissions| String  | A stringified object of ABAC policies pertaining to the resource.|
+| entity     | String  | A stringified payload of the resource.    |
+
+
+**Links**
+
+| property                | type    | description                               |
+|-------------------------|---------|-------------------------------------------|
+|  self                   | Object  | the link object for this resource.        |
+|  self.href              | String  | the url of this resource.                 |
+|  self.type              | String  | the content-type of this resource.        |
+|  item                   | Array   | An array of linked items. Of a supported `ozp:user-data` type|
+
+**Example**
+```
+{
+  "username": "wsmith",
+  "key": "/test",
+  "entity": "\"Hello World!\"",
+  "content_type": "application/vnd.ozp-iwc-data-object+json;version=2",
+  "version": "2",
+  "pattern": null,
+  "permissions": "{}",
+  "_links": {
+    "self": {
+      "href": "http://localhost:1212/iwc-api/self/data/test/",
+      "type": "application/vnd.ozp-iwc-data-object+json;version=2"
+    }
+  },
+  "_embedded": {}
 }
 ```
