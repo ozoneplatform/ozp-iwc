@@ -48,14 +48,18 @@ ozpIwc.api.intents.FSM = (function (api, util) {
         var choices = this.entity.handlerChoices || [];
         var nextEntity = {};
 
-        if (choices.length === 1) {
+        //If there is only 1 choice & its a launcher, enforce the popup to choose it (similar to Windows chooser feel).
+        var onlyLauncher = (choices.length === 1 && choices[0] && choices[0].entity && choices[0].entity.invokeIntent &&
+                            choices[0].entity.invokeIntent.action === "launch");
+
+        if (choices.length === 1 && !onlyLauncher) {
             nextEntity.handler = {
                 resource: choices[0].resource,
                 reason: "onlyOne"
             };
             nextEntity.state = "delivering";
             //nextEntity.handlerChosen = this.entity.handlerChoices[0];
-        } else if (choices.length > 1) {
+        } else if (choices.length) {
             nextEntity.state = "choosing";
         } else {
             nextEntity.state = "error";
