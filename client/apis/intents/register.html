@@ -34,7 +34,7 @@
 
 
         
-    <div class="book" data-level="1.4.1" data-basepath="../../.." data-revision="1446665899099">
+    <div class="book" data-level="1.4.1" data-basepath="../../.." data-revision="1446823917008">
     
 
 <div class="book-summary">
@@ -1015,11 +1015,6 @@
 <li><code>nodeValue.entity.icon</code>: <strong>String</strong> - a URL path to an icon to distinguish this application. </li>
 </ul>
 </li>
-<li><code>nodeValue.contentType</code>: <strong>String</strong> - For a registration for the intents api <strong>this must be an intent handler content
-type</strong>. Currently there is only 1 version of the intent handler content type: <ul>
-<li>&quot;application/vnd.ozp-iwc-intent-handler-v1+json&quot;</li>
-</ul>
-</li>
 </ul>
 <h3 id="applies-to-only-the-intents-api">Applies to only the Intents API</h3>
 <h3 id="registers-an-application-to-handle-and-iwc-intent">Registers an application to handle and IWC Intent</h3>
@@ -1034,7 +1029,6 @@ predefined default icon.</p>
 <pre><code>var intentsApi = client.intents();
 
 var config = {
-    &quot;contentType&quot;: &quot;application/vnd.ozp-iwc-intent-handler-v1+json&quot;,
     &quot;entity&quot;: {
         &quot;label&quot;: &quot;My JSON Viewer&quot;,
         &quot;icon&quot;: &quot;https://www.example.com/icon.png&quot;
