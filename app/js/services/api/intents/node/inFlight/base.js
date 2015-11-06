@@ -23,6 +23,7 @@ ozpIwc.api.intents.node.InFlightNode = (function (api, util) {
         // Take the supplied data for anything that matches in the super class,
         // such as resource.
         api.base.Node.apply(this, arguments);
+        this.contentType = InFlightNode.serializedContentType;
         /**
          * @property lifespan
          * @type {ozpIwc.api.Lifespan.Bound}
@@ -34,7 +35,7 @@ ozpIwc.api.intents.node.InFlightNode = (function (api, util) {
         if (!config.invokePacket) {
             throw new api.error.BadContentError("In flight intent requires an invocation packet");
         }
-        if (!Array.isArray(config.handlerChoices) || config.handlerChoices < 1) {
+        if (!config.handlerChoices || Array.isArray(config.handlerChoices) && config.handlerChoices.length === 0) {
             throw new api.error.BadContentError("No handlers available");
         }
         /**
@@ -50,7 +51,7 @@ ozpIwc.api.intents.node.InFlightNode = (function (api, util) {
             },
             'invokePacket': config.invokePacket,
             'contentType': config.invokePacket.contentType,
-            'entity': config.invokePacket.entity,
+            'entity': config.invokePacket.entity || {},
             'state': "init",
             'status': "ok",
             'handlerChoices': config.handlerChoices,
@@ -61,5 +62,14 @@ ozpIwc.api.intents.node.InFlightNode = (function (api, util) {
             'reply': null
         };
     });
+
+    /**
+     * The content type of the data returned by serialize()
+     *
+     * @method serializedContentType
+     * @static
+     * @return {string}
+     */
+    InFlightNode.serializedContentType = "application/vnd.ozp-inflight-intent-v1+json";
     return InFlightNode;
 }(ozpIwc.api, ozpIwc.util));

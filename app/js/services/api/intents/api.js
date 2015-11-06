@@ -59,6 +59,27 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         }
     };
 
+    /**
+     * Maps a content-type to an IWC Node type. Overriden in APIs.
+     * @method findNodeType
+     * @param {Object} contentTypeObj an object-formatted content-type
+     * @param {String} contentTypeObj.name the content-type without any variables
+     * @param {Number} [contentTypeObj.version] the version of the content-type.
+     * @returns {undefined}
+     */
+    Api.prototype.findNodeType = function(contentType){
+        var formattedContentType = util.getFormattedContentType(contentType);
+        var type = this.contentTypeMappings[formattedContentType.name];
+        if(type){
+            if(formattedContentType.version) {
+                return type[formattedContentType.version];
+            }else{
+                return type;
+            }
+        }
+    };
+
+
 // turn on bulkGet and list for everything
     Api.useDefaultRoute(["bulkGet", "list"]);
 
@@ -312,7 +333,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
             packet,
             pathParams.major + "/" + pathParams.minor,
             pathParams.action,
-            [context.node]
+            context.node
         );
     });
     Api.declareRoute({
@@ -334,24 +355,13 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
      * @param {String} contentType
      * @return {*}
      */
-    Api.registerDefinitionFilter = function (nodeType, contentType) {
+    Api.registerDefinitionFilter = function () {
         var setDefinition = function (packet, context, pathParams, next) {
-            // Only set to the definition if not already set.
-            if (!context.node.entity) {
-                context.node.set({
-                    entity: {
-                        "type": pathParams.major + "/" + pathParams.minor,
-                        "action": pathParams.action
-                    }
-                });
-            }
-
             this.addCollector(context.node.resource);
-
             return next();
         };
 
-        var filters = api.filter.standard.setFilters(nodeType, contentType);
+        var filters = api.filter.standard.setFilters(api.intents.node.DefinitionNode);
         filters.unshift(api.filter.base.fixPattern());
         filters.push(setDefinition);
 
@@ -376,11 +386,12 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         var generateHandlerResource = function (packet, context, pathParams, next) {
             packet.resource = "/" + pathParams.major + "/" + pathParams.minor + "/" + pathParams.action + "/" +
                 pathParams.handlerId;
+            packet.pattern = "";
             context.node = this.data[packet.resource];
             return next();
         };
 
-        var definitionFilter = Api.registerDefinitionFilter(null, "application/vnd.ozp-iwc-intent-handler-v1+json");
+        var definitionFilter = Api.registerDefinitionFilter();
         definitionFilter.unshift(generateDefinitionResource);
 
         definitionFilter.push(generateHandlerResource);
@@ -394,7 +405,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
     Api.declareRoute({
         action: "register",
         resource: "/{major}/{minor}/{action}",
-        filters: Api.registerDefinitionFilter(null, "application/vnd.ozp-iwc-intent-handler-v1+json")
+        filters: Api.registerDefinitionFilter()
     }, function (packet, context, pathParams) {
 
         var childNode = this.createNode({
@@ -418,7 +429,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
     Api.declareRoute({
         action: "register",
         resource: "/{major}/{minor}/{action}/{handlerId}",
-        filters: Api.registerHandlerFilter(null, "application/vnd.ozp-iwc-intent-handler-v1+json")
+        filters: Api.registerHandlerFilter()
     }, function (packet, context, pathParams) {
         var childNode = this.createNode({
             'resource': packet.resource,

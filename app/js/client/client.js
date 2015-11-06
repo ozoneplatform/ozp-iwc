@@ -185,7 +185,6 @@ ozpIwc.Client = (function (util) {
      * @type {{contentType: string, entity: {label: string}}}
      */
     var sharedWorkerRegistrationData = {
-        contentType: 'application/vnd.ozp-iwc-intent-handler-v1+json',
         entity: {
             label: 'SharedWorker\'s intent handler'
         }

@@ -45,26 +45,39 @@ ozpIwc.api.intents.FSM = (function (api, util) {
      * @return {Object}
      */
     FSM.states.init = function () {
-        var choices = this.entity.handlerChoices || [];
+        var choices = this.entity.handlerChoices;
         var nextEntity = {};
 
-        //If there is only 1 choice & its a launcher, enforce the popup to choose it (similar to Windows chooser feel).
-        var onlyLauncher = (choices.length === 1 && choices[0] && choices[0].entity && choices[0].entity.invokeIntent &&
-                            choices[0].entity.invokeIntent.action === "launch");
+        if(!choices || choices === []){
+            nextEntity.state = "error";
+            nextEntity.error = "noChoices";
+            return FSM.transition(this, {entity: nextEntity});
+        }
 
-        if (choices.length === 1 && !onlyLauncher) {
+        if(Array.isArray(choices)){
+            //If there is only 1 choice & its a launcher, enforce the popup to choose it (similar to Windows chooser feel).
+            var onlyLauncher = (choices.length === 1 && choices[0] && choices[0].entity && choices[0].entity.invokeIntent &&
+            choices[0].entity.invokeIntent.action === "launch");
+            if (choices.length === 1 && !onlyLauncher) {
+                nextEntity.handler = {
+                    resource: choices[0].resource,
+                    reason: "onlyOne"
+                };
+                nextEntity.state = "delivering";
+            } else {
+                nextEntity.state = "choosing";
+            }
+        } else if (typeof choices === "object") {
             nextEntity.handler = {
-                resource: choices[0].resource,
+                resource: choices.resource,
                 reason: "onlyOne"
             };
             nextEntity.state = "delivering";
-            //nextEntity.handlerChosen = this.entity.handlerChoices[0];
-        } else if (choices.length) {
-            nextEntity.state = "choosing";
         } else {
             nextEntity.state = "error";
-            nextEntity.error = "noChoices";
+            nextEntity.error = "unknown choices.";
         }
+
         return FSM.transition(this, {entity: nextEntity});
     };
 
