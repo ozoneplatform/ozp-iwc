@@ -1,0 +1,3900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>ozpIwc.api.intents.Api - ozpIwc</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 1.1.8</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/BadActionError.html">BadActionError</a></li>
+                                <li><a href="../classes/BadContentError.html">BadContentError</a></li>
+                                <li><a href="../classes/BadRequestError.html">BadRequestError</a></li>
+                                <li><a href="../classes/BadResourceError.html">BadResourceError</a></li>
+                                <li><a href="../classes/BadStateError.html">BadStateError</a></li>
+                                <li><a href="../classes/NoActionError.html">NoActionError</a></li>
+                                <li><a href="../classes/NoMatchError.html">NoMatchError</a></li>
+                                <li><a href="../classes/NoPermissionError.html">NoPermissionError</a></li>
+                                <li><a href="../classes/NoResourceError.html">NoResourceError</a></li>
+                                <li><a href="../classes/ozpIwc.alert.html">ozpIwc.alert</a></li>
+                                <li><a href="../classes/ozpIwc.api.html">ozpIwc.api</a></li>
+                                <li><a href="../classes/ozpIwc.api.base.Api.html">ozpIwc.api.base.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.base.Node.html">ozpIwc.api.base.Node</a></li>
+                                <li><a href="../classes/ozpIwc.api.data.Api.html">ozpIwc.api.data.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.data.node.Node.html">ozpIwc.api.data.node.Node</a></li>
+                                <li><a href="../classes/ozpIwc.api.data.node.Nodev2.html">ozpIwc.api.data.node.Nodev2</a></li>
+                                <li><a href="../classes/ozpIwc.api.Endpoint.html">ozpIwc.api.Endpoint</a></li>
+                                <li><a href="../classes/ozpIwc.api.EndpointRegistry.html">ozpIwc.api.EndpointRegistry</a></li>
+                                <li><a href="../classes/ozpIwc.api.error.BaseError.html">ozpIwc.api.error.BaseError</a></li>
+                                <li><a href="../classes/ozpIwc.api.filter.base.html">ozpIwc.api.filter.base</a></li>
+                                <li><a href="../classes/ozpIwc.api.filter.Function.html">ozpIwc.api.filter.Function</a></li>
+                                <li><a href="../classes/ozpIwc.api.filter.standard.html">ozpIwc.api.filter.standard</a></li>
+                                <li><a href="../classes/ozpIwc.api.intents.Api.html">ozpIwc.api.intents.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.intents.FSM.html">ozpIwc.api.intents.FSM</a></li>
+                                <li><a href="../classes/ozpIwc.api.Lifespan.Bound.html">ozpIwc.api.Lifespan.Bound</a></li>
+                                <li><a href="../classes/ozpIwc.api.Lifespan.Ephemeral.html">ozpIwc.api.Lifespan.Ephemeral</a></li>
+                                <li><a href="../classes/ozpIwc.api.Lifespan.Persistent.html">ozpIwc.api.Lifespan.Persistent</a></li>
+                                <li><a href="../classes/ozpIwc.api.locks.Api.html">ozpIwc.api.locks.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.locks.Node.html">ozpIwc.api.locks.Node</a></li>
+                                <li><a href="../classes/ozpIwc.api.names.Api.html">ozpIwc.api.names.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.names.Node.html">ozpIwc.api.names.Node</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.Api.html">ozpIwc.api.system.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.ApplicationNode.html">ozpIwc.api.system.node.ApplicationNode</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.ApplicationNodeV2.html">ozpIwc.api.system.node.ApplicationNodeV2</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.SystemNode.html">ozpIwc.api.system.node.SystemNode</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.UserNode.html">ozpIwc.api.system.node.UserNode</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.UserNodeV2.html">ozpIwc.api.system.node.UserNodeV2</a></li>
+                                <li><a href="../classes/ozpIwc.apiMap.html">ozpIwc.apiMap</a></li>
+                                <li><a href="../classes/ozpIwc.Client.html">ozpIwc.Client</a></li>
+                                <li><a href="../classes/ozpIwc.Debugger.html">ozpIwc.Debugger</a></li>
+                                <li><a href="../classes/ozpIwc.Lifespan.html">ozpIwc.Lifespan</a></li>
+                                <li><a href="../classes/ozpIwc.log.html">ozpIwc.log</a></li>
+                                <li><a href="../classes/ozpIwc.metric.Registry.html">ozpIwc.metric.Registry</a></li>
+                                <li><a href="../classes/ozpIwc.metric.stats.BinaryHeap.html">ozpIwc.metric.stats.BinaryHeap</a></li>
+                                <li><a href="../classes/ozpIwc.metric.stats.ExponentiallyDecayingSample.html">ozpIwc.metric.stats.ExponentiallyDecayingSample</a></li>
+                                <li><a href="../classes/ozpIwc.metric.stats.Sample.html">ozpIwc.metric.stats.Sample</a></li>
+                                <li><a href="../classes/ozpIwc.metric.stats.UniformSample.html">ozpIwc.metric.stats.UniformSample</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.BaseMetric.html">ozpIwc.metric.types.BaseMetric</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.Counter.html">ozpIwc.metric.types.Counter</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.Gauge.html">ozpIwc.metric.types.Gauge</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.Histogram.html">ozpIwc.metric.types.Histogram</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.Meter.html">ozpIwc.metric.types.Meter</a></li>
+                                <li><a href="../classes/ozpIwc.network.KeyBroadcastLocalStorageLink.html">ozpIwc.network.KeyBroadcastLocalStorageLink</a></li>
+                                <li><a href="../classes/ozpIwc.network.Peer.html">ozpIwc.network.Peer</a></li>
+                                <li><a href="../classes/ozpIwc.packet.Fragment.html">ozpIwc.packet.Fragment</a></li>
+                                <li><a href="../classes/ozpIwc.packet.FragmentStore.html">ozpIwc.packet.FragmentStore</a></li>
+                                <li><a href="../classes/ozpIwc.packet.Network.html">ozpIwc.packet.Network</a></li>
+                                <li><a href="../classes/ozpIwc.packet.Transport.html">ozpIwc.packet.Transport</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.elements.SecurityAttribute.html">ozpIwc.policyAuth.elements.SecurityAttribute</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.points.PDP.html">ozpIwc.policyAuth.points.PDP</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.points.PIP.html">ozpIwc.policyAuth.points.PIP</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.points.PRP.html">ozpIwc.policyAuth.points.PRP</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.points.utils.html">ozpIwc.policyAuth.points.utils</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.policies.html">ozpIwc.policyAuth.policies</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.PolicyCombining.html">ozpIwc.policyAuth.PolicyCombining</a></li>
+                                <li><a href="../classes/ozpIwc.Timer.html">ozpIwc.Timer</a></li>
+                                <li><a href="../classes/ozpIwc.transport.consensus.Base.html">ozpIwc.transport.consensus.Base</a></li>
+                                <li><a href="../classes/ozpIwc.transport.consensus.Bully.html">ozpIwc.transport.consensus.Bully</a></li>
+                                <li><a href="../classes/ozpIwc.transport.listener.SharedWorker.html">ozpIwc.transport.listener.SharedWorker</a></li>
+                                <li><a href="../classes/ozpIwc.transport.PacketContext.html">ozpIwc.transport.PacketContext</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Base.html">ozpIwc.transport.participant.Base</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Client.html">ozpIwc.transport.participant.Client</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
+                                <li><a href="../classes/ozpIwc.transport.Router.html">ozpIwc.transport.Router</a></li>
+                                <li><a href="../classes/ozpIwc.util.html">ozpIwc.util</a></li>
+                                <li><a href="../classes/ozpIwc.util.AjaxPersistenceQueue.html">ozpIwc.util.AjaxPersistenceQueue</a></li>
+                                <li><a href="../classes/ozpIwc.util.ApiPromiseMixin.html">ozpIwc.util.ApiPromiseMixin</a></li>
+                                <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
+                                <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
+                                <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
+                                <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
+                                <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                                <li><a href="../modules/ozpIwc.html">ozpIwc</a></li>
+                                <li><a href="../modules/ozpIwc.api.html">ozpIwc.api</a></li>
+                                <li><a href="../modules/ozpIwc.api.base.html">ozpIwc.api.base</a></li>
+                                <li><a href="../modules/ozpIwc.api.data.html">ozpIwc.api.data</a></li>
+                                <li><a href="../modules/ozpIwc.api.data.node.html">ozpIwc.api.data.node</a></li>
+                                <li><a href="../modules/ozpIwc.api.error.html">ozpIwc.api.error</a></li>
+                                <li><a href="../modules/ozpIwc.api.filter.html">ozpIwc.api.filter</a></li>
+                                <li><a href="../modules/ozpIwc.api.intents.html">ozpIwc.api.intents</a></li>
+                                <li><a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a></li>
+                                <li><a href="../modules/ozpIwc.api.locks.html">ozpIwc.api.locks</a></li>
+                                <li><a href="../modules/ozpIwc.api.names.html">ozpIwc.api.names</a></li>
+                                <li><a href="../modules/ozpIwc.api.system.html">ozpIwc.api.system</a></li>
+                                <li><a href="../modules/ozpIwc.api.system.node.html">ozpIwc.api.system.node</a></li>
+                                <li><a href="../modules/ozpIwc.metric.html">ozpIwc.metric</a></li>
+                                <li><a href="../modules/ozpIwc.metric.stats.html">ozpIwc.metric.stats</a></li>
+                                <li><a href="../modules/ozpIwc.metric.types.html">ozpIwc.metric.types</a></li>
+                                <li><a href="../modules/ozpIwc.network.html">ozpIwc.network</a></li>
+                                <li><a href="../modules/ozpIwc.packet.html">ozpIwc.packet</a></li>
+                                <li><a href="../modules/ozpIwc.policyAuth.html">ozpIwc.policyAuth</a></li>
+                                <li><a href="../modules/ozpIwc.policyAuth.elements.html">ozpIwc.policyAuth.elements</a></li>
+                                <li><a href="../modules/ozpIwc.policyAuth.points.html">ozpIwc.policyAuth.points</a></li>
+                                <li><a href="../modules/ozpIwc.transport.html">ozpIwc.transport</a></li>
+                                <li><a href="../modules/ozpIwc.transport.consensus.html">ozpIwc.transport.consensus</a></li>
+                                <li><a href="../modules/ozpIwc.transport.listener.html">ozpIwc.transport.listener</a></li>
+                                <li><a href="../modules/ozpIwc.transport.participant.html">ozpIwc.transport.participant</a></li>
+                                <li><a href="../modules/ozpIwc.util.html">ozpIwc.util</a></li>
+                                <li><a href="../modules/ozpIwc.worker.html">ozpIwc.worker</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1>ozpIwc.api.intents.Api Class</h1>
+<div class="box meta">
+
+        <div class="extends">
+            Extends <a href="../classes/ozpIwc.api.base.Api.html" class="crosslink">ozpIwc.api.base.Api</a>
+        </div>
+
+        <div class="foundat">
+            Defined in: <a href="../files/app_js_services_api_intents_api.js.html#l12"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;api.js:12</code></a>
+        </div>
+
+            Module: <a href="../modules/ozpIwc.api.intents.html">ozpIwc.api.intents</a><br>
+            Parent Module: <a href="../modules/ozpIwc.api.html">ozpIwc.api</a>
+
+</div>
+
+
+<div class="box intro">
+    <p>The Intents Api.
+Subclasses the <a href="../classes/ozpIwc.api.base.Api.html" class="crosslink">ozpIwc.api.base.Api</a>.</p>
+
+</div>
+
+    <div class="constructor">
+        <h2>Constructor</h2>
+<div id="method_ozpIwc.api.intents.Api" class="method item">
+    <h3 class="name"><code>ozpIwc.api.intents.Api</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>config</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_api.js.html#l12"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;api.js:12</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">config</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                        <ul class="params-list">
+                            <li class="param">
+                                    <code class="param-name optional">[name=&quot;intents.api&quot;]</code>
+                                    <span class="type">String</span>
+                                    <span class="flag optional" title="This parameter is optional.">optional</span>
+
+                                <div class="param-description">
+                                    
+                                </div>
+
+                            </li>
+                            <li class="param">
+                                    <code class="param-name">router</code>
+                                    <span class="type"><a href="../classes/ozpIwc.transport.Router.html" class="crosslink">ozpIwc.transport.Router</a></span>
+
+                                <div class="param-description">
+                                    
+                                </div>
+
+                            </li>
+                        </ul>
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+    </div>
+
+<div id="classdocs" class="tabview">
+    <ul class="api-class-tabs">
+        <li class="api-class-tab index"><a href="#index">Index</a></li>
+
+            <li class="api-class-tab methods"><a href="#methods">Methods</a></li>
+            <li class="api-class-tab properties"><a href="#properties">Properties</a></li>
+    </ul>
+
+    <div>
+        <div id="index" class="api-class-tabpanel index">
+            <h2 class="off-left">Item Index</h2>
+
+                <div class="index-section methods">
+                    <h3>Methods</h3>
+
+                    <ul class="index-list methods extends">
+                            <li class="index-item method inherited">
+                                <a href="#method_addCollector">addCollector</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_addWatcher">addWatcher</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_broadcastDeathScream">broadcastDeathScream</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_broadcastLeaderReady">broadcastLeaderReady</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_changedHandler">changedHandler</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_checkAuthorization">checkAuthorization</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_createDeathScream">createDeathScream</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_createdHandler">createdHandler</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_createNode">createNode</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_createNodeObject">createNodeObject</a>
+
+                            </li>
+                            <li class="index-item method private inherited">
+                                <a href="#method_deliverRequestQueue">deliverRequestQueue</a>
+
+                            </li>
+                            <li class="index-item method private inherited">
+                                <a href="#method_deliverSendQueue">deliverSendQueue</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_disconnectHandler">disconnectHandler</a>
+
+                            </li>
+                            <li class="index-item method private inherited">
+                                <a href="#method_enableRequestQueue">enableRequestQueue</a>
+
+                            </li>
+                            <li class="index-item method private inherited">
+                                <a href="#method_enableSendQueue">enableSendQueue</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_findNodeType">findNodeType</a>
+
+                            </li>
+                            <li class="index-item method private inherited">
+                                <a href="#method_flushRequestQueue">flushRequestQueue</a>
+
+                            </li>
+                            <li class="index-item method private inherited">
+                                <a href="#method_flushSendQueue">flushSendQueue</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_getCollection">getCollection</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_getPreference">getPreference</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_handleChoosing">handleChoosing</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_handleComplete">handleComplete</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_handleDelivering">handleDelivering</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_initializeData">initializeData</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_invokeIntentHandler">invokeIntentHandler</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_loadFromEndpoint">loadFromEndpoint</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_markForChange">markForChange</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_matchingNodes">matchingNodes</a>
+
+                            </li>
+                            <li class="index-item method inherited inherited">
+                                <a href="#method_mixinOnOff">mixinOnOff</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_off">off</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_on">on</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_receivePacketContext">receivePacketContext</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_registerDefinitionFilter">registerDefinitionFilter</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_registerHandlerFilter">registerHandlerFilter</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_removeCollector">removeCollector</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_removeWatcher">removeWatcher</a>
+
+                            </li>
+                            <li class="index-item method inherited inherited">
+                                <a href="#method_"></a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_serializedContentType">serializedContentType</a>
+
+                                    <span class="flag static">static</span>
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_serializedContentType">serializedContentType</a>
+
+                                    <span class="flag static">static</span>
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_serializedContentType">serializedContentType</a>
+
+                                    <span class="flag static">static</span>
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_set">set</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_shutdown">shutdown</a>
+
+                            </li>
+                            <li class="index-item method private inherited">
+                                <a href="#method_transitionToLeader">transitionToLeader</a>
+
+                            </li>
+                            <li class="index-item method private inherited">
+                                <a href="#method_transitionToLoading">transitionToLoading</a>
+
+                            </li>
+                            <li class="index-item method private inherited">
+                                <a href="#method_transitionToMemberDormant">transitionToMemberDormant</a>
+
+                            </li>
+                            <li class="index-item method private inherited">
+                                <a href="#method_transitionToMemberReady">transitionToMemberReady</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_updateCollections">updateCollections</a>
+
+                            </li>
+                    </ul>
+                </div>
+
+                <div class="index-section properties">
+                    <h3>Properties</h3>
+
+                    <ul class="index-list properties extends">
+                            <li class="index-item property inherited">
+                                <a href="#property_authorization">authorization</a>
+
+                            </li>
+                            <li class="index-item property inherited">
+                                <a href="#property_changeList">changeList</a>
+
+                            </li>
+                            <li class="index-item property inherited">
+                                <a href="#property_collectors">collectors</a>
+
+                            </li>
+                            <li class="index-item property inherited">
+                                <a href="#property_coordinationAddress">coordinationAddress</a>
+
+                            </li>
+                            <li class="index-item property inherited">
+                                <a href="#property_data">data</a>
+
+                            </li>
+                            <li class="index-item property inherited">
+                                <a href="#property_endpoints">endpoints</a>
+
+                            </li>
+                            <li class="index-item property">
+                                <a href="#property_entity">entity</a>
+
+                            </li>
+                            <li class="index-item property">
+                                <a href="#property_entity">entity</a>
+
+                            </li>
+                            <li class="index-item property">
+                                <a href="#property_entity">entity</a>
+
+                            </li>
+                            <li class="index-item property inherited inherited">
+                                <a href="#property_events">events</a>
+
+                            </li>
+                            <li class="index-item property inherited">
+                                <a href="#property_leaderState">leaderState</a>
+
+                            </li>
+                            <li class="index-item property">
+                                <a href="#property_lifespan">lifespan</a>
+
+                            </li>
+                            <li class="index-item property">
+                                <a href="#property_lifespan">lifespan</a>
+
+                            </li>
+                            <li class="index-item property">
+                                <a href="#property_lifespan">lifespan</a>
+
+                            </li>
+                            <li class="index-item property inherited">
+                                <a href="#property_logPrefix">logPrefix</a>
+
+                            </li>
+                            <li class="index-item property inherited">
+                                <a href="#property_name">name</a>
+
+                            </li>
+                            <li class="index-item property private inherited">
+                                <a href="#property_packetContext">packetContext</a>
+
+                            </li>
+                            <li class="index-item property inherited">
+                                <a href="#property_participant">participant</a>
+
+                            </li>
+                            <li class="index-item property inherited">
+                                <a href="#property_router">router</a>
+
+                            </li>
+                            <li class="index-item property inherited">
+                                <a href="#property_watchers">watchers</a>
+
+                            </li>
+                    </ul>
+                </div>
+
+
+        </div>
+
+            <div id="methods" class="api-class-tabpanel">
+                <h2 class="off-left">Methods</h2>
+
+<div id="method_addCollector" class="method item inherited">
+    <h3 class="name"><code>addCollector</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>node</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_addCollector">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l842"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:842</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Adds the given node to the collector list. It's collection list will be updated on api data changes.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">node</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_addWatcher" class="method item inherited">
+    <h3 class="name"><code>addWatcher</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>resource</code>
+                </li>
+                <li class="arg">
+                        <code>watcher</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_addWatcher">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l802"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:802</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Marks that a node has changed and that change notices may need to
+be sent out after the request completes.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">resource</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                        <p>name of the resource to watch</p>
+
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">watcher</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                        <ul class="params-list">
+                            <li class="param">
+                                    <code class="param-name">resource</code>
+                                    <span class="type">String</span>
+
+                                <div class="param-description">
+                                    <p>name of the resource to watch</p>
+
+                                </div>
+
+                            </li>
+                            <li class="param">
+                                    <code class="param-name">src</code>
+                                    <span class="type">String</span>
+
+                                <div class="param-description">
+                                    <p>Address of the watcher</p>
+
+                                </div>
+
+                            </li>
+                            <li class="param">
+                                    <code class="param-name">replyTo</code>
+                                    <span class="type">String | Number</span>
+
+                                <div class="param-description">
+                                    <p>The conversation id that change notices will go to</p>
+
+                                </div>
+
+                            </li>
+                        </ul>
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_broadcastDeathScream" class="method item inherited">
+    <h3 class="name"><code>broadcastDeathScream</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>deathScream</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_broadcastDeathScream">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l1031"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1031</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Broadcasts to other instances of this API on the bus this APIs state.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">deathScream</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>the state data to pass on.</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_broadcastLeaderReady" class="method item inherited">
+    <h3 class="name"><code>broadcastLeaderReady</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_broadcastLeaderReady">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l1020"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1020</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Broadcasts to other instances of this API on the bus that it is ready to lead.</p>
+
+    </div>
+
+
+
+
+</div>
+<div id="method_changedHandler" class="method item inherited">
+    <h3 class="name"><code>changedHandler</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>node</code>
+                </li>
+                <li class="arg">
+                        <code>entity</code>
+                </li>
+                <li class="arg">
+                        <code>packetContext</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_changedHandler">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l480"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:480</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>A handler function called after a node is changed but before it's watchers are notified. Can be overridden by
+inherited APIs.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">node</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">entity</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">packetContext</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_checkAuthorization" class="method item inherited">
+    <h3 class="name"><code>checkAuthorization</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>node</code>
+                </li>
+                <li class="arg">
+                        <code>context</code>
+                </li>
+                <li class="arg">
+                        <code>packet</code>
+                </li>
+                <li class="arg">
+                        <code>action</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Undefined</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_checkAuthorization">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l744"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:744</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Authorize the request for the given node.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">node</code>
+                        <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">context</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">packet</code>
+                        <span class="type"><a href="../classes/ozpIwc.packet.Transport.html" class="crosslink">ozpIwc.packet.Transport</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">action</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Undefined</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_createDeathScream" class="method item inherited">
+    <h3 class="name"><code>createDeathScream</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">Object</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_createDeathScream">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l514"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:514</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Create the data that needs to be handed off to the new leader.</p>
+<p><strong>Intended to be overridden by subclasses</strong></p>
+<p>Subsclasses can override this if they need to add additional
+handoff data.  This MUST be a synchronous call that returns immediately.</p>
+
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Object</span>:
+                    <p>the data that will be passed to the new leader</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_createdHandler" class="method item inherited">
+    <h3 class="name"><code>createdHandler</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>node</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_createdHandler">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l470"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:470</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>A handler function for when a node is created. Can be overridden by inherited APIs.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">node</code>
+                        <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_createNode" class="method item inherited">
+    <h3 class="name"><code>createNode</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>config</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node</a></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_createNode">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l601"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:601</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Creates a node appropriate for the given config, puts it into this.data,
+and fires off the right events.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">config</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>The node configuration.</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node</a></span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_createNodeObject" class="method item inherited">
+    <h3 class="name"><code>createNodeObject</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>config</code>
+                </li>
+                <li class="arg">
+                        <code>NodeType</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node</a></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_createNodeObject">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l621"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:621</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Creates a node appropriate for the given config.  This does
+NOT add the node to this.data.  Default implementation returns
+a plain ozpIwc.api.base.Node.</p>
+<p><strong>Intended to be overridden by subclasses</strong></p>
+<p>Subsclasses can override this for custom node types that may vary
+from resource to resource.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">config</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>The node configuration configuration.</p>
+
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">NodeType</code>
+                        <span class="type">Function</span>
+
+
+                    <div class="param-description">
+                        <p>The contructor call for the given node type to be created.</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node</a></span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_deliverRequestQueue" class="method item private inherited">
+    <h3 class="name"><code>deliverRequestQueue</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+        <span class="flag private">private</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_deliverRequestQueue">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l958"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:958</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Routes all queued packets and turns off request queueing.</p>
+
+    </div>
+
+
+
+
+</div>
+<div id="method_deliverSendQueue" class="method item private inherited">
+    <h3 class="name"><code>deliverSendQueue</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+        <span class="flag private">private</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_deliverSendQueue">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l993"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:993</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Delivers and disables API's sending queue.</p>
+
+    </div>
+
+
+
+
+</div>
+<div id="method_disconnectHandler" class="method item inherited">
+    <h3 class="name"><code>disconnectHandler</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>address</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_disconnectHandler">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l496"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:496</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>A handler function called when an instance of this API has disconnected from the bus.Can be overridden by
+inherited APIs.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">address</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_enableRequestQueue" class="method item private inherited">
+    <h3 class="name"><code>enableRequestQueue</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+        <span class="flag private">private</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_enableRequestQueue">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l947"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:947</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Enables the API's request queue, all requests will be held until deliverRequestQueue or flushRequestQueue is
+called.</p>
+
+    </div>
+
+
+
+
+</div>
+<div id="method_enableSendQueue" class="method item private inherited">
+    <h3 class="name"><code>enableSendQueue</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+        <span class="flag private">private</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_enableSendQueue">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l981"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:981</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Enables API's sending queue. This is to prevent an API from communicating given some state (Used for consensus
+initialization).</p>
+
+    </div>
+
+
+
+
+</div>
+<div id="method_findNodeType" class="method item">
+    <h3 class="name"><code>findNodeType</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>contentTypeObj</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Undefined</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+            <p>Inherited from
+            <a href="../classes/ozpIwc.api.base.Api.html#method_findNodeType">
+                ozpIwc.api.base.Api
+            </a>
+            but overwritten in
+        <a href="../files/app_js_services_api_intents_api.js.html#l62"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;api.js:62</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Maps a content-type to an IWC Node type. Overriden in APIs.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">contentTypeObj</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>an object-formatted content-type</p>
+
+                    </div>
+
+                        <ul class="params-list">
+                            <li class="param">
+                                    <code class="param-name">name</code>
+                                    <span class="type">String</span>
+
+                                <div class="param-description">
+                                    <p>the content-type without any variables</p>
+
+                                </div>
+
+                            </li>
+                            <li class="param">
+                                    <code class="param-name optional">[version]</code>
+                                    <span class="type">Number</span>
+                                    <span class="flag optional" title="This parameter is optional.">optional</span>
+
+                                <div class="param-description">
+                                    <p>the version of the content-type.</p>
+
+                                </div>
+
+                            </li>
+                        </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Undefined</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_flushRequestQueue" class="method item private inherited">
+    <h3 class="name"><code>flushRequestQueue</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+        <span class="flag private">private</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_flushRequestQueue">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l971"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:971</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Empties the queue of requests without processing and turns off queuing.</p>
+
+    </div>
+
+
+
+
+</div>
+<div id="method_flushSendQueue" class="method item private inherited">
+    <h3 class="name"><code>flushSendQueue</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+        <span class="flag private">private</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_flushSendQueue">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l1005"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1005</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Empties and disables API's sending queue.</p>
+
+    </div>
+
+
+
+
+</div>
+<div id="method_getCollection" class="method item inherited">
+    <h3 class="name"><code>getCollection</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>pattern</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Array</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_getCollection">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l1183"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1183</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Gathers the collection data for a node given its pattern only if it has a pattern.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">pattern</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Array</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_getPreference" class="method item inherited">
+    <h3 class="name"><code>getPreference</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>prefName</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_getPreference">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l536"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:536</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Gathers the desired preference from the data API.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">prefName</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Promise</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_handleChoosing" class="method item">
+    <h3 class="name"><code>handleChoosing</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>node</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_api.js.html#l153"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;api.js:153</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>A handler for the &quot;choosing&quot; state of an in-flight intent node.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">node</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Promise</span>:
+                    <p>Resolves when either a preference is gathered or the intent chooser is opened.</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_handleComplete" class="method item">
+    <h3 class="name"><code>handleComplete</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>node</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_api.js.html#l286"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;api.js:286</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>A handler for the &quot;complete&quot; state of an in-flight intent node.
+Sends notification to the invoker that the intent was handled &amp; deletes the in-flight intent node as it is no
+longer needed.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">node</code>
+                        <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_handleDelivering" class="method item">
+    <h3 class="name"><code>handleDelivering</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>node</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_api.js.html#l265"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;api.js:265</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>A handler for the &quot;delivering&quot; state of an in-flight intent node.
+Sends a packet to the chosen handler.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">node</code>
+                        <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_initializeData" class="method item inherited">
+    <h3 class="name"><code>initializeData</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>deathScream</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_initializeData">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l552"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:552</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Called when the API has become the leader, but before it starts
+serving data.  Receives the deathScream of the previous leader
+if available, otherwise undefined.</p>
+<p><strong>Intended to be overridden by subclasses</strong></p>
+<p>Subsclasses can override this to load data from the server.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">deathScream</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Promise</span>:
+                    <p>a promise that resolves when all data is loaded.</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_invokeIntentHandler" class="method item">
+    <h3 class="name"><code>invokeIntentHandler</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>packet</code>
+                </li>
+                <li class="arg">
+                        <code>type</code>
+                </li>
+                <li class="arg">
+                        <code>action</code>
+                </li>
+                <li class="arg">
+                        <code>handlers</code>
+                </li>
+                <li class="arg">
+                        <code>pattern</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_api.js.html#l92"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;api.js:92</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>A handler for invoke calls. Creates an inFlight-intent node and kicks off the inflight state machine.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">packet</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">type</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">action</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">handlers</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">pattern</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Promise</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_loadFromEndpoint" class="method item inherited">
+    <h3 class="name"><code>loadFromEndpoint</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>endpoint</code>
+                </li>
+                <li class="arg">
+                        <code>headers</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_loadFromEndpoint">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l1150"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1150</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Loads data from the provided endpoint.  The endpoint must point to a HAL JSON document
+that embeds or links to all resources for this api.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">endpoint</code>
+                        <span class="type"><a href="../classes/ozpIwc.api.Endpoint.html" class="crosslink">ozpIwc.api.Endpoint</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">headers</code>
+                        <span class="type">Array</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Promise</span>:
+                    <p>resolved when all data has been loaded.</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_markForChange" class="method item inherited">
+    <h3 class="name"><code>markForChange</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>nodes...</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_markForChange">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l777"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:777</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Marks that a node has changed and that change notices may need to
+be sent out after the request completes.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">nodes...</code>
+                        <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_matchingNodes" class="method item inherited">
+    <h3 class="name"><code>matchingNodes</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>prefix</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node[]</a></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_matchingNodes">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l759"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:759</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Returns a list of nodes that start with the given prefix.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">prefix</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node[]</a></span>:
+                    <p>a promise that resolves when all data is loaded.</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_mixinOnOff" class="method item inherited">
+    <h3 class="name"><code>mixinOnOff</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>target</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+            <p>Inherited from
+            <a href="../classes/ozpIwc.util.Event.html#method_mixinOnOff">
+                ozpIwc.util.Event
+            </a>
+            but overwritten in
+        <a href="../files/app_js_common_events_event.js.html#l110"><code>app&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:110</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Adds an <a href="../classes/ozpIwc.util.Event.html#method_off" class="crosslink">on()</a> and
+<a href="../classes/ozpIwc.util.Event.html#method_off" class="crosslink">off()</a> function to the target that delegate to this object.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">target</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>Target to receive the on/off functions</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_off" class="method item inherited">
+    <h3 class="name"><code>off</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>event</code>
+                </li>
+                <li class="arg">
+                        <code>callback</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.util.Event.html#method_off">ozpIwc.util.Event</a>:
+        <a href="../files/app_js_common_events_event.js.html#l51"><code>app&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:51</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Unregisters an event handler previously registered.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">event</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">callback</code>
+                        <span class="type">Function</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_on" class="method item inherited">
+    <h3 class="name"><code>on</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>event</code>
+                </li>
+                <li class="arg">
+                        <code>callback</code>
+                </li>
+                <li class="arg">
+                        <code class="optional">[self]</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Object</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.util.Event.html#method_on">ozpIwc.util.Event</a>:
+        <a href="../files/app_js_common_events_event.js.html#l27"><code>app&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:27</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Registers a handler for the the event.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">event</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                        <p>The name of the event to trigger on.</p>
+
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">callback</code>
+                        <span class="type">Function</span>
+
+
+                    <div class="param-description">
+                        <p>Function to be invoked.</p>
+
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name optional">[self]</code>
+                        <span class="type">Object</span>
+                        <span class="flag optional" title="This parameter is optional.">optional</span>
+
+
+                    <div class="param-description">
+                        <p>Used as the this pointer when callback is invoked.</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Object</span>:
+                    <p>A handle that can be used to unregister the callback via
+<a href="../classes/ozpIwc.util.Event.html#method_off" class="crosslink">off</a></p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_receivePacketContext" class="method item inherited">
+    <h3 class="name"><code>receivePacketContext</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>packet</code>
+                </li>
+                <li class="arg">
+                        <code>context</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_receivePacketContext">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l926"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:926</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Any request packet that does not match a route ends up here.  By default,
+it replies with BadAction, BadResource, or BadRequest, as appropriate.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">packet</code>
+                        <span class="type"><a href="../classes/ozpIwc.packet.Transport.html" class="crosslink">ozpIwc.packet.Transport</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">context</code>
+                        <span class="type"><a href="../classes/ozpIwc.transport.PacketContext.html" class="crosslink">ozpIwc.transport.PacketContext</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_registerDefinitionFilter" class="method item">
+    <h3 class="name"><code>registerDefinitionFilter</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>nodeType</code>
+                </li>
+                <li class="arg">
+                        <code>contentType</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type"></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_api.js.html#l351"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;api.js:351</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>A route filter for creating an intent definition (/{major}/{minor}/{action}) if it does not exist.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">nodeType</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">contentType</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"></span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_registerHandlerFilter" class="method item">
+    <h3 class="name"><code>registerHandlerFilter</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>nodeType</code>
+                </li>
+                <li class="arg">
+                        <code>contentType</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type"></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_api.js.html#l371"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;api.js:371</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>A route filter for creating an intent definition node (/{major}/{minor}/{action}) if it does not exist, then
+creates an intent handler node with the specified handlerId ({major}/{minor}/{action}/{handlerId})</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">nodeType</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">contentType</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"></span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_removeCollector" class="method item inherited">
+    <h3 class="name"><code>removeCollector</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>node</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_removeCollector">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l859"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:859</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Removes the given node from the collector list. It's collection list will no longer be updated on api data
+changes.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">node</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_removeWatcher" class="method item inherited">
+    <h3 class="name"><code>removeWatcher</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>resource</code>
+                </li>
+                <li class="arg">
+                        <code>watcher</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_removeWatcher">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l822"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:822</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Removes mark that a node has changed and that change notices may need to
+be sent out after the request completes.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">resource</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                        <p>name of the resource to unwatch</p>
+
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">watcher</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                        <ul class="params-list">
+                            <li class="param">
+                                    <code class="param-name">src</code>
+                                    <span class="type">String</span>
+
+                                <div class="param-description">
+                                    <p>Address of the watcher</p>
+
+                                </div>
+
+                            </li>
+                            <li class="param">
+                                    <code class="param-name">replyTo</code>
+                                    <span class="type">String | Number</span>
+
+                                <div class="param-description">
+                                    <p>The conversation id that change notices will go to</p>
+
+                                </div>
+
+                            </li>
+                        </ul>
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_" class="method item inherited">
+    <h3 class="name"><code></code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>eventName</code>
+                </li>
+                <li class="arg">
+                        <code>event</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Object</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+            <p>Inherited from
+            <a href="../classes/ozpIwc.util.Event.html#method_">
+                ozpIwc.util.Event
+            </a>
+            but overwritten in
+        <a href="../files/app_js_common_events_event.js.html#l64"><code>app&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:64</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Fires an event that will be received by all handlers.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">eventName</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                        <p>Name of the event.</p>
+
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">event</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>Event object to pass to the handlers.</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Object</span>:
+                    <p>The event after all handlers have processed it.</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_serializedContentType" class="method item">
+    <h3 class="name"><code>serializedContentType</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">String</span>
+        </span>
+
+
+
+
+        <span class="flag static">static</span>
+
+
+
+    <div class="meta">
+                    <p>Provided by the <a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a> module.</p>
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_node_inFlight_base.js.html#l66"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;node&#x2F;inFlight&#x2F;base.js:66</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>The content type of the data returned by serialize()</p>
+
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">String</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_serializedContentType" class="method item">
+    <h3 class="name"><code>serializedContentType</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">String</span>
+        </span>
+
+
+
+
+        <span class="flag static">static</span>
+
+
+
+    <div class="meta">
+                    <p>Provided by the <a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a> module.</p>
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_node_definition_base.js.html#l39"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;node&#x2F;definition&#x2F;base.js:39</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>The content type of the data returned by serialize()</p>
+
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">String</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_serializedContentType" class="method item">
+    <h3 class="name"><code>serializedContentType</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">String</span>
+        </span>
+
+
+
+
+        <span class="flag static">static</span>
+
+
+
+    <div class="meta">
+                    <p>Provided by the <a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a> module.</p>
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_node_handler_base.js.html#l40"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;node&#x2F;handler&#x2F;base.js:40</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>The content type of the data returned by serialize()</p>
+
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">String</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_set" class="method item">
+    <h3 class="name"><code>set</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>packet</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                    <p>Provided by the <a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a> module.</p>
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_node_handler_base.js.html#l48"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;node&#x2F;handler&#x2F;base.js:48</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Handles writing new data to the handler node.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">packet</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_shutdown" class="method item inherited">
+    <h3 class="name"><code>shutdown</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type"></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_shutdown">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l691"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:691</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Shuts down the api, issuing a deathscream and releasing the lock, if possible.</p>
+
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+            </div>
+        </div>
+
+
+</div>
+<div id="method_transitionToLeader" class="method item private inherited">
+    <h3 class="name"><code>transitionToLeader</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+        <span class="flag private">private</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_transitionToLeader">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l670"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:670</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+
+</div>
+<div id="method_transitionToLoading" class="method item private inherited">
+    <h3 class="name"><code>transitionToLoading</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+
+
+        <span class="flag private">private</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_transitionToLoading">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l648"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:648</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Promise</span>:
+                    <p>a promise that resolves when all data is loaded.</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_transitionToMemberDormant" class="method item private inherited">
+    <h3 class="name"><code>transitionToMemberDormant</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+
+
+        <span class="flag private">private</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_transitionToMemberDormant">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l726"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:726</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Promise</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_transitionToMemberReady" class="method item private inherited">
+    <h3 class="name"><code>transitionToMemberReady</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>deathScream</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
+
+
+        <span class="flag private">private</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_transitionToMemberReady">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l708"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:708</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">deathScream</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Promise</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_updateCollections" class="method item inherited">
+    <h3 class="name"><code>updateCollections</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#method_updateCollections">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l873"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:873</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Itterates over all collectors of the API for updates</p>
+
+    </div>
+
+
+
+
+</div>
+            </div>
+
+            <div id="properties" class="api-class-tabpanel">
+                <h2 class="off-left">Properties</h2>
+
+<div id="property_authorization" class="property item inherited">
+    <h3 class="name"><code>authorization</code></h3>
+    <span class="type">ozpIwc.policyAuth.PDP</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_authorization">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l55"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:55</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        <p>Policy authorizing module.</p>
+
+    </div>
+
+
+
+</div>
+<div id="property_changeList" class="property item inherited">
+    <h3 class="name"><code>changeList</code></h3>
+    <span class="type">Object</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_changeList">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l120"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:120</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_collectors" class="property item inherited">
+    <h3 class="name"><code>collectors</code></h3>
+    <span class="type">Array</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_collectors">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l114"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:114</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_coordinationAddress" class="property item inherited">
+    <h3 class="name"><code>coordinationAddress</code></h3>
+    <span class="type">String</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_coordinationAddress">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l82"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:82</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_data" class="property item inherited">
+    <h3 class="name"><code>data</code></h3>
+    <span class="type">Object</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_data">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l102"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:102</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_endpoints" class="property item inherited">
+    <h3 class="name"><code>endpoints</code></h3>
+    <span class="type">Array</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_endpoints">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l96"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:96</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_entity" class="property item">
+    <h3 class="name"><code>entity</code></h3>
+    <span class="type">Object</span>
+
+
+
+
+
+    <div class="meta">
+                    <p>Provided by the <a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a> module.</p>
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_node_inFlight_base.js.html#l41"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;node&#x2F;inFlight&#x2F;base.js:41</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        <p>Extra information that isn't captured already by the base class, or that isn't captured adequately.</p>
+
+    </div>
+
+
+
+</div>
+<div id="property_entity" class="property item">
+    <h3 class="name"><code>entity</code></h3>
+    <span class="type">Object</span>
+
+
+
+
+
+    <div class="meta">
+                    <p>Provided by the <a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a> module.</p>
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_node_handler_base.js.html#l32"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;node&#x2F;handler&#x2F;base.js:32</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_entity" class="property item">
+    <h3 class="name"><code>entity</code></h3>
+    <span class="type">Object</span>
+
+
+
+
+
+    <div class="meta">
+                    <p>Provided by the <a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a> module.</p>
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_node_definition_base.js.html#l31"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;node&#x2F;definition&#x2F;base.js:31</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_events" class="property item inherited">
+    <h3 class="name"><code>events</code></h3>
+    <span class="type"><a href="../classes/ozpIwc.util.Event.html" class="crosslink">ozpIwc.util.Event</a></span>
+
+
+
+
+
+    <div class="meta">
+            <p>Inherited from
+            <a href="../classes/ozpIwc.util.Event.html#property_events">
+                ozpIwc.util.Event
+            </a>
+            but overwritten in
+        <a href="../files/app_js_bus_api_base_api.js.html#l89"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:89</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_leaderState" class="property item inherited">
+    <h3 class="name"><code>leaderState</code></h3>
+    <span class="type">String</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_leaderState">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l126"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:126</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_lifespan" class="property item">
+    <h3 class="name"><code>lifespan</code></h3>
+    <span class="type"><a href="../classes/ozpIwc.api.Lifespan.Bound.html" class="crosslink">ozpIwc.api.Lifespan.Bound</a></span>
+
+
+
+
+
+    <div class="meta">
+                    <p>Provided by the <a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a> module.</p>
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_node_handler_base.js.html#l25"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;node&#x2F;handler&#x2F;base.js:25</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_lifespan" class="property item">
+    <h3 class="name"><code>lifespan</code></h3>
+    <span class="type"><a href="../classes/ozpIwc.api.Lifespan.Bound.html" class="crosslink">ozpIwc.api.Lifespan.Bound</a></span>
+
+
+
+
+
+    <div class="meta">
+                    <p>Provided by the <a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a> module.</p>
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_node_definition_base.js.html#l26"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;node&#x2F;definition&#x2F;base.js:26</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_lifespan" class="property item">
+    <h3 class="name"><code>lifespan</code></h3>
+    <span class="type"><a href="../classes/ozpIwc.api.Lifespan.Bound.html" class="crosslink">ozpIwc.api.Lifespan.Bound</a></span>
+
+
+
+
+
+    <div class="meta">
+                    <p>Provided by the <a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a> module.</p>
+                <p>
+                Defined in
+        <a href="../files/app_js_services_api_intents_node_inFlight_base.js.html#l27"><code>app&#x2F;js&#x2F;services&#x2F;api&#x2F;intents&#x2F;node&#x2F;inFlight&#x2F;base.js:27</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_logPrefix" class="property item inherited">
+    <h3 class="name"><code>logPrefix</code></h3>
+    <span class="type">String</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_logPrefix">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l139"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:139</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_name" class="property item inherited">
+    <h3 class="name"><code>name</code></h3>
+    <span class="type">String</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_name">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l76"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:76</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_packetContext" class="property item private inherited">
+    <h3 class="name"><code>packetContext</code></h3>
+    <span class="type">Object</span>
+
+
+        <span class="flag private">private</span>
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_packetContext">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l899"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:899</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        <p>Routes a packet received from the participant.</p>
+
+    </div>
+
+
+
+</div>
+<div id="property_participant" class="property item inherited">
+    <h3 class="name"><code>participant</code></h3>
+    <span class="type"><a href="../classes/ozpIwc.transport.participant.Client.html" class="crosslink">ozpIwc.transport.participant.Client</a> | </span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_participant">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l62"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:62</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_router" class="property item inherited">
+    <h3 class="name"><code>router</code></h3>
+    <span class="type"><a href="../classes/ozpIwc.transport.Router.html" class="crosslink">ozpIwc.transport.Router</a></span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_router">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l132"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:132</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+<div id="property_watchers" class="property item inherited">
+    <h3 class="name"><code>watchers</code></h3>
+    <span class="type">Object</span>
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.api.base.Api.html#property_watchers">ozpIwc.api.base.Api</a>:
+        <a href="../files/app_js_bus_api_base_api.js.html#l108"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:108</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
+            </div>
+
+
+    </div>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>
