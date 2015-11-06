@@ -35,7 +35,6 @@ describe("Intents Api", function () {
 
     pit('registers handlers', function() {
         return intentsApi.register('/text/plain/view', {
-            contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: registerEntity
         }).then(function(reply) {
             expect(reply.response).toEqual('ok');
@@ -45,7 +44,6 @@ describe("Intents Api", function () {
 
     pit('uses sane defaults to register handlers', function() {
         return intentsApi.register('/text/plain/view', {
-            contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: {
                 type: "text/plain",
                 action: "view",
@@ -71,7 +69,6 @@ describe("Intents Api", function () {
 
     pit('deletes handlers', function() {
         return intentsApi.register('/text/plain/view', {
-            contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: registerEntity
         }).then(function(reply) {
             return intentsApi.delete(reply.entity.resource);
@@ -82,7 +79,6 @@ describe("Intents Api", function () {
 
     it('invokes handler directly', function(done) {
         return intentsApi.register('/text/plain/view', {
-            contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             entity: {
                 type: "text/plain",
                 action: "view",

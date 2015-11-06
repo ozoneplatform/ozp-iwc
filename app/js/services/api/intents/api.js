@@ -339,7 +339,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
     Api.declareRoute({
         action: "set",
         resource: "/{major}/{minor}/{action}/{handlerId}",
-        filters: api.filter.standard.setFilters(api.intents.HandlerNode, "application/vnd.ozp-iwc-intent-handler-v1+json")
+        filters: api.filter.standard.setFilters(api.intents.HandlerNode)
     }, function (packet, context, pathParams) {
         context.node.set(packet);
         return {"response": "ok"};

@@ -51,7 +51,6 @@ function changeColor(color) {
 
     // Register an intent handler for the color
     client.api('intents.api').register('/text/plain/view', {
-        contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
         entity: {
             icon: "https://ozp.slack.com/emoji/explosions/b88611dd6cbbbacb.gif",
             label: client.address + "/" + color
@@ -88,7 +87,6 @@ function changeColor(color) {
  */
 function invoke(resource,entity) {
     client.api('intents.api').invoke(resource, {
-        contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
         entity: entity
     }).then(function(response){
        console.log("I get called when a resolution has been made on the intent invocation!",response);
@@ -99,7 +97,6 @@ function invoke(resource,entity) {
 
 function broadcast(resource,entity) {
     client.api('intents.api').broadcast(resource, {
-        contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
         entity: entity
     }).then(function(response){
         console.log("I get called when a resolution has been made on the intent broadcast!",response);

@@ -71,7 +71,6 @@ describe("Intent API Class", function () {
             'packet': {
                 'resource': "/text/plain/view",
                 'action': "register",
-                'contentType': "application/vnd.ozp-iwc-intent-handler-v1+json",
                 'entity': {
                     'bar': 2,
                     'invokeIntent': {
@@ -108,7 +107,6 @@ describe("Intent API Class", function () {
             return new TestPacketContext({
                 'packet': {
                     'resource': handlerResource,
-                    'contentType': "application/vnd.ozp-iwc-intent-handler-v1+json",
                     'action': "register",
                     'entity': {
                         'type': "text/plain",
@@ -128,7 +126,6 @@ describe("Intent API Class", function () {
             apiBase.receivePacketContext(new TestPacketContext({
                 'packet': {
                     'resource': "/text/plain/view/7890",
-                    'contentType': "application/vnd.ozp-iwc-intent-handler-v1+json",
                     'action': "register",
                     'entity': {
                         'type': "text/plain",
@@ -244,7 +241,6 @@ describe("Intent API Class", function () {
                     'packet': {
                         'resource': inflightIntent.resource,
                         'action': "set",
-                        'contentType': "application/vnd.ozp-iwc-intent-invocation-v1+json",
                         'entity': {
                             'state': "running",
                             'handler': {

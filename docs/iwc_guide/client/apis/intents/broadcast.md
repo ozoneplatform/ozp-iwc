@@ -4,9 +4,6 @@
 * `nodeValue.entity`: **Object** - the registration value to store in the node.
     * `nodeValue.entity.label`: **String** - a title/label to distinguish this application.
     * `nodeValue.entity.icon`: **String** - a URL path to an icon to distinguish this application. 
-* `nodeValue.contentType`: **String** - For a registration for the intents api **this must be an intent handler content
-type**. Currently there is only 1 version of the intent handler content type: 
-    * "application/vnd.ozp-iwc-intent-handler-v1+json"
 
  
 ###Applies to only the Intents API

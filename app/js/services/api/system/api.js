@@ -43,7 +43,6 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
             this.leaderPromise.then(function () {
                 log.debug("System.api registering for the launch intent");
                 var registerData = {
-                    'contentType': "application/vnd.ozp-iwc-intent-handler-v1+json",
                     'lifespan': "ephemeral",
                     'entity': {
                         'type': "application/vnd.ozp-iwc-launch-data-v1+json",
@@ -82,7 +81,6 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
             var label = i.label || node.entity.name;
             var resource = "/" + i.type + "/" + i.action + "/system.api" + node.resource.replace(/\//g, '.');
             var payload = {
-                'contentType': "application/vnd.ozp-iwc-intent-handler-v1+json",
                 'lifespan': "ephemeral",
                 'entity': {
                     'type': i.type,
@@ -210,7 +208,6 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
 
         this.participant.send({
             dst: "intents.api",
-            contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
             action: "invoke",
             resource: resource,
             entity: entity

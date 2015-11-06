@@ -74,7 +74,6 @@ describe("System Api", function () {
         xit("launch on system.api invokes the intent run /application/vnd.ozp-iwc-launch-data-v1+json/run/system.api", function () {
             // hijack the system.api's intent registration so that we get it
             return client.intents().set("/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api", {
-                contentType: "application/vnd.ozp-iwc-intent-handler-v1+json",
                 resource: "/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",
                 entity: {
                     label: "Launch in New Window",
