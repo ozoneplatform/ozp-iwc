@@ -338,6 +338,13 @@ module.exports = function(grunt) {
                         cwd: 'app/js/debugger',
                         expand: true,
                         nonull:true
+                    },
+                    {
+                        src: ['**/*', "!js/ozpIwc.conf.js"],
+                        dest: 'gh-pages/',
+                        cwd: 'dist/',
+                        expand: true,
+                        nonull:true
                     }
                 ]
             },
@@ -549,7 +556,7 @@ module.exports = function(grunt) {
         },
         gitbook: {
             development: {
-                output: "_book",
+                output: "gh-pages/gitbook",
                 input: "./docs/iwc_guide",
                 title: "Inter-Widget Communication (IWC)",
                 github: "ozone-development/ozp-iwc"
@@ -557,7 +564,8 @@ module.exports = function(grunt) {
         },
         'gh-pages': {
             options: {
-                base: "_book"
+                base: "gh-pages",
+                add: true
             },
             src: ["**"]
         }
@@ -607,7 +615,7 @@ module.exports = function(grunt) {
         ['build','karma:unit','bump:major','readpkg', 'shell:releaseGit']
     );
     grunt.registerTask('update-gh-pages',
-        ['gitbook', 'gh-pages']
+        ['build', 'gitbook', 'gh-pages']
     );
     grunt.registerTask('default',
         ['dist']
