@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>app/js/services/api/intents/fsm.js - ozpIwc</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 1.1.8</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/BadActionError.html">BadActionError</a></li>
+                                <li><a href="../classes/BadContentError.html">BadContentError</a></li>
+                                <li><a href="../classes/BadRequestError.html">BadRequestError</a></li>
+                                <li><a href="../classes/BadResourceError.html">BadResourceError</a></li>
+                                <li><a href="../classes/BadStateError.html">BadStateError</a></li>
+                                <li><a href="../classes/NoActionError.html">NoActionError</a></li>
+                                <li><a href="../classes/NoMatchError.html">NoMatchError</a></li>
+                                <li><a href="../classes/NoPermissionError.html">NoPermissionError</a></li>
+                                <li><a href="../classes/NoResourceError.html">NoResourceError</a></li>
+                                <li><a href="../classes/ozpIwc.alert.html">ozpIwc.alert</a></li>
+                                <li><a href="../classes/ozpIwc.api.html">ozpIwc.api</a></li>
+                                <li><a href="../classes/ozpIwc.api.base.Api.html">ozpIwc.api.base.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.base.Node.html">ozpIwc.api.base.Node</a></li>
+                                <li><a href="../classes/ozpIwc.api.data.Api.html">ozpIwc.api.data.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.data.node.Node.html">ozpIwc.api.data.node.Node</a></li>
+                                <li><a href="../classes/ozpIwc.api.data.node.Nodev2.html">ozpIwc.api.data.node.Nodev2</a></li>
+                                <li><a href="../classes/ozpIwc.api.Endpoint.html">ozpIwc.api.Endpoint</a></li>
+                                <li><a href="../classes/ozpIwc.api.EndpointRegistry.html">ozpIwc.api.EndpointRegistry</a></li>
+                                <li><a href="../classes/ozpIwc.api.error.BaseError.html">ozpIwc.api.error.BaseError</a></li>
+                                <li><a href="../classes/ozpIwc.api.filter.base.html">ozpIwc.api.filter.base</a></li>
+                                <li><a href="../classes/ozpIwc.api.filter.Function.html">ozpIwc.api.filter.Function</a></li>
+                                <li><a href="../classes/ozpIwc.api.filter.standard.html">ozpIwc.api.filter.standard</a></li>
+                                <li><a href="../classes/ozpIwc.api.intents.Api.html">ozpIwc.api.intents.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.intents.FSM.html">ozpIwc.api.intents.FSM</a></li>
+                                <li><a href="../classes/ozpIwc.api.Lifespan.Bound.html">ozpIwc.api.Lifespan.Bound</a></li>
+                                <li><a href="../classes/ozpIwc.api.Lifespan.Ephemeral.html">ozpIwc.api.Lifespan.Ephemeral</a></li>
+                                <li><a href="../classes/ozpIwc.api.Lifespan.Persistent.html">ozpIwc.api.Lifespan.Persistent</a></li>
+                                <li><a href="../classes/ozpIwc.api.locks.Api.html">ozpIwc.api.locks.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.locks.Node.html">ozpIwc.api.locks.Node</a></li>
+                                <li><a href="../classes/ozpIwc.api.names.Api.html">ozpIwc.api.names.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.names.Node.html">ozpIwc.api.names.Node</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.Api.html">ozpIwc.api.system.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.ApplicationNode.html">ozpIwc.api.system.node.ApplicationNode</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.ApplicationNodeV2.html">ozpIwc.api.system.node.ApplicationNodeV2</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.SystemNode.html">ozpIwc.api.system.node.SystemNode</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.UserNode.html">ozpIwc.api.system.node.UserNode</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.UserNodeV2.html">ozpIwc.api.system.node.UserNodeV2</a></li>
+                                <li><a href="../classes/ozpIwc.apiMap.html">ozpIwc.apiMap</a></li>
+                                <li><a href="../classes/ozpIwc.Client.html">ozpIwc.Client</a></li>
+                                <li><a href="../classes/ozpIwc.Debugger.html">ozpIwc.Debugger</a></li>
+                                <li><a href="../classes/ozpIwc.Lifespan.html">ozpIwc.Lifespan</a></li>
+                                <li><a href="../classes/ozpIwc.log.html">ozpIwc.log</a></li>
+                                <li><a href="../classes/ozpIwc.metric.Registry.html">ozpIwc.metric.Registry</a></li>
+                                <li><a href="../classes/ozpIwc.metric.stats.BinaryHeap.html">ozpIwc.metric.stats.BinaryHeap</a></li>
+                                <li><a href="../classes/ozpIwc.metric.stats.ExponentiallyDecayingSample.html">ozpIwc.metric.stats.ExponentiallyDecayingSample</a></li>
+                                <li><a href="../classes/ozpIwc.metric.stats.Sample.html">ozpIwc.metric.stats.Sample</a></li>
+                                <li><a href="../classes/ozpIwc.metric.stats.UniformSample.html">ozpIwc.metric.stats.UniformSample</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.BaseMetric.html">ozpIwc.metric.types.BaseMetric</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.Counter.html">ozpIwc.metric.types.Counter</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.Gauge.html">ozpIwc.metric.types.Gauge</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.Histogram.html">ozpIwc.metric.types.Histogram</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.Meter.html">ozpIwc.metric.types.Meter</a></li>
+                                <li><a href="../classes/ozpIwc.network.KeyBroadcastLocalStorageLink.html">ozpIwc.network.KeyBroadcastLocalStorageLink</a></li>
+                                <li><a href="../classes/ozpIwc.network.Peer.html">ozpIwc.network.Peer</a></li>
+                                <li><a href="../classes/ozpIwc.packet.Fragment.html">ozpIwc.packet.Fragment</a></li>
+                                <li><a href="../classes/ozpIwc.packet.FragmentStore.html">ozpIwc.packet.FragmentStore</a></li>
+                                <li><a href="../classes/ozpIwc.packet.Network.html">ozpIwc.packet.Network</a></li>
+                                <li><a href="../classes/ozpIwc.packet.Transport.html">ozpIwc.packet.Transport</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.elements.SecurityAttribute.html">ozpIwc.policyAuth.elements.SecurityAttribute</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.points.PDP.html">ozpIwc.policyAuth.points.PDP</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.points.PIP.html">ozpIwc.policyAuth.points.PIP</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.points.PRP.html">ozpIwc.policyAuth.points.PRP</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.points.utils.html">ozpIwc.policyAuth.points.utils</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.policies.html">ozpIwc.policyAuth.policies</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.PolicyCombining.html">ozpIwc.policyAuth.PolicyCombining</a></li>
+                                <li><a href="../classes/ozpIwc.Timer.html">ozpIwc.Timer</a></li>
+                                <li><a href="../classes/ozpIwc.transport.consensus.Base.html">ozpIwc.transport.consensus.Base</a></li>
+                                <li><a href="../classes/ozpIwc.transport.consensus.Bully.html">ozpIwc.transport.consensus.Bully</a></li>
+                                <li><a href="../classes/ozpIwc.transport.listener.SharedWorker.html">ozpIwc.transport.listener.SharedWorker</a></li>
+                                <li><a href="../classes/ozpIwc.transport.PacketContext.html">ozpIwc.transport.PacketContext</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Base.html">ozpIwc.transport.participant.Base</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Client.html">ozpIwc.transport.participant.Client</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
+                                <li><a href="../classes/ozpIwc.transport.Router.html">ozpIwc.transport.Router</a></li>
+                                <li><a href="../classes/ozpIwc.util.html">ozpIwc.util</a></li>
+                                <li><a href="../classes/ozpIwc.util.AjaxPersistenceQueue.html">ozpIwc.util.AjaxPersistenceQueue</a></li>
+                                <li><a href="../classes/ozpIwc.util.ApiPromiseMixin.html">ozpIwc.util.ApiPromiseMixin</a></li>
+                                <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
+                                <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
+                                <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
+                                <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
+                                <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                                <li><a href="../modules/ozpIwc.html">ozpIwc</a></li>
+                                <li><a href="../modules/ozpIwc.api.html">ozpIwc.api</a></li>
+                                <li><a href="../modules/ozpIwc.api.base.html">ozpIwc.api.base</a></li>
+                                <li><a href="../modules/ozpIwc.api.data.html">ozpIwc.api.data</a></li>
+                                <li><a href="../modules/ozpIwc.api.data.node.html">ozpIwc.api.data.node</a></li>
+                                <li><a href="../modules/ozpIwc.api.error.html">ozpIwc.api.error</a></li>
+                                <li><a href="../modules/ozpIwc.api.filter.html">ozpIwc.api.filter</a></li>
+                                <li><a href="../modules/ozpIwc.api.intents.html">ozpIwc.api.intents</a></li>
+                                <li><a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a></li>
+                                <li><a href="../modules/ozpIwc.api.locks.html">ozpIwc.api.locks</a></li>
+                                <li><a href="../modules/ozpIwc.api.names.html">ozpIwc.api.names</a></li>
+                                <li><a href="../modules/ozpIwc.api.system.html">ozpIwc.api.system</a></li>
+                                <li><a href="../modules/ozpIwc.api.system.node.html">ozpIwc.api.system.node</a></li>
+                                <li><a href="../modules/ozpIwc.metric.html">ozpIwc.metric</a></li>
+                                <li><a href="../modules/ozpIwc.metric.stats.html">ozpIwc.metric.stats</a></li>
+                                <li><a href="../modules/ozpIwc.metric.types.html">ozpIwc.metric.types</a></li>
+                                <li><a href="../modules/ozpIwc.network.html">ozpIwc.network</a></li>
+                                <li><a href="../modules/ozpIwc.packet.html">ozpIwc.packet</a></li>
+                                <li><a href="../modules/ozpIwc.policyAuth.html">ozpIwc.policyAuth</a></li>
+                                <li><a href="../modules/ozpIwc.policyAuth.elements.html">ozpIwc.policyAuth.elements</a></li>
+                                <li><a href="../modules/ozpIwc.policyAuth.points.html">ozpIwc.policyAuth.points</a></li>
+                                <li><a href="../modules/ozpIwc.transport.html">ozpIwc.transport</a></li>
+                                <li><a href="../modules/ozpIwc.transport.consensus.html">ozpIwc.transport.consensus</a></li>
+                                <li><a href="../modules/ozpIwc.transport.listener.html">ozpIwc.transport.listener</a></li>
+                                <li><a href="../modules/ozpIwc.transport.participant.html">ozpIwc.transport.participant</a></li>
+                                <li><a href="../modules/ozpIwc.util.html">ozpIwc.util</a></li>
+                                <li><a href="../modules/ozpIwc.worker.html">ozpIwc.worker</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: app/js/services/api/intents/fsm.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.intents = ozpIwc.api.intents || {};
+
+/**
+ * @module ozpIwc.api
+ * @submodule ozpIwc.api.intents
+ */
+
+
+ozpIwc.api.intents.FSM = (function (api, util) {
+    /**
+     * A Finite State Machine for in-flight intent resources. This state machine is static and manipulates the apiNodes
+     * it receives given the packet context received.
+     * @class FSM
+     * @namespace ozpIwc.api.intents
+     * @uses ozpIwc.util.Event
+     * @static
+     * @type {Object}
+     */
+    var FSM = {};
+
+    FSM.events = new util.Event();
+    FSM.events.mixinOnOff(FSM);
+
+//===============================================
+// States.
+// Called with node as scope.
+//===============================================
+    /**
+     * A collection of states in the FSM. Each state is a function that is called when a node transitions to it via
+     * ozpIwc.InFlightFSM.transition.
+     * Each state function is called with the node&#x27;s scope.
+     *
+     * @property states
+     * @type {Object}
+     */
+    FSM.states = {};
+
+    /**
+     * The initial state.
+     * This state immediately determines the next state of the node based on the number of handler choices it contains.
+     *
+     * @method init
+     * @return {Object}
+     */
+    FSM.states.init = function () {
+        var choices = this.entity.handlerChoices;
+        var nextEntity = {};
+
+        if(!choices || choices === []){
+            nextEntity.state = &quot;error&quot;;
+            nextEntity.error = &quot;noChoices&quot;;
+            return FSM.transition(this, {entity: nextEntity});
+        }
+
+        if(Array.isArray(choices)){
+            //If there is only 1 choice &amp; its a launcher, enforce the popup to choose it (similar to Windows chooser feel).
+            var onlyLauncher = (choices.length === 1 &amp;&amp; choices[0] &amp;&amp; choices[0].entity &amp;&amp; choices[0].entity.invokeIntent &amp;&amp;
+            choices[0].entity.invokeIntent.action === &quot;launch&quot;);
+            if (choices.length === 1 &amp;&amp; !onlyLauncher) {
+                nextEntity.handler = {
+                    resource: choices[0].resource,
+                    reason: &quot;onlyOne&quot;
+                };
+                nextEntity.state = &quot;delivering&quot;;
+            } else {
+                nextEntity.state = &quot;choosing&quot;;
+            }
+        } else if (typeof choices === &quot;object&quot;) {
+            nextEntity.handler = {
+                resource: choices.resource,
+                reason: &quot;onlyOne&quot;
+            };
+            nextEntity.state = &quot;delivering&quot;;
+        } else {
+            nextEntity.state = &quot;error&quot;;
+            nextEntity.error = &quot;unknown choices.&quot;;
+        }
+
+        return FSM.transition(this, {entity: nextEntity});
+    };
+
+    /**
+     * The error handling state.
+     * This state is called when unexpected state changes and missing data occurs in the state
+     * machine.
+     *
+     * @method error
+     * @param {Object} entity The entity of the request packet received by the Api.
+     * @return {ozpIwc.api.base.Node}
+     */
+    FSM.states.error = function (entity) {
+        this.entity = this.entity || {};
+        this.entity.reply = entity.error;
+        this.entity.state = &quot;error&quot;;
+        this.version++;
+        return FSM.stateEvent(this);
+    };
+
+    /**
+     * The delivering state.
+     * The node is in a delivering state when it&#x27;s registered handler is called to operate on the
+     * intent data. The register handler will respond with &quot;running&quot; to signify it has received the request.
+     *
+     * @method delivering
+     * @param {Object} entity The entity of the request packet received by the Api.
+     * @return {ozpIwc.api.base.Node}
+     */
+    FSM.states.delivering = function (entity) {
+        if (!entity.handler || !entity.handler.resource || !entity.handler.reason) {
+            throw new api.error.BadStateError(&quot;Choosing state requires a resource and reason&quot;);
+        }
+        this.entity.handler = entity.handler;
+        this.entity.state = &quot;delivering&quot;;
+        this.version++;
+        return FSM.stateEvent(this);
+    };
+
+    /**
+     * The running state.
+     * The node is in a running state when the registered handler has received the request data. The
+     * node will transition to the &quot;complete&quot; state upon receiving a response from the handler&#x27;s operation.
+     * @TODO currently running/complete are sent at once and no data is returned. When these states are sent the intent
+     *     is handled.
+     *
+     * @method running
+     * @param {Object} entity The entity of the request packet received by the Api.
+     * @return {ozpIwc.api.base.Node}
+     */
+    FSM.states.running = function (entity) {
+        if (!entity.handler || !entity.handler.address) {
+            throw new api.error.BadContentError(&quot;Entity lacks a &#x27;handler.address&#x27; field&quot;);
+        }
+        this.entity.handler.address = entity.handler.address;
+        this.entity.state = &quot;running&quot;;
+        this.version++;
+        return FSM.stateEvent(this);
+    };
+
+    /**
+     * The choosing state.
+     * The node is in a choosing state when:
+     *  (1) the intent chooser is opened.
+     *  (2) the api is gathering the preference-stored designated handler.
+     *
+     * The node will transition to delivering once the handler has been chosen.
+     *
+     * @method choosing
+     * @return {ozpIwc.api.base.Node}
+     */
+    FSM.states.choosing = function () {
+        this.entity.state = &quot;choosing&quot;;
+        this.version++;
+        return FSM.stateEvent(this);
+    };
+
+    /**
+     * The Complete state.
+     * Once the intent has been handled or canceled the node will transition to the complete state. From here the API
+     * will mark the node for deletion as it is no longer needed.
+     *
+     * @method complete
+     * @param {Object} entity The entity of the request packet received by the Api.
+     * @return {ozpIwc.api.base.Node}
+     */
+    FSM.states.complete = function (entity) {
+        this.entity.reply = entity.reply;
+        this.entity.state = &quot;complete&quot;;
+        this.version++;
+        return FSM.stateEvent(this);
+    };
+
+
+//===============================================
+//State Transitions
+//===============================================
+    /**
+     * A collection of state transitions for the Finite State machine. The first level of properties represent current
+     * state and the second level represents states that can be transitioned to.
+     *
+     * @property stateTransitions
+     * @type {Object}
+     */
+    FSM.stateTransitions = {
+        &quot;init&quot;: {
+            &quot;init&quot;:FSM.states.init,
+            &quot;error&quot;:FSM.states.error,
+            &quot;delivering&quot;:FSM.states.delivering,
+            &quot;choosing&quot;:FSM.states.choosing
+        },
+        &quot;choosing&quot;: {
+            &quot;error&quot;:FSM.states.error,
+            &quot;delivering&quot;:FSM.states.delivering,
+            &quot;complete&quot;:FSM.states.complete
+        },
+        &quot;delivering&quot;: {
+            &quot;error&quot;:FSM.states.error,
+            &quot;running&quot;:FSM.states.running,
+            &quot;complete&quot;:FSM.states.complete
+        },
+        &quot;running&quot;: {
+            &quot;error&quot;:FSM.states.error,
+            &quot;complete&quot;:FSM.states.complete
+        },
+        &quot;complete&quot;: {},
+        &quot;error&quot;: {}
+    };
+
+    /**
+     * The transition utility function. This determines if the requested state change from the packet is valid, then
+     * calls the state transition and returns the modified node for storage.
+     * @method transition
+     * @param {ozpIwc.api.base.Node} node
+     * @param {ozpIwc.PacketContext} [packet] If not provided, FSM assumes initial state transition.
+     * @return {ozpIwc.api.base.Node}
+     */
+   FSM.transition = function (node, packet) {
+        packet = packet || {entity: {state: &quot;init&quot;}};
+        if (!packet.entity || !packet.entity.state) {
+            throw new api.error.BadContentError(&quot;Entity lacks a &#x27;state&#x27; field&quot;);
+        }
+        if (node.deleted) {
+            throw new api.error.BadContentError(&quot;Already handled.&quot;);
+        }
+        var transist =FSM.stateTransitions[node.entity.state];
+        if (!transist) {
+            // we&#x27;re in a bad state.  pretty much unrecoverable
+            return FSM.states.error.call(node, {
+                entity: {
+                    error: &quot;Inflight intent is in an invalid state.  Cannot proceed.&quot;,
+                }
+            });
+        }
+
+        transist = transist[packet.entity.state];
+        if (!transist) {
+            throw new api.error.BadStateError(&quot;In-flight intent cannot transition from &quot; +
+                node.entity.state + &quot; to &quot; + packet.entity.state);
+        }
+
+        return transist.call(node, packet.entity);
+    };
+
+    /**
+     * Triggers node&#x27;s state event and returns the node.
+     * @method stateReturn
+     * @param node
+     * @return {ozpIwc.api.base.Node}
+     */
+   FSM.stateEvent = function (node) {
+        if (node.entity &amp;&amp; node.entity.state) {
+           FSM.events.trigger(node.entity.state, node);
+        }
+        return node;
+    };
+
+    return FSM;
+}(ozpIwc.api, ozpIwc.util));
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

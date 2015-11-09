@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>app/js/bus/api/base/api.js - ozpIwc</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 1.1.8</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/BadActionError.html">BadActionError</a></li>
+                                <li><a href="../classes/BadContentError.html">BadContentError</a></li>
+                                <li><a href="../classes/BadRequestError.html">BadRequestError</a></li>
+                                <li><a href="../classes/BadResourceError.html">BadResourceError</a></li>
+                                <li><a href="../classes/BadStateError.html">BadStateError</a></li>
+                                <li><a href="../classes/NoActionError.html">NoActionError</a></li>
+                                <li><a href="../classes/NoMatchError.html">NoMatchError</a></li>
+                                <li><a href="../classes/NoPermissionError.html">NoPermissionError</a></li>
+                                <li><a href="../classes/NoResourceError.html">NoResourceError</a></li>
+                                <li><a href="../classes/ozpIwc.alert.html">ozpIwc.alert</a></li>
+                                <li><a href="../classes/ozpIwc.api.html">ozpIwc.api</a></li>
+                                <li><a href="../classes/ozpIwc.api.base.Api.html">ozpIwc.api.base.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.base.Node.html">ozpIwc.api.base.Node</a></li>
+                                <li><a href="../classes/ozpIwc.api.data.Api.html">ozpIwc.api.data.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.data.node.Node.html">ozpIwc.api.data.node.Node</a></li>
+                                <li><a href="../classes/ozpIwc.api.data.node.Nodev2.html">ozpIwc.api.data.node.Nodev2</a></li>
+                                <li><a href="../classes/ozpIwc.api.Endpoint.html">ozpIwc.api.Endpoint</a></li>
+                                <li><a href="../classes/ozpIwc.api.EndpointRegistry.html">ozpIwc.api.EndpointRegistry</a></li>
+                                <li><a href="../classes/ozpIwc.api.error.BaseError.html">ozpIwc.api.error.BaseError</a></li>
+                                <li><a href="../classes/ozpIwc.api.filter.base.html">ozpIwc.api.filter.base</a></li>
+                                <li><a href="../classes/ozpIwc.api.filter.Function.html">ozpIwc.api.filter.Function</a></li>
+                                <li><a href="../classes/ozpIwc.api.filter.standard.html">ozpIwc.api.filter.standard</a></li>
+                                <li><a href="../classes/ozpIwc.api.intents.Api.html">ozpIwc.api.intents.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.intents.FSM.html">ozpIwc.api.intents.FSM</a></li>
+                                <li><a href="../classes/ozpIwc.api.Lifespan.Bound.html">ozpIwc.api.Lifespan.Bound</a></li>
+                                <li><a href="../classes/ozpIwc.api.Lifespan.Ephemeral.html">ozpIwc.api.Lifespan.Ephemeral</a></li>
+                                <li><a href="../classes/ozpIwc.api.Lifespan.Persistent.html">ozpIwc.api.Lifespan.Persistent</a></li>
+                                <li><a href="../classes/ozpIwc.api.locks.Api.html">ozpIwc.api.locks.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.locks.Node.html">ozpIwc.api.locks.Node</a></li>
+                                <li><a href="../classes/ozpIwc.api.names.Api.html">ozpIwc.api.names.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.names.Node.html">ozpIwc.api.names.Node</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.Api.html">ozpIwc.api.system.Api</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.ApplicationNode.html">ozpIwc.api.system.node.ApplicationNode</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.ApplicationNodeV2.html">ozpIwc.api.system.node.ApplicationNodeV2</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.SystemNode.html">ozpIwc.api.system.node.SystemNode</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.UserNode.html">ozpIwc.api.system.node.UserNode</a></li>
+                                <li><a href="../classes/ozpIwc.api.system.node.UserNodeV2.html">ozpIwc.api.system.node.UserNodeV2</a></li>
+                                <li><a href="../classes/ozpIwc.apiMap.html">ozpIwc.apiMap</a></li>
+                                <li><a href="../classes/ozpIwc.Client.html">ozpIwc.Client</a></li>
+                                <li><a href="../classes/ozpIwc.Debugger.html">ozpIwc.Debugger</a></li>
+                                <li><a href="../classes/ozpIwc.Lifespan.html">ozpIwc.Lifespan</a></li>
+                                <li><a href="../classes/ozpIwc.log.html">ozpIwc.log</a></li>
+                                <li><a href="../classes/ozpIwc.metric.Registry.html">ozpIwc.metric.Registry</a></li>
+                                <li><a href="../classes/ozpIwc.metric.stats.BinaryHeap.html">ozpIwc.metric.stats.BinaryHeap</a></li>
+                                <li><a href="../classes/ozpIwc.metric.stats.ExponentiallyDecayingSample.html">ozpIwc.metric.stats.ExponentiallyDecayingSample</a></li>
+                                <li><a href="../classes/ozpIwc.metric.stats.Sample.html">ozpIwc.metric.stats.Sample</a></li>
+                                <li><a href="../classes/ozpIwc.metric.stats.UniformSample.html">ozpIwc.metric.stats.UniformSample</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.BaseMetric.html">ozpIwc.metric.types.BaseMetric</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.Counter.html">ozpIwc.metric.types.Counter</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.Gauge.html">ozpIwc.metric.types.Gauge</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.Histogram.html">ozpIwc.metric.types.Histogram</a></li>
+                                <li><a href="../classes/ozpIwc.metric.types.Meter.html">ozpIwc.metric.types.Meter</a></li>
+                                <li><a href="../classes/ozpIwc.network.KeyBroadcastLocalStorageLink.html">ozpIwc.network.KeyBroadcastLocalStorageLink</a></li>
+                                <li><a href="../classes/ozpIwc.network.Peer.html">ozpIwc.network.Peer</a></li>
+                                <li><a href="../classes/ozpIwc.packet.Fragment.html">ozpIwc.packet.Fragment</a></li>
+                                <li><a href="../classes/ozpIwc.packet.FragmentStore.html">ozpIwc.packet.FragmentStore</a></li>
+                                <li><a href="../classes/ozpIwc.packet.Network.html">ozpIwc.packet.Network</a></li>
+                                <li><a href="../classes/ozpIwc.packet.Transport.html">ozpIwc.packet.Transport</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.elements.SecurityAttribute.html">ozpIwc.policyAuth.elements.SecurityAttribute</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.points.PDP.html">ozpIwc.policyAuth.points.PDP</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.points.PIP.html">ozpIwc.policyAuth.points.PIP</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.points.PRP.html">ozpIwc.policyAuth.points.PRP</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.points.utils.html">ozpIwc.policyAuth.points.utils</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.policies.html">ozpIwc.policyAuth.policies</a></li>
+                                <li><a href="../classes/ozpIwc.policyAuth.PolicyCombining.html">ozpIwc.policyAuth.PolicyCombining</a></li>
+                                <li><a href="../classes/ozpIwc.Timer.html">ozpIwc.Timer</a></li>
+                                <li><a href="../classes/ozpIwc.transport.consensus.Base.html">ozpIwc.transport.consensus.Base</a></li>
+                                <li><a href="../classes/ozpIwc.transport.consensus.Bully.html">ozpIwc.transport.consensus.Bully</a></li>
+                                <li><a href="../classes/ozpIwc.transport.listener.SharedWorker.html">ozpIwc.transport.listener.SharedWorker</a></li>
+                                <li><a href="../classes/ozpIwc.transport.PacketContext.html">ozpIwc.transport.PacketContext</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Base.html">ozpIwc.transport.participant.Base</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Client.html">ozpIwc.transport.participant.Client</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
+                                <li><a href="../classes/ozpIwc.transport.Router.html">ozpIwc.transport.Router</a></li>
+                                <li><a href="../classes/ozpIwc.util.html">ozpIwc.util</a></li>
+                                <li><a href="../classes/ozpIwc.util.AjaxPersistenceQueue.html">ozpIwc.util.AjaxPersistenceQueue</a></li>
+                                <li><a href="../classes/ozpIwc.util.ApiPromiseMixin.html">ozpIwc.util.ApiPromiseMixin</a></li>
+                                <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
+                                <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
+                                <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
+                                <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
+                                <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                                <li><a href="../modules/ozpIwc.html">ozpIwc</a></li>
+                                <li><a href="../modules/ozpIwc.api.html">ozpIwc.api</a></li>
+                                <li><a href="../modules/ozpIwc.api.base.html">ozpIwc.api.base</a></li>
+                                <li><a href="../modules/ozpIwc.api.data.html">ozpIwc.api.data</a></li>
+                                <li><a href="../modules/ozpIwc.api.data.node.html">ozpIwc.api.data.node</a></li>
+                                <li><a href="../modules/ozpIwc.api.error.html">ozpIwc.api.error</a></li>
+                                <li><a href="../modules/ozpIwc.api.filter.html">ozpIwc.api.filter</a></li>
+                                <li><a href="../modules/ozpIwc.api.intents.html">ozpIwc.api.intents</a></li>
+                                <li><a href="../modules/ozpIwc.api.intents.node.html">ozpIwc.api.intents.node</a></li>
+                                <li><a href="../modules/ozpIwc.api.locks.html">ozpIwc.api.locks</a></li>
+                                <li><a href="../modules/ozpIwc.api.names.html">ozpIwc.api.names</a></li>
+                                <li><a href="../modules/ozpIwc.api.system.html">ozpIwc.api.system</a></li>
+                                <li><a href="../modules/ozpIwc.api.system.node.html">ozpIwc.api.system.node</a></li>
+                                <li><a href="../modules/ozpIwc.metric.html">ozpIwc.metric</a></li>
+                                <li><a href="../modules/ozpIwc.metric.stats.html">ozpIwc.metric.stats</a></li>
+                                <li><a href="../modules/ozpIwc.metric.types.html">ozpIwc.metric.types</a></li>
+                                <li><a href="../modules/ozpIwc.network.html">ozpIwc.network</a></li>
+                                <li><a href="../modules/ozpIwc.packet.html">ozpIwc.packet</a></li>
+                                <li><a href="../modules/ozpIwc.policyAuth.html">ozpIwc.policyAuth</a></li>
+                                <li><a href="../modules/ozpIwc.policyAuth.elements.html">ozpIwc.policyAuth.elements</a></li>
+                                <li><a href="../modules/ozpIwc.policyAuth.points.html">ozpIwc.policyAuth.points</a></li>
+                                <li><a href="../modules/ozpIwc.transport.html">ozpIwc.transport</a></li>
+                                <li><a href="../modules/ozpIwc.transport.consensus.html">ozpIwc.transport.consensus</a></li>
+                                <li><a href="../modules/ozpIwc.transport.listener.html">ozpIwc.transport.listener</a></li>
+                                <li><a href="../modules/ozpIwc.transport.participant.html">ozpIwc.transport.participant</a></li>
+                                <li><a href="../modules/ozpIwc.util.html">ozpIwc.util</a></li>
+                                <li><a href="../modules/ozpIwc.worker.html">ozpIwc.worker</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: app/js/bus/api/base/api.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+/**
+ * @module ozpIwc
+ * @submodule ozpIwc.api
+ */
+
+ozpIwc.api.base = ozpIwc.api.base || {};
+/**
+ * @module ozpIwc.api
+ * @submodule ozpIwc.api.base
+ */
+
+ozpIwc.api.base.Api = (function (api, log, transport, util) {
+    /**
+     * The base class for APIs. Use {{#crossLink &quot;ozpIwc.api.createApi&quot;}}{{/crossLink}} to subclass
+     * this.
+     *
+     * Leader State Management
+     * =======================
+     * The base API uses locks.api to always have a single leader at a time.  An api instance goes
+     * through a linear series of states:  member -&gt; loading -&gt; leader
+     * * __member__ does not service requests
+     * * __loading__ is a transitory state between acquiring the leader lock and being ready to serve requests
+     * * __leader__ actively serves requests and broadcasts a death scream upon shutdown
+     *
+     * The member state has two substates-- ready and dormant
+     *  * __ready__ queues requests in case it has to become leader.  switches back to dormant on discovering a leader
+     *  * __dormant__ silently drops requests.  Upon hearing a deathScream, it switches to ready.
+     * @class Api
+     * @namespace ozpIwc.api.base
+     * @uses ozpIwc.util.Event
+     * @constructor
+     * @param {Object} config
+     * @param {String} config.name The api address (e.g. &quot;names.api&quot;)
+     * @param {ozpIwc.transport.participant.Client} [config.participant= new ozpIwc.transport.participant.Client()] The
+     *     connection to use for communication
+     * @param {ozpIwc.policyAuth.PDP} config.authorization The authorization component for this module.
+     * @param {ozpIwc.transport.Router} config.router The router to connect to
+     */
+    var Api = function (config) {
+        var self = this;
+
+        if (!config.name) {
+            throw Error(&quot;API must be configured with a name&quot;);
+        }
+        if (!config.router) {
+            throw Error(&quot;API must be configured with a router&quot;);
+        }
+
+        if (!config.authorization) {
+            throw Error(&quot;API must be configured with an authorization module&quot;);
+        }
+
+        /**
+         * Policy authorizing module.
+         * @property authorization
+         * @type {ozpIwc.policyAuth.PDP}
+         */
+        this.authorization = config.authorization;
+
+        /**
+         * @property participant
+         * @type {ozpIwc.transport.participant.Client|*}
+         */
+        this.participant = config.participant || new transport.participant.Client({
+                &#x27;internal&#x27;: true,
+                &#x27;router&#x27;: config.router,
+                &#x27;authorization&#x27;: config.authorization,
+                &#x27;name&#x27;: config.name
+            });
+        this.participant.on(&quot;receive&quot;, function (packetContext) {
+            self.receivePacketContext(packetContext);
+        });
+
+        /**
+         * @property name
+         * @type {String}
+         */
+        this.name = config.name;
+
+        /**
+         * @property coordinationAddress
+         * @type {String}
+         */
+        this.coordinationAddress = &quot;coord.&quot; + this.name;
+
+
+        /**
+         * @property events
+         * @type {ozpIwc.util.Event}
+         */
+        this.events = new util.Event();
+        this.events.mixinOnOff(this);
+
+        /**
+         * @property endpoints
+         * @type {Array}
+         */
+        this.endpoints = [];
+
+        /**
+         * @property data
+         * @type {Object}
+         */
+        this.data = {};
+
+        /**
+         * @property watchers
+         * @type {Object}
+         */
+        this.watchers = {};
+
+        /**
+         * @property collectors
+         * @type {Array}
+         */
+        this.collectors = [];
+
+        /**
+         * @property changeList
+         * @type {Object}
+         */
+        this.changeList = {};
+
+        /**
+         * @property leaderState
+         * @type {String}
+         */
+        this.leaderState = &quot;member&quot;;
+
+        /**
+         * @property router
+         * @type {ozpIwc.transport.Router}
+         */
+        this.router = config.router;
+        this.router.registerMulticast(this.participant, [this.name, this.coordinationAddress]);
+
+        /**
+         * @property logPrefix
+         * @type {String}
+         */
+        this.logPrefix = &quot;[&quot; + this.name + &quot;/&quot; + this.participant.address + &quot;] &quot;;
+
+        this.ajaxQueue = config.ajaxQueue;
+
+        util.addEventListener(&quot;beforeunload&quot;, function () { self.shutdown(); });
+        this.transitionToMemberReady();
+        queueForCoordination(this, config.leaderPromise);
+    };
+
+//--------------------------------------------------
+//          Private Methods
+//--------------------------------------------------
+    /**
+     * A static utility method for the api to queue for leadership in the locks api.
+     *
+     * @method queueForCoordination
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Promise} [promise]
+     */
+    var queueForCoordination = function (apiBase, promise) {
+        apiBase.participant.send({
+            dst: &quot;locks.api&quot;,
+            resource: &quot;/mutex/&quot; + apiBase.name,
+            action: &quot;watch&quot;
+        }, function (reply) {
+            handleLockChange(apiBase, reply);
+        });
+
+
+        apiBase.leaderPromise = promise || apiBase.participant.send({
+                dst: &quot;locks.api&quot;,
+                resource: &quot;/mutex/&quot; + apiBase.name,
+                action: &quot;lock&quot;
+            });
+
+        apiBase.leaderPromise.then(function (pkt) {
+            log.info(&quot;[&quot; + apiBase.name + &quot;][&quot; + apiBase.participant.address + &quot;] Now operating&quot;);
+            var resolve;
+
+            // Delay loading for deathScreams to flow in.
+            var delayed = new Promise(function (res, rej) {
+                resolve = res;
+            });
+
+            window.setTimeout(function () {
+                resolve();
+            }, 1000);
+
+            return delayed;
+        }).then(function () {
+            apiBase.transitionToLoading();
+        });
+
+        apiBase.leaderPromise.catch(function (e) {
+            console.error(&quot;Error registering for leader mutex [address=&quot; + apiBase.participant.address + &quot;,api=&quot; + apiBase.name + &quot;]&quot;, e);
+        });
+
+    };
+
+    /**
+     * A static utility method for the api to handle a change in it&#x27;s lock api mutex.
+     *
+     * @method handleLockChange
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Object} response
+     */
+    var handleLockChange = function (apiBase, response) {
+        response = response || {};
+        response.entity = response.entity || {};
+        response.entity.oldValue = response.entity.oldValue || {};
+        response.entity.newValue = response.entity.newValue || {};
+        var prevOwner = response.entity.oldValue.owner || {};
+        var newOwner = response.entity.newValue.owner || {};
+
+        // If we are no longer the holder of the API lock get back in line to own it. This case only applies if the API
+        // instance was pushed out. If the instance closes this code is not reached.
+        if (prevOwner.src === apiBase.participant.address &amp;&amp; newOwner.src !== apiBase.participant.address) {
+            apiBase.broadcastDeathScream(apiBase.createDeathScream());
+            apiBase.leaderState = &quot;member&quot;;
+            apiBase.transitionToMemberReady();
+            queueForCoordination(apiBase);
+        }
+    };
+    /**
+     * A static utility method that notifies watchers of changes of the resource since the given snapshot.
+     * @method resolveChangedNode
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {String} resource
+     * @param {Object} snapshot
+     * @param {Object} packetContext
+     */
+    var resolveChangedNode = function (apiBase, resource, snapshot, packetContext) {
+        var node = apiBase.data[resource];
+        var watcherList = apiBase.watchers[resource] || [];
+
+        if (!node) {
+            return;
+        }
+
+        var changes = node.changesSince(snapshot);
+        if (!changes) {
+            return;
+        }
+
+        var permissions = apiBase.authorization.pip.attributeUnion(
+            changes.oldValue.permissions,
+            changes.newValue.permissions
+        );
+
+        var entity = {
+            oldValue: changes.oldValue.entity,
+            newValue: changes.newValue.entity,
+            oldCollection: changes.oldValue.collection,
+            newCollection: changes.newValue.collection,
+            deleted: node.deleted
+        };
+
+        apiBase.events.trigger(&quot;changed&quot;, node, entity, packetContext);
+
+        watcherList.forEach(function (watcher) {
+            // @TODO allow watchers to changes notifications if they have permission to either the old or new, not just
+            // both
+            apiBase.participant.send({
+                &#x27;src&#x27;: apiBase.participant.name,
+                &#x27;dst&#x27;: watcher.src,
+                &#x27;replyTo&#x27;: watcher.replyTo,
+                &#x27;response&#x27;: &#x27;changed&#x27;,
+                &#x27;respondOn&#x27;: &#x27;none&#x27;,
+                &#x27;resource&#x27;: node.resource,
+                &#x27;permissions&#x27;: permissions,
+                &#x27;contentType&#x27;: node.contentType,
+                &#x27;entity&#x27;: entity
+            });
+        });
+    };
+
+    /**
+     * A static utility method called after an api request is complete to send out change notifications.
+     *
+     * @method resolveChangedNodes
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Object} packetContext the packet that caused this change.
+     */
+    var resolveChangedNodes = function (apiBase, packetContext) {
+        apiBase.updateCollections();
+        util.object.eachEntry(apiBase.changeList, function (resource, snapshot) {
+            resolveChangedNode(apiBase, resource, snapshot, packetContext);
+        });
+        apiBase.changeList = {};
+    };
+
+    /**
+     * A static utility method that removes the collector node from the collectors list if deleted.
+     * Removes references to nodes in the given collectors collection property if said referenced node is deleted.
+     * Adds newly created nodes to the collection property if said node&#x27;s resource matches the collection nodes pattern
+     * property.
+     *
+     * @method updateCollectionNode
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Object} cNode the collector node to update
+     */
+    var updateCollectionNode = function (apiBase, cNode) {
+        if (!cNode) {
+            return;
+        }
+        //If the collection node is deleted, stop collecting for it.
+        if (cNode.deleted) {
+            apiBase.removeCollector(cNode.resource);
+            return;
+        }
+
+
+        var updatedCollection = apiBase.matchingNodes(cNode.pattern).filter(function (node) {
+            return !node.deleted;
+        }).map(function (node) {
+            return node.resource;
+        });
+
+        cNode.collection = cNode.collection || [];
+        if (!util.arrayContainsAll(cNode.collection, updatedCollection) || !util.arrayContainsAll(updatedCollection, cNode.collection)) {
+            apiBase.markForChange(cNode);
+            cNode.collection = updatedCollection;
+            cNode.version++;
+        }
+    };
+
+    /**
+     * Handles packets received with a destination of &quot;$bus.multicast&quot;.
+     *
+     * @method receiveBusPacket
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Object} packetContext
+     * @return {*}
+     */
+    var receiveBusPacket = function (apiBase, packetContext) {
+        var packet = packetContext.packet;
+        switch (packet.action) {
+            case &quot;connect&quot;:
+                apiBase.events.trigger(&quot;addressConnects&quot;, packet.entity.address, packet);
+                break;
+            case &quot;disconnect&quot;:
+                removeDeadWatchers(apiBase, packet.entity.address);
+                apiBase.events.trigger(&quot;addressDisconnects&quot;, packet.entity.address, packet);
+                break;
+        }
+        return Promise.resolve();
+    };
+
+    /**
+     * If the the given address is watching a resource, it will be removed from the watch list. Router addresses will
+     * remove all of its participants watch registrations.
+     *
+     * @method removeDeadWatchers
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {String} address
+     */
+    var removeDeadWatchers = function (apiBase, address) {
+        var len = address.length;
+        util.object.eachEntry(apiBase.watchers, function (resource, array) {
+            for (var i in array) {
+                if (array[i].src.substr(-len) === address) {
+                    array.splice(i, 1);
+                }
+            }
+        });
+    };
+
+    /**
+     * Handles packets received regarding leadership actions.
+     * @method receiveCoordinationPacket
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Object} packetContext
+     * @return {Promise}
+     */
+    var receiveCoordinationPacket = function (apiBase, packetContext) {
+        var packet = packetContext.packet;
+        switch (packet.action) {
+            case &quot;announceLeader&quot;:
+                return apiBase.transitionToMemberDormant();
+            case &quot;deathScream&quot;:
+                return apiBase.transitionToMemberReady(packet.entity);
+            default:
+                log.error(&quot;Unknown coordination packet: &quot;, packet);
+                return Promise.reject(new Error(&quot;Unknown action: &quot; + packet.action + &quot; in &quot; + JSON.stringify(packetContext)));
+        }
+    };
+
+    /**
+     * Routes a request to the proper handler and takes care of overhead
+     * such as change requests.
+     *
+     * @method receivePacketContext
+     * @private
+     * @static
+     * @property {ozpIwc.api.base.Api} apiBase
+     * @property {Object} packetContext
+     */
+    var receiveRequestPacket = function (apiBase, packetContext) {
+        var packet = packetContext.packet;
+
+        if (apiBase.isRequestQueueing) {
+            apiBase.requestQueue.push(packetContext);
+            return;
+        }
+        if (apiBase.leaderState !== &quot;leader&quot;) {
+            return;
+        }
+
+        try {
+            packetContext.node = apiBase.data[packet.resource];
+            var packetFragment = apiBase.routePacket(packet, packetContext);
+            if (packetFragment) {
+                packetFragment.response = packetFragment.response || &quot;ok&quot;;
+                packetContext.replyTo(packetFragment);
+            }
+            resolveChangedNodes(apiBase, packetContext);
+        } catch (e) {
+            if (!e || !e.errorAction) {
+                log.error(apiBase.logPrefix, &quot;Unexpected error: &quot;, e, &quot; packet= &quot;, packet);
+            }
+            var errorFragment = {
+                &#x27;src&#x27;: apiBase.name,
+                &#x27;response&#x27;: e.errorAction || &quot;errorUnknown&quot;,
+                &#x27;entity&#x27;: e.message
+            };
+            packetContext.replyTo(errorFragment);
+        }
+
+    };
+
+//--------------------------------------------------
+//          Public Methods
+//--------------------------------------------------
+    /**
+     * Generates a unique key with the given prefix.
+     * @param {String} prefix
+     * @return {String}
+     */
+    Api.prototype.createKey = function (prefix) {
+        prefix = prefix || &quot;&quot;;
+        var key;
+        do {
+            key = prefix + util.generateId();
+        } while (key in this.data);
+        return key;
+    };
+
+//===============================================================
+// Default methods that can be overridden by subclasses
+//===============================================================
+
+    /**
+     * A handler function for when a node is created. Can be overridden by inherited APIs.
+     * @method createdHandler
+     * @param {ozpIwc.api.base.Node} node
+     */
+    Api.prototype.createdHandler = function (node) {
+        //Whenever a node is created update the collector&#x27;s lists.
+        this.updateCollections();
+    };
+
+    /**
+     * A handler function called after a node is changed but before it&#x27;s watchers are notified. Can be overridden by
+     * inherited APIs.
+     * @method changedHandler
+     * @param {Object} node
+     * @param {Object} entity
+     * @param {Object} packetContext
+     */
+    Api.prototype.changedHandler = function (node, entity, packetContext) {
+        //var culprit = packetContext.src;
+        var lifespanFns = api.Lifespan.getLifespanFunctionality(node.lifespan);
+        if (lifespanFns.shouldPersist() &amp;&amp; this.ajaxQueue) {
+            this.ajaxQueue.queueNode(this.name + &quot;/&quot; + node.resource, node);
+        }
+    };
+
+    /**
+     * A handler function called when an instance of this API has disconnected from the bus.Can be overridden by
+     * inherited APIs.
+     * @method disconnectHandler
+     * @param {String} address
+     */
+    Api.prototype.disconnectHandler = function (address) {
+        var self = this;
+        util.object.eachEntry(self.data, function (resource, node) {
+            var lifespanFns = api.Lifespan.getLifespanFunctionality(node.lifespan);
+            if (lifespanFns.shouldDelete(node.lifespan, address)) {
+                self.markForChange(node);
+                node.markAsDeleted();
+            }
+        });
+        resolveChangedNodes(this);
+    };
+
+    /**
+     * Create the data that needs to be handed off to the new leader.
+     *
+     * __Intended to be overridden by subclasses__
+     *
+     * Subsclasses can override this if they need to add additional
+     * handoff data.  This MUST be a synchronous call that returns immediately.
+     *
+     * @method createDeathScream
+     * @return {Object} the data that will be passed to the new leader
+     */
+    Api.prototype.createDeathScream = function () {
+        return {
+            watchers: this.watchers,
+            collectors: this.collectors,
+            data: util.object.eachEntry(this.data, function (k, v) {
+                return v.serializeLive();
+            }),
+            timestamp: util.now()
+        };
+    };
+
+    /**
+     * Gathers the desired preference from the data API.
+     * @method getPreference
+     * @param {String} prefName
+     * @return {Promise}
+     */
+    Api.prototype.getPreference = function (prefName) {
+        return this.participant.send({
+            dst: &quot;data.api&quot;,
+            resource: &quot;/ozp/iwc/&quot; + this.name + &quot;/&quot; + prefName,
+            action: &quot;get&quot;
+        }).then(function (reply) {
+            return reply.entity;
+        });
+    };
+
+    /**
+     * Called when the API has become the leader, but before it starts
+     * serving data.  Receives the deathScream of the previous leader
+     * if available, otherwise undefined.
+     *
+     * __Intended to be overridden by subclasses__
+     *
+     * Subsclasses can override this to load data from the server.
+     *
+     * @method initializeData
+     * @param {object} deathScream
+     * @return {Promise} a promise that resolves when all data is loaded.
+     */
+    Api.prototype.initializeData = function (deathScream) {
+        deathScream = deathScream || {watchers: {}, collectors: [], data: []};
+        this.watchers = deathScream.watchers;
+        this.collectors = deathScream.collectors;
+        deathScream.data.forEach(function (packet) {
+            var selfLink = packet.self || {};
+            this.createNode({resource: packet.resource, contentType: selfLink.type}).deserializeLive(packet);
+        }, this);
+
+        this.updateCollections();
+        if (this.endpoints) {
+            var self = this;
+            return Promise.all(this.endpoints.map(function (u) {
+                var e = api.endpoint(u.link);
+                return self.loadFromEndpoint(e, u.headers).catch(function (err) {
+                    log.error(self.logPrefix, &quot;load from endpoint failed. Reason: &quot;, err);
+                });
+            }));
+        } else {
+            return Promise.resolve();
+        }
+    };
+
+
+    /**
+     * Maps a content-type to an IWC Node type. Overriden in APIs.
+     * @method findNodeType
+     * @param {Object} contentTypeObj an object-formatted content-type
+     * @param {String} contentTypeObj.name the content-type without any variables
+     * @param {Number} [contentTypeObj.version] the version of the content-type.
+     * @returns {undefined}
+     */
+    Api.prototype.findNodeType = function (contentTypeObj) {
+        return undefined;
+    };
+
+    /**
+     * Creates a node appropriate for the given config, puts it into this.data,
+     * and fires off the right events.
+     *
+     * @method createNode
+     * @param {Object} config The node configuration.
+     * @return {ozpIwc.api.base.Node}
+     */
+    Api.prototype.createNode = function (config, NodeType) {
+        NodeType = NodeType || this.findNodeType(config.contentType);
+
+        var n = this.createNodeObject(config, NodeType);
+        if (n) {
+            this.data[n.resource] = n;
+            this.events.trigger(&quot;createdNode&quot;, n);
+            return n;
+        }
+    };
+
+
+    /**
+     * Creates a node appropriate for the given config.  This does
+     * NOT add the node to this.data.  Default implementation returns
+     * a plain ozpIwc.api.base.Node.
+     *
+     * __Intended to be overridden by subclasses__
+     *
+     * Subsclasses can override this for custom node types that may vary
+     * from resource to resource.
+     *
+     * @method createNodeObject
+     * @param {Object} config The node configuration configuration.
+     * @param {Function} NodeType The contructor call for the given node type to be created.
+     * @return {ozpIwc.api.base.Node}
+     */
+    Api.prototype.createNodeObject = function (config, NodeType) {
+        if (NodeType) {
+            return new NodeType(config);
+        } else {
+            return new api.base.Node(config);
+        }
+    };
+
+//===============================================================
+// Leader state management
+//===============================================================
+
+    /**
+     * @method transitionToLoading
+     * @private
+     * @return {Promise} a promise that resolves when all data is loaded.
+     */
+    Api.prototype.transitionToLoading = function () {
+        var self = this;
+        if (this.leaderState !== &quot;member&quot;) {
+            log.error(this.logPrefix + &quot;transition to loading called in an invalide state:&quot;, this.leaderState);
+            return Promise.reject(this.logPrefix + &quot;transition to loading called in an invalide state:&quot;, this.leaderState);
+        }
+        log.debug(this.logPrefix + &quot;transitioning to loading&quot;);
+        this.leaderState = &quot;loading&quot;;
+        return this.initializeData(this.deathScream)
+            .then(function () {
+                self.transitionToLeader();
+            }, function (e) {
+                log.error(self.logPrefix + &quot;Failed to load data due to &quot;, e);
+                self.shutdown();
+            });
+    };
+
+    /**
+     * @method transitionToLeader
+     * @private
+     */
+    Api.prototype.transitionToLeader = function () {
+        if (this.leaderState !== &quot;loading&quot;) {
+            log.error(this.logPrefix + &quot;transition to leader called in an invalid state:&quot;, this.leaderState);
+            return;
+        }
+        log.debug(this.logPrefix + &quot;transitioning to leader&quot;);
+        this.leaderState = &quot;leader&quot;;
+        this.broadcastLeaderReady();
+        this.deliverRequestQueue();
+
+        this.on(&quot;createdNode&quot;, this.createdHandler, this);
+        this.on(&quot;changed&quot;, this.changedHandler, this);
+        this.on(&quot;addressDisconnects&quot;, this.disconnectHandler, this);
+
+        log.info(this.logPrefix + &quot; Now operating&quot;);
+    };
+
+    /**
+     * Shuts down the api, issuing a deathscream and releasing the lock, if possible.
+     * @method shutdown
+     * @return
+     */
+    Api.prototype.shutdown = function () {
+        if (this.leaderState === &quot;leader&quot;) {
+            this.broadcastDeathScream(this.createDeathScream());
+        }
+
+        this.participant.send({
+            dst: &quot;locks.api&quot;,
+            resource: &quot;/mutex/&quot; + this.name,
+            action: &quot;unlock&quot;
+        });
+    };
+
+    /**
+     * @method transitionToMemberReady
+     * @private
+     * @param {Object} deathScream
+     * @return {Promise}
+     */
+    Api.prototype.transitionToMemberReady = function (deathScream) {
+        if (this.leaderState !== &quot;member&quot;) {
+            return;
+        }
+        this.deathScream = deathScream;
+        this.off(&quot;createdNode&quot;, this.createdHandler);
+        this.off(&quot;changed&quot;, this.changedHandler);
+        this.off(&quot;addressDisconnects&quot;, this.disconnectHandler);
+        this.enableRequestQueue();
+        return Promise.resolve();
+    };
+
+    /**
+     * @method transitionToMemberDormant
+     * @private
+     * @return {Promise}
+     */
+    Api.prototype.transitionToMemberDormant = function () {
+        if (this.leaderState !== &quot;member&quot;) {
+            return;
+        }
+        this.deathScream = null;
+        this.flushRequestQueue();
+        return Promise.resolve();
+    };
+
+//===============================================================
+// Data Management
+//===============================================================
+
+    /**
+     * Authorize the request for the given node.
+     *
+     * @method checkAuthorization
+     * @param {ozpIwc.api.base.Node} node
+     * @param {Object} context
+     * @param {ozpIwc.packet.Transport} packet
+     * @param {String} action
+     * @return {undefined}
+     */
+    Api.prototype.checkAuthorization = function (node, context, packet, action) {
+        //@TODO: actually implement checking the authorization...
+        return true;
+    };
+
+    /**
+     * Returns a list of nodes that start with the given prefix.
+     *
+     * @method matchingNodes
+     * @param {String} prefix
+     * @return {ozpIwc.api.base.Node[]} a promise that resolves when all data is loaded.
+     */
+    Api.prototype.matchingNodes = function (prefix) {
+        return util.object.values(this.data, function (k, node) {
+            return node.resource.indexOf(prefix) === 0 &amp;&amp; !node.deleted;
+        });
+    };
+
+
+//===============================================================
+// Watches
+//===============================================================
+
+    /**
+     * Marks that a node has changed and that change notices may need to
+     * be sent out after the request completes.
+     *
+     * @method markForChange
+     * @param {ozpIwc.api.base.Node} nodes...
+     */
+    Api.prototype.markForChange = function (/*varargs*/) {
+        for (var i = 0; i &lt; arguments.length; ++i) {
+            if (Array.isArray(arguments[i])) {
+                this.markForChange(arguments[i]);
+            } else {
+                var resource = arguments[i].resource || &quot;&quot; + arguments[i];
+                // if it&#x27;s already marked, skip it
+                if (this.changeList.hasOwnProperty(resource)) {
+                    continue;
+                }
+
+                var n = this.data[resource];
+
+                this.changeList[resource] = n ? n.snapshot() : {};
+            }
+        }
+    };
+
+    /**
+     * Marks that a node has changed and that change notices may need to
+     * be sent out after the request completes.
+     *
+     * @method addWatcher
+     * @param {String} resource name of the resource to watch
+     * @param {Object} watcher
+     * @param {String} watcher.resource name of the resource to watch
+     * @param {String} watcher.src Address of the watcher
+     * @param {String | Number} watcher.replyTo The conversation id that change notices will go to
+     */
+    Api.prototype.addWatcher = function (resource, watcher) {
+        var watchList = this.watchers[resource];
+        if (!Array.isArray(watchList)) {
+            watchList = this.watchers[resource] = [];
+        }
+
+        watchList.push(watcher);
+    };
+
+    /**
+     * Removes mark that a node has changed and that change notices may need to
+     * be sent out after the request completes.
+     *
+     * @method removeWatcher
+     * @param {String} resource name of the resource to unwatch
+     * @param {Object} watcher
+     * @param {String} watcher.src Address of the watcher
+     * @param {String | Number} watcher.replyTo The conversation id that change notices will go to
+     */
+    Api.prototype.removeWatcher = function (resource, watcher) {
+        var watchList = this.watchers[resource];
+        if (watchList) {
+            this.watchers[resource] = watchList.filter(function (watch) {
+                return watch.src === watcher.src &amp;&amp; watch.replyTo === watcher.msgId;
+            });
+        }
+    };
+
+
+    /**
+     * Adds the given node to the collector list. It&#x27;s collection list will be updated on api data changes.
+     * @method addCollector
+     * @param {Object} node
+     */
+    Api.prototype.addCollector = function (resource) {
+        var index = this.collectors.indexOf(resource);
+        if (index &lt; 0) {
+            this.collectors.push(resource);
+        }
+        var node = this.data[resource];
+        if (node) {
+            updateCollectionNode(this, node);
+        }
+    };
+
+
+    /**
+     * Removes the given node from the collector list. It&#x27;s collection list will no longer be updated on api data
+     * changes.
+     * @method removeCollector
+     * @param {Object} node
+     */
+    Api.prototype.removeCollector = function (node) {
+        var index = this.collectors.indexOf(node.resource);
+        if (index &gt; -1) {
+            this.collectors.splice(index, 1);
+        }
+    };
+
+
+    /**
+     * Itterates over all collectors of the API for updates
+     * @method updateCollections
+     */
+    Api.prototype.updateCollections = function () {
+        for (var i in this.collectors) {
+            var collectorNode = this.data[this.collectors[i]];
+            updateCollectionNode(this, collectorNode);
+        }
+    };
+
+
+//===============================================================
+// Packet Routing
+//===============================================================
+    /**
+     * Sends packets of data from this API to other parts of the IWC bus.
+     *
+     * @param {Object} fragment
+     * @return {Promise}
+     */
+    Api.prototype.send = function (fragment) {
+        fragment.src = this.name;
+        return this.participant.send(fragment);
+    };
+
+    /**
+     * Routes a packet received from the participant.
+     *
+     * @method receivePacketContext
+     * @property {Object} packetContext
+     * @private
+     */
+    Api.prototype.receivePacketContext = function (packetContext) {
+        if (packetContext.packet.src === this.participant.address) {
+            // drop our own packets
+            return Promise.resolve();
+        }
+
+        if (packetContext.packet.dst === this.coordinationAddress) {
+            return receiveCoordinationPacket(this, packetContext);
+        } else if (packetContext.packet.dst === &quot;$bus.multicast&quot;) {
+            return receiveBusPacket(this, packetContext);
+        } else {
+            return receiveRequestPacket(this, packetContext);
+        }
+    };
+
+//===============================================================
+// API Request Handling
+//===============================================================
+
+
+    /**
+     * Any request packet that does not match a route ends up here.  By default,
+     * it replies with BadAction, BadResource, or BadRequest, as appropriate.
+     *
+     * @method receivePacketContext
+     * @param {ozpIwc.packet.Transport} packet
+     * @param {ozpIwc.transport.PacketContext} context
+     */
+    Api.prototype.defaultRoute = function (packet, context) {
+        switch (context.defaultRouteCause) {
+            case &quot;nonRoutablePacket&quot;: // packet doesn&#x27;t have an action/resource, so ignore it
+                return;
+            case &quot;noAction&quot;:
+                throw new api.error.BadActionError(packet);
+            case &quot;noResource&quot;:
+                throw new api.error.BadResourceError(packet);
+            default:
+                throw new api.error.BadRequestError(packet);
+        }
+    };
+
+    /**
+     * Enables the API&#x27;s request queue, all requests will be held until deliverRequestQueue or flushRequestQueue is
+     * called.
+     * @method enableRequestQueue
+     * @private
+     */
+    Api.prototype.enableRequestQueue = function () {
+        this.isRequestQueueing = true;
+        this.requestQueue = [];
+    };
+
+    /**
+     * Routes all queued packets and turns off request queueing.
+     * @method deliverRequestQueue
+     * @private
+     */
+    Api.prototype.deliverRequestQueue = function () {
+        this.isRequestQueueing = false;
+        this.requestQueue.forEach(function (request) {
+            receiveRequestPacket(this, request);
+        }, this);
+        this.requestQueue = [];
+    };
+
+    /**
+     * Empties the queue of requests without processing and turns off queuing.
+     * @method flushRequestQueue
+     * @private
+     */
+    Api.prototype.flushRequestQueue = function () {
+        this.isRequestQueueing = false;
+        this.requestQueue = [];
+    };
+
+    /**
+     * Enables API&#x27;s sending queue. This is to prevent an API from communicating given some state (Used for consensus
+     * initialization).
+     *
+     * @method enableSendQueue
+     * @private
+     */
+    Api.prototype.enableSendQueue = function () {
+        this.isSendQueueing = true;
+        this.sendQueue = [];
+    };
+
+    /**
+     * Delivers and disables API&#x27;s sending queue.
+     *
+     * @method deliverSendQueue
+     * @private
+     */
+    Api.prototype.deliverSendQueue = function () {
+        this.isSendQueueing = false;
+        this.sendQueue.forEach(this.participant.send, this.participant);
+        this.sendQueue = [];
+    };
+
+    /**
+     * Empties and disables API&#x27;s sending queue.
+     *
+     * @method flushSendQueue
+     * @private
+     */
+    Api.prototype.flushSendQueue = function () {
+        this.isSendQueueing = false;
+        this.sendQueue = [];
+    };
+
+
+//===============================================================
+// API Coordination Handling
+//===============================================================
+    /**
+     * Broadcasts to other instances of this API on the bus that it is ready to lead.
+     * @method broadcastLeaderReady
+     */
+    Api.prototype.broadcastLeaderReady = function () {
+        this.participant.send({
+            dst: this.coordinationAddress,
+            action: &quot;announceLeader&quot;
+        });
+    };
+
+    /**
+     * Broadcasts to other instances of this API on the bus this APIs state.
+     * @method broadcastDeathScream
+     * @param {Object} deathScream the state data to pass on.
+     */
+    Api.prototype.broadcastDeathScream = function (deathScream) {
+        this.participant.send({
+            dst: this.coordinationAddress,
+            action: &quot;deathScream&quot;,
+            entity: deathScream
+        });
+    };
+
+
+//===============================================================
+// Load data from the server
+//===============================================================
+
+
+    /**
+     * Recursive HAL resource parser.
+     *
+     * @method handleResource
+     * @private
+     * @static
+     * @param {Api} api
+     * @param {ozpIwc.api.endpoint} endpoint
+     * @param {Object} resourceObj the body of the Resource
+     */
+    var handleResource = function (api, endpoint, resourceObj,headers) {
+        resourceObj = resourceObj || {};
+        resourceObj._links = resourceObj._links || {};
+        resourceObj._embedded = resourceObj._embedded || {};
+        resourceObj._embedded.item = util.ensureArray(resourceObj._embedded.item || []);
+        var selfLink = resourceObj._links.self || {};
+        var NodeType = api.findNodeType(selfLink.type);
+
+        if (NodeType) {
+            try {
+                api.createNode({
+                    serializedEntity: resourceObj,
+                    contentType: selfLink.type
+                }, NodeType);
+            } catch (e) {
+                log.info(api.logPrefix + &quot;[&quot; + selfLink.type + &quot;] [&quot; + selfLink.href + &quot;] No node created from resource, reason: &quot;, e.message);
+            }
+        } else {
+            log.info(api.logPrefix + &quot;[&quot; + selfLink.type + &quot;] [&quot; + selfLink.href + &quot;] No node created from resource, reason: no node type for this content-type.&quot;);
+        }
+        if (resourceObj._embedded.item.length) {
+            log.info(api.logPrefix + &quot;[&quot; + selfLink.href + &quot;] Processing &quot; + resourceObj._embedded.item.length + &quot; embedded items.&quot;);
+        }
+
+        return handleEmbedded(api, endpoint, resourceObj._embedded,headers).then(function () {
+            return handleLinks(api, endpoint, resourceObj._links,headers);
+        });
+    };
+
+    /**
+     * Recursive HAL _links parser
+     *
+     * @method handleLinks
+     * @private
+     * @static
+     * @param {Api} api
+     * @param {ozpIwc.api.endpoint} endpoint
+     * @param {Object} _links the _links object of the HAL resource
+     */
+    var handleLinks = function (api, endpoint, _links,headers) {
+        var linkedItems = util.ensureArray((_links &amp;&amp; _links.item) || []);
+        var unknownLinks = linkedItems.filter(function (link) {
+            return util.object.values(api.data, function (k, node) {
+                    node.self = node.self || {};
+                    return node.self.href === link.href;
+                }).length === 0;
+        });
+
+        var linkGather = function (obj) {
+            var hdrs = headers.slice(0);
+            if(obj.type) {
+                hdrs.push({&#x27;name&#x27;: &quot;Accept&quot;, &#x27;value&#x27;: obj.type});
+            }
+            return loadResource(api, endpoint, obj.href, hdrs).catch(function (err) {
+                log.info(&quot;failed to gather link: &quot;, obj.href, &quot; reason: &quot;, err);
+            });
+        };
+
+        if (unknownLinks.length) {
+            log.info(api.logPrefix + &quot; Processing &quot; + unknownLinks.length + &quot; linked items.&quot;);
+        }
+
+        return Promise.all(unknownLinks.map(linkGather));
+    };
+
+    /**
+     * Recursive HAL _embedded parser
+     *
+     * @method handleLinks
+     * @private
+     * @static
+     * @param {Api} api
+     * @param {ozpIwc.api.endpoint} endpoint
+     * @param {Object} _embedded the _embedded object of the HAL resource
+     */
+    var handleEmbedded = function (api, endpoint, _embedded,headers) {
+        var embeddedItems = util.ensureArray((_embedded &amp;&amp; _embedded.item) || []);
+        var embeddedGather = function (obj) {
+            obj._links = obj._links || {};
+            obj._links.self = obj._links.self || {};
+            // We can only knowingly handle an embedded object if we know its type.
+            if (obj._links.self.type) {
+                return handleResource(api, endpoint, obj,headers);
+            } else {
+                return Promise.resolve();
+            }
+        };
+        return Promise.all(embeddedItems.map(embeddedGather));
+    };
+
+    /**
+     * Loads data from the provided endpoint.  The endpoint must point to a HAL JSON document
+     * that embeds or links to all resources for this api.
+     *
+     * @method loadFromEndpoint
+     * @param {ozpIwc.api.Endpoint} endpoint
+     * @param {Array} headers
+     * @return {Promise} resolved when all data has been loaded.
+     */
+    var loadResource = function (api, endpoint, path, headers) {
+        log.info(api.logPrefix + &quot;[&quot; + endpoint.name + &quot;] Headers:&quot; +JSON.stringify(headers) + &quot; Loading: &quot; + path);
+
+        return endpoint.get(path,headers).then(function (data) {
+            data.response._embedded = data.response._embedded || {};
+            data.response._links = data.response._links || {};
+            data.response._links.self = data.response._links.self || {};
+            data.response._links.self.type = data.response._links.self.type || data.header[&#x27;Content-Type&#x27;];
+            data.response._links.self.href = data.response._links.self.href || data.url;
+
+            return handleResource(api, endpoint, data.response,headers);
+        }).catch(function(err){
+            log.error(api.logPrefix + &quot;[&quot; + endpoint.name + &quot;] [&quot;+ path +&quot;] Failed to load: &quot;, err.status);
+        });
+    };
+
+    Api.prototype.loadFromEndpoint = function (endpoint, headers) {
+        return loadResource(this, endpoint, &quot;/&quot;, headers);
+    };
+
+
+//===============================================================
+// Default Routes and Subclass Helpers
+//===============================================================
+    /**
+     * Gathers the collection data for a node given its pattern only if it has a pattern.
+     * @method getCollection
+     * @param {String} pattern
+     * @return {Array}
+     */
+    Api.prototype.getCollection = function (pattern) {
+        if (pattern) {
+            return this.matchingNodes(pattern).filter(function (node) {
+                return !node.deleted;
+            }).map(function (node) {
+                return node.resource;
+            });
+        } else {
+            return [];
+        }
+    };
+
+    /**
+     * A collection of default action handlers for an API.
+     * @property defaultHandler
+     * @static
+     * @type {Object}
+     */
+    Api.defaultHandler = {
+        &quot;get&quot;: function (packet, context, pathParams) {
+            var p = context.node.toPacket();
+            p.collection = this.getCollection(p.pattern);
+            return p;
+        },
+        &quot;set&quot;: function (packet, context, pathParams) {
+            context.node.set(packet);
+            return {response: &quot;ok&quot;};
+        },
+        &quot;delete&quot;: function (packet, context, pathParams) {
+            if (context.node) {
+                context.node.markAsDeleted(packet);
+            }
+
+            return {response: &quot;ok&quot;};
+        },
+        &quot;list&quot;: function (packet, context, pathParams) {
+            var entity = this.matchingNodes(packet.resource).filter(function (node) {
+                return !node.deleted;
+            }).map(function (node) {
+                return node.resource;
+            });
+            return {
+                &quot;contentType&quot;: &quot;application/json&quot;,
+                &quot;entity&quot;: entity
+            };
+        },
+        &quot;bulkGet&quot;: function (packet, context, pathParams) {
+            var self = this;
+            var entity = this.matchingNodes(packet.resource).map(function (node) {
+                var p = node.toPacket();
+                p.collection = self.getCollection(p.pattern);
+                return p;
+            });
+            // TODO: roll up the permissions of the nodes, as well
+            return {
+                &quot;contentType&quot;: &quot;application/json&quot;,
+                &quot;entity&quot;: entity
+            };
+        },
+        &quot;watch&quot;: function (packet, context, pathParams) {
+            this.addWatcher(packet.resource, {
+                src: packet.src,
+                replyTo: packet.msgId
+            });
+
+            //Only if the node has a pattern applied will it actually be added as a collector.
+            this.addCollector(packet.resource);
+
+            if (context.node) {
+                var p = context.node.toPacket();
+                p.collection = this.getCollection(p.pattern);
+                return p;
+            } else {
+                return {response: &quot;ok&quot;};
+            }
+        },
+        &quot;unwatch&quot;: function (packet, context, pathParams) {
+            this.removeWatcher(packet.resource, packet);
+
+            //If no one is watching the resource any more, remove its collector if it has one to speed things up.
+            if (this.watchers[packet.resource] &amp;&amp; this.watchers[packet.resource].length === 0) {
+                this.removeCollector(packet.resource);
+            }
+
+            return {response: &quot;ok&quot;};
+        }
+    };
+
+    /**
+     * A list of all of the default actions.
+     * @property allActions
+     * @static
+     * @type {String[]}
+     */
+    Api.allActions = Object.keys(Api.defaultHandler);
+
+    /**
+     * Install the default handler and filters for the provided actions and resources.
+     * @method useDefaultRoute
+     * @static
+     * @param {String | String[]} actions
+     * @param {String} resource=&quot;{resource:.*}&quot; The resource template to install the default handler on.
+     */
+
+    return Api;
+}(ozpIwc.api, ozpIwc.log, ozpIwc.transport, ozpIwc.util));
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>
