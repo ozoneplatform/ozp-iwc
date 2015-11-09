@@ -6467,7 +6467,7 @@
         },
         {
             "file": "app/js/bus/api/endpoints.js",
-            "line": 407,
+            "line": 408,
             "description": "Creates a template in the given registry given a name, href, and type.",
             "itemtype": "method",
             "name": "generateTemplate",
@@ -6510,7 +6510,7 @@
         },
         {
             "file": "app/js/bus/api/endpoints.js",
-            "line": 431,
+            "line": 432,
             "description": "Finds or creates an input with the given name.",
             "itemtype": "method",
             "name": "endpoint",

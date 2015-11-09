@@ -578,10 +578,11 @@ ozpIwc.api.EndpointRegistry = (function (api, log, util) {
             }
 
             // UGLY HAX
-            if (!self.template[&quot;ozp:data-item&quot;]) {
+            var dataURL = self.endpoint(&quot;ozp:user-data&quot;).baseUrl;
+            if (!self.template[&quot;ozp:data-item&quot;] &amp;&amp; dataURL) {
                 generateTemplate(self, {
                     name: &quot;ozp:data-item&quot;,
-                    href: self.endpoint(&quot;ozp:user-data&quot;).baseUrl + &quot;/{+resource}&quot;,
+                    href: dataURL + &quot;/{+resource}&quot;,
                     type: api.data.node.Node.serializedContentType
                 });
             }
