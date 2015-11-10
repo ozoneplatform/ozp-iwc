@@ -16,6 +16,7 @@
 
     <!-- Custom CSS -->
     <link href="bootstrap/css/one-page-wonder.css" rel="stylesheet">
+    <link href="bootstrap/css/mock-browser.css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -48,7 +49,7 @@
                         <a href="http://www.github.com/ozone-development/ozp-iwc">Github</a>
                     </li>
                     <li>
-                        <a href="gitbook/">Docs</a>
+                        <a href="gitbook/index.html">Docs</a>
                     </li>
                     <li>
                         <a href="">Tutorial</a>
@@ -68,7 +69,7 @@
         <div class="headline">
             <div class="container">
                 <h1>IWC</h1>
-                <h2>A javascript library for application collaboration.</h2>
+                <h2>A javascript library for cross-domain & cross-tab communication.</h2>
             </div>
         </div>
     </header>
@@ -79,8 +80,51 @@
         <hr class="featurette-divider">
 
         <!-- First Featurette -->
-        <div class="featurette" id="about">
-            <img class="featurette-image  img-responsive pull-right" src="http://placehold.it/500x500">
+        <div class="featurette">
+            <div class="featurette-image  pull-right">
+                <div class="browser-mockup">
+                    <iframe src="http://ozone-development.github.io/ozp-demo/bouncingBalls/index.html?color=blue&fps=45" height="250"></iframe>
+                </div>
+                <div class="browser-mockup" style="margin-top:20px">
+                    <iframe src="http://ozone-development.github.io/ozp-demo/bouncingBalls/index.html?color=red&fps=45" height="250"></iframe>
+                </div>
+            </div>
+            <div class="featurette-image  pull-right">
+                <div class="browser-mockup">
+                    <iframe src="http://ozone-development.github.io/ozp-demo/bouncingBalls/index.html?color=green&fps=45" height="250"></iframe>
+                </div>
+                <div class="browser-mockup" style="margin-top:20px">
+                    <iframe src="http://ozone-development.github.io/ozp-demo/bouncingBalls/index.html?color=black&fps=45" height="250"></iframe>
+                </div>
+            </div>
+            <h2 class="featurette-heading">Synchronized data across all windows without a backend
+                <span class="text-muted"></span>
+            </h2>
+            <p class="lead">While other service bus implementations utilize servers to marshal data between
+                applications, the IWC does all of the marshalling local to the browser.
+            </p>
+            <p class="lead">The IWC does have backend integration capabilities to persist resources and
+                load application metadata to give the IWC bus awareness of the applications using it.</p>
+
+        </div>
+
+        <hr class="featurette-divider">
+
+        <!-- Second Featurette -->
+        <div class="featurette">
+
+            <div class="featurette-image pull-left">
+                <div class="browser-mockup">
+                    <iframe src="http://ozone-development.github.io/ozp-demo/locationLister/index.html" height="475"></iframe>
+                </div>
+            </div>
+
+            <div class="featurette-image  pull-left">
+                <div class="browser-mockup">
+                    <iframe src="http://ozone-development.github.io/ozp-demo/locationAnalyzer/index.html"  height="475"></iframe>
+                </div>
+            </div>
+
             <h2 class="featurette-heading"> Reduce code replication
                 <span class="text-muted"></span>
             </h2>
@@ -93,32 +137,33 @@
 
         <hr class="featurette-divider">
 
-        <!-- Second Featurette -->
-        <div class="featurette" id="services">
-            <img class="featurette-image img-circle img-responsive pull-left" src="http://placehold.it/500x500">
-            <h2 class="featurette-heading">No backend required
-                <span class="text-muted"></span>
-            </h2>
-            <p class="lead">While other service bus implementations utilize servers to marshal data between
-                applications, the IWC does all of the marshalling local to the browser.
-            </p>
-            <p class="lead">The IWC does have backend integration capabilities to persist resources and
-                load application metadata to give the IWC bus awareness of the applications using it.</p>
-        </div>
-
-        <hr class="featurette-divider">
-
         <!-- Third Featurette -->
-        <div class="featurette" id="contact">
-            <img class="featurette-image img-circle img-responsive pull-right" src="http://placehold.it/500x500">
+        <div class="featurette">
+            <h2 class="featurette-heading">Browser Support
+                <span class="text-muted"></span>
+                <p class="lead"> IWC does not use any browser plugins or extensions. It leverages modern browser
+                    technologies (localStorage and optionally SharedWorkers) and is supported for Firefox 24+, Chrome 37+,
+                    and limited support of Internet Explorer 11.
+                </p>
+            </h2>
+        </div>
+        <div class="featurette">
             <h2 class="featurette-heading">Try it out
                 <span class="text-muted"></span>
             </h2>
             <p class="lead">Integration is simple, a demo IWC service bus is provided straight from our github and the
-                application library is readily available through bower. Browse our sample applications and give them a
-                try.
+                application library is readily available through bower. Our <a href="http://ozone-development.github.io/ozp-demo">sample applications</a>
+                are publicly accessible.
+                </p>
+
+            <h2 class="featurette-heading"> Have an application you'd like to share? </h2>
+            <p class="lead">
+               Open an issue on our <a href="https://github.com/ozone-development/ozp-demo/issues/new">demo
+                repository</a> with the href, title, and an icon href of your applicaiton. Make sure to have your app
+                connect to IWC address: <pre>http://ozone-development.github.io/ozp-iwc</pre>.
             </p>
-            <p class="lead"> Want your own IWC service bus? The IWC comes with a sample NodeJS backend which can be
+            <h2 class="featurette-heading"> Want your own IWC service bus? </h2>
+            <p class="lead"> The IWC comes with a sample NodeJS backend which can be
             configured to your needs. If developing a custom backend, our documentation covers the needed data for
             an IWC application to utilize your backend.</p>
         </div>
@@ -129,7 +174,6 @@
         <footer>
             <div class="row">
                 <div class="col-lg-12">
-                    <p>Copyright &copy; Your Website 2014</p>
                 </div>
             </div>
         </footer>
@@ -142,6 +186,10 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- IWC inits for the sample app-->
+    <script src="js/ozpIwc-client.min.js"></script>
+    <script src="app.js"></script>
 
 </body>
 
