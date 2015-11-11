@@ -12,8 +12,8 @@ describe("Names Api", function () {
 
     describe("general", function () {
 
-        pit('Gets api information', function() {
-            return namesApi.list('/api/').then(function(resp) {
+        pit('Gets api information', function () {
+            return namesApi.list('/api/').then(function (resp) {
                 expect(resp.entity.indexOf('/api/data.api')).toBeGreaterThan(-1);
                 expect(resp.entity.indexOf('/api/intents.api')).toBeGreaterThan(-1);
                 expect(resp.entity.indexOf('/api/names.api')).toBeGreaterThan(-1);
@@ -22,8 +22,8 @@ describe("Names Api", function () {
             });
         });
 
-        pit('Api information returns actions of the api', function(){
-            return namesApi.get('/api/names.api').then(function(resp){
+        pit('Api information returns actions of the api', function () {
+            return namesApi.get('/api/names.api').then(function (resp) {
                 expect(resp.entity.actions).toBeDefined();
             });
         });
@@ -34,11 +34,11 @@ describe("Names Api", function () {
             });
         });
 
-        xit('Denied set access to names api addresses', function() {
+        xit('Denied set access to names api addresses', function () {
 
         });
 
-        xit('Denied delete access to names api addresses', function() {
+        xit('Denied delete access to names api addresses', function () {
 
         });
     });

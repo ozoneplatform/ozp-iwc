@@ -48,14 +48,14 @@ describe("KeyBroadcastLocalStorageLink", function () {
     });
 
     describe("Sending", function () {
-        it("Reports not parseable message sending", function(){
+        it("Reports not parseable message sending", function () {
 
-            spyOn(ozpIwc.log,"error");
+            spyOn(ozpIwc.log, "error");
 
             var sentPacket = {
                 data: {
-                foo: [],
-                bar: []
+                    foo: [],
+                    bar: []
                 }
             };
             sentPacket.data.foo[0] = sentPacket.data.bar;
@@ -197,7 +197,7 @@ describe("KeyBroadcastLocalStorageLink", function () {
             expect(link.droppedFragmentsCounter.value).toEqual(droppedFragmentCount + expectedFragments);
         });
 
-        it("converts fragments back into a TransportPacket", function() {
+        it("converts fragments back into a TransportPacket", function () {
             var msgId = ozpIwc.util.generateId();
             var srcPeer = ozpIwc.util.generateId();
             var fragmentPacket1 = {

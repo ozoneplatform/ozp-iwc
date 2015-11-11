@@ -28,7 +28,11 @@ describe("Router", function () {
     describe("Participant registration", function () {
         var participant;
         pBeforeEach(function () {
-            participant = new TestParticipant({authorization: ozpIwc.wiring.authorization, origin: "foo.com", router: router});
+            participant = new TestParticipant({
+                authorization: ozpIwc.wiring.authorization,
+                origin: "foo.com",
+                router: router
+            });
             return participant.connect();
         });
 
@@ -50,7 +54,11 @@ describe("Router", function () {
                 called = true;
             });
 
-            var part = new TestParticipant({authorization: ozpIwc.wiring.authorization, origin: "foo.com", router: router}, {});
+            var part = new TestParticipant({
+                authorization: ozpIwc.wiring.authorization,
+                origin: "foo.com",
+                router: router
+            }, {});
             expect(called).toEqual(true);
             expect(eventPart).toEqual(part);
         });
@@ -62,7 +70,11 @@ describe("Router", function () {
                 }
             });
 
-            var badParticipant = new TestParticipant({authorization: ozpIwc.wiring.authorization, origin: "badguy.com", router: router});
+            var badParticipant = new TestParticipant({
+                authorization: ozpIwc.wiring.authorization,
+                origin: "badguy.com",
+                router: router
+            });
             return badParticipant.connect().then(function () {
                 expect(participant.address).not.toBeNull();
                 expect(badParticipant.address).toEqual("$nobody");
@@ -76,8 +88,16 @@ describe("Router", function () {
         var participant2;
 
         beforeEach(function () {
-            participant = new TestParticipant({authorization: ozpIwc.wiring.authorization, origin: "foo.com", router: router});
-            participant2 = new TestParticipant({authorization: ozpIwc.wiring.authorization, origin: "bar.com", router: router});
+            participant = new TestParticipant({
+                authorization: ozpIwc.wiring.authorization,
+                origin: "foo.com",
+                router: router
+            });
+            participant2 = new TestParticipant({
+                authorization: ozpIwc.wiring.authorization,
+                origin: "bar.com",
+                router: router
+            });
 
             router.registerParticipant(participant);
             router.registerParticipant(participant2);
@@ -115,8 +135,16 @@ describe("Router", function () {
         var participant2;
 
         beforeEach(function () {
-            participant = new TestParticipant({authorization: ozpIwc.wiring.authorization, origin: "foo.com", router: router});
-            participant2 = new TestParticipant({authorization: ozpIwc.wiring.authorization, origin: "bar.com", router: router});
+            participant = new TestParticipant({
+                authorization: ozpIwc.wiring.authorization,
+                origin: "foo.com",
+                router: router
+            });
+            participant2 = new TestParticipant({
+                authorization: ozpIwc.wiring.authorization,
+                origin: "bar.com",
+                router: router
+            });
 
             router.registerParticipant(participant);
             router.registerParticipant(participant2);

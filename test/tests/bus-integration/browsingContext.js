@@ -1,15 +1,15 @@
-var ozpIwc=ozpIwc || {};
-ozpIwc.testUtil=ozpIwc.testUtil || {};
+var ozpIwc = ozpIwc || {};
+ozpIwc.testUtil = ozpIwc.testUtil || {};
 
-ozpIwc.testUtil.BrowsingContext = function(onLoad,msgHandler,id){
+ozpIwc.testUtil.BrowsingContext = function (onLoad, msgHandler, id) {
     this.msgQueue = this.msgQueue || [];
-    var self=this;
-    var msgEvent = function(e){
-        if(e.data !== "") {
+    var self = this;
+    var msgEvent = function (e) {
+        if (e.data !== "") {
             var message;
             try {
                 if (typeof(e.data) === 'string') {
-                    if(e.data.indexOf("setImmediate$") === -1) {
+                    if (e.data.indexOf("setImmediate$") === -1) {
                         message = JSON.parse(e.data);
                     }
                 } else {
@@ -24,9 +24,9 @@ ozpIwc.testUtil.BrowsingContext = function(onLoad,msgHandler,id){
         }
     };
 
-    var scripts = [ 'var ozpIwc = ozpIwc || {}; ozpIwc.enableDefault=false; var msgHandler = ' + msgHandler.toString() + ';' +
-        'window.addEventListener("message",'+msgEvent.toString()+');',
-            '('+onLoad.toString()+')();'];
+    var scripts = ['var ozpIwc = ozpIwc || {}; ozpIwc.enableDefault=false; var msgHandler = ' + msgHandler.toString() + ';' +
+    'window.addEventListener("message",' + msgEvent.toString() + ');',
+        '(' + onLoad.toString() + ')();'];
 
     this.iframe = document.createElement("iframe");
     this.iframe.id = id || "iframe";
@@ -36,32 +36,32 @@ ozpIwc.testUtil.BrowsingContext = function(onLoad,msgHandler,id){
 
     document.body.appendChild(this.iframe);
     this.iframe.contentWindow.document.write("<!DOCTYPE html><html><body></body></html>");
-    this.addScript('text',scripts[0])
-        .then(this.addScript('src','/js/ozpIwc-bus.js'))
-        .then(this.addScript('text',scripts[1]))
+    this.addScript('text', scripts[0])
+        .then(this.addScript('src', '/js/ozpIwc-bus.js'))
+        .then(this.addScript('text', scripts[1]))
         .then(this.ready);
 
     this.iframe.style = "display:none !important;";
 };
 
-ozpIwc.testUtil.BrowsingContext.prototype.wrapReady = function(val){
+ozpIwc.testUtil.BrowsingContext.prototype.wrapReady = function (val) {
 //    return 'document.addEventListener("DOMContentLoaded", function() {' + val + '});';
     return val;
 };
 
-ozpIwc.testUtil.BrowsingContext.prototype.addScript = function(type,val){
+ozpIwc.testUtil.BrowsingContext.prototype.addScript = function (type, val) {
     var script = this.iframe.contentWindow.document.createElement('script');
     script.type = "text/javascript";
 
-    switch(type){
+    switch (type) {
         case 'text':
             script.text = this.wrapReady(val);
             this.iframe.contentWindow.document.body.appendChild(script);
-            return new Promise(function(res,rej) {
+            return new Promise(function (res, rej) {
                 res();
             });
-        case 'src': 
-            /* falls through */
+        case 'src':
+        /* falls through */
         default:
             var xhrObj = new XMLHttpRequest();
             // open and send a synchronous request
@@ -70,7 +70,7 @@ ozpIwc.testUtil.BrowsingContext.prototype.addScript = function(type,val){
             script.text = this.wrapReady(xhrObj.responseText);
             this.iframe.contentWindow.document.body.appendChild(script);
 
-            return new Promise(function(res,rej) {
+            return new Promise(function (res, rej) {
                 if (script.readyState) {  //IE
                     script.onreadystatechange = function () {
                         if (script.readyState === "loaded" || script.readyState === "complete") {
@@ -88,10 +88,10 @@ ozpIwc.testUtil.BrowsingContext.prototype.addScript = function(type,val){
 
 };
 
-ozpIwc.testUtil.BrowsingContext .prototype.ready = function() {
-    return new Promise(function(res,rej){
+ozpIwc.testUtil.BrowsingContext.prototype.ready = function () {
+    return new Promise(function (res, rej) {
         this.ready = true;
-        for(var i in this.msgQueue){
+        for (var i in this.msgQueue) {
             this.send(this.msgQueue[i]);
         }
         this.msgQueue = [];
@@ -99,10 +99,10 @@ ozpIwc.testUtil.BrowsingContext .prototype.ready = function() {
     });
 };
 
-ozpIwc.testUtil.BrowsingContext .prototype.send = function(message){
-    if(!this.ready){
+ozpIwc.testUtil.BrowsingContext.prototype.send = function (message) {
+    if (!this.ready) {
         this.msgQueue.push(message);
     } else {
-        ozpIwc.util.safePostMessage(this.iframe.contentWindow,message,'*');
+        ozpIwc.util.safePostMessage(this.iframe.contentWindow, message, '*');
     }
 };

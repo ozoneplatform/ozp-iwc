@@ -1,83 +1,83 @@
-describe("Base Consensus",function() {
+describe("Base Consensus", function () {
     var consensus = null;
-    beforeEach(function(){
+    beforeEach(function () {
         consensus = new ozpIwc.transport.consensus.Base({
             'authorization': ozpIwc.wiring.authorization,
             'name': "fake",
-            'routePacket': function(){
+            'routePacket': function () {
                 //drop it
             },
             'router': new FakeRouter()
         });
     });
-    afterEach(function(){
+    afterEach(function () {
         consensus = null;
     });
 
-    describe("Construction",function(){
+    describe("Construction", function () {
 
-        it("requires a name",function(){
-            try{
+        it("requires a name", function () {
+            try {
                 var foo = new ozpIwc.transport.consensus.Base();
-            } catch(e){
+            } catch (e) {
                 expect(e).toEqual("Consensus module expects a name.");
                 foo = null;
             }
         });
 
-        it("has events",function(done){
-            consensus.on("foo",function(data){
+        it("has events", function (done) {
+            consensus.on("foo", function (data) {
                 expect(data).toEqual("bar");
                 done();
             });
-            consensus.events.trigger("foo","bar");
+            consensus.events.trigger("foo", "bar");
         });
 
-        it("has a participant",function(){
+        it("has a participant", function () {
             expect(consensus.participant).toBeDefined();
         });
 
-        it("has a router",function(){
+        it("has a router", function () {
             expect(consensus.router).toBeDefined();
         });
 
-        it("Defaults its state to unknown",function(){
+        it("Defaults its state to unknown", function () {
             expect(consensus.state).toEqual("unknown");
         });
     });
 
-    describe("Permissions",function(){
+    describe("Permissions", function () {
 
-        it("can send as the consensus address",function(){
+        it("can send as the consensus address", function () {
             expect(consensus.participant.permissions.attributes['ozp:iwc:sendAs']).toContain(consensus.participant.address);
             expect(consensus.participant.permissions.attributes['ozp:iwc:sendAs']).toContain(consensus.consensusAddress);
         });
 
-        it("can receive as the consensus address",function(){
+        it("can receive as the consensus address", function () {
             expect(consensus.participant.permissions.attributes['ozp:iwc:receiveAs']).toContain(consensus.participant.address);
             expect(consensus.participant.permissions.attributes['ozp:iwc:receiveAs']).toContain(consensus.consensusAddress);
         });
     });
 
-    describe("Functionality",function(){
+    describe("Functionality", function () {
 
-        it("can change state",function(done){
-            consensus.on("changedState",function(state){
+        it("can change state", function (done) {
+            consensus.on("changedState", function (state) {
                 expect(state).toEqual("leader");
                 done();
             });
             consensus.changeState("leader");
         });
 
-        it("has a become coordinator handler",function(){
+        it("has a become coordinator handler", function () {
             expect(consensus.onBecomeCoordinator).toBeDefined();
         });
 
-        it("has a become member handler",function(){
+        it("has a become member handler", function () {
             expect(consensus.onBecomeMember).toBeDefined();
         });
 
-        it("routes packets it receives",function(){
+        it("routes packets it receives", function () {
             expect(consensus.routePacket).toBeDefined();
         });
     });

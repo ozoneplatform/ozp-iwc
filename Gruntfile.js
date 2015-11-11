@@ -27,58 +27,55 @@ module.exports = function(grunt) {
 
         src: {
             common: [
-                'app/js/common/initials.js',
+                'src/js/common/initials.js',
                 'bower_components/es5-shim/es5-shim.js',
                 'bower_components/es5-shim/es5-sham.js',
                 'bower_components/es6-promise/promise.js',
-                'app/js/common/util.js',
-                'app/js/common/**/*.js'
+                'src/js/common/util.js',
+                'src/js/common/**/*.js'
             ],
             metrics: [
                 '<%= src.common %>',
-                'app/js/metric/stats/sample.js',
-                'app/js/metric/stats/binary_heap.js',
-                'app/js/metric/stats/exponentiallyDecayingSample.js',
-                'app/js/metric/stats/exponentiallyWeightedMovingAverage.js',
-                'app/js/metric/baseMetric.js',
-                'app/js/metric/types/*.js',
-                'app/js/metric/registry.js'
+                'src/js/metric/stats/sample.js',
+                'src/js/metric/stats/binary_heap.js',
+                'src/js/metric/stats/exponentiallyDecayingSample.js',
+                'src/js/metric/stats/exponentiallyWeightedMovingAverage.js',
+                'src/js/metric/baseMetric.js',
+                'src/js/metric/types/*.js',
+                'src/js/metric/registry.js'
             ],
             bus: [
                 '<%= src.common %>',
                 '<%= src.metrics %>',
-                'app/js/bus/util/**/*.js',
-                'app/js/bus/wiring/configLoading.js',
+                'src/js/bus/util/**/*.js',
+                'src/js/bus/wiring/configLoading.js',
 
-                'app/js/bus/policyAuth/**/*.js',
+                'src/js/bus/policyAuth/**/*.js',
 
-                'app/js/bus/packet/**.*.js',
-                'app/js/bus/network/**/*.js',
+                'src/js/bus/packet/**.*.js',
+                'src/js/bus/network/**/*.js',
 
-                'app/js/bus/transport/participant/base.js',
-                'app/js/bus/transport/participant/internal.js',
-                'app/js/bus/transport/participant/sharedWorker.js',
-                'app/js/bus/transport/participant/postMessage.js',
-                'app/js/bus/transport/router.js',
-                'app/js/bus/transport/**/*.js',
+                'src/js/bus/transport/participant/base.js',
+                'src/js/bus/transport/participant/internal.js',
+                'src/js/bus/transport/participant/sharedWorker.js',
+                'src/js/bus/transport/participant/postMessage.js',
+                'src/js/bus/transport/router.js',
+                'src/js/bus/transport/**/*.js',
 
-                'app/js/bus/api/*.js',
-                'app/js/bus/api/base/*.js',
-                'app/js/bus/api/error/*.js',
-                'app/js/bus/api/filter/*.js',
-                'app/js/bus/api/**/*.js',
+                'src/js/bus/api/*.js',
+                'src/js/bus/api/endpoint/*.js',
+                'src/js/bus/api/base/*.js',
+                'src/js/bus/api/error/*.js',
+                'src/js/bus/api/filter/*.js',
+                'src/js/bus/api/**/*.js',
 
-                'app/js/services/api/*/node/**/*.js',
-                'app/js/services/api/**/*.js',
-
-
-                'app/js/bus/wiring/support/**/*.js',
-                'app/js/bus/wiring/init/base.js',
-                'app/js/bus/wiring/init/default.js'
+                'src/js/bus/wiring/support/**/*.js',
+                'src/js/bus/wiring/init/base.js',
+                'src/js/bus/wiring/init/default.js'
             ],
             client: [
                 '<%= src.common %>',
-                'app/js/client/**/*.js'
+                'src/js/client/**/*.js'
             ],
             testLib: [
                 'test/lib/**/*.js',
@@ -106,18 +103,18 @@ module.exports = function(grunt) {
                 'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
                 'bower_components/angular-ui-router/release/angular-ui-router.js',
                 'bower_components/angular-ui-grid/ui-grid.js',
-                'app/js/debugger/debugger.js',
-                'app/js/debugger/**/*.js'
+                'components/debugger/js/debugger.js',
+                'components/debugger/**/*.js'
             ],
             debuggerCss: [
                 'bower_components/bootstrap/dist/css/bootstrap.css',
                 'bower_components/angular-ui-grid/ui-grid.css',
                 'bower_components/vis/dist/vis.css',
-                'app/css/debugger/**/*.css'
+                'components/debugger/css/**/*.css'
             ],
             workerTimerJs: [
-                'app/js/worker/timerThrottleUnlock.js',
-                'app/js/worker/timerThrottleUnlockRunner.js'
+                'src/js/worker/timerThrottleUnlock.js',
+                'src/js/worker/timerThrottleUnlockRunner.js'
             ],
             all: [
                 '<%= src.metrics %>',
@@ -133,8 +130,8 @@ module.exports = function(grunt) {
             ngBusJs: 'dist/js/<%= pkg.name %>-bus-angular.js',
             ngClientJs: 'dist/js/<%= pkg.name %>-client-angular.js',
             ngMetricsJs: 'dist/js/<%= pkg.name %>-metrics-angular.js',
-            debuggerJs: 'dist/js/debugger.js',
-            debuggerCss: 'dist/css/debugger.css',
+            debuggerJs: 'dist/debugger/js/debuggerConcat.js',
+            debuggerCss: 'dist/debugger/css/debugger.css',
             workerTimerJs: 'dist/js/ozpIwc.timer.js',
 
             busJsMin: 'dist/js/<%= pkg.name %>-bus.min.js',
@@ -143,7 +140,7 @@ module.exports = function(grunt) {
             ngBusJsMin: 'dist/js/<%= pkg.name %>-bus-angular.min.js',
             ngClientJsMin: 'dist/js/<%= pkg.name %>-client-angular.min.js',
             ngMetricsJsMin: 'dist/js/<%= pkg.name %>-metrics-angular.min.js',
-            debuggerJsMin: 'dist/js/debugger.min.js',
+            debuggerJsMin: 'dist/debugger/js/debuggerConcat.min.js',
 
 
             allJs: ['<%=output.busJs %>', '<%=output.clientJs %>', '<%=output.metricsJs %>',
@@ -278,67 +275,75 @@ module.exports = function(grunt) {
 
         // Copies minified and non-minified js into dist directory
         copy: {
-            dist: {
+            core: {
                 files: [
                     {
-                        src: ['*.html'],
+                        src: ['**/*.html'],
                         dest: './dist/',
-                        cwd: 'app',
+                        cwd: 'src/html',
                         expand: true,
                         nonull:true
                     },{
                         src: ['**/*'],
-                        dest: './dist/js/app/js',
-                        cwd: 'app/js',
+                        dest: './dist/js/src/js',
+                        cwd: 'src/js',
                         expand: true,
                         nonull:true
                     },{
                         src: ['ozpIwc.conf.js', 'ozpIwc.loader.js'],
                         dest: './dist/js',
-                        cwd: 'app/js',
+                        cwd: 'src/js',
                         expand: true,
                         nonull:true
-                    },{
+                    }
+                ]
+            },
+            debugger: {
+                files: [
+                    {
                         src: ['*'],
-                        dest: './dist/fonts',
+                        dest: './dist/debugger/fonts',
                         cwd: 'bower_components/bootstrap/dist/fonts',
                         expand: true,
-                        nonull:true
+                        nonull: true
                     },
                     {
-                        src: ['*.eot','*.svg','*.ttf','*.woff'],
-                        dest: './dist/css',
+                        src: ['*.eot', '*.svg', '*.ttf', '*.woff'],
+                        dest: './dist/debugger/css',
                         cwd: 'bower_components/angular-ui-grid',
                         expand: true,
-                        nonull:true
+                        nonull: true
                     },
                     {
                         src: ['**/*.tpl.html'],
-                        dest: './dist/templates',
-                        cwd: 'app/js/debugger',
+                        dest: './dist/debugger/templates',
+                        cwd: 'components/debugger/js',
                         expand: true,
                         flatten: true,
-                        nonull:true
-                    },{
-                        src: ['**/*.json'],
-                        dest: './dist/data',
-                        cwd: 'app/js/debugger',
-                        expand: true,
-                        flatten: true,
-                        nonull:true
-                    },{
+                        nonull: true
+                    }, {
                         src: ['**'],
-                        dest: './dist/hal-browser',
+                        dest: './dist/debugger/hal-browser',
                         cwd: 'bower_components/hal-browser',
                         expand: true,
-                        nonull:true
-                    },{
+                        nonull: true
+                    }, {
                         src: ['favicon.ico'],
-                        dest: './dist/',
-                        cwd: 'app/js/debugger',
+                        dest: './dist/debugger/',
+                        cwd: 'components/debugger',
                         expand: true,
-                        nonull:true
-                    },
+                        nonull: true
+                    }, {
+                        src: ['*.html'],
+                        dest: './dist/debugger/',
+                        cwd: 'components/debugger',
+                        expand: true,
+                        nonull: true
+                    }
+                ]
+            },
+            ghPages: {
+                files: [
                     {
                         src: ['**/*', "!js/ozpIwc.conf.js"],
                         dest: 'gh-pages/',
@@ -373,7 +378,7 @@ module.exports = function(grunt) {
                 url: '<%= pkg.homepage %>',
                 options: {
                     paths: [
-                        'app/js/'
+                        'src/js/'
                     ],
 //                    themedir: 'path/to/custom/theme/',
                     outdir: 'dist/doc'
@@ -382,8 +387,8 @@ module.exports = function(grunt) {
         },
         watch: {
             concatFiles: {
-                files: ['Gruntfile.js', '<%= src.all %>','app/**/*'],
-                tasks: ['jshint','concat_sourcemap', 'yuidoc','copy:dist'],
+                files: ['Gruntfile.js', '<%= src.all %>','src/**/*'],
+                tasks: ['jshint','concat_sourcemap', 'yuidoc','copy:core'],
                 options: {
                     interrupt: true,
                     spawn: false
@@ -408,8 +413,8 @@ module.exports = function(grunt) {
                 'Gruntfile.js',
                 '<%= src.all %>',
                 '!bower_components/**/*',
-                '!app/js/client/timerThrottleUnlock.js',
-                '!app/js/worker/timerThrottleUnlock.js'
+                '!src/js/client/timerThrottleUnlock.js',
+                '!src/js/worker/timerThrottleUnlock.js'
             ],
             test: {
                 src: ['<%= src.test %>']
@@ -541,7 +546,7 @@ module.exports = function(grunt) {
                     env:{
                         PORT: "8181"
                     },
-                    cwd: 'backend',
+                    cwd: 'components/backend',
                     ignore: ['node_modules/**']
                 }
             }
@@ -582,7 +587,7 @@ module.exports = function(grunt) {
     });
     // Default task(s).
     grunt.registerTask('build', "Concat and minify the source code into dist",
-        ['copy:hackBootstrap', 'jshint', 'concat_sourcemap','uglify','concat', 'yuidoc', 'copy:dist','shell:buildVersionFile']
+        ['copy:hackBootstrap', 'jshint', 'concat_sourcemap','uglify','concat', 'yuidoc', 'copy:core', 'copy:debugger', 'shell:buildVersionFile']
     );
     grunt.registerTask('karmaTests', "Runs the unit and integration tests.",
         ['build','karma:unit','connect:testBus','connect:mockParticipant', 'karma:integrationClient', 'karma:integrationBus']

@@ -33,16 +33,16 @@ describe("Intents Api", function () {
     });
 
 
-    pit('registers handlers', function() {
+    pit('registers handlers', function () {
         return intentsApi.register('/text/plain/view', {
             entity: registerEntity
-        }).then(function(reply) {
+        }).then(function (reply) {
             expect(reply.response).toEqual('ok');
             expect(reply.entity.resource).toMatch('/text/plain/view');
         });
     });
 
-    pit('uses sane defaults to register handlers', function() {
+    pit('uses sane defaults to register handlers', function () {
         return intentsApi.register('/text/plain/view', {
             entity: {
                 type: "text/plain",
@@ -50,11 +50,11 @@ describe("Intents Api", function () {
                 icon: "http://example.com/view-text-plain.png",
                 label: "View Plain Text"
             }
-        }).then(function(reply) {
+        }).then(function (reply) {
             expect(reply.response).toEqual('ok');
             expect(reply.entity.resource).toMatch('/text/plain/view');
             return intentsApi.get(reply.entity.resource);
-        }).then(function(reply) {
+        }).then(function (reply) {
             expect(reply.response).toEqual("ok");
             // What is returned needs to be tested.
 //            expect(reply.entity.invokeIntent).toBeDefined();
@@ -62,22 +62,22 @@ describe("Intents Api", function () {
 //            expect(reply.entity.invokeIntent.resource).toMatch("/intents/text/plain/view");
 //            expect(reply.entity.invokeIntent.replyTo).toBeDefined();
 //            expect(reply.entity.invokeIntent.action).toEqual("invoke");
-        }).catch(function(er){
+        }).catch(function (er) {
             console.log(er);
         });
     });
 
-    pit('deletes handlers', function() {
+    pit('deletes handlers', function () {
         return intentsApi.register('/text/plain/view', {
             entity: registerEntity
-        }).then(function(reply) {
+        }).then(function (reply) {
             return intentsApi.delete(reply.entity.resource);
-        }).then(function(reply) {
+        }).then(function (reply) {
             expect(reply.response).toEqual('ok');
         });
     });
 
-    it('invokes handler directly', function(done) {
+    it('invokes handler directly', function (done) {
         return intentsApi.register('/text/plain/view', {
             entity: {
                 type: "text/plain",
@@ -90,13 +90,13 @@ describe("Intents Api", function () {
                     action: "intentsInvocation"
                 }
             }
-        }, function(responce) {
+        }, function (responce) {
             console.log("Handler received packet ", responce);
             expect(responce.entity).toEqual("This is some text");
             expect(responce.intent.type).toEqual("text/plain");
             expect(responce.handler.resource).toMatch("/text/plain/view");
             done();
-        }).then(function(reply) {
+        }).then(function (reply) {
             console.log("Handler is registered: ", reply);
             expect(reply.response).toEqual('ok');
             expect(reply.entity.resource).toMatch('/text/plain/view');

@@ -1,14 +1,11 @@
-var jasminePromises = {
-    
-    
-};
-jasminePromises.promises=function(fn) {
-  return function(done) {
+var jasminePromises = {};
+jasminePromises.promises = function (fn) {
+    return function (done) {
         fn().then(
-            function() {
+            function () {
                 done();
             },
-            function(error) {
+            function (error) {
                 expect(error).toNotHappen();
                 done();
             }
@@ -16,27 +13,27 @@ jasminePromises.promises=function(fn) {
     };
 };
 
-function pit(desc,fn) {
-    return it(desc,jasminePromises.promises(fn));
+function pit(desc, fn) {
+    return it(desc, jasminePromises.promises(fn));
 }
 
-function pBeforeEach(desc,fn) {
-    return beforeEach(desc,jasminePromises.promises(fn));
+function pBeforeEach(desc, fn) {
+    return beforeEach(desc, jasminePromises.promises(fn));
 }
 
-function pAfterEach(desc,fn) {
-    return afterEach(desc,jasminePromises.promises(fn));
+function pAfterEach(desc, fn) {
+    return afterEach(desc, jasminePromises.promises(fn));
 }
 
 function pauseForPromiseResolution() {
-    var pause=50;
-    return new Promise(function(resolve) {
-        window.setTimeout(function() {
+    var pause = 50;
+    return new Promise(function (resolve) {
+        window.setTimeout(function () {
             resolve();
-        },pause);
+        }, pause);
         try {
             jasmine.clock().tick(pause);
-        } catch(e) {
+        } catch (e) {
             // Ignore it.  Just means that the clock probably isn't installed
         }
     });
