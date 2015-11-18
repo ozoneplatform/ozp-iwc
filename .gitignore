@@ -3,7 +3,7 @@ gh-pages
 /node_modules
 doc
 app/js/ozpIwc-*.js
-backend/db/
+components/backend/db/
 .idea/
 bower_components
 dist
