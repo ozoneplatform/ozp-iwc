@@ -34,7 +34,7 @@ describe("Data Api", function () {
             });
         });
 
-        pit ('Gets the contents of the data api', function() {
+        pit('Gets the contents of the data api', function () {
             return dataApi.set('/test', {entity: "testData"}).then(function (packet) {
                 return dataApi.get('/test');
             }).then(function (packet) {
@@ -44,7 +44,11 @@ describe("Data Api", function () {
 
         pit("responds to a bulk get with matching entities", function () {
             var packetOne = {'resource': "/family", 'entity': "value1"};
-            var packetTwo = {'resource': "/family_a", 'entity': "value2", 'contentType': "application/vnd.ozp-iwc-data-object+json;version=2"};
+            var packetTwo = {
+                'resource': "/family_a",
+                'entity': "value2",
+                'contentType': "application/vnd.ozp-iwc-data-object+json;version=2"
+            };
             var packetThree = {'resource': "/family_b", 'entity': "value3"};
             var packetFour = {'resource': "/notfamily", 'entity': "value4"};
 
@@ -70,8 +74,8 @@ describe("Data Api", function () {
             });
         });
 
-        pit('[Meta] data api is cleaned up after every run',function() {
-            return client.data().get('/family').catch(function(error) {
+        pit('[Meta] data api is cleaned up after every run', function () {
+            return client.data().get('/family').catch(function (error) {
                 expect(error.response).toEqual("noResource");
             });
         });
@@ -132,100 +136,100 @@ describe("Data Api", function () {
         });
     });
 
-    describe("Collections",function(){
-        pBeforeEach(function(){
-            return dataApi.set("/tester",{entity:123}).catch(function(e){
+    describe("Collections", function () {
+        pBeforeEach(function () {
+            return dataApi.set("/tester", {entity: 123}).catch(function (e) {
                 expect(e).toNotHappen();
             });
         });
 
-        pit('Each resource has a collection property',function(){
-            return dataApi.get('/tester').then(function(response){
+        pit('Each resource has a collection property', function () {
+            return dataApi.get('/tester').then(function (response) {
                 expect(response.collection).toEqual([]);
             });
         });
 
-        pit('Each resource updates its collection property if it has a child added to it',function(){
+        pit('Each resource updates its collection property if it has a child added to it', function () {
             var response;
-            return dataApi.addChild('/tester',{entity:456}).then(function(resp) {
+            return dataApi.addChild('/tester', {entity: 456}).then(function (resp) {
                 response = resp;
                 return dataApi.get('/tester');
-            }).then(function(reply){
+            }).then(function (reply) {
                 expect(reply.collection.length).toEqual(1);
                 expect(reply.collection).toEqual([response.entity.resource]);
             });
         });
-        pit('Each resource updates its collection property if it has children added to it',function(){
-            var response1,response2;
-            return dataApi.addChild('/tester',{entity:456}).then(function(resp) {
+        pit('Each resource updates its collection property if it has children added to it', function () {
+            var response1, response2;
+            return dataApi.addChild('/tester', {entity: 456}).then(function (resp) {
                 response1 = resp;
                 return dataApi.addChild('/tester', {entity: 456});
-            }).then(function(resp){
+            }).then(function (resp) {
                 response2 = resp;
                 return dataApi.get('/tester');
-            }).then(function(reply){
+            }).then(function (reply) {
                 expect(reply.collection.length).toEqual(2);
-                expect(reply.collection).toEqual([response1.entity.resource,response2.entity.resource]);
+                expect(reply.collection).toEqual([response1.entity.resource, response2.entity.resource]);
             });
         });
 
-        pit('Each resource updates its collection property if it has children removed to it',function(){
+        pit('Each resource updates its collection property if it has children removed to it', function () {
             var response;
-            return dataApi.addChild('/tester',{entity:456}).then(function(resp) {
+            return dataApi.addChild('/tester', {entity: 456}).then(function (resp) {
                 response = resp;
                 return dataApi.get('/tester');
-            }).then(function(reply){
+            }).then(function (reply) {
                 expect(reply.collection.length).toEqual(1);
                 expect(reply.collection).toEqual([response.entity.resource]);
-                return dataApi.removeChild('/tester',{entity:{resource: response.entity.resource}});
-            }).then(function(){
+                return dataApi.removeChild('/tester', {entity: {resource: response.entity.resource}});
+            }).then(function () {
                 return dataApi.get('/tester');
-            }).then(function(reply){
+            }).then(function (reply) {
                 expect(reply.collection).toEqual([]);
             });
         });
 
-        pit('A resource only updates if a child was added not a subresource being set.',function(){
-            return dataApi.set('/tester/123', {entity:123}).then(function(){
+        pit('A resource only updates if a child was added not a subresource being set.', function () {
+            return dataApi.set('/tester/123', {entity: 123}).then(function () {
                 return dataApi.get('/tester');
-            }).then(function(reply){
+            }).then(function (reply) {
                 expect(reply.collection).toEqual([]);
             });
         });
-        pit('A watched resource does not collect if it does not have a pattern',function(){
-            var resolve,reject;
-            var promise = new Promise(function(res,rej){
+        pit('A watched resource does not collect if it does not have a pattern', function () {
+            var resolve, reject;
+            var promise = new Promise(function (res, rej) {
                 resolve = res;
                 reject = rej;
             });
-            dataApi.get('/tester').then(function(response){
+            dataApi.get('/tester').then(function (response) {
                 expect(response.pattern).toBeUndefined();
-                return dataApi.watch('/tester',function(reply){
+                return dataApi.watch('/tester', function (reply) {
                     reject(reply);
                 });
-            }).then(function(){
-                dataApi.set('/tester/123',{entity:123});
+            }).then(function () {
+                dataApi.set('/tester/123', {entity: 123});
             });
 
-            window.setTimeout(function(){
+            window.setTimeout(function () {
                 expect(true).toEqual(true);
                 resolve();
-            },1000);
+            }, 1000);
             return promise;
 
 
         });
-        it('A watched resource collects if it has a pattern',function(done){
+        it('A watched resource collects if it has a pattern', function (done) {
             var resource = '/tester/123';
-            client.data().set('/tester',{pattern: '/tester/'}).then(function(response){
-                return client.data().watch('/tester',function(reply,clearCB){
+            client.data().set('/tester', {pattern: '/tester/'}).then(function (response) {
+                return client.data().watch('/tester', function (reply, clearCB) {
                     expect(reply.entity.newCollection).toEqual([resource]);
                     expect(reply.entity.oldCollection).toEqual([]);
                     clearCB();
                     done();
                 });
-            }).then(function(){
-                return client.data().set(resource,{entity:123});
+            }).then(function () {
+                return client.data().set(resource, {entity: 123});
             });
         });
     });

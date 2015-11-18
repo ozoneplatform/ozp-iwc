@@ -1,8 +1,8 @@
-describe("Bully Consensus",function() {
+describe("Bully Consensus", function () {
 
-    var consensus,router;
-    var consensusGen = function(router){
-        return  new ozpIwc.transport.consensus.Bully({
+    var consensus, router;
+    var consensusGen = function (router) {
+        return new ozpIwc.transport.consensus.Bully({
             'authorization': ozpIwc.wiring.authorization,
             'name': "fake",
             'router': router
@@ -11,7 +11,7 @@ describe("Bully Consensus",function() {
 
     //var oldSetImmediate=ozpIwc.util.setImmediate;
 
-    beforeEach(function(){
+    beforeEach(function () {
         //ozpIwc.util.setImmediate=function(f) {
         //    window.setTimeout(f,0);
         //};
@@ -21,48 +21,48 @@ describe("Bully Consensus",function() {
         });
     });
 
-    afterEach(function(){
+    afterEach(function () {
         router = null;
         //ozpIwc.util.setImmediate = oldSetImmediate;
     });
 
-    var disableConsensus = function(consensus){
-        consensus.participant.send = function(){};
+    var disableConsensus = function (consensus) {
+        consensus.participant.send = function () {};
     };
 
 
-    describe("Construction",function(){
+    describe("Construction", function () {
 
-        beforeEach(function(){
+        beforeEach(function () {
             consensus = consensusGen(router);
         });
 
-        afterEach(function(){
+        afterEach(function () {
             consensus = null;
         });
-        it("has a consensusId",function(){
+        it("has a consensusId", function () {
             expect(consensus.consensusId).toBeDefined();
         });
 
-        it("has a watchdog for starting elections",function(){
+        it("has a watchdog for starting elections", function () {
             expect(consensus.coordinatorTimeoutHeartbeat).toBeDefined();
         });
 
-        it("has an interval rate for publishing status if coordinator",function(){
+        it("has an interval rate for publishing status if coordinator", function () {
             expect(consensus.coordinatorIntervalHeartbeat).toBeDefined();
         });
 
-        it("Defaults its state to member",function(){
+        it("Defaults its state to member", function () {
             expect(consensus.state).toEqual("member");
         });
     });
 
 
-    describe("Functionality",function(){
+    describe("Functionality", function () {
 
-        it("becomes leader if no one objects",function(done){
-            consensus =  consensusGen(router);
-            consensus.on("changedState",function(state){
+        it("becomes leader if no one objects", function (done) {
+            consensus = consensusGen(router);
+            consensus.on("changedState", function (state) {
                 expect(state).toEqual("coordinator");
                 done();
             });
@@ -70,18 +70,18 @@ describe("Bully Consensus",function() {
             ozpIwc.testUtil.tick(ozpIwc.config.consensusTimeout * 3);
         });
 
-        it("calls onBecomeCoordinator when becoming coordinator",function(){
-            consensus =  consensusGen(router);
+        it("calls onBecomeCoordinator when becoming coordinator", function () {
+            consensus = consensusGen(router);
 
-            spyOn(consensus,'onBecomeCoordinator');
+            spyOn(consensus, 'onBecomeCoordinator');
             ozpIwc.testUtil.tick(ozpIwc.config.consensusTimeout * 3);
             expect(consensus.onBecomeCoordinator).toHaveBeenCalled();
         });
 
-        it("2 members will elect one to be become leader",function(){
-            var consensusA =  consensusGen(router);
+        it("2 members will elect one to be become leader", function () {
+            var consensusA = consensusGen(router);
             ozpIwc.testUtil.tick(1000);
-            var consensusB =  consensusGen(router);
+            var consensusB = consensusGen(router);
 
             ozpIwc.testUtil.tick(ozpIwc.config.consensusTimeout * 3);
             expect(consensusA.state).toEqual("coordinator");
@@ -89,7 +89,7 @@ describe("Bully Consensus",function() {
 
         });
 
-        it("a leader will remain a leader when members join",function(){
+        it("a leader will remain a leader when members join", function () {
             var consensusA = consensusGen(router);
             ozpIwc.testUtil.tick(1000);
             var consensusB = consensusGen(router);
@@ -99,13 +99,13 @@ describe("Bully Consensus",function() {
             expect(consensusB.state).toEqual("member");
             var consensusC = consensusGen(router);
 
-            ozpIwc.testUtil.tick(ozpIwc.config.consensusTimeout* 3);
+            ozpIwc.testUtil.tick(ozpIwc.config.consensusTimeout * 3);
             expect(consensusA.state).toEqual("coordinator");
             expect(consensusB.state).toEqual("member");
             expect(consensusC.state).toEqual("member");
         });
 
-        it("when a leader quits, the next highest ranking member becomes coordinator",function(){
+        it("when a leader quits, the next highest ranking member becomes coordinator", function () {
             var consensusA = consensusGen(router);
             ozpIwc.testUtil.tick(1000);
             var consensusB = consensusGen(router);

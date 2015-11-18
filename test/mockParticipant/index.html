@@ -7,59 +7,59 @@
     <script type="text/javascript">
         var client = new ozpIwc.Client({peerUrl: "http://" + window.location.hostname + ":14002"});
         var testAddress = "";
-        var sendToParent=function(data) {
-            console.log("Sending to test",JSON.stringify(data));
-            ozpIwc.util.safePostMessage(parent,data,'*');
+        var sendToParent = function (data) {
+            console.log("Sending to test", JSON.stringify(data));
+            ozpIwc.util.safePostMessage(parent, data, '*');
         };
-        
-        window.addEventListener("message", function(event) {
-                // ignore anything not from our parent
-                if(event.source !== window.parent) {
-                    return;
+
+        window.addEventListener("message", function (event) {
+            // ignore anything not from our parent
+            if (event.source !== window.parent) {
+                return;
+            }
+            console.log("Fake IWC App received: ", event.data);
+            var message = event.data;
+            try {
+                if (typeof(message) === 'string') {
+                    message = JSON.parse(event.data);
                 }
-            console.log("Fake IWC App received: ",event.data);
-                var message=event.data;
-                try {
-                    if (typeof(message) === 'string') {
-                        message = JSON.parse(event.data);
-                    }
-                    switch (message.msgType) {
-                        case "run":
-                            func = eval('( function() { return ' + message.func + ';})();');
-                                                    console.log("Fake App running ", func.toString());
-                            var rv = func.call(null, client, testAddress);
+                switch (message.msgType) {
+                    case "run":
+                        func = eval('( function() { return ' + message.func + ';})();');
+                        console.log("Fake App running ", func.toString());
+                        var rv = func.call(null, client, testAddress);
+                        sendToParent({
+                            'msgType': "return",
+                            'runId': message.runId,
+                            'returnValue': rv
+                        });
+                        break;
+                    case "address":
+                        testAddress = message.address;
+                        break;
+                    case "send":
+                        client.send(event.data.packet).then(function (response) {
                             sendToParent({
                                 'msgType': "return",
                                 'runId': message.runId,
-                                'returnValue': rv
+                                'returnValue': response
                             });
-                            break;
-                        case "address":
-                            testAddress = message.address;
-                            break;
-                        case "send":
-                            client.send(event.data.packet).then(function (response) {
-                                sendToParent({
-                                    'msgType': "return",
-                                    'runId': message.runId,
-                                    'returnValue': response
-                                });
-                            });
-                            break;
-                        default:
-                            console.log("Fake App received unknown command from parent: ", message);
-                            break;
-                    }
-                } catch (e){
-                    //nothing
+                        });
+                        break;
+                    default:
+                        console.log("Fake App received unknown command from parent: ", message);
+                        break;
                 }
-            
-            }, false);
-        
-        client.on("connected",function() {
+            } catch (e) {
+                //nothing
+            }
+
+        }, false);
+
+        client.on("connected", function () {
             sendToParent({
                 'msgType': "address",
-                'address' : client.address
+                'address': client.address
             });
         });
     </script>

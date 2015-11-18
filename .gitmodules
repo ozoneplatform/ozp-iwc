@@ -1,3 +1,0 @@
-[submodule "data-schemas"]
-	path = data-schemas
-	url = https://github.com/ozone-development/ozp-data-schemas

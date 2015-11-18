@@ -186,7 +186,7 @@ describe("Policy Auth Point Utils", function () {
                     });
             });
 
-            it("formats an empty resource object", function() {
+            it("formats an empty resource object", function () {
                 request.resource = {};
                 utils.formatRequest(request, mockPIP)
                     .success(function (formattedRequest) {
@@ -196,7 +196,7 @@ describe("Policy Auth Point Utils", function () {
                         expect(err).not.toHappen();
                     });
             });
-            it("formats an empty resource array", function() {
+            it("formats an empty resource array", function () {
                 request.resource = [];
                 utils.formatRequest(request, mockPIP)
                     .success(function (formattedRequest) {
@@ -289,7 +289,7 @@ describe("Policy Auth Point Utils", function () {
                     });
             });
 
-            it("formats an empty action object", function() {
+            it("formats an empty action object", function () {
                 request.action = {};
 
                 utils.formatRequest(request, mockPIP)
@@ -303,7 +303,7 @@ describe("Policy Auth Point Utils", function () {
                     });
             });
 
-            it("formats an empty action array", function() {
+            it("formats an empty action array", function () {
                 request.action = [];
 
                 utils.formatRequest(request, mockPIP)

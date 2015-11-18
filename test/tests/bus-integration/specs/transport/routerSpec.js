@@ -1,7 +1,7 @@
-describe("IWC Router",function(){
+describe("IWC Router", function () {
     var routerA, peerA, linkA, partA, otherContext;
 
-    var otherContextOnLoad = function(){
+    var otherContextOnLoad = function () {
         this.peerB = new ozpIwc.network.Peer();
 
         this.linkB = new ozpIwc.network.KeyBroadcastLocalStorageLink({
@@ -14,7 +14,7 @@ describe("IWC Router",function(){
         this.routerB.registerParticipant(this.partB);
     };
 
-    beforeEach(function(){
+    beforeEach(function () {
         peerA = new ozpIwc.network.Peer();
         linkA = new ozpIwc.network.KeyBroadcastLocalStorageLink({
             peer: peerA
@@ -24,7 +24,7 @@ describe("IWC Router",function(){
             heartbeatFrequency: 10000
         });
         otherContext = new ozpIwc.testUtil.BrowsingContext(otherContextOnLoad, function (message, scope) {
-            if(message){
+            if (message) {
                 message = scope.partB.fixPacket(message);
                 scope.partB.send(message);
             }
@@ -33,21 +33,20 @@ describe("IWC Router",function(){
         routerA.registerParticipant(partA);
     });
 
-    afterEach(function(){
+    afterEach(function () {
         otherContext.iframe.parentNode.removeChild(otherContext.iframe);
     });
 
-    describe("Basic Functionality",function() {
-        it('routes messages from the peer',function(done){
-            var referencePacket ={dst: partA.address,  entity: 3};
-            partA.receiveFromRouterImpl = function(data){
-                if(data.packet.dst === partA.address){
+    describe("Basic Functionality", function () {
+        it('routes messages from the peer', function (done) {
+            var referencePacket = {dst: partA.address, entity: 3};
+            partA.receiveFromRouterImpl = function (data) {
+                if (data.packet.dst === partA.address) {
                     expect(data.packet.dst).toEqual(referencePacket.dst);
                     expect(data.packet.entity).toEqual(referencePacket.entity);
                     done();
                 }
             };
-
 
 
             otherContext.send(referencePacket);

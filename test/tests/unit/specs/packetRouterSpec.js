@@ -1,4 +1,4 @@
-describe("URL Template Tool", function() {
+describe("URL Template Tool", function () {
     var cases = {
         "/{element1}": {
             "/foo": {element1: "foo"},
@@ -27,12 +27,12 @@ describe("URL Template Tool", function() {
     };
 
     /* jshint loopfunc:true */
-    Object.keys(cases).forEach(function(pattern) {
-        describe("Pattern " + pattern, function() {
+    Object.keys(cases).forEach(function (pattern) {
+        describe("Pattern " + pattern, function () {
             var template = ozpIwc.util.PacketRouter.uriTemplate(pattern);
             var tests = cases[pattern];
-            Object.keys(tests).forEach(function(uri) {
-                it("handles " + uri, function() {
+            Object.keys(tests).forEach(function (uri) {
+                it("handles " + uri, function () {
                     expect(template(uri)).toEqual(tests[uri]);
                 });
             });
@@ -40,42 +40,42 @@ describe("URL Template Tool", function() {
     });
 });
 
-describe("Packet Routing", function() {
+describe("Packet Routing", function () {
     var router;
-    beforeEach(function() {
-        router=new ozpIwc.util.PacketRouter();
+    beforeEach(function () {
+        router = new ozpIwc.util.PacketRouter();
     });
-    describe("basic, single routes",function() {
-        var receivedPacket=false;
-        
-        beforeEach(function() {
-            receivedPacket=undefined;
+    describe("basic, single routes", function () {
+        var receivedPacket = false;
+
+        beforeEach(function () {
+            receivedPacket = undefined;
             router.declareRoute({
                 action: "get",
                 resource: "/"
-            }, function(packet) {
-                receivedPacket=packet;
+            }, function (packet) {
+                receivedPacket = packet;
                 return true;
             });
         });
-        
-        it("routes based on action", function() {
+
+        it("routes based on action", function () {
             expect(router.routePacket({
                 action: "get",
                 resource: "/"
             })).toEqual(true);
             expect(receivedPacket).toBeDefined();
         });
-        
-        it("doesn't route an unmatched action", function() {
+
+        it("doesn't route an unmatched action", function () {
             expect(router.routePacket({
                 action: "set",
                 resource: "/"
             })).toEqual(false);
             expect(receivedPacket).not.toBeDefined();
         });
-        
-        it("doesn't route an unmatched resource", function() {
+
+        it("doesn't route an unmatched resource", function () {
             expect(router.routePacket({
                 action: "get",
                 resource: "/foo"
@@ -83,45 +83,45 @@ describe("Packet Routing", function() {
             expect(receivedPacket).not.toBeDefined();
         });
     });
-    describe("multiple routes with same action, multiple templated non-regex resources",function() {
+    describe("multiple routes with same action, multiple templated non-regex resources", function () {
         // three variables just to make sure multiple actions are being invoked
         var rootPacket;
         var idPacket;
         var doublePathPacket;
         var pathParameters;
-        beforeEach(function() {
-            rootPacket=undefined;
-            idPacket=undefined;
-            doublePathPacket=undefined;
-            pathParameters=undefined;
-            
+        beforeEach(function () {
+            rootPacket = undefined;
+            idPacket = undefined;
+            doublePathPacket = undefined;
+            pathParameters = undefined;
+
             router.declareRoute({
                 action: "get",
                 resource: "/"
-            }, function(packet,context,params) {
-                rootPacket=packet;
-                pathParameters=params;
+            }, function (packet, context, params) {
+                rootPacket = packet;
+                pathParameters = params;
                 return true;
             });
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            }, function(packet,context,params) {
-                idPacket=packet;
-                pathParameters=params;
+            }, function (packet, context, params) {
+                idPacket = packet;
+                pathParameters = params;
                 return true;
             });
             router.declareRoute({
                 action: "get",
                 resource: "/{id}/{subId}"
-            }, function(packet,context,params) {
-                doublePathPacket=packet;
-                pathParameters=params;
+            }, function (packet, context, params) {
+                doublePathPacket = packet;
+                pathParameters = params;
                 return true;
             });
         });
-        
-        it("routes to the root path", function() {
+
+        it("routes to the root path", function () {
             expect(router.routePacket({
                 action: "get",
                 resource: "/"
@@ -131,8 +131,8 @@ describe("Packet Routing", function() {
             expect(doublePathPacket).not.toBeDefined();
             expect(pathParameters).toEqual({});
         });
-        
-        it("routes to the id path with the right path parameter", function() {
+
+        it("routes to the id path with the right path parameter", function () {
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234"
@@ -140,10 +140,10 @@ describe("Packet Routing", function() {
             expect(rootPacket).not.toBeDefined();
             expect(idPacket).toBeDefined();
             expect(doublePathPacket).not.toBeDefined();
-            expect(pathParameters).toEqual({'id':"1234"});
+            expect(pathParameters).toEqual({'id': "1234"});
         });
-        
-        it("routes with two patterns with the right path parameters", function() {
+
+        it("routes with two patterns with the right path parameters", function () {
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234/foo"
@@ -151,19 +151,19 @@ describe("Packet Routing", function() {
             expect(rootPacket).not.toBeDefined();
             expect(idPacket).not.toBeDefined();
             expect(doublePathPacket).toBeDefined();
-            expect(pathParameters).toEqual({'id':"1234",'subId':"foo"});
+            expect(pathParameters).toEqual({'id': "1234", 'subId': "foo"});
         });
     });
-    
-    describe("uses template regexes properly",function() {
-        it("template declared before static path",function(){
+
+    describe("uses template regexes properly", function () {
+        it("template declared before static path", function () {
             router.declareRoute({
                 action: "get",
                 resource: "/{id:\\d+}"
-            },function(packet,context,params) {
+            }, function (packet, context, params) {
                 return true;
             });
-            
+
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234"
@@ -173,15 +173,15 @@ describe("Packet Routing", function() {
                 resource: "/foo"
             })).toEqual(false);
         });
-        it("template can eat multiple path segments",function(){
+        it("template can eat multiple path segments", function () {
             router.declareRoute({
                 action: "get",
                 resource: "/{id:\\d+/\\d+}/bar"
-            },function(packet,context,params) {
-                expect(params).toEqual({id:"1234/5678"});
+            }, function (packet, context, params) {
+                expect(params).toEqual({id: "1234/5678"});
                 return true;
             });
-            
+
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234/5678/bar"
@@ -196,71 +196,71 @@ describe("Packet Routing", function() {
             })).toEqual(false);
         });
     });
-    
-    describe("multiple routes with multiple actions, same templated non-regex resource",function() {
+
+    describe("multiple routes with multiple actions, same templated non-regex resource", function () {
         var pathParameters;
-        beforeEach(function() {
-            pathParameters=undefined;
-            
+        beforeEach(function () {
+            pathParameters = undefined;
+
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            }, function(packet,context,params) {
-                pathParameters=params;
+            }, function (packet, context, params) {
+                pathParameters = params;
                 return "get";
             });
             router.declareRoute({
                 action: "set",
                 resource: "/{id}"
-            }, function(packet,context,params) {
-                pathParameters=params;
+            }, function (packet, context, params) {
+                pathParameters = params;
                 return "set";
             });
             router.declareRoute({
                 action: "delete",
                 resource: "/{id}"
-            }, function(packet,context,params) {
-                pathParameters=params;
+            }, function (packet, context, params) {
+                pathParameters = params;
                 return "delete";
             });
         });
-        
-        it("routes the first handler", function() {
+
+        it("routes the first handler", function () {
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234"
             })).toEqual("get");
-            expect(pathParameters).toEqual({'id':"1234"});
+            expect(pathParameters).toEqual({'id': "1234"});
         });
-        
-        it("routes the middle handler", function() {
+
+        it("routes the middle handler", function () {
             expect(router.routePacket({
                 action: "set",
                 resource: "/1234"
             })).toEqual("set");
-            expect(pathParameters).toEqual({'id':"1234"});
+            expect(pathParameters).toEqual({'id': "1234"});
         });
-        
-        it("routes the last handler", function() {
+
+        it("routes the last handler", function () {
             expect(router.routePacket({
                 action: "delete",
                 resource: "/1234"
             })).toEqual("delete");
-            expect(pathParameters).toEqual({'id':"1234"});
+            expect(pathParameters).toEqual({'id': "1234"});
         });
     });
-    describe("prioritizes routes by the order that they are declared",function() {
-        it("template declared before static path",function(){
+    describe("prioritizes routes by the order that they are declared", function () {
+        it("template declared before static path", function () {
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            },function(packet,context,params) {
+            }, function (packet, context, params) {
                 return "paramRoute";
             });
             router.declareRoute({
                 action: "get",
                 resource: "/1234"
-            },function(packet,context,params) {
+            }, function (packet, context, params) {
                 return "staticRoute";
             });
             expect(router.routePacket({
@@ -268,17 +268,17 @@ describe("Packet Routing", function() {
                 resource: "/1234"
             })).toEqual("paramRoute");
         });
-        it("static path declared before template",function(){
+        it("static path declared before template", function () {
             router.declareRoute({
                 action: "get",
                 resource: "/1234"
-            },function(packet,context,params) {
+            }, function (packet, context, params) {
                 return "staticRoute";
             });
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            },function(packet,context,params) {
+            }, function (packet, context, params) {
                 return "paramRoute";
             });
             expect(router.routePacket({
@@ -287,13 +287,13 @@ describe("Packet Routing", function() {
             })).toEqual("staticRoute");
         });
     });
-    describe("sets the proper this when invoking the handler",function() {
-        it("without a self paramter",function() {
+    describe("sets the proper this when invoking the handler", function () {
+        it("without a self paramter", function () {
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            },function(packet,context,params) {
-                this.route="paramRoute";
+            }, function (packet, context, params) {
+                this.route = "paramRoute";
                 return "paramRoute";
             });
             router.routePacket({
@@ -303,15 +303,15 @@ describe("Packet Routing", function() {
 
             expect(router.route).toEqual("paramRoute");
         });
-        it("with a self parameter",function() {
-            var selfObject={};
+        it("with a self parameter", function () {
+            var selfObject = {};
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            },function(packet,context,params) {
-                this.route="paramRoute";
+            }, function (packet, context, params) {
+                this.route = "paramRoute";
                 return "paramRoute";
-            },selfObject);
+            }, selfObject);
             router.routePacket({
                 action: "get",
                 resource: "/1234"
@@ -319,17 +319,17 @@ describe("Packet Routing", function() {
 
             expect(selfObject.route).toEqual("paramRoute");
         });
-        it("when the default self is overriden",function() {
-            var selfObject={};
-            router.defaultSelf=selfObject;
+        it("when the default self is overriden", function () {
+            var selfObject = {};
+            router.defaultSelf = selfObject;
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            },function(packet,context,params) {
-                this.route="paramRoute";
+            }, function (packet, context, params) {
+                this.route = "paramRoute";
                 return "paramRoute";
             });
-            
+
             router.routePacket({
                 action: "get",
                 resource: "/1234"
@@ -338,164 +338,164 @@ describe("Packet Routing", function() {
             expect(selfObject.route).toEqual("paramRoute");
         });
     });
-    describe("context parameter",function() {
-        beforeEach(function() {
+    describe("context parameter", function () {
+        beforeEach(function () {
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            },function(packet,context,params) {
+            }, function (packet, context, params) {
                 return context;
             });
         });
-       it("passes {} as the context parameter by default",function() {
+        it("passes {} as the context parameter by default", function () {
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234"
             })).toEqual({});
-       });
-        it("passes the context paramater provided to routePacket",function() {
+        });
+        it("passes the context paramater provided to routePacket", function () {
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234"
-            },{
-                foo:1
-            })).toEqual({foo:1});
-       });    
+            }, {
+                foo: 1
+            })).toEqual({foo: 1});
+        });
     });
-    describe("default route",function() {
-        beforeEach(function() {
+    describe("default route", function () {
+        beforeEach(function () {
             router.declareRoute({
                 action: "get",
                 resource: "/{id}"
-            },function(packet,context,params) {
+            }, function (packet, context, params) {
                 return "paramRoute";
             });
-            router.declareDefaultRoute(function(packet,context,params) {
+            router.declareDefaultRoute(function (packet, context, params) {
                 return "defaultRoute";
             });
         });
-       it("does not affect properly declared routes",function() {
+        it("does not affect properly declared routes", function () {
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234"
             })).toEqual("paramRoute");
-       });
-        it("handles packets that aren't caught by a route",function() {
+        });
+        it("handles packets that aren't caught by a route", function () {
             expect(router.routePacket({
                 action: "get",
                 resource: "/foo/bar"
             })).toEqual("defaultRoute");
-       });    
+        });
     });
-    
-    describe("Filters",function() {
-        var testFilter=function(name) {
-            return function(packet,context,pathParams,next) {
-                console.log("Filter: "+name);
-                context.filters=context.filters || [];
+
+    describe("Filters", function () {
+        var testFilter = function (name) {
+            return function (packet, context, pathParams, next) {
+                console.log("Filter: " + name);
+                context.filters = context.filters || [];
                 context.filters.push(name);
                 return next();
             };
         };
-        var promiseFilter=function(name) {
-            return function(packet,context,pathParams,next) {
-                console.log("Filter: "+name);
-                context.filters=context.filters || [];
+        var promiseFilter = function (name) {
+            return function (packet, context, pathParams, next) {
+                console.log("Filter: " + name);
+                context.filters = context.filters || [];
                 context.filters.push(name);
-                return new Promise(function(resolve,reject) {
+                return new Promise(function (resolve, reject) {
                     resolve(next());
                 });
             };
         };
-        var handler=function(packet,context,params) {
-            console.log("Handler context: ",context);
+        var handler = function (packet, context, params) {
+            console.log("Handler context: ", context);
             return context;
         };
-       
-        it("invokes a filter on the handler function",function() {
+
+        it("invokes a filter on the handler function", function () {
             router.declareRoute({
                 action: "get",
                 resource: "/{id}",
                 filters: [testFilter("1")]
-            },handler);
-            
+            }, handler);
+
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234"
-            })).toEqual({filters:["1"]});
-       });
+            })).toEqual({filters: ["1"]});
+        });
 
-        it("invokes several filters on the handler function",function() {
+        it("invokes several filters on the handler function", function () {
             router.declareRoute({
                 action: "get",
                 resource: "/{id}",
-                filters: [testFilter("1"),testFilter("2")]
-            },handler);
-            
+                filters: [testFilter("1"), testFilter("2")]
+            }, handler);
+
             expect(router.routePacket({
                 action: "get",
                 resource: "/1234"
-            })).toEqual({filters:["1","2"]});
-       });
+            })).toEqual({filters: ["1", "2"]});
+        });
 
-        pit("allows the handler to return a promise",function() {
+        pit("allows the handler to return a promise", function () {
             router.declareRoute({
                 action: "get",
                 resource: "/{id}",
                 filters: [testFilter("1")]
-            },function(packet,context,pathParams) {
-                return new Promise(function(resolve,reject) {
-                   resolve(context); 
+            }, function (packet, context, pathParams) {
+                return new Promise(function (resolve, reject) {
+                    resolve(context);
                 });
             });
-            
+
             return router.routePacket({
                 action: "get",
                 resource: "/1234"
-            }).then(function(val) {
-                expect(val).toEqual({filters:["1"]});
+            }).then(function (val) {
+                expect(val).toEqual({filters: ["1"]});
             });
         });
-        
-        pit("allows filters to return promises",function() {
-            var promiseFilter=function(name) {
-                return function(packet,context,pathParams,next) {
-                    console.log("Filter: "+name);
-                    context.filters=context.filters || [];
+
+        pit("allows filters to return promises", function () {
+            var promiseFilter = function (name) {
+                return function (packet, context, pathParams, next) {
+                    console.log("Filter: " + name);
+                    context.filters = context.filters || [];
                     context.filters.push(name);
-                    return new Promise(function(resolve,reject) {
+                    return new Promise(function (resolve, reject) {
                         resolve(next());
                     });
                 };
             };
-            
+
             router.declareRoute({
                 action: "get",
                 resource: "/{id}",
-                filters: [promiseFilter("1"),promiseFilter("2")]
-            },function(packet,context,pathParams) {
-                return new Promise(function(resolve,reject) {
-                   resolve(context); 
+                filters: [promiseFilter("1"), promiseFilter("2")]
+            }, function (packet, context, pathParams) {
+                return new Promise(function (resolve, reject) {
+                    resolve(context);
                 });
             });
-            
+
             return router.routePacket({
                 action: "get",
                 resource: "/1234"
-            }).then(function(val) {
-                expect(val).toEqual({filters:["1","2"]});
+            }).then(function (val) {
+                expect(val).toEqual({filters: ["1", "2"]});
             });
-       });
+        });
 
-       var promiseChainTest=function(filterChain) {
+        var promiseChainTest = function (filterChain) {
             router.declareRoute({
                 action: "get",
                 resource: "/{id}",
                 filters: filterChain
-            },function(packet,context,pathParams) {
-                return new Promise(function(resolve,reject) {
+            }, function (packet, context, pathParams) {
+                return new Promise(function (resolve, reject) {
                     context.filters.push("handler");
-                   resolve(context); 
+                    resolve(context);
                 });
             });
 
@@ -503,107 +503,107 @@ describe("Packet Routing", function() {
                 action: "get",
                 resource: "/1234"
             });
-       };
-        
-       pit("allows immediate filters to follow promise filters",function() {
-            return promiseChainTest([promiseFilter("1"),testFilter("2")])
-                .then(function(val) {
-                    expect(val).toEqual({filters:["1","2","handler"]});
+        };
+
+        pit("allows immediate filters to follow promise filters", function () {
+            return promiseChainTest([promiseFilter("1"), testFilter("2")])
+                .then(function (val) {
+                    expect(val).toEqual({filters: ["1", "2", "handler"]});
                 });
-       });
-       pit("allows promise filters to follow immediate filters",function() {
-            return promiseChainTest([testFilter("1"),promiseFilter("2")])
-                .then(function(val) {
-                    expect(val).toEqual({filters:["1","2","handler"]});
+        });
+        pit("allows promise filters to follow immediate filters", function () {
+            return promiseChainTest([testFilter("1"), promiseFilter("2")])
+                .then(function (val) {
+                    expect(val).toEqual({filters: ["1", "2", "handler"]});
                 });
-       });
-       pit("allows a series of mixed promise/immediate filters",function() {
+        });
+        pit("allows a series of mixed promise/immediate filters", function () {
             return promiseChainTest([
                 testFilter("1"),
                 promiseFilter("2"),
                 testFilter("3"),
                 promiseFilter("4"),
                 testFilter("5")
-            ]).then(function(val) {
-                expect(val).toEqual({filters:["1","2","3","4","5","handler"]});
+            ]).then(function (val) {
+                expect(val).toEqual({filters: ["1", "2", "3", "4", "5", "handler"]});
             });
-       });
-       
+        });
+
     });
-    describe("class augmentation features",function() {
+    describe("class augmentation features", function () {
         var TestClass;
-        beforeEach(function() {
-            TestClass=function(name) {
-                this.name=name;
+        beforeEach(function () {
+            TestClass = function (name) {
+                this.name = name;
             };
             ozpIwc.util.PacketRouter.mixin(TestClass);
         });
-        
-        it("declares routes at a class level",function() {
+
+        it("declares routes at a class level", function () {
             TestClass.declareRoute({
                 action: "get",
                 resource: "/1234"
-            },function(packet,context,params) {
-                console.log("static route called with ",arguments);
+            }, function (packet, context, params) {
+                console.log("static route called with ", arguments);
                 return "staticRoute";
             });
-            
-            var t1=new TestClass();
-            
+
+            var t1 = new TestClass();
+
             expect(t1.routePacket({
                 action: "get",
                 resource: "/1234"
             })).toEqual("staticRoute");
         });
-        it("declares routes at a class level",function() {
+        it("declares routes at a class level", function () {
             TestClass.declareRoute({
                 action: "get",
                 resource: "/1234"
-            },function(packet,context,params) {
-                console.log("static route called with ",arguments);
+            }, function (packet, context, params) {
+                console.log("static route called with ", arguments);
                 return "staticRoute";
             });
-            
-            var t1=new TestClass();
-            
+
+            var t1 = new TestClass();
+
             expect(t1.routePacket({
                 action: "get",
                 resource: "/1234"
             })).toEqual("staticRoute");
         });
-        
-        it("routes to defaultRoute when nothing matches",function() {
+
+        it("routes to defaultRoute when nothing matches", function () {
             TestClass.declareRoute({
                 action: "get",
                 resource: "/1234"
-            },function(packet,context,params) {
-                console.log("static route called with ",arguments);
+            }, function (packet, context, params) {
+                console.log("static route called with ", arguments);
                 return "staticRoute";
             });
-            
-            TestClass.prototype.defaultRoute=function(packet,context) {
-                return "default "+this.name;
+
+            TestClass.prototype.defaultRoute = function (packet, context) {
+                return "default " + this.name;
             };
-            
-            
-            var t1=new TestClass("t1");
-            
+
+
+            var t1 = new TestClass("t1");
+
             expect(t1.routePacket({
                 action: "set",
                 resource: "/1234"
             })).toEqual("default t1");
         });
-        it("dispatches routes to the correct instance",function() {
+        it("dispatches routes to the correct instance", function () {
             TestClass.declareRoute({
                 action: "get",
                 resource: "/1234"
-            },function(packet,context,params) {
+            }, function (packet, context, params) {
                 return this.name;
             });
-            
-            var t1=new TestClass("t1");
-            var t2=new TestClass("t2");
-            
+
+            var t1 = new TestClass("t1");
+            var t2 = new TestClass("t2");
+
             expect(t1.routePacket({
                 action: "get",
                 resource: "/1234"
@@ -611,87 +611,87 @@ describe("Packet Routing", function() {
             expect(t2.routePacket({
                 action: "get",
                 resource: "/1234"
-            })).toEqual("t2");        
+            })).toEqual("t2");
         });
-        describe("subclassed routables",function() {
+        describe("subclassed routables", function () {
             var TestSubclass;
-            beforeEach(function() {
-                TestSubclass=ozpIwc.util.extend(TestClass,function() {
-                   TestClass.apply(this,arguments);
-                   this.name="SUBCLASS: " + this.name;
+            beforeEach(function () {
+                TestSubclass = ozpIwc.util.extend(TestClass, function () {
+                    TestClass.apply(this, arguments);
+                    this.name = "SUBCLASS: " + this.name;
                 });
                 ozpIwc.util.PacketRouter.mixin(TestSubclass);
-                
+
                 TestClass.declareRoute({
                     action: "get",
                     resource: "/1234"
-                },function(packet,context,params) {
+                }, function (packet, context, params) {
                     return "GET " + this.name;
                 });
 
-                
+
             });
-            
-            it("dispatches to routes on the parent class",function() {
-                var t1=new TestSubclass("t1");
+
+            it("dispatches to routes on the parent class", function () {
+                var t1 = new TestSubclass("t1");
 
                 expect(t1.routePacket({
                     action: "get",
                     resource: "/1234"
                 })).toEqual("GET SUBCLASS: t1");
             });
-            it("uses parent class defaultRoute",function() {
-                TestClass.prototype.defaultRoute=function(packet,context) {
-                  return "parent "+this.name;
+            it("uses parent class defaultRoute", function () {
+                TestClass.prototype.defaultRoute = function (packet, context) {
+                    return "parent " + this.name;
                 };
-                var t1=new TestSubclass("t1");
+                var t1 = new TestSubclass("t1");
 
                 expect(t1.routePacket({
                     action: "fail",
                     resource: "/1234"
                 })).toEqual("parent SUBCLASS: t1");
             });
-            
-            it("lets the subclass override the default route",function() {
-                TestClass.prototype.defaultRoute=function(packet,context) {
-                  return "parent "+this.name;
+
+            it("lets the subclass override the default route", function () {
+                TestClass.prototype.defaultRoute = function (packet, context) {
+                    return "parent " + this.name;
                 };
-                TestSubclass.prototype.defaultRoute=function(packet,context) {
-                  return "child "+this.name;
+                TestSubclass.prototype.defaultRoute = function (packet, context) {
+                    return "child " + this.name;
                 };
-                var t1=new TestSubclass("t1");
+                var t1 = new TestSubclass("t1");
 
                 expect(t1.routePacket({
                     action: "fail",
                     resource: "/1234"
                 })).toEqual("child SUBCLASS: t1");
             });
-            
-            it("dispatches to routes on the subclass",function() {
+
+            it("dispatches to routes on the subclass", function () {
                 TestSubclass.declareRoute({
                     action: "set",
                     resource: "/1234"
-                },function(packet,context,params) {
+                }, function (packet, context, params) {
                     return "SET " + this.name;
                 });
 
-                var t1=new TestSubclass("t1");
+                var t1 = new TestSubclass("t1");
 
                 expect(t1.routePacket({
                     action: "set",
                     resource: "/1234"
                 })).toEqual("SET SUBCLASS: t1");
             });
-            
-            it("dispatches to routes on the subclass that override the parent class",function() {
+
+            it("dispatches to routes on the subclass that override the parent class", function () {
                 TestSubclass.declareRoute({
                     action: "get",
                     resource: "/1234"
-                },function(packet,context,params) {
+                }, function (packet, context, params) {
                     return "SPECIAL GET " + this.name;
                 });
 
-                var t1=new TestSubclass("t1");
+                var t1 = new TestSubclass("t1");
 
                 expect(t1.routePacket({
                     action: "get",

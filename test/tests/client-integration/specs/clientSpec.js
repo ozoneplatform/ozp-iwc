@@ -53,7 +53,7 @@ describe("IWC Client", function () {
             return client2.connect().then(function () {
                 return client.data().set("/foo", {entity: "cow"});
             }).then(function () {
-                    return client2.data().get("/foo");
+                return client2.data().get("/foo");
             }).then(function (reply) {
                 expect(reply.dst).toEqual(client2.address);
                 expect(reply.entity).toEqual("cow");
@@ -61,16 +61,16 @@ describe("IWC Client", function () {
             });
         });
 
-        pit("gets launchData from hash", function(){
+        pit("gets launchData from hash", function () {
             client.readLaunchParams("#ozpIwc.launchData=%7B%22channel%22%3A1%7D");
-            return client.getLaunchData().then(function(launchData){
-                expect(launchData).toEqual({'channel':1});
+            return client.getLaunchData().then(function (launchData) {
+                expect(launchData).toEqual({'channel': 1});
             });
         });
-        pit("gets launchData from query", function(){
+        pit("gets launchData from query", function () {
             client.readLaunchParams("?ozpIwc.launchData=%7B%22channel%22%3A1%7D");
-            return client.getLaunchData().then(function(launchData){
-                expect(launchData).toEqual({'channel':1});
+            return client.getLaunchData().then(function (launchData) {
+                expect(launchData).toEqual({'channel': 1});
             });
         });
     });
