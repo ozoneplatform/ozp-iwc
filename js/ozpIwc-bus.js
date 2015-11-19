@@ -1,5 +1,9 @@
-/*jshint -W079 */
-var window = window || self;
+// If running in a worker, there is no window, rather only self.
+// Reassign window to self in this environment
+if(!window){
+    /*jshint -W020 */
+    window = self;
+}
 /*!
  * https://github.com/es-shims/es5-shim
  * @license es5-shim Copyright 2009-2015 by contributors, MIT License
@@ -3353,6 +3357,16 @@ ozpIwc.util = (function (util) {
         }
     };
 
+    /**
+     * Returns a promise that will resolve after the given delay with any additional arguments passed
+     * @param {Number} delay miliseconds to delay
+     * @returns {Promise}
+     */
+    util.promiseDelay = function (delay) {
+        return new Promise(function (res) {
+            window.setTimeout(function () { res();}, delay);
+        });
+    };
     return util;
 }(ozpIwc.util || {}));
 
@@ -3680,8 +3694,20 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     }
                 }
                 if (!handled) {
-                    // Otherwise trigger "receive" for someone to handle it
-                    this.events.trigger("receive", packetContext);
+                    //Drop own packets
+                    if (packet.src === this.address) {
+                        return;
+                    }
+
+                    if (packet.dst === "$bus.multicast") {
+                        //If not handle-able by the mixin, trigger "busPacket" for someone to handle
+                        if (!handleBusPacket(this, packet)) {
+                            this.events.trigger("busPacket", packetContext);
+                        }
+                    } else {
+                        //Not bus packet, trigger "receive" for someone to handle
+                        this.events.trigger("receive", packetContext);
+                    }
                 }
             },
 
@@ -3862,11 +3888,11 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     });
                 }).then(function () {
                     // Run the intent handler. Wrapped in a promise chain in case the callback itself is async.
-                    return callback(res.entity,inFlightIntent);
+                    return callback(res.entity, inFlightIntent);
                 }).then(function (result) {
                     // Allow the callback to override the intent state (usefull for preventing intent resolution if
                     // chained operations are performed.
-                    if(result && result.intentIncomplete){
+                    if (result && result.intentIncomplete) {
                         return Promise.resolve();
                     }
                     // Respond to the inflight resource
@@ -4204,7 +4230,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                             }
                         });
 
-                        if(self.launchParams.launchData && self.launchParams.launchData.inFlightIntent){
+                        if (self.launchParams.launchData && self.launchParams.launchData.inFlightIntent) {
                             self.launchedIntents.push(self.launchParams.launchData.inFlightIntent);
                         }
                     }
@@ -4216,6 +4242,31 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
             }
 
         };
+    };
+//---------------------------------------------------------
+// Private Methods
+//---------------------------------------------------------
+
+    /**
+     * Handles packets received with a destination of "$bus.multicast".
+     * If the packet action isn't handled, the function will return falsy.
+     *
+     * @method handleBusPacket
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Object} packetContext
+     * @return {*}
+     */
+    var handleBusPacket = function (mixer, packet) {
+        switch (packet.action) {
+            case "connect":
+                mixer.events.trigger("addressConnects", packet.entity.address, packet);
+                return true;
+            case "disconnect":
+                mixer.events.trigger("addressDisconnects", packet.entity.address, packet);
+                return true;
+        }
     };
 
     return ApiPromiseMixin;
@@ -4385,7 +4436,8 @@ ozpIwc.util.Event = (function (util) {
 
     /**
      * Adds an {{#crossLink "ozpIwc.util.Event/off:method"}}on(){{/crossLink}} and
-     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this object.
+     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this
+     * object.
      *
      * @method mixinOnOff
      * @param {Object} target Target to receive the on/off functions
@@ -4398,7 +4450,8 @@ ozpIwc.util.Event = (function (util) {
 
     /**
      * Adds an {{#crossLink "ozpIwc.util.Event/off:method"}}on(){{/crossLink}} and
-     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this object.
+     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this
+     * object.
      *
      * @method mixinOnOff
      * @param {Object} target Target to receive the on/off functions
@@ -4413,13 +4466,13 @@ ozpIwc.util.Event = (function (util) {
 }(ozpIwc.util));
 
 
-if(!(window.console && console.log)) {
+if (!(window.console && console.log)) {
     console = {
-        log: function(){},
-        debug: function(){},
-        info: function(){},
-        warn: function(){},
-        error: function(){}
+        log: function () {},
+        debug: function () {},
+        info: function () {},
+        warn: function () {},
+        error: function () {}
     };
 }
 var ozpIwc = ozpIwc || {};
@@ -5484,7 +5537,7 @@ ozpIwc.metric.stats = (function (stats) {
 }(ozpIwc.metric.stats));
 var ozpIwc = ozpIwc || {};
 ozpIwc.metric = ozpIwc.metric || {};
-ozpIwc.metric.types = ozpIwc.metric.types|| {};
+ozpIwc.metric.types = ozpIwc.metric.types || {};
 
 /**
  * @module ozpIwc.metric
@@ -5553,7 +5606,7 @@ ozpIwc.metric.types.BaseMetric = (function () {
 
 var ozpIwc = ozpIwc || {};
 ozpIwc.metric = ozpIwc.metric || {};
-ozpIwc.metric.types = ozpIwc.metric.types|| {};
+ozpIwc.metric.types = ozpIwc.metric.types || {};
 
 /**
  * @module ozpIwc.metric
@@ -5598,7 +5651,7 @@ ozpIwc.metric.types.Counter = (function (metricTypes, util) {
 }(ozpIwc.metric.types, ozpIwc.util));
 var ozpIwc = ozpIwc || {};
 ozpIwc.metric = ozpIwc.metric || {};
-ozpIwc.metric.types = ozpIwc.metric.types|| {};
+ozpIwc.metric.types = ozpIwc.metric.types || {};
 
 /**
  * @module ozpIwc.metric
@@ -6044,7 +6097,8 @@ ozpIwc.metric.Registry = (function (metricTypes) {
     };
 
     /**
-     * Returns the ozpIwc.metric.types.Histogram instance(s) for the given name(s). If it does not exist it will be created.
+     * Returns the ozpIwc.metric.types.Histogram instance(s) for the given name(s). If it does not exist it will be
+     * created.
      *
      * @method histogram
      * @param {String} name Components of the name.
@@ -6185,29 +6239,29 @@ ozpIwc.util = (function (log, util) {
                         entity = this.reponseText || this.responseXML;
                     }
 
-                    log.info("[AJAX] ["+config.method+"] [" + config.href + "] [RESOLVE]");
+                    log.info("[AJAX] [" + config.method + "] [" + config.href + "] [RESOLVE]");
                     resolve({
                         "response": entity,
                         "header": util.ajaxResponseHeaderToJSON(this.getAllResponseHeaders()),
                         'url': this.responseURL
                     });
                 } else {
-                    log.info("[AJAX] ["+config.method+"] [" + config.href + "] [REJECT] ("+this.status+")");
+                    log.info("[AJAX] [" + config.method + "] [" + config.href + "] [REJECT] (" + this.status + ")");
                     reject(this);
                 }
             };
 
             request.ontimeout = function (e) {
-                log.info("[AJAX] ["+config.method+"] [" + config.href + "] [REJECT] ("+e+")");
+                log.info("[AJAX] [" + config.method + "] [" + config.href + "] [REJECT] (" + e + ")");
                 reject(this);
             };
 
             request.onerror = function (e) {
-                log.info("[AJAX] ["+config.method+"] [" + config.href + "] [REJECT] ("+e+")");
+                log.info("[AJAX] [" + config.method + "] [" + config.href + "] [REJECT] (" + e + ")");
                 reject(this);
             };
 
-            log.info("[AJAX] ["+config.method+"] [" + config.href + "]");
+            log.info("[AJAX] [" + config.method + "] [" + config.href + "]");
             try {
                 if ((config.method === "POST") || (config.method === "PUT")) {
                     request.send(config.data);
@@ -6291,16 +6345,16 @@ ozpIwc.util.AjaxPersistenceQueue = (function (log, util) {
      * @param {Function} cb
      * @returns {*}
      */
-    var acquireSlot = function(queue, uuid,cb){
+    var acquireSlot = function (queue, uuid, cb) {
         // If the slot requested is filled reject to notify caller.
-        if(!queue.queuedSyncs[uuid]){
+        if (!queue.queuedSyncs[uuid]) {
             queue.nextSlot = (queue.nextSlot + 1) % queue.poolSize;
             queue.syncPool[queue.nextSlot] = queue.queuedSyncs[uuid] = queue.syncPool[queue.nextSlot].then(function () {
                 return cb();
-            }).then(function(resp){
+            }).then(function (resp) {
                 delete queue.queuedSyncs[uuid];
                 return resp;
-            },function(err){
+            }, function (err) {
                 delete queue.queuedSyncs[uuid];
                 throw err;
             });
@@ -6379,12 +6433,12 @@ ozpIwc.util.AjaxPersistenceQueue = (function (log, util) {
      * @return {*}
      */
     AjaxPersistenceQueue.prototype.queueNode = function (iwcUri, node) {
-        var slotCall = function(){
-            return syncNode(node).catch(function(){
-                log.info("[AJAX] ["+iwcUri+"] Ignoring persist, as one is already queued.");
+        var slotCall = function () {
+            return syncNode(node).catch(function () {
+                log.info("[AJAX] [" + iwcUri + "] Ignoring persist, as one is already queued.");
             });
         };
-        return acquireSlot(this,"Node:"+iwcUri,slotCall);
+        return acquireSlot(this, "Node:" + iwcUri, slotCall);
     };
 
     /**
@@ -6398,21 +6452,25 @@ ozpIwc.util.AjaxPersistenceQueue = (function (log, util) {
      *
      * @returns {Promise}
      */
-    AjaxPersistenceQueue.prototype.queueAjax = function (config){
+    AjaxPersistenceQueue.prototype.queueAjax = function (config) {
         config = config || {};
-        if(!config.href){ throw "Ajax queue requires href";}
-        if(!config.method){ throw "Ajax queue requires method";}
+        if (!config.href) {
+            throw "Ajax queue requires href";
+        }
+        if (!config.method) {
+            throw "Ajax queue requires method";
+        }
 
-        var resolve,reject;
-        var retPromise = new Promise(function(res,rej){
+        var resolve, reject;
+        var retPromise = new Promise(function (res, rej) {
             resolve = res;
             reject = rej;
         });
-        var slotCall = function(){
-            return util.ajax(config).then(resolve,reject);
+        var slotCall = function () {
+            return util.ajax(config).then(resolve, reject);
         };
 
-        acquireSlot(this,config.method+":"+config.href+":"+Date.now(),slotCall);
+        acquireSlot(this, config.method + ":" + config.href + ":" + Date.now(), slotCall);
 
         return retPromise;
     };
@@ -6582,6 +6640,172 @@ ozpIwc.util.AsyncAction = (function () {
     return AsyncAction;
 }());
 
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.util = ozpIwc.util || {};
+/**
+ * @module ozpIwc.api
+ * @submodule ozpIwc.api.base
+ * @class ozpIwc.api.base.Api
+ */
+
+ozpIwc.util.halLoader = (function (api, log, util) {
+
+    var Loader = {};
+
+
+    //-----------------------------------------------
+    // Public Methods
+    //-----------------------------------------------
+
+    Loader.load = function (path, headers, onResource) {
+        var endpoint = api.endpoint(path);
+        return loadRecurse(endpoint, "/", headers, onResource);
+    };
+
+    //-----------------------------------------------
+    // Private Methods
+    //-----------------------------------------------
+
+    var loadRecurse = function (endpoint, path, headers, onResource) {
+
+        return endpoint.get(path, headers).then(function (data) {
+            data.response._embedded = data.response._embedded || {};
+            data.response._links = data.response._links || {};
+            data.response._links.self = data.response._links.self || {};
+            data.response._links.self.type = data.response._links.self.type || data.header['Content-Type'];
+            data.response._links.self.href = data.response._links.self.href || data.url;
+
+            onResource(data.response);
+
+            return handleEmbedded(endpoint, data.response._embedded, headers, onResource).then(function () {
+                return handleLinks(endpoint, data.response._links, headers, onResource);
+            });
+        }).catch(function (err) {
+            log.error(api.logPrefix + "[" + endpoint.name + "] [" + path + "] Failed to load: ", err.status);
+        });
+    };
+
+
+    /**
+     * Recursive HAL _embedded parser
+     *
+     * @method handleLinks
+     * @private
+     * @static
+     * @param {ozpIwc.api.endpoint} endpoint
+     * @param {Object} _embedded the _embedded object of the HAL resource
+     */
+    var handleEmbedded = function (endpoint, _embedded, headers, onResource) {
+        var embeddedItems = util.ensureArray((_embedded && _embedded.item) || []);
+        var embeddedGather = function (obj) {
+            obj._links = obj._links || {};
+            obj._links.self = obj._links.self || {};
+            // We can only knowingly handle an embedded object if we know its type.
+            if (obj._links.self.type) {
+                onResource(endpoint, obj, headers);
+                return handleEmbedded(endpoint, obj._embedded, headers, onResource).then(function () {
+                    return handleLinks(endpoint, obj._links, headers, onResource);
+                });
+            } else {
+                return Promise.resolve();
+            }
+        };
+        return Promise.all(embeddedItems.map(embeddedGather));
+    };
+
+
+    /**
+     * Recursive HAL _links parser
+     *
+     * @method handleLinks
+     * @private
+     * @static
+     * @param {Api} api
+     * @param {ozpIwc.api.endpoint} endpoint
+     * @param {Object} _links the _links object of the HAL resource
+     */
+    var handleLinks = function (endpoint, _links, headers, onResource) {
+        var linkedItems = util.ensureArray((_links && _links.item) || []);
+        var unknownLinks = linkedItems.filter(function (link) {
+            return util.object.values(api.data, function (k, node) {
+                    node.self = node.self || {};
+                    return node.self.href === link.href;
+                }).length === 0;
+        });
+
+        var linkGather = function (obj) {
+            var hdrs = headers.slice(0);
+            if (obj.type) {
+                hdrs.push({'name': "Accept", 'value': obj.type});
+            }
+            return loadRecurse(endpoint, obj.href, hdrs, onResource).catch(function (err) {
+                log.info("failed to gather link: ", obj.href, " reason: ", err);
+            });
+        };
+
+        if (unknownLinks.length) {
+            log.info(api.logPrefix + " Processing " + unknownLinks.length + " linked items.");
+        }
+
+        return Promise.all(unknownLinks.map(linkGather));
+    };
+
+    return Loader;
+}(ozpIwc.api, ozpIwc.log, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.util = ozpIwc.util || {};
+
+/**
+ * @module ozpIwc
+ * @submodule ozpIwc.util
+ */
+
+/**
+ * @class mutex
+ * @namespace ozpIwc.util
+ * @static
+ */
+ozpIwc.util.mutex = (function (util) {
+    var mutex = function (config) {
+        config = config || {};
+        if (!config.requester) {
+            throw "A mutex requires a requester.";
+        }
+        var requester = config.requester;
+        if (!config.resource) {
+            throw "A resource is required to lock on.";
+        }
+
+
+        if (config.onUnlock) {
+            config.requester.send({
+                dst: "locks.api",
+                action: "watch",
+                resource: config.resource
+            }, function (response, done) {
+                response = response || {};
+                response.entity = response.entity || {};
+                response.entity.oldValue = response.entity.oldValue || {};
+                response.entity.newValue = response.entity.newValue || {};
+                var prevOwner = response.entity.oldValue.owner || {};
+                var newOwner = response.entity.newValue.owner || {};
+
+                if (prevOwner.src === requester.address && newOwner.src !== requester.address) {
+                    config.onUnlock(response);
+                    done();
+                }
+            });
+        }
+        return config.requester.send({
+            dst: "locks.api",
+            action: "lock",
+            resource: config.resource
+        });
+    };
+
+    return mutex;
+}(ozpIwc.util));
 (function (global, undefined) {
     "use strict";
 
@@ -6604,7 +6828,7 @@ ozpIwc.util.AsyncAction = (function () {
     // returns a function that requires no arguments.
     function partiallyApplied(handler) {
         var args = [].slice.call(arguments, 1);
-        return function() {
+        return function () {
             if (typeof handler === "function") {
                 handler.apply(undefined, args);
             } else {
@@ -6639,7 +6863,7 @@ ozpIwc.util.AsyncAction = (function () {
     }
 
     function installNextTickImplementation() {
-        setImmediate = function() {
+        setImmediate = function () {
             var handle = addFromSetImmediateArguments(arguments);
             process.nextTick(partiallyApplied(runIfPresent, handle));
             return handle;
@@ -6652,7 +6876,7 @@ ozpIwc.util.AsyncAction = (function () {
         if (global.postMessage && !global.importScripts) {
             var postMessageIsAsynchronous = true;
             var oldOnMessage = global.onmessage;
-            global.onmessage = function() {
+            global.onmessage = function () {
                 postMessageIsAsynchronous = false;
             };
             global.postMessage("", "*");
@@ -6667,7 +6891,7 @@ ozpIwc.util.AsyncAction = (function () {
         // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
 
         var messagePrefix = "setImmediate$" + Math.random() + "$";
-        var onGlobalMessage = function(event) {
+        var onGlobalMessage = function (event) {
             if (event.source === global &&
                 typeof event.data === "string" &&
                 event.data.indexOf(messagePrefix) === 0) {
@@ -6681,7 +6905,7 @@ ozpIwc.util.AsyncAction = (function () {
             global.attachEvent("onmessage", onGlobalMessage);
         }
 
-        setImmediate = function() {
+        setImmediate = function () {
             var handle = addFromSetImmediateArguments(arguments);
             global.postMessage(messagePrefix + handle, "*");
             return handle;
@@ -6690,12 +6914,12 @@ ozpIwc.util.AsyncAction = (function () {
 
     function installMessageChannelImplementation() {
         var channel = new MessageChannel();
-        channel.port1.onmessage = function(event) {
+        channel.port1.onmessage = function (event) {
             var handle = event.data;
             runIfPresent(handle);
         };
 
-        setImmediate = function() {
+        setImmediate = function () {
             var handle = addFromSetImmediateArguments(arguments);
             channel.port2.postMessage(handle);
             return handle;
@@ -6704,7 +6928,7 @@ ozpIwc.util.AsyncAction = (function () {
 
     function installReadyStateChangeImplementation() {
         var html = doc.documentElement;
-        setImmediate = function() {
+        setImmediate = function () {
             var handle = addFromSetImmediateArguments(arguments);
             // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
             // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
@@ -6721,7 +6945,7 @@ ozpIwc.util.AsyncAction = (function () {
     }
 
     function installSetTimeoutImplementation() {
-        setImmediate = function() {
+        setImmediate = function () {
             var handle = addFromSetImmediateArguments(arguments);
             setTimeout(partiallyApplied(runIfPresent, handle), 0);
             return handle;
@@ -6883,7 +7107,7 @@ ozpIwc.util = (function (util) {
      * @param obj
      * @returns {*}
      */
-    util.ensureObject = function(obj){
+    util.ensureObject = function (obj) {
         return (typeof obj === "object" && obj !== null) ? obj : {};
     };
     /**
@@ -6944,14 +7168,14 @@ ozpIwc.util = (function (util) {
      * @param {Object} nodeNamespace
      * @returns {Object}
      */
-    util.genContentTypeMappings = function(nodeNamespace){
+    util.genContentTypeMappings = function (nodeNamespace) {
         var formats = {};
-        for (var i in nodeNamespace){
+        for (var i in nodeNamespace) {
             var contentType = nodeNamespace[i].serializedContentType;
-            if(contentType){
+            if (contentType) {
                 var formatted = util.getFormattedContentType(contentType);
                 formats[formatted.name] = formats[formatted.name] || {};
-                if(formatted.version) {
+                if (formatted.version) {
                     formats[formatted.name][formatted.version] = nodeNamespace[i];
                 } else {
                     formats[formatted.name] = nodeNamespace[i];
@@ -6966,7 +7190,7 @@ ozpIwc.util = (function (util) {
 /**
  * Configs, override in iwc.conf.js and include prior to ozpIwc-bus.js.
  */
-var ozpIwc=ozpIwc || {};
+var ozpIwc = ozpIwc || {};
 /**
  * An object of configuration variables for the IWC Bus.
  * @namespace ozpIwc
@@ -6977,7 +7201,7 @@ ozpIwc.config = ozpIwc.config || {};
 
 
 //If this is in a worker the config file needs to be loaded.
-if(ozpIwc.util.runningInWorker()){
+if (ozpIwc.util.runningInWorker()) {
     importScripts('ozpIwc.conf.js');
 }
 
@@ -7017,7 +7241,7 @@ ozpIwc.config.logLevel = ozpIwc.util.ifUndef(ozpIwc.config.logLevel || 6);
  * @type Number
  * @default 3000
  */
-ozpIwc.config.consensusTimeout = ozpIwc.util.ifUndef(ozpIwc.config.consensusTimeout  || 3000);
+ozpIwc.config.consensusTimeout = ozpIwc.util.ifUndef(ozpIwc.config.consensusTimeout || 3000);
 
 /**
  * A configurable time for bus components to use for their heartbeat intervals.
@@ -7035,7 +7259,7 @@ ozpIwc.config.heartBeatFrequency = ozpIwc.util.ifUndef(ozpIwc.config.heartBeatFr
  * @type String
  * @default "/"
  */
-ozpIwc.config.apiRootUrl =  ozpIwc.util.ifUndef(ozpIwc.config.apiRootUrl || "/");
+ozpIwc.config.apiRootUrl = ozpIwc.util.ifUndef(ozpIwc.config.apiRootUrl || "/");
 
 /**
  * A configurable url for security policy loading. Override with backend specific path in ozpIwc.conf.js.
@@ -7072,43 +7296,45 @@ ozpIwc.config.intentsChooserUri = ozpIwc.util.ifUndef(ozpIwc.config.intentsChoos
  * @type Boolean
  * @default true
  */
-ozpIwc.config.legacySupport = ozpIwc.util.ifUndef(ozpIwc.config.legacySupport,true);
+ozpIwc.config.legacySupport = ozpIwc.util.ifUndef(ozpIwc.config.legacySupport, true);
 
 /**
- * A configuration flag for the iwc.conf.js file. If false, app/js/build-config/backendSupport.js configurations are used.
+ * A configuration flag for the iwc.conf.js file. If false, app/js/build-config/backendSupport.js configurations are
+ * used.
  * @namespace ozpIwc
  * @property ozpIwc.config.backendSupport
  * @type Boolean
  * @default false
  */
-ozpIwc.config.backendSupport = ozpIwc.util.ifUndef(ozpIwc.config.backendSupport,false);
-ozpIwc.config.defaultContentTypes = ozpIwc.util.ifUndef(ozpIwc.config.requiredContentType,{});
+ozpIwc.config.backendSupport = ozpIwc.util.ifUndef(ozpIwc.config.backendSupport, false);
+ozpIwc.config.defaultContentTypes = ozpIwc.util.ifUndef(ozpIwc.config.requiredContentType, {});
 ozpIwc.config.defaultContentTypes["ozp:data-item"] =
     ozpIwc.util.ifUndef(ozpIwc.config.defaultContentTypes["ozp:data-item"], "application/vnd.ozp-iwc-data-object+json;version=2");
 
 /**
- * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js instantiates the Api modules.
+ * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js instantiates the Api
+ * modules.
  * @namespace ozpIwc
  * @property ozpIwc.config.runApis
  * @type Boolean
  * @default true
  */
-ozpIwc.config.runApis = ozpIwc.util.ifUndef(ozpIwc.config.runApis,true);
+ozpIwc.config.runApis = ozpIwc.util.ifUndef(ozpIwc.config.runApis, true);
 
 /**
- * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js allows connections to ozpIwc clients
- * in the same browsing window. Often set to false for the intent chooser/debugger as they are directly connected to the
- * bus.
+ * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js allows connections to
+ * ozpIwc clients in the same browsing window. Often set to false for the intent chooser/debugger as they are directly
+ * connected to the bus.
  *
  * @namespace ozpIwc
  * @property ozpIwc.config.allowLocalClients
  * @type Boolean
  * @default true
  */
-ozpIwc.config.allowLocalClients = ozpIwc.util.ifUndef(ozpIwc.config.allowLocalClients,true);
+ozpIwc.config.allowLocalClients = ozpIwc.util.ifUndef(ozpIwc.config.allowLocalClients, true);
 
 /**
- * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js will instantiate the 
+ * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js will instantiate the
  * default components of the bus if false. Used for integration testing, not intended for end user modification.
  *
  * @namespace ozpIwc
@@ -7117,7 +7343,7 @@ ozpIwc.config.allowLocalClients = ozpIwc.util.ifUndef(ozpIwc.config.allowLocalCl
  * @type Boolean
  * @default true
  */
-ozpIwc.config._testMode = ozpIwc.util.ifUndef(ozpIwc.config._testMode,false);
+ozpIwc.config._testMode = ozpIwc.util.ifUndef(ozpIwc.config._testMode, false);
 
 /**
  * The absolute path for the bus's root location (ex. http://localhost:13000/).
@@ -7129,10 +7355,10 @@ ozpIwc.config._testMode = ozpIwc.util.ifUndef(ozpIwc.config._testMode,false);
  * @type String
  * @default "<Absolute root path of current browser URL>"
  */
-ozpIwc.config._busRoot = ozpIwc.util.ifUndef(ozpIwc.config._busRoot,(function(){
+ozpIwc.config._busRoot = ozpIwc.util.ifUndef(ozpIwc.config._busRoot, (function () {
     return window.location.protocol + "//" +
         window.location.host +
-        window.location.pathname.replace(/[^\/]+$/,"");
+        window.location.pathname.replace(/[^\/]+$/, "");
 })());
 
 
@@ -7145,7 +7371,7 @@ ozpIwc.config._busRoot = ozpIwc.util.ifUndef(ozpIwc.config._busRoot,(function(){
  * @type String
  * @default "width=330,height=500"
  */
-ozpIwc.config.intentChooserFeatures = ozpIwc.util.ifUndef(ozpIwc.config.intentChooserFeatures,"width=330,height=500");
+ozpIwc.config.intentChooserFeatures = ozpIwc.util.ifUndef(ozpIwc.config.intentChooserFeatures, "width=330,height=500");
 
 /**
  * Root location for owf7 legacy preferences should this bus support legacy widgets through the ozp-iwc-owf7-adapter.
@@ -7156,7 +7382,7 @@ ozpIwc.config.intentChooserFeatures = ozpIwc.util.ifUndef(ozpIwc.config.intentCh
  * @type String
  * @default "/owf/prefs"
  */
-ozpIwc.config.owf7PrefsUrl = ozpIwc.util.ifUndef(ozpIwc.config.owf7PrefsUrl,"/owf/prefs");
+ozpIwc.config.owf7PrefsUrl = ozpIwc.util.ifUndef(ozpIwc.config.owf7PrefsUrl, "/owf/prefs");
 
 /**
  *
@@ -7168,7 +7394,7 @@ ozpIwc.config.owf7PrefsUrl = ozpIwc.util.ifUndef(ozpIwc.config.owf7PrefsUrl,"/ow
  * @type Number
  * @default 1
  */
-ozpIwc.config.ajaxPoolSize = ozpIwc.util.ifUndef(ozpIwc.config.ajaxPoolSize,1);
+ozpIwc.config.ajaxPoolSize = ozpIwc.util.ifUndef(ozpIwc.config.ajaxPoolSize, 1);
 
 /**
  * A configuration variable for the ozpIwc.config.js file. Templates for the IWC to use to map content-types to hrefs
@@ -7195,7 +7421,7 @@ ozpIwc.config.ajaxPoolSize = ozpIwc.util.ifUndef(ozpIwc.config.ajaxPoolSize,1);
  * @type Object
  * @default {}
  */
-ozpIwc.config.templates = ozpIwc.util.ifUndef(ozpIwc.config.templates,{});
+ozpIwc.config.templates = ozpIwc.util.ifUndef(ozpIwc.config.templates, {});
 var ozpIwc = ozpIwc || {};
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 ozpIwc.policyAuth.elements = ozpIwc.policyAuth.elements || {};
@@ -7397,7 +7623,7 @@ ozpIwc.policyAuth.points.PDP = (function (policyAuth, util) {
             asyncAction.resolve('failure', err);
         };
         //Format the request
-        policyAuth.points.utils.formatRequest(request,this.pip)
+        policyAuth.points.utils.formatRequest(request, this.pip)
             .success(function (formattedRequest) {
 
                 // Get the policies from the PRP
@@ -7612,7 +7838,7 @@ ozpIwc.policyAuth.points = ozpIwc.policyAuth.points || {};
  * @submodule ozpIwc.policyAuth.points
  */
 
-ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
+ozpIwc.policyAuth.points.PRP = (function (policyAuth, util) {
     /**
      * Policy Repository Point
      * @class PRP
@@ -7622,7 +7848,7 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
      * @param {Object} [config.policyCache]
      * @constructor
      */
-    var PRP = function(config){
+    var PRP = function (config) {
         config = config || {};
 
         /**
@@ -7641,23 +7867,23 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
     /**
      * Gathers policies by their URN. These policies may need formatting by the formatPolicies function to gather any
      * attribute data needed for the policy evaluation.
-     * If a policy cannot be found, it is labeled as a "denyAll" policy and placed in the cache. Thus, making any permission
-     * check using said policy always deny.
+     * If a policy cannot be found, it is labeled as a "denyAll" policy and placed in the cache. Thus, making any
+     * permission check using said policy always deny.
      *
      * @method getPolicy(policyURIs)
      * @param {String | Array<String> } [policyURIs] The subject attributes or id performing the action.
      * @param {String} [combiningAlgorithm] Defaults to “deny-overrides”.
      * @return {ozpIwc.util.AsyncAction} will resolve with an array of policy data.
      */
-    PRP.prototype.getPolicies = function(policyURIs){
+    PRP.prototype.getPolicies = function (policyURIs) {
         var asyncAction = new util.AsyncAction();
         policyURIs = policyURIs || [];
         policyURIs = util.ensureArray(policyURIs);
         var policies = [];
 
         var policiesToGather = this.persistentPolicies.concat(policyURIs);
-        for(var i in policiesToGather){
-            if(this.policyCache[policiesToGather[i]]){
+        for (var i in policiesToGather) {
+            if (this.policyCache[policiesToGather[i]]) {
                 policies.push(util.clone(this.policyCache[policiesToGather[i]]));
             } else {
                 var async = this.fetchPolicy(policiesToGather[i]);
@@ -7668,8 +7894,8 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
         }
 
         // If there are no policies to check against, assume trivial and permit
-        if(policies.length === 0){
-            return asyncAction.resolve('success',[policyAuth.policies.permitAll]);
+        if (policies.length === 0) {
+            return asyncAction.resolve('success', [policyAuth.policies.permitAll]);
         }
 
         return util.AsyncAction.all(policies);
@@ -7683,7 +7909,7 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
      * @type {String}
      * @default 'deny-overrides'
      */
-    PRP.prototype.defaultCombiningAlgorithm ='deny-overrides';
+    PRP.prototype.defaultCombiningAlgorithm = 'deny-overrides';
 
     /**
      * Fetches the requested policy and stores a copy of it in the cache. Returns a denyAll if policy is unobtainable.
@@ -7691,18 +7917,18 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
      * @param {String} policyURI the uri to gather the policy from
      * @return {util.AsyncAction} will resolve with the gathered policy constructed as an ozpIwc.policyAuth.Policy.
      */
-    PRP.prototype.fetchPolicy = function(policyURI){
+    PRP.prototype.fetchPolicy = function (policyURI) {
         var asyncAction = new util.AsyncAction();
         var self = this;
         util.ajax({
             'method': "GET",
             'href': policyURI
-        }).then(function(data){
+        }).then(function (data) {
             self.policyCache[policyURI] = self.formatPolicy(data.response);
-            asyncAction.resolve('success',util.clone(self.policyCache[policyURI]));
-        })['catch'](function(e){
+            asyncAction.resolve('success', util.clone(self.policyCache[policyURI]));
+        })['catch'](function (e) {
             //Note: failure resolves success because we force a denyAll policy.
-            asyncAction.resolve('success',self.getDenyall(policyURI));
+            asyncAction.resolve('success', self.getDenyall(policyURI));
         });
         return asyncAction;
     };
@@ -7713,7 +7939,7 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
      * @param data
      * @return {ozpIwc.policyAuth.Policy}
      */
-    PRP.prototype.formatPolicy = function(data){
+    PRP.prototype.formatPolicy = function (data) {
         return new policyAuth.Policy(data);
     };
 
@@ -7722,8 +7948,8 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
      * @param urn
      * @return {ozpIwc.policyAuth.Policy} a denyAll policy
      */
-    PRP.prototype.getDenyall = function(urn){
-        if(this.policyCache[urn]){
+    PRP.prototype.getDenyall = function (urn) {
+        if (this.policyCache[urn]) {
             return this.policyCache[urn];
         } else {
             this.policyCache[urn] = policyAuth.policies.denyAll;
@@ -7923,8 +8149,8 @@ ozpIwc.policyAuth.points.utils = (function (util) {
      * @param {String}                         request.combiningAlgorithm URN of combining algorithm
      * @param {Array<String|ozpIwc.policyAuth.Policy>}   request.policies either a URN or a formatted policy
      * @param {ozpIwc.policyAuth.points.PIP} [pip] custom policy information point for attribute gathering.
-     * @return {ozpIwc.util.AsyncAction}  will resolve when all attribute formatting completes. The resolution will pass a
-     *     formatted structured as so:
+     * @return {ozpIwc.util.AsyncAction}  will resolve when all attribute formatting completes. The resolution will
+     *     pass a formatted structured as so:
      * ```
      *  {
      *      'category':{
@@ -8122,7 +8348,7 @@ ozpIwc.policyAuth.policies = (function (policies, util) {
      * @param {Object} action
      * @return {String} NotApplicable, Deny, or Permit
      */
-     var defaultPolicy = function (request, action) {
+    var defaultPolicy = function (request, action) {
         action = util.ensureArray(action);
         if (!util.arrayContainsAll(action, request.action['ozp:iwc:action'])) {
             return "NotApplicable";
@@ -8474,7 +8700,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
          */
         this.metrics = config.metrics;
 
-        if(this.metrics) {
+        if (this.metrics) {
             this.metricsPrefix = "keyBroadcastLocalStorageLink." + this.selfId;
             this.droppedFragmentsCounter = this.metrics.counter(this.metricsPrefix, 'fragmentsDropped');
             this.fragmentsReceivedCounter = this.metrics.counter(this.metricsPrefix, 'fragmentsReceived');
@@ -8577,7 +8803,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
                     packet = JSON.parse(event.newValue);
                 } catch (e) {
                     log.error("Parse error on " + event.newValue);
-                    if(self.metrics) {
+                    if (self.metrics) {
                         self.packetParseErrorCounter.inc();
                     }
                     return;
@@ -8622,11 +8848,11 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
      */
     var forwardToPeer = function (link, packet) {
         link.peer.receive(link.linkId, packet);
-        if(link.metrics) {
+        if (link.metrics) {
             link.packetsReceivedCounter.inc();
         }
         if (packet.data.time) {
-            if(link.metrics) {
+            if (link.metrics) {
                 link.latencyInTimer.mark(util.now() - packet.data.time);
             }
         }
@@ -8673,7 +8899,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
 
             // Add a timeout to destroy the fragment should the whole message not be received.
             link.fragments[key].timeoutFunc = function () {
-                if(link.metrics) {
+                if (link.metrics) {
                     link.droppedFragmentsCounter.inc(link.total);
                 }
                 delete link.fragments[link.key];
@@ -8696,7 +8922,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
             link.fragments[key].srcPeer === undefined) {
             return null;
         } else {
-            if(link.metrics) {
+            if (link.metrics) {
                 link.fragmentsReceivedCounter.inc();
             }
             return true;
@@ -8749,7 +8975,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
                 attemptSend(link, link.sendQueue.shift());
             }
         } else {
-            if(link.metrics) {
+            if (link.metrics) {
                 link.packetsFailedCounter.inc();
             }
             log.error("Failed to write packet(len=" + packet.length + "):" + " Send queue full.");
@@ -8783,7 +9009,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
                     attemptSend(link, packet, retryCount);
                 }, timeOut);
             } else {
-                if(link.metrics) {
+                if (link.metrics) {
                     link.packetsFailedCounter.inc();
                 }
                 log.error("Failed to write packet(len=" + packet.length + "):" + sendStatus);
@@ -8843,7 +9069,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
         try {
             str = JSON.stringify(packet.data);
         } catch (e) {
-            if(this.metrics) {
+            if (this.metrics) {
                 this.packetsFailedCounter.inc();
             }
             var msgId = packet.msgId || "unknown";
@@ -8895,11 +9121,11 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
         try {
             var p = JSON.stringify(packet);
             localStorage.setItem(util.localStorageKey, p);
-            if(this.metrics) {
+            if (this.metrics) {
                 this.packetsSentCounter.inc();
             }
             if (packet.data.time) {
-                if(this.metrics) {
+                if (this.metrics) {
                     this.latencyOutTimer.mark(util.now() - packet.data.time);
                 }
             }
@@ -9064,7 +9290,7 @@ ozpIwc.network.Peer = (function () {
     Peer.prototype.haveSeen = function (packet) {
         // don't forward our own packets
         if (packet.srcPeer === this.selfId) {
-            if(this.metrics) {
+            if (this.metrics) {
                 this.metrics.counter(this.metricPrefix, 'droppedOwnPacket').inc();
             }
             return true;
@@ -9108,14 +9334,14 @@ ozpIwc.network.Peer = (function () {
 
         this.events.trigger("preSend", preSendEvent);
         if (!preSendEvent.canceled) {
-            if(this.metrics) {
+            if (this.metrics) {
                 this.metrics.counter(this.metricPrefix, 'sent').inc();
             }
             if (this.metrics && packet.time) {
                 this.metrics.timer(this.metricPrefix, 'latencyOut').mark(ozpIwc.util.now() - packet.time);
             }
             this.events.trigger("send", {'packet': networkPacket});
-        } else if(this.metrics) {
+        } else if (this.metrics) {
             this.metrics.counter(this.metricPrefix, 'sendRejected').inc();
         }
     };
@@ -9133,12 +9359,12 @@ ozpIwc.network.Peer = (function () {
     Peer.prototype.receive = function (linkId, packet) {
         // drop it if we've seen it before
         if (this.haveSeen(packet)) {
-            if(this.metrics) {
+            if (this.metrics) {
                 this.metrics.counter(this.metricPrefix, 'dropped').inc();
             }
             return;
         }
-        if(this.metrics) {
+        if (this.metrics) {
             this.metrics.counter(this.metricPrefix, 'received').inc();
         }
         if (this.metrics && packet.data.time) {
@@ -9533,8 +9759,8 @@ ozpIwc.transport.participant.Base = (function (log, policyAuth, transport, util)
      * Destroys this participant. The router will no longer reference it.
      * @method destroy
      */
-    Base.prototype.destroy = function() {
-        if(this.router && this.router.participants[this.address]){
+    Base.prototype.destroy = function () {
+        if (this.router && this.router.participants[this.address]) {
             delete this.router.participants[this.address];
         }
     };
@@ -9589,7 +9815,7 @@ ozpIwc.transport.participant.Internal = (function (transport, util) {
             self.permissions.pushIfNotExist('ozp:iwc:address', self.address);
             self.permissions.pushIfNotExist('ozp:iwc:sendAs', self.address);
             self.permissions.pushIfNotExist('ozp:iwc:receiveAs', self.address);
-            if(self.metrics) {
+            if (self.metrics) {
                 self.metrics.gauge(self.metricRoot, "registeredCallbacks").set(function () {
                     return getCallbackCount(self);
                 });
@@ -9635,7 +9861,8 @@ ozpIwc.transport.participant.Internal = (function (transport, util) {
 
 
     /**
-     * Handles packets received from the {{#crossLink "ozpIwc.transport.Router"}}{{/crossLink}} the participant is registered to.
+     * Handles packets received from the {{#crossLink "ozpIwc.transport.Router"}}{{/crossLink}} the participant is
+     * registered to.
      *
      * Fires:
      *   - {{#crossLink "ozpIwc.transport.participant.Base/#receive:event"}}{{/crossLink}}
@@ -9675,7 +9902,7 @@ ozpIwc.transport.participant.Internal = (function (transport, util) {
         var self = this;
         var send = transport.participant.Base.prototype.send;
         //util.setImmediate(function () {
-            send.call(self, packet);
+        send.call(self, packet);
         //});
 
         return packet;
@@ -9762,10 +9989,10 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
         var self = this;
         this.port.addEventListener("message", function (e) {
             var data = e.data;
-            if(typeof(data) === "string"){
+            if (typeof(data) === "string") {
                 try {
                     data = JSON.parse(e.data);
-                } catch(e){
+                } catch (e) {
                     // may not be failure, whomever gets forwarded the message
                     // can choose to allow strings instead of objects.
                 }
@@ -9775,7 +10002,7 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
             }
             self.forwardFromMessageChannel(data, e);
         }, false);
-        util.safePostMessage(this.port,{iwcInit:true});
+        util.safePostMessage(this.port, {iwcInit: true});
     });
 
 //--------------------------------------------------
@@ -9786,14 +10013,14 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
 //--------------------------------------------------
 //          Public Methods
 //--------------------------------------------------
-   /**
-    * The participant hijacks anything addressed to "$transport" and serves it
-    * directly.  This isolates basic connection checking from the router, itself.
-    *
-    * @method handleTransportPacket
-    * @static
-    * @param {Object} packet
-    */
+    /**
+     * The participant hijacks anything addressed to "$transport" and serves it
+     * directly.  This isolates basic connection checking from the router, itself.
+     *
+     * @method handleTransportPacket
+     * @static
+     * @param {Object} packet
+     */
     SharedWorker.prototype.handleTransportPacket = function (packet) {
         var reply = {
             'ver': 1,
@@ -9831,7 +10058,7 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
      * @todo Only IE requires the packet to be stringified before sending, should use feature detection?
      */
     SharedWorker.prototype.sendToRecipient = function (packet) {
-        util.safePostMessage(this.port,packet);
+        util.safePostMessage(this.port, packet);
     };
 
 
@@ -9959,13 +10186,12 @@ ozpIwc.transport.participant.PostMessage = (function (log, transport, util) {
          */
         this.heartBeatStatus.origin = this.origin;
 
-        util.safePostMessage(this.source,{iwcInit:true});
+        util.safePostMessage(this.source, {iwcInit: true});
     });
 
 //--------------------------------------------------
 //          Private Methods
 //--------------------------------------------------
-
 
 
 //--------------------------------------------------
@@ -10019,8 +10245,6 @@ ozpIwc.transport.participant.PostMessage = (function (log, transport, util) {
     };
 
 
-
-
     /**
      * Sends a packet received via PostMessage to the Participant's router.
      *
@@ -10036,7 +10260,7 @@ ozpIwc.transport.participant.PostMessage = (function (log, transport, util) {
         }
         if (event.origin !== this.origin) {
             /** @todo participant changing origins should set off more alarms, probably */
-            if(this.metrics) {
+            if (this.metrics) {
                 this.metrics.counter("transport." + this.address + ".invalidSenderOrigin").inc();
             }
             return;
@@ -10116,7 +10340,7 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
          */
         this.metrics = config.metrics;
 
-        if(this.metrics) {
+        if (this.metrics) {
             this.metrics.gauge("transport.participants").set(function () {
                 return Object.keys(self.participants).length;
             });
@@ -10163,7 +10387,7 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
         if (!config.disableBus) {
             this.participants["$bus.multicast"] = new transport.participant.Multicast({
                 authorization: this.authorization,
-                name:"$bus.multicast"
+                name: "$bus.multicast"
             });
         }
         /**
@@ -10178,7 +10402,7 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
         });
         this.registerParticipant(this.watchdog);
         this.recursionDepth = 0;
-        if(this.metrics) {
+        if (this.metrics) {
             this.metrics.gauge('transport.router.participants').set(function () {
                 return self.getParticipantCount();
             });
@@ -10285,12 +10509,12 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
             });
 
             if (this.events.trigger("preDeliver", preDeliverEvent).canceled) {
-                if(this.metrics) {
+                if (this.metrics) {
                     this.metrics.counter("transport.packets.rejected").inc();
                 }
                 return;
             }
-            if(this.metrics) {
+            if (this.metrics) {
                 this.metrics.counter("transport.packets.delivered").inc();
             }
             localParticipant.receiveFromRouter(packetContext);
@@ -10358,12 +10582,12 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
         this.events.trigger("preSend", preSendEvent);
 
         if (preSendEvent.canceled) {
-            if(this.metrics) {
+            if (this.metrics) {
                 this.metrics.counter("transport.packets.sendCanceled");
             }
             return;
         }
-        if(this.metrics) {
+        if (this.metrics) {
             this.metrics.counter("transport.packets.sent").inc();
         }
         this.deliverLocal(packet, sendingParticipant);
@@ -10380,7 +10604,7 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
      */
     Router.prototype.receiveFromPeer = function (packet) {
         var now = Date.now();
-        if(this.metrics) {
+        if (this.metrics) {
             this.metrics.counter("transport.packets.receivedFromPeer").inc();
             this.metrics.histogram("transport.packets.latency").mark(now - packet.data.time, now);
         }
@@ -10627,8 +10851,14 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
          */
         this.gatherLogs = config.gatherLogs || function () {};
 
+        var self = this;
+        util.addEventListener("beforeunload", function () {
+            self.shutdown();
+            self.events.trigger("shutdown");
+        });
+
         //Give some arbitrary time for the query to respond before kicking off an election
-        restartCoordinatorTimeout(this,1000);
+        restartCoordinatorTimeout(this);
         sendQueryMessage(this);
     });
 
@@ -10692,27 +10922,11 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
 
     ///**
     // * @TODO: Unused, a modified bully algorithm was implemented.
-    // * Sends an acknowledge message to the consensusId that sent an election message to inform them that this module out
-    // * ranks them.
-    // *
-    // * @method sendAckMessage
-    // * @private
-    // * @static
-    // * @param {ozpIwc.transport.consensus.Bully} bully
-    // * @param {String}consensusSender
-    // */
-    //var sendAckMessage = function (bully, consensusSender) {
-    //    bully.participant.send({
-    //        'dst': bully.consensusAddress,
-    //        'action': "acknowledge",
-    //        'entity': {
-    //            'consensusId': bully.consensusId,
-    //            'replyTo': {
-    //                'consensusId': consensusSender
-    //            }
-    //        }
-    //    });
-    //};
+    // * Sends an acknowledge message to the consensusId that sent an election message to inform them that this module
+    // out * ranks them. * * @method sendAckMessage * @private * @static * @param {ozpIwc.transport.consensus.Bully}
+    // bully * @param {String}consensusSender */ var sendAckMessage = function (bully, consensusSender) {
+    // bully.participant.send({ 'dst': bully.consensusAddress, 'action': "acknowledge", 'entity': { 'consensusId':
+    // bully.consensusId, 'replyTo': { 'consensusId': consensusSender } } }); };
 
     /**
      * Sends a victory message to other bully modules informing them of this modules role as Coordinator.
@@ -10723,7 +10937,7 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      * @param {ozpIwc.transport.consensus.Bully} bully
      */
     var sendVictoryMessage = function (bully) {
-        var logs = bully.gatherLogs();
+        var logs = bully.gatherLogs() || bully.logs;
         bully.participant.send({
             'dst': bully.consensusAddress,
             'action': "victory",
@@ -10774,17 +10988,18 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
         }
         var consensusId = entity.consensusId;
 
+        if (entity.logs) {
+            bully.logs = entity.logs;
+        }
         // Ignore it if they out rank us.
         if (consensusId > bully.consensusId) {
             cancelElection(bully);
-            restartCoordinatorTimeout(bully, bully.coordinatorTimeoutHeartbeat, true);
+            restartCoordinatorTimeout(bully);
             return;
         }
-
         // Let them know that we out rank them.
-        //sendAckMessage(bully, consensusId);
-        cancelElection(bully);
         startElection(bully);
+        restartCoordinatorTimeout(bully);
     };
 
     /**
@@ -10832,16 +11047,20 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
         }
         var consensusId = entity.consensusId;
 
+
+        if (entity.logs) {
+            bully.logs = entity.logs || bully.logs;
+        }
         // Ignore it if they out rank us.
         if (consensusId > bully.consensusId) {
-            cancelElection(bully);
             if (entity.logs) {
                 bully.events.trigger("receivedLogs", entity.logs);
+                bully.logs = undefined;
             }
+            cancelElection(bully);
             restartCoordinatorTimeout(bully);
             return;
         }
-
         //Rebel if needed.
         startElection(bully);
 
@@ -10892,7 +11111,7 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
             bully.changeState("member");
         }
         bully.coordinatorTimeout = window.setTimeout(function () {
-            bully.onCoordinatorTimeout(timeout);
+            bully.onCoordinatorTimeout();
         }, timeout);
     };
 
@@ -10902,8 +11121,8 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      * @method onCoordinatorTimeout
      * @param timeout
      */
-    Bully.prototype.onCoordinatorTimeout = function (timeout) {
-        startElection(this, timeout);
+    Bully.prototype.onCoordinatorTimeout = function () {
+        startElection(this);
     };
 
 
@@ -10918,15 +11137,22 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      */
     Bully.prototype.onBecomeCoordinator = function () {
         var self = this;
+        window.clearTimeout(this.coordinatorTimeout);
         window.clearInterval(this.coordinatorInterval);
 
-        sendVictoryMessage(this, this.lastElection);
+        sendVictoryMessage(this);
         this.changeState("coordinator");
         this.coordinatorInterval = window.setInterval(function () {
-            sendVictoryMessage(self, self.lastElection);
+            sendVictoryMessage(self);
         }, this.coordinatorIntervalHeartbeat);
     };
 
+    Bully.prototype.shutdown = function () {
+        if (this.state === "coordinator" || this.logs) {
+            this.consensusId = -Number.MAX_VALUE;
+            sendVictoryMessage(this);
+        }
+    };
 //==================================================================
 // Election control
 //==================================================================
@@ -10940,7 +11166,7 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      * @param {Number} [timeout]
      */
     var startElection = function (bully, timeout) {
-        timeout = timeout || bully.coordinatorTimeoutHeartbeat;
+        timeout = timeout || (bully.coordinatorTimeoutHeartbeat * 2 / 3);
         window.clearTimeout(bully.electionTimeout);
 
         bully.electionTimeout = window.setTimeout(function () {
@@ -10968,7 +11194,7 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
 
 var ozpIwc = ozpIwc || {};
 ozpIwc.transport = ozpIwc.transport || {};
-ozpIwc.transport.listener = ozpIwc.transport.listener|| {};
+ozpIwc.transport.listener = ozpIwc.transport.listener || {};
 /**
  * @module ozpIwc.transport
  * @submodule ozpIwc.transport.listener
@@ -11063,7 +11289,7 @@ ozpIwc.transport.listener.Base = (function (log, transport, util) {
      */
     Base.prototype.findParticipant = function (source) {
         for (var i = 0; i < this.participants.length; ++i) {
-            if (this.participants[i].source=== source) {
+            if (this.participants[i].source === source) {
                 return this.participants[i];
             }
         }
@@ -11220,7 +11446,7 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
      * @method registration
      * @override
      */
-    SharedWorker.prototype.registration = function(){
+    SharedWorker.prototype.registration = function () {
         util.addEventListener("connect", connectHandlerGen(this), false);
     };
 
@@ -11230,7 +11456,7 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
      * @private
      * @param {SharedWorker} listener
      */
-    var connectHandlerGen = function(listener) {
+    var connectHandlerGen = function (listener) {
         return function (event) {
             var port = event.ports[0];
 
@@ -11267,7 +11493,7 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
      * @param {Object} config
      * @returns {Function}
      */
-    var messageHandlerGen = function(listener,port,config){
+    var messageHandlerGen = function (listener, port, config) {
         return function initMsg(evt) {
             // If the first message received is not noting the type of participant to create, kill the connection
             if (evt.data && typeof(evt.data.type) === "string") {
@@ -11367,7 +11593,7 @@ ozpIwc.transport.PacketContext = (function (util) {
      */
     PacketContext.prototype.replyTo = function (response) {
 
-        if (shouldReply(this,response)) {
+        if (shouldReply(this, response)) {
             response = this.makeReplyTo(response);
 
             if (this.dstParticipant) {
@@ -11416,7 +11642,7 @@ ozpIwc.transport.participant = ozpIwc.transport.participant || {};
  * @submodule ozpIwc.transport.participant
  */
 
-ozpIwc.transport.participant.Client = (function ( transport, util) {
+ozpIwc.transport.participant.Client = (function (transport, util) {
 
     /**
      * A participant for the client's communication needs.
@@ -11434,7 +11660,7 @@ ozpIwc.transport.participant.Client = (function ( transport, util) {
      */
     var Client = util.extend(transport.participant.Base, function (config) {
         config = config || {};
-        if(!config.router){
+        if (!config.router) {
             throw "Client Participant requires a router.";
         }
 
@@ -11481,7 +11707,7 @@ ozpIwc.transport.participant.Client = (function ( transport, util) {
             self.permissions.pushIfNotExist('ozp:iwc:sendAs', self.address);
             self.permissions.pushIfNotExist('ozp:iwc:receiveAs', self.address);
 
-            if(this.metrics) {
+            if (this.metrics) {
                 this.metrics.gauge(self.metricRoot, "registeredCallbacks").set(function () {
                     if (!self.replyCallbacks || !Object.keys(self.replyCallbacks)) {
                         return 0;
@@ -11562,7 +11788,7 @@ ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport
             this.logging = {
                 enabled: false,
                 watchList: {},
-                notifyListeners: function ( event) {
+                notifyListeners: function (event) {
                     for (var i in self.logging.watchList) {
                         debuggerResponse(self, {
                             response: "changed",
@@ -11573,7 +11799,7 @@ ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport
                 }
             };
 
-            this.on("receive",this.handleReceivePacket);
+            this.on("receive", this.handleReceivePacket);
         });
 
         //----------------------------------------------------------------
@@ -11658,7 +11884,7 @@ ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport
             if (packet.entity.msgId && participant.logging.watchList[packet.entity.msgId]) {
                 delete participant.logging.watchList[packet.entity.msgId];
             }
-            if(participant.logging.enabled && Object.keys(participant.logging.watchList).length === 0){
+            if (participant.logging.enabled && Object.keys(participant.logging.watchList).length === 0) {
                 participant.logging.enabled = false;
                 participant.peer.off("receive", participant.logging.notifyListeners);
                 participant.peer.off("send", participant.logging.notifyListeners);
@@ -11833,7 +12059,7 @@ ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport
         Debugger.prototype.receiveFromRouterImpl = function (packetContext) {
             // If the source address was the client connected to the participant handle its specific request.
             // Routed through router to apply policies (otherwise would have hijacked on the MessageChannel receive).
-            if(packetContext.packet.src === packetContext.packet.dst) {
+            if (packetContext.packet.src === packetContext.packet.dst) {
                 this.handleReceivePacket(packetContext.packet);
             } else {
                 this.sendToRecipient(packetContext.packet);
@@ -11848,7 +12074,7 @@ ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport
     participant.PMDebugger = debuggerGen(participant.PostMessage);
 
     return participant;
-}(ozpIwc.log,ozpIwc.config, ozpIwc.transport.participant || {}, ozpIwc.transport, ozpIwc.util, ozpIwc.wiring));
+}(ozpIwc.log, ozpIwc.config, ozpIwc.transport.participant || {}, ozpIwc.transport, ozpIwc.util, ozpIwc.wiring));
 var ozpIwc = ozpIwc || {};
 ozpIwc.transport = ozpIwc.transport || {};
 ozpIwc.transport.participant = ozpIwc.transport.participant || {};
@@ -11950,7 +12176,7 @@ ozpIwc.transport.participant.Multicast = (function (transport, util) {
      * @return {Boolean} always false.
      */
     Multicast.prototype.receiveFromRouterImpl = function (packet) {
-        if(this.metrics) {
+        if (this.metrics) {
             this.receivedPacketsMeter.mark();
         }
         this.members.forEach(function (m) {
@@ -11974,6 +12200,99 @@ ozpIwc.transport.participant.Multicast = (function (transport, util) {
     };
 
     return Multicast;
+}(ozpIwc.transport, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.transport = ozpIwc.transport || {};
+ozpIwc.transport.participant = ozpIwc.transport.participant || {};
+/**
+ * @module ozpIwc.transport
+ * @submodule ozpIwc.transport.participant
+ */
+
+
+ozpIwc.transport.participant.MutexClient = (function (transport, util) {
+    /**
+     * A Client participant that adheres to mutual exclusion on the IWC Bus based on its **name**. If another mutex
+     * client controls the lock, outbound requests of this client will be dropped. Adhering to distributed practices,
+     * during a transition of lock ownership all mutex clients related to the lock will queue outbound requests.
+     *
+     * @class MutexClient
+     * @namespace ozpIwc.transport.participant
+     * @extends ozpIwc.transport.participant.Client
+     * @constructor
+     *
+     * @param {String} name The name of the participant.
+     */
+    var MutexClient = util.extend(transport.participant.Client, function (config) {
+        config = config || {};
+        if (!config.name) {
+            throw "Cannot instantiate a MutexClient without a name.";
+        }
+        transport.participant.Client.apply(this, arguments);
+        /**
+         * The type of the participant
+         * @property participantType
+         * @type String
+         * @default "multicast"
+         */
+        this.participantType = "MutexClient";
+
+        this.onLock = config.onLock || function () {};
+        this.onRelease = config.onRelease || function () {};
+
+        requestOwnership(this);
+    });
+
+
+    /**
+     * Remove this participant from the $bus.multicast multicast group.
+     *
+     * @method leaveEventChannel
+     */
+    MutexClient.prototype.leaveEventChannel = function () {
+        this.events.trigger("shutdown");
+
+        if (this.router) {
+            this.send({
+                dst: "$bus.multicast",
+                action: "disconnect",
+                entity: {
+                    address: this.address,
+                    participantType: this.participantType,
+                    namesResource: this.namesResource
+                }
+            });
+            return true;
+        } else {
+            return false;
+        }
+
+    };
+    MutexClient.prototype.relock = function () {
+        if (this.lockPromise) {
+            return;
+        }
+        requestOwnership(this);
+    };
+    //-----------------------------------------------------
+    // Private Methods
+    //-----------------------------------------------------
+    var requestOwnership = function (mutexClient) {
+        if (mutexClient.lockPromise) {
+            return;
+        }
+        mutexClient.lockPromise = util.mutex({
+            requester: mutexClient,
+            resource: "/mutex/" + mutexClient.name,
+            onUnlock: function () {
+                mutexClient.lockPromise = undefined;
+                mutexClient.onRelease();
+            }
+        }).then(mutexClient.onLock);
+    };
+
+
+    return MutexClient;
 }(ozpIwc.transport, ozpIwc.util));
 var ozpIwc = ozpIwc || {};
 ozpIwc.transport = ozpIwc.transport || {};
@@ -12135,462 +12454,13 @@ ozpIwc.api = ozpIwc.api || {};
  * @submodule ozpIwc.api
  */
 
-ozpIwc.api.Endpoint = (function (util) {
-    /**
-     * @class Endpoint
-     * @namespace ozpIwc.api
-     * @param {ozpIwc.api.EndpointRegistry} endpointRegistry Endpoint name
-     * @constructor
-     */
-    var Endpoint = function (endpointRegistry) {
-
-        /**
-         * @property endpointRegistry
-         * @type ozpIwc.api.EndpointRegistry
-         */
-        this.endpointRegistry = endpointRegistry;
-        this.ajaxQueue = endpointRegistry.ajaxQueue;
-    };
-
-
-    //----------------------------------------
-    // Content Type formatting helpers
-    //----------------------------------------
-    /**
-     * removes whitespace of the given content-type.
-     * @method trimWhiteSpace
-     * @private
-     * @tatic
-     * @param ct
-     * @returns {*}
-     */
-    var trimWhiteSpace = function(ct){
-        return ct.replace(/ /g, '');
-    };
-
-    /**
-     * Sets the template content-type as the preferred content type in the Accept header.
-     * Returns formatted header array.
-     * @method preferContentType
-     * @private
-     * @static
-     * @param contentType
-     * @param endpoint
-     * @param headers
-     * @returns {*}
-     */
-    var preferContentType = function(contentType,endpoint,headers){
-        contentType = contentType.replace(/ /g, '');
-
-        if(headers.length === 0){
-            //Also add this endpoint's content type as we want to accept lists of lists of resources.
-            headers.push({ 'name': "Accept", 'value': contentType});
-        } else {
-            var filterCt = function(ct){
-                return (ct.replace(/ /g, '') !== contentType);
-            };
-            for (var i in headers) {
-                if (headers[i].name === "Accept") {
-                    if(headers[i].value) {
-                        var arr = headers[i].value.split(',').map(trimWhiteSpace);
-
-                        var filtered = arr.filter(filterCt);
-                        filtered.unshift(contentType);
-
-                        headers[i].value = filtered.join(',');
-                    } else {
-                        headers[i].value = contentType;
-                    }
-                }
-            }
-        }
-        return headers;
-    };
-
-    /**
-     * Appends the endpoint type if it exists and not already in the Accept header.
-     * Returns formatted header array.
-     * @method appendEndpointType
-     * @private
-     * @static
-     * @param endpoint
-     * @param headers
-     * @returns {Array}
-     */
-    var appendEndpointType = function(endpoint,headers){
-        if(headers.length === 0){
-            headers.push({ 'name': "Accept", 'value': endpoint.type});
-        }else {
-            for(var i in headers){
-                if (headers[i].name === "Accept") {
-                    if(headers[i].value) {
-                        var arr = headers[i].value.split(',').map(trimWhiteSpace);
-
-                        if(arr.indexOf(endpoint.type) === -1){
-                            arr.push(endpoint.type);
-                        }
-                        headers[i].value = arr.join(',');
-                    } else {
-                        headers[i].value = endpoint.type;
-                    }
-                }
-            }
-        }
-        return headers;
-    };
-
-    /**
-     * Returns necessary Accept headers for a given endpoint path. Mixes accept header of the path with any supplied
-     * Accept headers.
-     *
-     * @method templateContentType
-     * @static
-     * @private
-     * @param {Endpoint} endpoint
-     * @param {String} path
-     * @param {Array} headers
-     * @returns {Array}
-     */
-    var templateContentType = function(endpoint,path,headers){
-        headers = headers || [];
-        var contentType = endpoint.findContentType(path);
-
-        if(contentType) {
-            headers = preferContentType(contentType,endpoint,headers);
-        }
-        if(endpoint.type){
-            headers = appendEndpointType(endpoint,headers);
-        }
-        return headers;
-    };
-
-    /**
-     * Performs an AJAX request of GET for specified resource href.
-     *
-     * @method get
-     * @param {String} resource
-     * @param [Object] requestHeaders
-     * @param {String} requestHeaders.name
-     * @param {String} requestHeaders.value
-     *
-     * @return {Promise}
-     */
-    Endpoint.prototype.get = function (resource, requestHeaders) {
-        var self = this;
-        resource = resource || '';
-        return this.endpointRegistry.loadPromise.then(function () {
-            //If a template states the content type to gather let it be enforced
-
-            var templateHeaders = templateContentType(self, resource, requestHeaders);
-
-            if (!self.endpointRegistry.loaded) {
-                throw Error("Endpoint " + self.endpointRegistry.apiRoot + " could not be reached. Skipping GET of " + resource);
-            }
-
-            if (resource === '/' || resource === '') {
-                resource = self.baseUrl;
-            }
-            if (!resource) {
-                return Promise.reject("no url assigned to endpoint " + self.name);
-            }
-            return self.ajaxQueue.queueAjax({
-                href: resource,
-                method: 'GET',
-                headers: templateHeaders
-            });
-        });
-    };
-
-    /**
-     *
-     * Performs an AJAX request of PUT for specified resource href.
-     *
-     * @method put
-     * @param {String} resource
-     * @param {Object} data\
-     * @param [Object] requestHeaders
-     * @param {String} requestHeaders.name
-     * @param {String} requestHeaders.value
-     *
-     * @return {Promise}
-     */
-    Endpoint.prototype.put = function (resource, data, requestHeaders) {
-        var self = this;
-
-        return this.endpointRegistry.loadPromise.then(function () {
-
-
-            if (resource.indexOf(self.baseUrl) !== 0) {
-                resource = self.baseUrl + resource;
-            }
-
-            return self.ajaxQueue.queueAjax({
-                href: resource,
-                method: 'PUT',
-                data: data,
-                headers: requestHeaders
-            });
-        });
-    };
-
-    /**
-     *
-     * Performs an AJAX request of DELETE for specified resource href.
-     *
-     * @method put
-     * @param {String} resource
-     * @param [Object] requestHeaders
-     * @param {String} requestHeaders.name
-     * @param {String} requestHeaders.value
-     *
-     * @return {Promise}
-     */
-    Endpoint.prototype.delete = function (resource, data, requestHeaders) {
-        var self = this;
-
-        return this.endpointRegistry.loadPromise.then(function () {
-
-            if (!self.baseUrl) {
-                throw Error("The server did not define a relation of type " + this.name + " for retrivieving " + resource);
-            }
-            if (resource.indexOf(self.baseUrl) !== 0) {
-                resource = self.baseUrl + resource;
-            }
-            return self.ajaxQueue.queueAjax({
-                href: resource,
-                method: 'DELETE',
-                headers: requestHeaders
-            });
-        });
-    };
-
-    /**
-     * Sends AJAX requests to PUT the specified nodes into the endpoint.
-     * @todo PUTs each node individually. Currently sends to a fixed api point switch to using the node.self endpoint
-     * @todo    and remove fixed resource
-     * @method saveNodes
-     * @param {ozpIwc.CommonApiValue[]} nodes
-     */
-    Endpoint.prototype.saveNodes = function (nodes) {
-        var resource = "/data";
-        for (var node in nodes) {
-            var nodejson = JSON.stringify(nodes[node]);
-            this.put((nodes[node].self || resource), nodejson);
-        }
-    };
-
-    /**
-     * Checks the path against the endpoint templates to see if an enforced content type exists. Returns
-     * the content type if a match is found.
-     * @method findContentType
-     * @param {String} path
-     * @returns {String}
-     */
-    Endpoint.prototype.findContentType = function(path){
-        for(var i in this.endpointRegistry.template){
-            var check = this.endpointRegistry.template[i].isMatch(path) ||
-                this.endpointRegistry.template[i].isMatch(path.substring(path.indexOf(ozpIwc.config.apiRootUrl)));
-            if(check){
-                return this.endpointRegistry.template[i].type;
-            }
-        }
-    };
-    return Endpoint;
-}(ozpIwc.util));
-
-
-ozpIwc.api.EndpointRegistry = (function (api, log, util) {
-    /**
-     * @class EndpointRegistry
-     * @namespace ozpIwc.api
-     * @constructor
-     *
-     * @param {Object} config
-     * @param {String} config.apiRoot the root of the api path.
-     */
-    var EndpointRegistry = function (config) {
-        config = config || {};
-        if(!config.ajaxQueue) { throw "Endpoints require AjaxPersistenceQueue.";}
-
-        var apiRoot = config.apiRoot || '/api';
-
-        /**
-         * The root path of the specified apis
-         * @property apiRoot
-         * @type String
-         * @default '/api'
-         */
-        this.apiRoot = apiRoot;
-
-
-        /**
-         * @property ajaxQueue
-         * @type {ozpIwc.util.AjaxPersistenceQueue}
-         */
-        this.ajaxQueue = config.ajaxQueue;
-
-        /**
-         * The collection of api endpoints
-         * @property endPoints
-         * @type Object
-         * @default {}
-         */
-        this.endPoints = {};
-
-        /**
-         * The collection of uri templates for endpoints.
-         * @property template
-         * @type Object
-         * @default {}
-         */
-        this.template = {};
-
-        var self = this;
-
-        /**
-         * An AJAX GET request fired at the creation of the Endpoint Registry to gather endpoint data.
-         * @property loadPromise
-         * @type Promise
-         */
-        this.loadPromise = this.ajaxQueue.queueAjax({
-            href: apiRoot,
-            method: 'GET'
-        }).then(function (data) {
-            self.loaded = true;
-            var payload = data.response || {};
-            payload._links = payload._links || {};
-            payload._embedded = payload._embedded || {};
-
-            //Generate any endpoints/templates from _links
-            for (var linkEp in payload._links) {
-                if (linkEp !== 'self') {
-                    var link = payload._links[linkEp];
-                    if (Array.isArray(payload._links[linkEp])) {
-                        link = payload._links[linkEp][0].href;
-                    }
-                    if (link.templated) {
-                        generateTemplate(self, {
-                            name: linkEp,
-                            type: link.type,
-                            href: link.href
-                        });
-                    } else {
-                        self.endpoint(linkEp).baseUrl = link.href;
-                        self.endpoint(linkEp).type = link.type;
-                    }
-                }
-            }
-
-            //Generate any endpoints/templates from _embedded links
-            for (var embEp in payload._embedded) {
-                var embSelf = payload._embedded[embEp]._links.self;
-                self.endpoint(embEp).baseUrl = embSelf.href;
-                self.endpoint(embEp).type = embSelf.type;
-            }
-
-            //Generate any templates from the ozpIwc.conf.js file
-            for(var i in config.templates){
-                var template = ozpIwc.config.templates[i];
-                var url = false;
-
-                if(template.endpoint && template.pattern){
-                    var baseUrl= self.endpoint(template.endpoint).baseUrl;
-                    if(baseUrl) {
-                        url = baseUrl + template.pattern;
-                    }
-                }
-
-                if (!url){
-                    url = template.href;
-                }
-
-                generateTemplate(self, {
-                    name: i,
-                    href: url,
-                    type: template.type
-                });
-            }
-
-            // UGLY HAX
-            var dataURL = self.endpoint("ozp:user-data").baseUrl;
-            if (!self.template["ozp:data-item"] && dataURL) {
-                generateTemplate(self, {
-                    name: "ozp:data-item",
-                    href: dataURL + "/{+resource}",
-                    type: api.data.node.Node.serializedContentType
-                });
-            }
-
-            if (!self.template["ozp:application-item"]) {
-                generateTemplate(self, {
-                    name: "ozp:application-item",
-                    href: self.endpoint().endpointRegistry.apiRoot + "/listing/{+resource}",
-                    type: api.system.node.ApplicationNode.serializedContentType
-                });
-            }
-            //END HUGLY HAX
-        })['catch'](function (err) {
-            log.debug(Error("Endpoint " + self.apiRoot + " " + err.statusText + ". Status: " + err.status));
-            self.loaded = false;
-        });
-    };
-
-    /**
-     * Creates a template in the given registry given a name, href, and type.
-     * @method generateTemplate
-     * @private
-     * @static
-     * @param {EndpointRegistry} registry
-     * @param {Object} config
-     * @param {String} config.href
-     * @param {String} config.name
-     * @param {String} config.type
-     */
-    var generateTemplate = function(registry, config){
-        config = config || {};
-        if(typeof config.href !== "string"){
-            return;
-        }
-
-        registry.template[config.name] = {
-            href: config.href,
-            type: config.type,
-            isMatch: util.PacketRouter.uriTemplate(config.href)
-        };
-    };
-
-    /**
-     * Finds or creates an input with the given name.
-     *
-     * @method endpoint
-     * @param {String} name
-     * @return {ozpIwc.api.Endpoint}
-     */
-    EndpointRegistry.prototype.endpoint = function (name) {
-        var endpoint = this.endPoints[name];
-        if (!endpoint) {
-            endpoint = this.endPoints[name] = new api.Endpoint(this);
-            endpoint.name = name;
-        }
-        return endpoint;
-    };
-
-    return EndpointRegistry;
-}(ozpIwc.api, ozpIwc.log, ozpIwc.util));
-var ozpIwc = ozpIwc || {};
-ozpIwc.api = ozpIwc.api || {};
-/**
- * @module ozpIwc
- * @submodule ozpIwc.api
- */
-
 
 /**
  * @class api
  * @static
  * @namespace ozpIwc
  */
-ozpIwc.api= (function (api) {
+ozpIwc.api = (function (api) {
     /**
      * Initializes the Endpoint Registry with the api root path.
      *
@@ -12638,7 +12508,7 @@ ozpIwc.api= (function (api) {
      * @param {Function} init the constructor function for the class
      * @return {Object} A new API class that inherits from the base api class.
      */
-    api.createApi = function (name,init) {
+    api.createApi = function (name, init) {
 
         var createdApi = ozpIwc.util.extend(api.base.Api, function () {
 
@@ -12854,6 +12724,458 @@ ozpIwc.api = ozpIwc.api || {};
  * @submodule ozpIwc.api
  */
 
+ozpIwc.api.Endpoint = (function (util) {
+    /**
+     * @class Endpoint
+     * @namespace ozpIwc.api
+     * @param {ozpIwc.api.EndpointRegistry} endpointRegistry Endpoint name
+     * @constructor
+     */
+    var Endpoint = function (endpointRegistry) {
+
+        /**
+         * @property endpointRegistry
+         * @type ozpIwc.api.EndpointRegistry
+         */
+        this.endpointRegistry = endpointRegistry;
+        this.ajaxQueue = endpointRegistry.ajaxQueue;
+    };
+
+
+    //----------------------------------------
+    // Content Type formatting helpers
+    //----------------------------------------
+    /**
+     * removes whitespace of the given content-type.
+     * @method trimWhiteSpace
+     * @private
+     * @tatic
+     * @param ct
+     * @returns {*}
+     */
+    var trimWhiteSpace = function (ct) {
+        return ct.replace(/ /g, '');
+    };
+
+    /**
+     * Sets the template content-type as the preferred content type in the Accept header.
+     * Returns formatted header array.
+     * @method preferContentType
+     * @private
+     * @static
+     * @param contentType
+     * @param endpoint
+     * @param headers
+     * @returns {*}
+     */
+    var preferContentType = function (contentType, endpoint, headers) {
+        contentType = contentType.replace(/ /g, '');
+
+        if (headers.length === 0) {
+            //Also add this endpoint's content type as we want to accept lists of lists of resources.
+            headers.push({'name': "Accept", 'value': contentType});
+        } else {
+            var filterCt = function (ct) {
+                return (ct.replace(/ /g, '') !== contentType);
+            };
+            for (var i in headers) {
+                if (headers[i].name === "Accept") {
+                    if (headers[i].value) {
+                        var arr = headers[i].value.split(',').map(trimWhiteSpace);
+
+                        var filtered = arr.filter(filterCt);
+                        filtered.unshift(contentType);
+
+                        headers[i].value = filtered.join(',');
+                    } else {
+                        headers[i].value = contentType;
+                    }
+                }
+            }
+        }
+        return headers;
+    };
+
+    /**
+     * Appends the endpoint type if it exists and not already in the Accept header.
+     * Returns formatted header array.
+     * @method appendEndpointType
+     * @private
+     * @static
+     * @param endpoint
+     * @param headers
+     * @returns {Array}
+     */
+    var appendEndpointType = function (endpoint, headers) {
+        if (headers.length === 0) {
+            headers.push({'name': "Accept", 'value': endpoint.type});
+        } else {
+            for (var i in headers) {
+                if (headers[i].name === "Accept") {
+                    if (headers[i].value) {
+                        var arr = headers[i].value.split(',').map(trimWhiteSpace);
+
+                        if (arr.indexOf(endpoint.type) === -1) {
+                            arr.push(endpoint.type);
+                        }
+                        headers[i].value = arr.join(',');
+                    } else {
+                        headers[i].value = endpoint.type;
+                    }
+                }
+            }
+        }
+        return headers;
+    };
+
+    /**
+     * Returns necessary Accept headers for a given endpoint path. Mixes accept header of the path with any supplied
+     * Accept headers.
+     *
+     * @method templateContentType
+     * @static
+     * @private
+     * @param {Endpoint} endpoint
+     * @param {String} path
+     * @param {Array} headers
+     * @returns {Array}
+     */
+    var templateContentType = function (endpoint, path, headers) {
+        headers = headers || [];
+        var contentType = endpoint.findContentType(path);
+
+        if (contentType) {
+            headers = preferContentType(contentType, endpoint, headers);
+        }
+        if (endpoint.type) {
+            headers = appendEndpointType(endpoint, headers);
+        }
+        return headers;
+    };
+
+    /**
+     * Performs an AJAX request of GET for specified resource href.
+     *
+     * @method get
+     * @param {String} resource
+     * @param [Object] requestHeaders
+     * @param {String} requestHeaders.name
+     * @param {String} requestHeaders.value
+     *
+     * @return {Promise}
+     */
+    Endpoint.prototype.get = function (resource, requestHeaders) {
+        var self = this;
+        resource = resource || '';
+        return this.endpointRegistry.loadPromise.then(function () {
+            //If a template states the content type to gather let it be enforced
+
+            var templateHeaders = templateContentType(self, resource, requestHeaders);
+
+            if (!self.endpointRegistry.loaded) {
+                throw Error("Endpoint " + self.endpointRegistry.apiRoot + " could not be reached. Skipping GET of " + resource);
+            }
+
+            if (resource === '/' || resource === '') {
+                resource = self.baseUrl;
+            }
+            if (!resource) {
+                return Promise.reject("no url assigned to endpoint " + self.name);
+            }
+            return self.ajaxQueue.queueAjax({
+                href: resource,
+                method: 'GET',
+                headers: templateHeaders
+            });
+        });
+    };
+
+    /**
+     *
+     * Performs an AJAX request of PUT for specified resource href.
+     *
+     * @method put
+     * @param {String} resource
+     * @param {Object} data\
+     * @param [Object] requestHeaders
+     * @param {String} requestHeaders.name
+     * @param {String} requestHeaders.value
+     *
+     * @return {Promise}
+     */
+    Endpoint.prototype.put = function (resource, data, requestHeaders) {
+        var self = this;
+
+        return this.endpointRegistry.loadPromise.then(function () {
+
+
+            if (resource.indexOf(self.baseUrl) !== 0) {
+                resource = self.baseUrl + resource;
+            }
+
+            return self.ajaxQueue.queueAjax({
+                href: resource,
+                method: 'PUT',
+                data: data,
+                headers: requestHeaders
+            });
+        });
+    };
+
+    /**
+     *
+     * Performs an AJAX request of DELETE for specified resource href.
+     *
+     * @method put
+     * @param {String} resource
+     * @param [Object] requestHeaders
+     * @param {String} requestHeaders.name
+     * @param {String} requestHeaders.value
+     *
+     * @return {Promise}
+     */
+    Endpoint.prototype.delete = function (resource, data, requestHeaders) {
+        var self = this;
+
+        return this.endpointRegistry.loadPromise.then(function () {
+
+            if (!self.baseUrl) {
+                throw Error("The server did not define a relation of type " + this.name + " for retrivieving " + resource);
+            }
+            if (resource.indexOf(self.baseUrl) !== 0) {
+                resource = self.baseUrl + resource;
+            }
+            return self.ajaxQueue.queueAjax({
+                href: resource,
+                method: 'DELETE',
+                headers: requestHeaders
+            });
+        });
+    };
+
+    /**
+     * Sends AJAX requests to PUT the specified nodes into the endpoint.
+     * @todo PUTs each node individually. Currently sends to a fixed api point switch to using the node.self endpoint
+     * @todo    and remove fixed resource
+     * @method saveNodes
+     * @param {ozpIwc.CommonApiValue[]} nodes
+     */
+    Endpoint.prototype.saveNodes = function (nodes) {
+        var resource = "/data";
+        for (var node in nodes) {
+            var nodejson = JSON.stringify(nodes[node]);
+            this.put((nodes[node].self || resource), nodejson);
+        }
+    };
+
+    /**
+     * Checks the path against the endpoint templates to see if an enforced content type exists. Returns
+     * the content type if a match is found.
+     * @method findContentType
+     * @param {String} path
+     * @returns {String}
+     */
+    Endpoint.prototype.findContentType = function (path) {
+        for (var i in this.endpointRegistry.template) {
+            var check = this.endpointRegistry.template[i].isMatch(path) ||
+                this.endpointRegistry.template[i].isMatch(path.substring(path.indexOf(ozpIwc.config.apiRootUrl)));
+            if (check) {
+                return this.endpointRegistry.template[i].type;
+            }
+        }
+    };
+
+    return Endpoint;
+}(ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.EndpointRegistry = (function (api, log, util) {
+    /**
+     * @class EndpointRegistry
+     * @namespace ozpIwc.api
+     * @constructor
+     *
+     * @param {Object} config
+     * @param {String} config.apiRoot the root of the api path.
+     */
+    var EndpointRegistry = function (config) {
+        config = config || {};
+        if (!config.ajaxQueue) {
+            throw "Endpoints require AjaxPersistenceQueue.";
+        }
+
+        var apiRoot = config.apiRoot || '/api';
+
+        /**
+         * The root path of the specified apis
+         * @property apiRoot
+         * @type String
+         * @default '/api'
+         */
+        this.apiRoot = apiRoot;
+
+
+        /**
+         * @property ajaxQueue
+         * @type {ozpIwc.util.AjaxPersistenceQueue}
+         */
+        this.ajaxQueue = config.ajaxQueue;
+
+        /**
+         * The collection of api endpoints
+         * @property endPoints
+         * @type Object
+         * @default {}
+         */
+        this.endPoints = {};
+
+        /**
+         * The collection of uri templates for endpoints.
+         * @property template
+         * @type Object
+         * @default {}
+         */
+        this.template = {};
+
+        var self = this;
+
+        /**
+         * An AJAX GET request fired at the creation of the Endpoint Registry to gather endpoint data.
+         * @property loadPromise
+         * @type Promise
+         */
+        this.loadPromise = this.ajaxQueue.queueAjax({
+            href: apiRoot,
+            method: 'GET'
+        }).then(function (data) {
+            self.loaded = true;
+            var payload = data.response || {};
+            payload._links = payload._links || {};
+            payload._embedded = payload._embedded || {};
+
+            //Generate any endpoints/templates from _links
+            for (var linkEp in payload._links) {
+                if (linkEp !== 'self') {
+                    var link = payload._links[linkEp];
+                    if (Array.isArray(payload._links[linkEp])) {
+                        link = payload._links[linkEp][0].href;
+                    }
+                    if (link.templated) {
+                        generateTemplate(self, {
+                            name: linkEp,
+                            type: link.type,
+                            href: link.href
+                        });
+                    } else {
+                        self.endpoint(linkEp).baseUrl = link.href;
+                        self.endpoint(linkEp).type = link.type;
+                    }
+                }
+            }
+
+            //Generate any endpoints/templates from _embedded links
+            for (var embEp in payload._embedded) {
+                var embSelf = payload._embedded[embEp]._links.self;
+                self.endpoint(embEp).baseUrl = embSelf.href;
+                self.endpoint(embEp).type = embSelf.type;
+            }
+
+            //Generate any templates from the ozpIwc.conf.js file
+            for (var i in config.templates) {
+                var template = ozpIwc.config.templates[i];
+                var url = false;
+
+                if (template.endpoint && template.pattern) {
+                    var baseUrl = self.endpoint(template.endpoint).baseUrl;
+                    if (baseUrl) {
+                        url = baseUrl + template.pattern;
+                    }
+                }
+
+                if (!url) {
+                    url = template.href;
+                }
+
+                generateTemplate(self, {
+                    name: i,
+                    href: url,
+                    type: template.type
+                });
+            }
+
+            // UGLY HAX
+            var dataURL = self.endpoint("ozp:user-data").baseUrl;
+            if (!self.template["ozp:data-item"] && dataURL) {
+                generateTemplate(self, {
+                    name: "ozp:data-item",
+                    href: dataURL + "/{+resource}",
+                    type: api.data.node.Node.serializedContentType
+                });
+            }
+
+            if (!self.template["ozp:application-item"]) {
+                generateTemplate(self, {
+                    name: "ozp:application-item",
+                    href: self.endpoint().endpointRegistry.apiRoot + "/listing/{+resource}",
+                    type: api.system.node.ApplicationNode.serializedContentType
+                });
+            }
+            //END HUGLY HAX
+        })['catch'](function (err) {
+            log.debug(Error("Endpoint " + self.apiRoot + " " + err.statusText + ". Status: " + err.status));
+            self.loaded = false;
+        });
+    };
+
+    /**
+     * Creates a template in the given registry given a name, href, and type.
+     * @method generateTemplate
+     * @private
+     * @static
+     * @param {EndpointRegistry} registry
+     * @param {Object} config
+     * @param {String} config.href
+     * @param {String} config.name
+     * @param {String} config.type
+     */
+    var generateTemplate = function (registry, config) {
+        config = config || {};
+        if (typeof config.href !== "string") {
+            return;
+        }
+
+        registry.template[config.name] = {
+            href: config.href,
+            type: config.type,
+            isMatch: util.PacketRouter.uriTemplate(config.href)
+        };
+    };
+
+    /**
+     * Finds or creates an input with the given name.
+     *
+     * @method endpoint
+     * @param {String} name
+     * @return {ozpIwc.api.Endpoint}
+     */
+    EndpointRegistry.prototype.endpoint = function (name) {
+        var endpoint = this.endPoints[name];
+        if (!endpoint) {
+            endpoint = this.endPoints[name] = new api.Endpoint(this);
+            endpoint.name = name;
+        }
+        return endpoint;
+    };
+
+    return EndpointRegistry;
+}(ozpIwc.api, ozpIwc.log, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+/**
+ * @module ozpIwc
+ * @submodule ozpIwc.api
+ */
+
 ozpIwc.api.base = ozpIwc.api.base || {};
 /**
  * @module ozpIwc.api
@@ -12896,7 +13218,6 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         if (!config.router) {
             throw Error("API must be configured with a router");
         }
-
         if (!config.authorization) {
             throw Error("API must be configured with an authorization module");
         }
@@ -12907,20 +13228,6 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
          * @type {ozpIwc.policyAuth.PDP}
          */
         this.authorization = config.authorization;
-
-        /**
-         * @property participant
-         * @type {ozpIwc.transport.participant.Client|*}
-         */
-        this.participant = config.participant || new transport.participant.Client({
-                'internal': true,
-                'router': config.router,
-                'authorization': config.authorization,
-                'name': config.name
-            });
-        this.participant.on("receive", function (packetContext) {
-            self.receivePacketContext(packetContext);
-        });
 
         /**
          * @property name
@@ -12979,6 +13286,27 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         this.leaderState = "member";
 
         /**
+         * @property participant
+         * @type {ozpIwc.transport.participant.Client|*}
+         */
+        this.participant = config.participant || new transport.participant.MutexClient({
+                'internal': true,
+                'router': config.router,
+                'authorization': config.authorization,
+                'name': config.name,
+                'onLock': function () {
+                    //@TODO wanted to have state passed on lock resolution but race conditions arose.
+                    self.onLock();
+                },
+                'onRelease': function () {
+                    self.onRelease();
+                }
+
+            });
+        this.participant.on("receive", this.receivePacketContext, this);
+        this.participant.on("shutdown", this.shutdown, this);
+
+        /**
          * @property router
          * @type {ozpIwc.transport.Router}
          */
@@ -12991,374 +13319,95 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
          */
         this.logPrefix = "[" + this.name + "/" + this.participant.address + "] ";
 
+        /**
+         * @property ajaxQueue
+         * @type {ozpIwc.util.AjaxPersistenceQueue}
+         */
         this.ajaxQueue = config.ajaxQueue;
 
-        util.addEventListener("beforeunload", function () { self.shutdown(); });
+
+        //The API is initialized into a ready state waiting for the lock's api to grant it control.
         this.transitionToMemberReady();
-        queueForCoordination(this, config.leaderPromise);
     };
-
-//--------------------------------------------------
-//          Private Methods
-//--------------------------------------------------
-    /**
-     * A static utility method for the api to queue for leadership in the locks api.
-     *
-     * @method queueForCoordination
-     * @private
-     * @static
-     * @param {ozpIwc.api.base.Api} apiBase
-     * @param {Promise} [promise]
-     */
-    var queueForCoordination = function (apiBase, promise) {
-        apiBase.participant.send({
-            dst: "locks.api",
-            resource: "/mutex/" + apiBase.name,
-            action: "watch"
-        }, function (reply) {
-            handleLockChange(apiBase, reply);
-        });
-
-
-        apiBase.leaderPromise = promise || apiBase.participant.send({
-                dst: "locks.api",
-                resource: "/mutex/" + apiBase.name,
-                action: "lock"
-            });
-
-        apiBase.leaderPromise.then(function (pkt) {
-            log.info("[" + apiBase.name + "][" + apiBase.participant.address + "] Now operating");
-            var resolve;
-
-            // Delay loading for deathScreams to flow in.
-            var delayed = new Promise(function (res, rej) {
-                resolve = res;
-            });
-
-            window.setTimeout(function () {
-                resolve();
-            }, 1000);
-
-            return delayed;
-        }).then(function () {
-            apiBase.transitionToLoading();
-        });
-
-        apiBase.leaderPromise.catch(function (e) {
-            console.error("Error registering for leader mutex [address=" + apiBase.participant.address + ",api=" + apiBase.name + "]", e);
-        });
-
-    };
-
-    /**
-     * A static utility method for the api to handle a change in it's lock api mutex.
-     *
-     * @method handleLockChange
-     * @private
-     * @static
-     * @param {ozpIwc.api.base.Api} apiBase
-     * @param {Object} response
-     */
-    var handleLockChange = function (apiBase, response) {
-        response = response || {};
-        response.entity = response.entity || {};
-        response.entity.oldValue = response.entity.oldValue || {};
-        response.entity.newValue = response.entity.newValue || {};
-        var prevOwner = response.entity.oldValue.owner || {};
-        var newOwner = response.entity.newValue.owner || {};
-
-        // If we are no longer the holder of the API lock get back in line to own it. This case only applies if the API
-        // instance was pushed out. If the instance closes this code is not reached.
-        if (prevOwner.src === apiBase.participant.address && newOwner.src !== apiBase.participant.address) {
-            apiBase.broadcastDeathScream(apiBase.createDeathScream());
-            apiBase.leaderState = "member";
-            apiBase.transitionToMemberReady();
-            queueForCoordination(apiBase);
-        }
-    };
-    /**
-     * A static utility method that notifies watchers of changes of the resource since the given snapshot.
-     * @method resolveChangedNode
-     * @private
-     * @static
-     * @param {ozpIwc.api.base.Api} apiBase
-     * @param {String} resource
-     * @param {Object} snapshot
-     * @param {Object} packetContext
-     */
-    var resolveChangedNode = function (apiBase, resource, snapshot, packetContext) {
-        var node = apiBase.data[resource];
-        var watcherList = apiBase.watchers[resource] || [];
-
-        if (!node) {
-            return;
-        }
-
-        var changes = node.changesSince(snapshot);
-        if (!changes) {
-            return;
-        }
-
-        var permissions = apiBase.authorization.pip.attributeUnion(
-            changes.oldValue.permissions,
-            changes.newValue.permissions
-        );
-
-        var entity = {
-            oldValue: changes.oldValue.entity,
-            newValue: changes.newValue.entity,
-            oldCollection: changes.oldValue.collection,
-            newCollection: changes.newValue.collection,
-            deleted: node.deleted
-        };
-
-        apiBase.events.trigger("changed", node, entity, packetContext);
-
-        watcherList.forEach(function (watcher) {
-            // @TODO allow watchers to changes notifications if they have permission to either the old or new, not just
-            // both
-            apiBase.participant.send({
-                'src': apiBase.participant.name,
-                'dst': watcher.src,
-                'replyTo': watcher.replyTo,
-                'response': 'changed',
-                'respondOn': 'none',
-                'resource': node.resource,
-                'permissions': permissions,
-                'contentType': node.contentType,
-                'entity': entity
-            });
-        });
-    };
-
-    /**
-     * A static utility method called after an api request is complete to send out change notifications.
-     *
-     * @method resolveChangedNodes
-     * @private
-     * @static
-     * @param {ozpIwc.api.base.Api} apiBase
-     * @param {Object} packetContext the packet that caused this change.
-     */
-    var resolveChangedNodes = function (apiBase, packetContext) {
-        apiBase.updateCollections();
-        util.object.eachEntry(apiBase.changeList, function (resource, snapshot) {
-            resolveChangedNode(apiBase, resource, snapshot, packetContext);
-        });
-        apiBase.changeList = {};
-    };
-
-    /**
-     * A static utility method that removes the collector node from the collectors list if deleted.
-     * Removes references to nodes in the given collectors collection property if said referenced node is deleted.
-     * Adds newly created nodes to the collection property if said node's resource matches the collection nodes pattern
-     * property.
-     *
-     * @method updateCollectionNode
-     * @private
-     * @static
-     * @param {ozpIwc.api.base.Api} apiBase
-     * @param {Object} cNode the collector node to update
-     */
-    var updateCollectionNode = function (apiBase, cNode) {
-        if (!cNode) {
-            return;
-        }
-        //If the collection node is deleted, stop collecting for it.
-        if (cNode.deleted) {
-            apiBase.removeCollector(cNode.resource);
-            return;
-        }
-
-
-        var updatedCollection = apiBase.matchingNodes(cNode.pattern).filter(function (node) {
-            return !node.deleted;
-        }).map(function (node) {
-            return node.resource;
-        });
-
-        cNode.collection = cNode.collection || [];
-        if (!util.arrayContainsAll(cNode.collection, updatedCollection) || !util.arrayContainsAll(updatedCollection, cNode.collection)) {
-            apiBase.markForChange(cNode);
-            cNode.collection = updatedCollection;
-            cNode.version++;
-        }
-    };
-
-    /**
-     * Handles packets received with a destination of "$bus.multicast".
-     *
-     * @method receiveBusPacket
-     * @private
-     * @static
-     * @param {ozpIwc.api.base.Api} apiBase
-     * @param {Object} packetContext
-     * @return {*}
-     */
-    var receiveBusPacket = function (apiBase, packetContext) {
-        var packet = packetContext.packet;
-        switch (packet.action) {
-            case "connect":
-                apiBase.events.trigger("addressConnects", packet.entity.address, packet);
-                break;
-            case "disconnect":
-                removeDeadWatchers(apiBase, packet.entity.address);
-                apiBase.events.trigger("addressDisconnects", packet.entity.address, packet);
-                break;
-        }
-        return Promise.resolve();
-    };
-
-    /**
-     * If the the given address is watching a resource, it will be removed from the watch list. Router addresses will
-     * remove all of its participants watch registrations.
-     *
-     * @method removeDeadWatchers
-     * @private
-     * @static
-     * @param {ozpIwc.api.base.Api} apiBase
-     * @param {String} address
-     */
-    var removeDeadWatchers = function (apiBase, address) {
-        var len = address.length;
-        util.object.eachEntry(apiBase.watchers, function (resource, array) {
-            for (var i in array) {
-                if (array[i].src.substr(-len) === address) {
-                    array.splice(i, 1);
-                }
-            }
-        });
-    };
-
-    /**
-     * Handles packets received regarding leadership actions.
-     * @method receiveCoordinationPacket
-     * @private
-     * @static
-     * @param {ozpIwc.api.base.Api} apiBase
-     * @param {Object} packetContext
-     * @return {Promise}
-     */
-    var receiveCoordinationPacket = function (apiBase, packetContext) {
-        var packet = packetContext.packet;
-        switch (packet.action) {
-            case "announceLeader":
-                return apiBase.transitionToMemberDormant();
-            case "deathScream":
-                return apiBase.transitionToMemberReady(packet.entity);
-            default:
-                log.error("Unknown coordination packet: ", packet);
-                return Promise.reject(new Error("Unknown action: " + packet.action + " in " + JSON.stringify(packetContext)));
-        }
-    };
-
-    /**
-     * Routes a request to the proper handler and takes care of overhead
-     * such as change requests.
-     *
-     * @method receivePacketContext
-     * @private
-     * @static
-     * @property {ozpIwc.api.base.Api} apiBase
-     * @property {Object} packetContext
-     */
-    var receiveRequestPacket = function (apiBase, packetContext) {
-        var packet = packetContext.packet;
-
-        if (apiBase.isRequestQueueing) {
-            apiBase.requestQueue.push(packetContext);
-            return;
-        }
-        if (apiBase.leaderState !== "leader") {
-            return;
-        }
-
-        try {
-            packetContext.node = apiBase.data[packet.resource];
-            var packetFragment = apiBase.routePacket(packet, packetContext);
-            if (packetFragment) {
-                packetFragment.response = packetFragment.response || "ok";
-                packetContext.replyTo(packetFragment);
-            }
-            resolveChangedNodes(apiBase, packetContext);
-        } catch (e) {
-            if (!e || !e.errorAction) {
-                log.error(apiBase.logPrefix, "Unexpected error: ", e, " packet= ", packet);
-            }
-            var errorFragment = {
-                'src': apiBase.name,
-                'response': e.errorAction || "errorUnknown",
-                'entity': e.message
-            };
-            packetContext.replyTo(errorFragment);
-        }
-
-    };
-
 //--------------------------------------------------
 //          Public Methods
 //--------------------------------------------------
-    /**
-     * Generates a unique key with the given prefix.
-     * @param {String} prefix
-     * @return {String}
-     */
-    Api.prototype.createKey = function (prefix) {
-        prefix = prefix || "";
-        var key;
-        do {
-            key = prefix + util.generateId();
-        } while (key in this.data);
-        return key;
-    };
 
-//===============================================================
-// Default methods that can be overridden by subclasses
-//===============================================================
-
+//--------------------------------------------------
+// API state initialization methods
+//--------------------------------------------------
     /**
-     * A handler function for when a node is created. Can be overridden by inherited APIs.
-     * @method createdHandler
-     * @param {ozpIwc.api.base.Node} node
+     * Called when the API has become the leader, but before it starts
+     * serving data.  Receives the deathScream of the previous leader
+     * if available, otherwise undefined.
+     *
+     * __Intended to be overridden by subclasses__
+     *
+     * Subsclasses can override this to load data from the server.
+     *
+     * @method initializeData
+     * @param {object} deathScream
+     * @return {Promise} a promise that resolves when all data is loaded.
      */
-    Api.prototype.createdHandler = function (node) {
-        //Whenever a node is created update the collector's lists.
+    Api.prototype.initializeData = function (deathScream) {
+        var getEndpoints = !deathScream;
+
+
+        deathScream = deathScream || {watchers: {}, collectors: [], data: []};
+        this.watchers = deathScream.watchers;
+        this.collectors = deathScream.collectors;
+        deathScream.data.forEach(function (packet) {
+            var selfLink = packet.self || {};
+            this.createNode({resource: packet.resource, contentType: selfLink.type}).deserializeLive(packet);
+        }, this);
+
         this.updateCollections();
-    };
+        if (getEndpoints && this.endpoints) {
 
-    /**
-     * A handler function called after a node is changed but before it's watchers are notified. Can be overridden by
-     * inherited APIs.
-     * @method changedHandler
-     * @param {Object} node
-     * @param {Object} entity
-     * @param {Object} packetContext
-     */
-    Api.prototype.changedHandler = function (node, entity, packetContext) {
-        //var culprit = packetContext.src;
-        var lifespanFns = api.Lifespan.getLifespanFunctionality(node.lifespan);
-        if (lifespanFns.shouldPersist() && this.ajaxQueue) {
-            this.ajaxQueue.queueNode(this.name + "/" + node.resource, node);
+            var self = this;
+            var onResource = function (resource) {
+                self.loadedResourceHandler(resource);
+            };
+            return Promise.all(this.endpoints.map(function (u) {
+                return util.halLoader.load(u.link, u.headers, onResource).catch(function (err) {
+                    log.error(self.logPrefix, "load from endpoint failed. Reason: ", err);
+                });
+            }));
+        } else {
+            return Promise.resolve();
         }
     };
 
     /**
-     * A handler function called when an instance of this API has disconnected from the bus.Can be overridden by
-     * inherited APIs.
-     * @method disconnectHandler
-     * @param {String} address
+     * A handler method for the API to process a resource loaded from an endpoint.
+     * Extracts the type field of the resources self link (HAL) to determine the type of node to create and store
+     * in the api's data object.
+     *
+     * @method loadedResourceHandler
+     * @param {Object} resource
      */
-    Api.prototype.disconnectHandler = function (address) {
-        var self = this;
-        util.object.eachEntry(self.data, function (resource, node) {
-            var lifespanFns = api.Lifespan.getLifespanFunctionality(node.lifespan);
-            if (lifespanFns.shouldDelete(node.lifespan, address)) {
-                self.markForChange(node);
-                node.markAsDeleted();
+    Api.prototype.loadedResourceHandler = function (resource) {
+        resource = resource || {};
+        resource._links = resource._links || {};
+        var selfLink = resource._links.self || {};
+        var NodeType = this.findNodeType(selfLink.type);
+        if (NodeType) {
+            try {
+                this.createNode({
+                    serializedEntity: resource,
+                    contentType: selfLink.type
+                }, NodeType);
+            } catch (e) {
+                log.info(this.logPrefix + "[" + selfLink.type + "] [" + selfLink.href + "] No node created from resource, reason: ", e.message);
             }
-        });
-        resolveChangedNodes(this);
+        } else {
+            log.info(this.logPrefix + "[" + selfLink.type + "] [" + selfLink.href + "] No node created from resource, reason: no node type for this content-type.");
+        }
     };
+
+//--------------------------------------------------
+// API state relinquishing methods
+//--------------------------------------------------
 
     /**
      * Create the data that needs to be handed off to the new leader.
@@ -13383,6 +13432,70 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
     };
 
     /**
+     * Shuts down the api, issuing a deathscream and releasing the lock, if possible.
+     * @method shutdown
+     * @return
+     */
+    Api.prototype.shutdown = function () {
+        if (this.leaderState === "leader") {
+            this.broadcastDeathScream(this.createDeathScream());
+        }
+
+        //@TODO: The api deathscream would be included with the unlock but race conditions caused this to not be
+        // completed yet.
+        this.participant.send({
+            dst: "locks.api",
+            resource: "/mutex/" + this.name,
+            action: "unlock"
+            //entity: { state: (this.leaderState === "leader") ? this.createDeathScream() : undefined}
+        });
+    };
+
+//--------------------------------------------------
+// Node creation/modification methods
+//--------------------------------------------------
+
+    /**
+     * Generates a unique key with the given prefix.
+     * @param {String} prefix
+     * @return {String}
+     */
+    Api.prototype.createKey = function (prefix) {
+        prefix = prefix || "";
+        var key;
+        do {
+            key = prefix + util.generateId();
+        } while (key in this.data);
+        return key;
+    };
+
+    /**
+     * A handler function for when a node is created. Can be overridden by inherited APIs.
+     * @method onNodeCreated
+     * @param {ozpIwc.api.base.Node} node
+     */
+    Api.prototype.onNodeCreated = function (node) {
+        //Whenever a node is created update the collector's lists.
+        this.updateCollections();
+    };
+
+    /**
+     * A handler function called after a node is changed but before it's watchers are notified. Can be overridden by
+     * inherited APIs.
+     * @method onNodeChanged
+     * @param {Object} node
+     * @param {Object} entity
+     * @param {Object} packetContext
+     */
+    Api.prototype.onNodeChanged = function (node, entity, packetContext) {
+        //var culprit = packetContext.src;
+        var lifespanFns = api.Lifespan.getLifespanFunctionality(node.lifespan);
+        if (lifespanFns.shouldPersist() && this.ajaxQueue) {
+            this.ajaxQueue.queueNode(this.name + "/" + node.resource, node);
+        }
+    };
+
+    /**
      * Gathers the desired preference from the data API.
      * @method getPreference
      * @param {String} prefName
@@ -13396,42 +13509,6 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         }).then(function (reply) {
             return reply.entity;
         });
-    };
-
-    /**
-     * Called when the API has become the leader, but before it starts
-     * serving data.  Receives the deathScream of the previous leader
-     * if available, otherwise undefined.
-     *
-     * __Intended to be overridden by subclasses__
-     *
-     * Subsclasses can override this to load data from the server.
-     *
-     * @method initializeData
-     * @param {object} deathScream
-     * @return {Promise} a promise that resolves when all data is loaded.
-     */
-    Api.prototype.initializeData = function (deathScream) {
-        deathScream = deathScream || {watchers: {}, collectors: [], data: []};
-        this.watchers = deathScream.watchers;
-        this.collectors = deathScream.collectors;
-        deathScream.data.forEach(function (packet) {
-            var selfLink = packet.self || {};
-            this.createNode({resource: packet.resource, contentType: selfLink.type}).deserializeLive(packet);
-        }, this);
-
-        this.updateCollections();
-        if (this.endpoints) {
-            var self = this;
-            return Promise.all(this.endpoints.map(function (u) {
-                var e = api.endpoint(u.link);
-                return self.loadFromEndpoint(e, u.headers).catch(function (err) {
-                    log.error(self.logPrefix, "load from endpoint failed. Reason: ", err);
-                });
-            }));
-        } else {
-            return Promise.resolve();
-        }
     };
 
 
@@ -13489,10 +13566,58 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
             return new api.base.Node(config);
         }
     };
+//--------------------------------------------------
+// Distributed Computing: Mutex lock on handling API requests/holding active state
+//--------------------------------------------------
 
-//===============================================================
-// Leader state management
-//===============================================================
+    /**
+     * A handler method for the API's acquisition of the mutex.
+     *  * An api will initialize any state passed on from the last leader (received as a broadcasted deathscream).
+     *  * If no initial state passed and backend connnectivity is configured, the backend will be reached for
+     * persistent state.
+     *  * Handle any requests during the transition to being the active API.
+     *  * Call the API's onStart method to handle any custom API init functionality.
+     * @method onLock
+     */
+    Api.prototype.onLock = function () {
+        this.transitionToLoading()
+            .then(this.transitionToLeader.bind(this))
+            .then(this.onStart.bind(this))
+            .catch(function (e) {
+                log.error("Error registering for leader mutex [address=" + this.participant.address +
+                    ",api=" + this.name + "]", e);
+                this.shutdown();
+            });
+    };
+
+    /**
+     * A handler method for the API's release of the mutex.
+     * @method onRelease
+     */
+    Api.prototype.onRelease = function () {
+        this.onStop();
+        this.transitionFromLeader();
+        this.participant.relock();
+    };
+
+    /**
+     * Called when the API begins operation as leader. To be overriden by inherited APIs.
+     * @method onStart
+     */
+    Api.prototype.onStart = function () {
+        //overridden
+    };
+
+    /**
+     * Called when the API ends operation as leader. To be overriden by inherited APIs.
+     * @method onStart
+     */
+    Api.prototype.onStop = function () {
+        //overridden
+    };
+//--------------------------------------------------
+// Distributed Computing: Leadership management state machine
+//--------------------------------------------------
 
     /**
      * @method transitionToLoading
@@ -13500,20 +13625,13 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      * @return {Promise} a promise that resolves when all data is loaded.
      */
     Api.prototype.transitionToLoading = function () {
-        var self = this;
         if (this.leaderState !== "member") {
-            log.error(this.logPrefix + "transition to loading called in an invalide state:", this.leaderState);
-            return Promise.reject(this.logPrefix + "transition to loading called in an invalide state:", this.leaderState);
+            return Promise.reject(this.logPrefix + "transition to loading called in an invalid state:", this.leaderState);
         }
         log.debug(this.logPrefix + "transitioning to loading");
+
         this.leaderState = "loading";
-        return this.initializeData(this.deathScream)
-            .then(function () {
-                self.transitionToLeader();
-            }, function (e) {
-                log.error(self.logPrefix + "Failed to load data due to ", e);
-                self.shutdown();
-            });
+        return this.initializeData(this.deathScream);
     };
 
     /**
@@ -13522,36 +13640,32 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      */
     Api.prototype.transitionToLeader = function () {
         if (this.leaderState !== "loading") {
-            log.error(this.logPrefix + "transition to leader called in an invalid state:", this.leaderState);
-            return;
+            return Promise.reject(this.logPrefix + "transition to loading called in an invalid state:", this.leaderState);
         }
         log.debug(this.logPrefix + "transitioning to leader");
+
         this.leaderState = "leader";
         this.broadcastLeaderReady();
         this.deliverRequestQueue();
-
-        this.on("createdNode", this.createdHandler, this);
-        this.on("changed", this.changedHandler, this);
-        this.on("addressDisconnects", this.disconnectHandler, this);
-
+        enableHandlers(this);
         log.info(this.logPrefix + " Now operating");
+
+        return Promise.resolve();
     };
 
     /**
-     * Shuts down the api, issuing a deathscream and releasing the lock, if possible.
-     * @method shutdown
-     * @return
+     * @method transitionFromLeader
      */
-    Api.prototype.shutdown = function () {
-        if (this.leaderState === "leader") {
-            this.broadcastDeathScream(this.createDeathScream());
+    Api.prototype.transitionFromLeader = function () {
+        if (this.leaderState !== "leader") {
+            return Promise.reject(this.logPrefix + "transition to loading called in an invalid state:", this.leaderState);
         }
+        log.debug(this.logPrefix + "relinquishing leadership.");
 
-        this.participant.send({
-            dst: "locks.api",
-            resource: "/mutex/" + this.name,
-            action: "unlock"
-        });
+        var deathScream = this.createDeathScream();
+        this.broadcastDeathScream(deathScream);
+        this.leaderState = "member";
+        return this.transitionToMemberReady(deathScream);
     };
 
     /**
@@ -13565,9 +13679,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
             return;
         }
         this.deathScream = deathScream;
-        this.off("createdNode", this.createdHandler);
-        this.off("changed", this.changedHandler);
-        this.off("addressDisconnects", this.disconnectHandler);
+        disableHandlers(this);
         this.enableRequestQueue();
         return Promise.resolve();
     };
@@ -13586,9 +13698,38 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         return Promise.resolve();
     };
 
-//===============================================================
-// Data Management
-//===============================================================
+//--------------------------------------------------
+// Distributed computing: leadership state broadcasting
+//--------------------------------------------------
+
+    /**
+     * Broadcasts to other instances of this API on the bus that it is ready to lead.
+     * @method broadcastLeaderReady
+     */
+    Api.prototype.broadcastLeaderReady = function () {
+        this.participant.send({
+            dst: this.coordinationAddress,
+            action: "announceLeader"
+        });
+    };
+
+    /**
+     * Broadcasts to other instances of this API on the bus this APIs state.
+     * @method broadcastDeathScream
+     * @param {Object} deathScream the state data to pass on.
+     */
+    Api.prototype.broadcastDeathScream = function (deathScream) {
+        this.participant.send({
+            dst: this.coordinationAddress,
+            action: "deathScream",
+            entity: deathScream
+        });
+    };
+
+
+//--------------------------------------------------
+// Data Management Utils
+//--------------------------------------------------
 
     /**
      * Authorize the request for the given node.
@@ -13618,10 +13759,27 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         });
     };
 
+    /**
+     * Gathers the collection data for a node given its pattern only if it has a pattern.
+     * @method getCollection
+     * @param {String} pattern
+     * @return {Array}
+     */
+    Api.prototype.getCollection = function (pattern) {
+        if (pattern) {
+            return this.matchingNodes(pattern).filter(function (node) {
+                return !node.deleted;
+            }).map(function (node) {
+                return node.resource;
+            });
+        } else {
+            return [];
+        }
+    };
 
-//===============================================================
-// Watches
-//===============================================================
+//--------------------------------------------------
+// Watch Functionality
+//--------------------------------------------------
 
     /**
      * Marks that a node has changed and that change notices may need to
@@ -13731,9 +13889,9 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
     };
 
 
-//===============================================================
-// Packet Routing
-//===============================================================
+//--------------------------------------------------
+// Bus Packet Routing
+//--------------------------------------------------
     /**
      * Sends packets of data from this API to other parts of the IWC bus.
      *
@@ -13753,23 +13911,16 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      * @private
      */
     Api.prototype.receivePacketContext = function (packetContext) {
-        if (packetContext.packet.src === this.participant.address) {
-            // drop our own packets
-            return Promise.resolve();
-        }
-
         if (packetContext.packet.dst === this.coordinationAddress) {
             return receiveCoordinationPacket(this, packetContext);
-        } else if (packetContext.packet.dst === "$bus.multicast") {
-            return receiveBusPacket(this, packetContext);
         } else {
             return receiveRequestPacket(this, packetContext);
         }
     };
 
-//===============================================================
-// API Request Handling
-//===============================================================
+//--------------------------------------------------
+// API Request Handling (routes loaded from routes.js)
+//--------------------------------------------------
 
 
     /**
@@ -13809,10 +13960,14 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      * @method deliverRequestQueue
      * @private
      */
-    Api.prototype.deliverRequestQueue = function () {
+    Api.prototype.deliverRequestQueue = function (after) {
+        after = after || 0;
         this.isRequestQueueing = false;
+        console.log("DELIVERING QUEUE:", this.name, this.requestQueue);
         this.requestQueue.forEach(function (request) {
-            receiveRequestPacket(this, request);
+            if (request.packet.time > after) {
+                receiveRequestPacket(this, request);
+            }
         }, this);
         this.requestQueue = [];
     };
@@ -13823,6 +13978,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      * @private
      */
     Api.prototype.flushRequestQueue = function () {
+        console.log("FLUSHING QUEUE:", this.name, this.requestQueue);
         this.isRequestQueueing = false;
         this.requestQueue = [];
     };
@@ -13863,281 +14019,252 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
     };
 
 
-//===============================================================
-// API Coordination Handling
-//===============================================================
+//--------------------------------------------------
+// Bus event handlers
+//--------------------------------------------------
     /**
-     * Broadcasts to other instances of this API on the bus that it is ready to lead.
-     * @method broadcastLeaderReady
+     * A handler function called when a participant has disconnected from the bus.
+     * Each node in the API is checked to see if its lifespan was tied to said participant, and if the lifespan deems
+     * necessary, removes the node.
+     * Can be overridden by inherited APIs.
+     * @method onClientDisconnect
+     * @param {String} address
      */
-    Api.prototype.broadcastLeaderReady = function () {
-        this.participant.send({
-            dst: this.coordinationAddress,
-            action: "announceLeader"
+    Api.prototype.onClientDisconnect = function (address) {
+        removeDeadWatchers(this, address);
+
+        var self = this;
+        util.object.eachEntry(self.data, function (resource, node) {
+            var lifespanFns = api.Lifespan.getLifespanFunctionality(node.lifespan);
+            if (lifespanFns.shouldDelete(node.lifespan, address)) {
+                self.markForChange(node);
+                node.markAsDeleted();
+            }
         });
+        resolveChangedNodes(this);
+    };
+    /**
+     * A handler function called when a participant connects to the bus. Intended to be overridden by inheriting APIs.
+     * @param address
+     */
+    Api.prototype.onClientConnect = function (address) {
+        //Does nothing should be overridden by inherited APIs
+    };
+
+
+//--------------------------------------------------
+//          Private Methods
+//--------------------------------------------------
+
+    var enableHandlers = function (apiBase) {
+        apiBase.on("createdNode", apiBase.onNodeCreated, apiBase);
+        apiBase.on("changed", apiBase.onNodeChanged, apiBase);
+        apiBase.participant.on("addressDisconnects", apiBase.onClientDisconnect, apiBase);
+        apiBase.participant.on("addressConnects", apiBase.onClientConnect, apiBase);
+    };
+
+    var disableHandlers = function (apiBase) {
+        apiBase.off("createdNode", apiBase.onNodeCreated);
+        apiBase.off("changed", apiBase.onNodeChanged);
+        apiBase.participant.off("addressDisconnects", apiBase.onClientDisconnect);
+        apiBase.participant.off("addressConnects", apiBase.onClientConnect);
     };
 
     /**
-     * Broadcasts to other instances of this API on the bus this APIs state.
-     * @method broadcastDeathScream
-     * @param {Object} deathScream the state data to pass on.
-     */
-    Api.prototype.broadcastDeathScream = function (deathScream) {
-        this.participant.send({
-            dst: this.coordinationAddress,
-            action: "deathScream",
-            entity: deathScream
-        });
-    };
-
-
-//===============================================================
-// Load data from the server
-//===============================================================
-
-
-    /**
-     * Recursive HAL resource parser.
-     *
-     * @method handleResource
+     * A static utility method that notifies watchers of changes of the resource since the given snapshot.
+     * @method resolveChangedNode
      * @private
      * @static
-     * @param {Api} api
-     * @param {ozpIwc.api.endpoint} endpoint
-     * @param {Object} resourceObj the body of the Resource
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {String} resource
+     * @param {Object} snapshot
+     * @param {Object} packetContext
      */
-    var handleResource = function (api, endpoint, resourceObj,headers) {
-        resourceObj = resourceObj || {};
-        resourceObj._links = resourceObj._links || {};
-        resourceObj._embedded = resourceObj._embedded || {};
-        resourceObj._embedded.item = util.ensureArray(resourceObj._embedded.item || []);
-        var selfLink = resourceObj._links.self || {};
-        var NodeType = api.findNodeType(selfLink.type);
+    var resolveChangedNode = function (apiBase, resource, snapshot, packetContext) {
+        var node = apiBase.data[resource];
+        var watcherList = apiBase.watchers[resource] || [];
 
-        if (NodeType) {
-            try {
-                api.createNode({
-                    serializedEntity: resourceObj,
-                    contentType: selfLink.type
-                }, NodeType);
-            } catch (e) {
-                log.info(api.logPrefix + "[" + selfLink.type + "] [" + selfLink.href + "] No node created from resource, reason: ", e.message);
-            }
-        } else {
-            log.info(api.logPrefix + "[" + selfLink.type + "] [" + selfLink.href + "] No node created from resource, reason: no node type for this content-type.");
-        }
-        if (resourceObj._embedded.item.length) {
-            log.info(api.logPrefix + "[" + selfLink.href + "] Processing " + resourceObj._embedded.item.length + " embedded items.");
+        if (!node) {
+            return;
         }
 
-        return handleEmbedded(api, endpoint, resourceObj._embedded,headers).then(function () {
-            return handleLinks(api, endpoint, resourceObj._links,headers);
-        });
-    };
+        var changes = node.changesSince(snapshot);
+        if (!changes) {
+            return;
+        }
 
-    /**
-     * Recursive HAL _links parser
-     *
-     * @method handleLinks
-     * @private
-     * @static
-     * @param {Api} api
-     * @param {ozpIwc.api.endpoint} endpoint
-     * @param {Object} _links the _links object of the HAL resource
-     */
-    var handleLinks = function (api, endpoint, _links,headers) {
-        var linkedItems = util.ensureArray((_links && _links.item) || []);
-        var unknownLinks = linkedItems.filter(function (link) {
-            return util.object.values(api.data, function (k, node) {
-                    node.self = node.self || {};
-                    return node.self.href === link.href;
-                }).length === 0;
-        });
+        var permissions = apiBase.authorization.pip.attributeUnion(
+            changes.oldValue.permissions,
+            changes.newValue.permissions
+        );
 
-        var linkGather = function (obj) {
-            var hdrs = headers.slice(0);
-            if(obj.type) {
-                hdrs.push({'name': "Accept", 'value': obj.type});
-            }
-            return loadResource(api, endpoint, obj.href, hdrs).catch(function (err) {
-                log.info("failed to gather link: ", obj.href, " reason: ", err);
-            });
+        var entity = {
+            oldValue: changes.oldValue.entity,
+            newValue: changes.newValue.entity,
+            oldCollection: changes.oldValue.collection,
+            newCollection: changes.newValue.collection,
+            deleted: node.deleted
         };
 
-        if (unknownLinks.length) {
-            log.info(api.logPrefix + " Processing " + unknownLinks.length + " linked items.");
-        }
+        apiBase.events.trigger("changed", node, entity, packetContext);
 
-        return Promise.all(unknownLinks.map(linkGather));
-    };
-
-    /**
-     * Recursive HAL _embedded parser
-     *
-     * @method handleLinks
-     * @private
-     * @static
-     * @param {Api} api
-     * @param {ozpIwc.api.endpoint} endpoint
-     * @param {Object} _embedded the _embedded object of the HAL resource
-     */
-    var handleEmbedded = function (api, endpoint, _embedded,headers) {
-        var embeddedItems = util.ensureArray((_embedded && _embedded.item) || []);
-        var embeddedGather = function (obj) {
-            obj._links = obj._links || {};
-            obj._links.self = obj._links.self || {};
-            // We can only knowingly handle an embedded object if we know its type.
-            if (obj._links.self.type) {
-                return handleResource(api, endpoint, obj,headers);
-            } else {
-                return Promise.resolve();
-            }
-        };
-        return Promise.all(embeddedItems.map(embeddedGather));
-    };
-
-    /**
-     * Loads data from the provided endpoint.  The endpoint must point to a HAL JSON document
-     * that embeds or links to all resources for this api.
-     *
-     * @method loadFromEndpoint
-     * @param {ozpIwc.api.Endpoint} endpoint
-     * @param {Array} headers
-     * @return {Promise} resolved when all data has been loaded.
-     */
-    var loadResource = function (api, endpoint, path, headers) {
-        log.info(api.logPrefix + "[" + endpoint.name + "] Headers:" +JSON.stringify(headers) + " Loading: " + path);
-
-        return endpoint.get(path,headers).then(function (data) {
-            data.response._embedded = data.response._embedded || {};
-            data.response._links = data.response._links || {};
-            data.response._links.self = data.response._links.self || {};
-            data.response._links.self.type = data.response._links.self.type || data.header['Content-Type'];
-            data.response._links.self.href = data.response._links.self.href || data.url;
-
-            return handleResource(api, endpoint, data.response,headers);
-        }).catch(function(err){
-            log.error(api.logPrefix + "[" + endpoint.name + "] ["+ path +"] Failed to load: ", err.status);
+        watcherList.forEach(function (watcher) {
+            // @TODO allow watchers to changes notifications if they have permission to either the old or new, not just
+            // both
+            apiBase.participant.send({
+                'src': apiBase.participant.name,
+                'dst': watcher.src,
+                'replyTo': watcher.replyTo,
+                'response': 'changed',
+                'respondOn': 'none',
+                'resource': node.resource,
+                'permissions': permissions,
+                'contentType': node.contentType,
+                'entity': entity
+            });
         });
     };
 
-    Api.prototype.loadFromEndpoint = function (endpoint, headers) {
-        return loadResource(this, endpoint, "/", headers);
+    /**
+     * A static utility method called after an api request is complete to send out change notifications.
+     *
+     * @method resolveChangedNodes
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Object} packetContext the packet that caused this change.
+     */
+    var resolveChangedNodes = function (apiBase, packetContext) {
+        apiBase.updateCollections();
+        util.object.eachEntry(apiBase.changeList, function (resource, snapshot) {
+            resolveChangedNode(apiBase, resource, snapshot, packetContext);
+        });
+        apiBase.changeList = {};
+    };
+
+    /**
+     * A static utility method that removes the collector node from the collectors list if deleted.
+     * Removes references to nodes in the given collectors collection property if said referenced node is deleted.
+     * Adds newly created nodes to the collection property if said node's resource matches the collection nodes pattern
+     * property.
+     *
+     * @method updateCollectionNode
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Object} cNode the collector node to update
+     */
+    var updateCollectionNode = function (apiBase, cNode) {
+        if (!cNode) {
+            return;
+        }
+        //If the collection node is deleted, stop collecting for it.
+        if (cNode.deleted) {
+            apiBase.removeCollector(cNode.resource);
+            return;
+        }
+
+
+        var updatedCollection = apiBase.matchingNodes(cNode.pattern).filter(function (node) {
+            return !node.deleted;
+        }).map(function (node) {
+            return node.resource;
+        });
+
+        cNode.collection = cNode.collection || [];
+        if (!util.arrayContainsAll(cNode.collection, updatedCollection) || !util.arrayContainsAll(updatedCollection, cNode.collection)) {
+            apiBase.markForChange(cNode);
+            cNode.collection = updatedCollection;
+            cNode.version++;
+        }
     };
 
 
-//===============================================================
-// Default Routes and Subclass Helpers
-//===============================================================
     /**
-     * Gathers the collection data for a node given its pattern only if it has a pattern.
-     * @method getCollection
-     * @param {String} pattern
-     * @return {Array}
+     * If the the given address is watching a resource, it will be removed from the watch list. Router addresses will
+     * remove all of its participants watch registrations.
+     *
+     * @method removeDeadWatchers
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {String} address
      */
-    Api.prototype.getCollection = function (pattern) {
-        if (pattern) {
-            return this.matchingNodes(pattern).filter(function (node) {
-                return !node.deleted;
-            }).map(function (node) {
-                return node.resource;
-            });
-        } else {
-            return [];
+    var removeDeadWatchers = function (apiBase, address) {
+        var len = address.length;
+        util.object.eachEntry(apiBase.watchers, function (resource, array) {
+            for (var i in array) {
+                if (array[i].src.substr(-len) === address) {
+                    array.splice(i, 1);
+                }
+            }
+        });
+    };
+
+    /**
+     * Handles packets received regarding leadership actions.
+     * @method receiveCoordinationPacket
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Object} packetContext
+     * @return {Promise}
+     */
+    var receiveCoordinationPacket = function (apiBase, packetContext) {
+        var packet = packetContext.packet;
+        switch (packet.action) {
+            case "announceLeader":
+                return apiBase.transitionToMemberDormant();
+            case "deathScream":
+                return apiBase.transitionToMemberReady(packet.entity);
+            default:
+                log.error("Unknown coordination packet: ", packet);
+                return Promise.reject(new Error("Unknown action: " + packet.action + " in " + JSON.stringify(packetContext)));
         }
     };
 
     /**
-     * A collection of default action handlers for an API.
-     * @property defaultHandler
+     * Routes a request to the proper handler and takes care of overhead
+     * such as change requests.
+     *
+     * @method receivePacketContext
+     * @private
      * @static
-     * @type {Object}
+     * @property {ozpIwc.api.base.Api} apiBase
+     * @property {Object} packetContext
      */
-    Api.defaultHandler = {
-        "get": function (packet, context, pathParams) {
-            var p = context.node.toPacket();
-            p.collection = this.getCollection(p.pattern);
-            return p;
-        },
-        "set": function (packet, context, pathParams) {
-            context.node.set(packet);
-            return {response: "ok"};
-        },
-        "delete": function (packet, context, pathParams) {
-            if (context.node) {
-                context.node.markAsDeleted(packet);
-            }
+    var receiveRequestPacket = function (apiBase, packetContext) {
+        var packet = packetContext.packet;
 
-            return {response: "ok"};
-        },
-        "list": function (packet, context, pathParams) {
-            var entity = this.matchingNodes(packet.resource).filter(function (node) {
-                return !node.deleted;
-            }).map(function (node) {
-                return node.resource;
-            });
-            return {
-                "contentType": "application/json",
-                "entity": entity
-            };
-        },
-        "bulkGet": function (packet, context, pathParams) {
-            var self = this;
-            var entity = this.matchingNodes(packet.resource).map(function (node) {
-                var p = node.toPacket();
-                p.collection = self.getCollection(p.pattern);
-                return p;
-            });
-            // TODO: roll up the permissions of the nodes, as well
-            return {
-                "contentType": "application/json",
-                "entity": entity
-            };
-        },
-        "watch": function (packet, context, pathParams) {
-            this.addWatcher(packet.resource, {
-                src: packet.src,
-                replyTo: packet.msgId
-            });
-
-            //Only if the node has a pattern applied will it actually be added as a collector.
-            this.addCollector(packet.resource);
-
-            if (context.node) {
-                var p = context.node.toPacket();
-                p.collection = this.getCollection(p.pattern);
-                return p;
-            } else {
-                return {response: "ok"};
-            }
-        },
-        "unwatch": function (packet, context, pathParams) {
-            this.removeWatcher(packet.resource, packet);
-
-            //If no one is watching the resource any more, remove its collector if it has one to speed things up.
-            if (this.watchers[packet.resource] && this.watchers[packet.resource].length === 0) {
-                this.removeCollector(packet.resource);
-            }
-
-            return {response: "ok"};
+        if (apiBase.isRequestQueueing) {
+            apiBase.requestQueue.push(packetContext);
+            return;
         }
+        if (apiBase.leaderState !== "leader") {
+            return;
+        }
+
+        try {
+            packetContext.node = apiBase.data[packet.resource];
+            var packetFragment = apiBase.routePacket(packet, packetContext);
+            if (packetFragment) {
+                packetFragment.response = packetFragment.response || "ok";
+                packetContext.replyTo(packetFragment);
+            }
+            resolveChangedNodes(apiBase, packetContext);
+        } catch (e) {
+            if (!e || !e.errorAction) {
+                log.error(apiBase.logPrefix, "Unexpected error: ", e, " packet= ", packet);
+            }
+            var errorFragment = {
+                'src': apiBase.name,
+                'response': e.errorAction || "errorUnknown",
+                'entity': e.message
+            };
+            packetContext.replyTo(errorFragment);
+        }
+
     };
-
-    /**
-     * A list of all of the default actions.
-     * @property allActions
-     * @static
-     * @type {String[]}
-     */
-    Api.allActions = Object.keys(Api.defaultHandler);
-
-    /**
-     * Install the default handler and filters for the provided actions and resources.
-     * @method useDefaultRoute
-     * @static
-     * @param {String | String[]} actions
-     * @param {String} resource="{resource:.*}" The resource template to install the default handler on.
-     */
 
     return Api;
 }(ozpIwc.api, ozpIwc.log, ozpIwc.transport, ozpIwc.util));
@@ -14259,7 +14386,7 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
          * @type String
          */
         this.self = config.self || {};
-        this.self.type = this.self.type ||this.contentType;
+        this.self.type = this.self.type || this.contentType;
 
         if (config.serializedEntity) {
             this.deserialize(config.serializedEntity, config.contentType);
@@ -14394,11 +14521,11 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
         this.self = data.self || data._links.self || this.self;
         this.contentType = contentType;
         this.pattern = data.pattern;
-        this.version = data.version ||  this.version;
+        this.version = data.version || this.version;
         this.permissions = data.permissions || {};
         this.collection = data.collection || [];
 
-        this.entity = this.deserializedEntity(data,contentType);
+        this.entity = this.deserializedEntity(data, contentType);
 
         if (!this.resource && !this.useIwcSelf()) {
             this.resource = this.resourceFallback(data);
@@ -14424,8 +14551,8 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
      * @static
      * @returns {boolean}
      */
-    Node.prototype.useIwcSelf= function(){
-        if(this.self["ozp:iwcSelf"]) {
+    Node.prototype.useIwcSelf = function () {
+        if (this.self["ozp:iwcSelf"]) {
             this.resource = this.self["ozp:iwcSelf"].href.replace(/web\+ozp:\/\/[^/]+/, "");
             return true;
         }
@@ -14561,6 +14688,106 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
 
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.base = ozpIwc.api.base || {};
+/**
+ * @module ozpIwc.api
+ * @submodule ozpIwc.api.base
+ * @class ozpIwc.api.base.Api
+ */
+
+ozpIwc.api.base.Api = (function (Api) {
+
+//===============================================================
+// Default Routes and Subclass Helpers
+//===============================================================
+    /**
+     * A collection of default action handlers for an API.
+     * @property defaultHandler
+     * @static
+     * @type {Object}
+     */
+    Api.defaultHandler = {
+        "get": function (packet, context, pathParams) {
+            var p = context.node.toPacket();
+            p.collection = this.getCollection(p.pattern);
+            return p;
+        },
+        "set": function (packet, context, pathParams) {
+            context.node.set(packet);
+            return {response: "ok"};
+        },
+        "delete": function (packet, context, pathParams) {
+            if (context.node) {
+                context.node.markAsDeleted(packet);
+            }
+
+            return {response: "ok"};
+        },
+        "list": function (packet, context, pathParams) {
+            var entity = this.matchingNodes(packet.resource).filter(function (node) {
+                return !node.deleted;
+            }).map(function (node) {
+                return node.resource;
+            });
+            return {
+                "contentType": "application/json",
+                "entity": entity
+            };
+        },
+        "bulkGet": function (packet, context, pathParams) {
+            var self = this;
+            var entity = this.matchingNodes(packet.resource).map(function (node) {
+                var p = node.toPacket();
+                p.collection = self.getCollection(p.pattern);
+                return p;
+            });
+            // TODO: roll up the permissions of the nodes, as well
+            return {
+                "contentType": "application/json",
+                "entity": entity
+            };
+        },
+        "watch": function (packet, context, pathParams) {
+            this.addWatcher(packet.resource, {
+                src: packet.src,
+                replyTo: packet.msgId
+            });
+
+            //Only if the node has a pattern applied will it actually be added as a collector.
+            this.addCollector(packet.resource);
+
+            if (context.node) {
+                var p = context.node.toPacket();
+                p.collection = this.getCollection(p.pattern);
+                return p;
+            } else {
+                return {response: "ok"};
+            }
+        },
+        "unwatch": function (packet, context, pathParams) {
+            this.removeWatcher(packet.resource, packet);
+
+            //If no one is watching the resource any more, remove its collector if it has one to speed things up.
+            if (this.watchers[packet.resource] && this.watchers[packet.resource].length === 0) {
+                this.removeCollector(packet.resource);
+            }
+
+            return {response: "ok"};
+        }
+    };
+
+    /**
+     * A list of all of the default actions.
+     * @property allActions
+     * @static
+     * @type {String[]}
+     */
+    Api.allActions = Object.keys(Api.defaultHandler);
+
+    return Api;
+}(ozpIwc.api.base.Api || {}));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.error = ozpIwc.api.error || {};
 /**
  * @module ozpIwc.api
@@ -14628,7 +14855,7 @@ ozpIwc.api.error.BaseError = (function (util) {
         });
     };
 
-return BaseError;
+    return BaseError;
 
 }(ozpIwc.util));
 
@@ -14718,7 +14945,7 @@ ozpIwc.api.error = (function (error) {
 }(ozpIwc.api.error));
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
-ozpIwc.api.filter = ozpIwc.api.filter|| {};
+ozpIwc.api.filter = ozpIwc.api.filter || {};
 /**
  * @module ozpIwc.api
  * @submodule ozpIwc.api.filter
@@ -14775,7 +15002,7 @@ ozpIwc.api.filter.base = (function (api, util) {
                             src: packet.src
                         });
                     }
-                    if(!context.node){
+                    if (!context.node) {
                         throw new api.error.BadContentError({
                             'provided': packet.contentType
                         });
@@ -14926,7 +15153,7 @@ ozpIwc.api.filter.base = (function (api, util) {
 }(ozpIwc.api, ozpIwc.util));
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
-ozpIwc.api.filter = ozpIwc.api.filter|| {};
+ozpIwc.api.filter = ozpIwc.api.filter || {};
 /**
  * @module ozpIwc.api
  * @submodule ozpIwc.api.filter
@@ -15063,7 +15290,6 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
 
         consensusConfiguration(this, config.consensusMember);
         participantConfiguration(this);
-        this.on("addressDisconnects", this.unlockAll, this);
 
         this.logPrefix = "[" + this.name + "/" + this.participant.address + "] ";
 
@@ -15121,6 +15347,8 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
         api.participant.on("receive", function (packetContext) {
             api.receivePacketContext(packetContext);
         });
+
+        api.participant.on("addressDisconnects", api.unlockAll, api);
         api.router.registerMulticast(api.participant, [api.name]);
         if (api.consensusMember.state === "coordinator") {
             api.deliverRequestQueue();
@@ -15252,10 +15480,6 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
      * @return
      */
     Api.prototype.shutdown = function () {
-        if (this.leaderState === "leader") {
-            this.broadcastDeathScream(this.createDeathScream());
-        }
-
         this.participant.send({
             dst: "locks.api",
             resource: "/mutex/" + this.name,
@@ -15334,7 +15558,8 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
         if (context.node) {
             this.updateLock(context.node, context.node.unlock({
                 src: packet.entity.src || packet.src,
-                msgId: packet.entity.msgId || packet.msgId
+                msgId: packet.entity.msgId || packet.msgId,
+                entity: packet.entity.state || context.node.entity.state
             }));
         }
     });
@@ -15358,7 +15583,8 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
                 'src': this.participant.name,
                 'replyTo': newOwner.msgId,
                 'response': 'ok',
-                'resource': node.resource
+                'resource': node.resource,
+                'entity': node.entity.state
             };
 
             if (this.isSendQueueing) {
@@ -15432,8 +15658,8 @@ ozpIwc.api.locks.Node = (function (api, util) {
     };
 
     /**
-     * Removes all ozpIwc.packet.Transports in the queue that match the given packet. Should this remove the owner of the
-     * mutex, the next remaining packet's sender will take control.
+     * Removes all ozpIwc.packet.Transports in the queue that match the given packet. Should this remove the owner of
+     * the mutex, the next remaining packet's sender will take control.
      *
      * @method unlock
      * @param {ozpIwc.packet.Transport} packet
@@ -15444,6 +15670,7 @@ ozpIwc.api.locks.Node = (function (api, util) {
             return !util.objectContainsAll(q, packet);
         });
 
+        this.entity.state = packet.entity || this.entity.state;
 
         if (!util.objectContainsAll(this.entity.owner, this.entity.queue[0])) {
             this.entity.owner = this.entity.queue[0];
@@ -15469,6 +15696,83 @@ ozpIwc.api.locks.Node = (function (api, util) {
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.data = ozpIwc.api.data || {};
+/**
+ * @module ozpIwc.api
+ * @submodule ozpIwc.api.data
+ */
+
+
+ozpIwc.api.data.Api = (function (api, ozpConfig, util) {
+    /**
+     * The Data Api.
+     * Subclasses the {{#crossLink "ozpIwc.api.base.Api"}}{{/crossLink}}.
+     *
+     * @class Api
+     * @namespace ozpIwc.api.data
+     * @extends ozpIwc.api.base.Api
+     * @constructor
+     * @param {Object} config
+     * @param {String} [config.name="data.api"]
+     * @param {ozpIwc.transport.Router} config.router
+     */
+    var Api = api.createApi("data.api", function (config) {
+        this.endpoints = config.endpoints || [{link: ozpConfig.linkRelPrefix + ":user-data", headers: []}];
+        this.contentTypeMappings = util.genContentTypeMappings(api.data.node);
+    });
+
+
+//--------------------------------------------------
+// Node creation/modification methods
+//--------------------------------------------------
+    /**
+     * Maps a content-type to an IWC Node type.
+     * Overridden to check for a template specified content-type for the data api nodes.
+     * @method findNodeType
+     * @param {Object} contentTypeObj an object-formatted content-type
+     * @param {String} contentTypeObj.name the content-type without any variables
+     * @param {Number} [contentTypeObj.version] the version of the content-type.
+     * @returns {undefined}
+     */
+    Api.prototype.findNodeType = function (contentType) {
+        var formattedContentType = util.getFormattedContentType(contentType);
+        if (!formattedContentType.name) {
+            var template = api.uriTemplate('ozp:data-item') || {};
+            formattedContentType = util.getFormattedContentType(template.type);
+        }
+
+        var type = this.contentTypeMappings[formattedContentType.name];
+        if (type) {
+            if (formattedContentType.version) {
+                return type[formattedContentType.version];
+            } else {
+                return type;
+            }
+        }
+        return api.data.node.NodeV2;
+    };
+
+    /**
+     * Creates a node appropriate for the given config.  This does
+     * NOT add the node to this.data.
+     *
+     * If no node type, no node created (does not use default node type).
+     *
+     * @method createNodeObject
+     * @param {Object} config The node configuration configuration.
+     * @param {Function} NodeType The contructor call for the given node type to be created.
+     * @return {ozpIwc.api.base.Node}
+     */
+    Api.prototype.createNodeObject = function (config, NodeType) {
+        if (NodeType) {
+            return new NodeType(config);
+        }
+    };
+
+    return Api;
+}(ozpIwc.api, ozpIwc.config, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.data = ozpIwc.api.data || {};
 ozpIwc.api.data.node = ozpIwc.api.data.node || {};
 
 /**
@@ -15476,7 +15780,7 @@ ozpIwc.api.data.node = ozpIwc.api.data.node || {};
  * @submodule ozpIwc.api.data.node
  */
 
-ozpIwc.api.data.node.Node = (function (api,  util) {
+ozpIwc.api.data.node.Node = (function (api, util) {
     /**
      * @class Node
      * @namespace ozpIwc.api.data.node
@@ -15536,10 +15840,10 @@ ozpIwc.api.data.node.Node = (function (api,  util) {
      * @param {String} contentType
      */
     Node.prototype.deserializedEntity = function (data, contentType) {
-        if(typeof data.entity === "string"){
+        if (typeof data.entity === "string") {
             try {
                 return JSON.parse(data.entity);
-            } catch(e){
+            } catch (e) {
                 return data.entity;
             }
         } else {
@@ -15556,19 +15860,19 @@ ozpIwc.api.data.node.Node = (function (api,  util) {
      * @param {String} contentType The contentType of the object
      * @return {Object}
      */
-    Node.prototype.deserialize = function(data,contentType) {
-        try{
+    Node.prototype.deserialize = function (data, contentType) {
+        try {
             data = JSON.parse(data);
-        } catch(e){
+        } catch (e) {
 
         }
         api.base.Node.prototype.deserialize.apply(this, [data.entity, contentType]);
 
-        if(typeof this.permissions === "string"){
+        if (typeof this.permissions === "string") {
             this.permissions = JSON.parse(this.permissions);
         }
 
-        if(typeof this.version === "string"){
+        if (typeof this.version === "string") {
             this.version = JSON.parse(this.version);
         }
     };
@@ -15637,7 +15941,7 @@ ozpIwc.api.data.node.NodeV2 = (function (api, util) {
      * @static
      * @return {string}
      */
-    Node.serializedContentType ="application/vnd.ozp-iwc-data-object+json;version=2";
+    Node.serializedContentType = "application/vnd.ozp-iwc-data-object+json;version=2";
 
     /**
      * Sets the api node from the serialized form.
@@ -15648,14 +15952,14 @@ ozpIwc.api.data.node.NodeV2 = (function (api, util) {
      * @param {String} contentType The contentType of the object
      * @return {Object}
      */
-    Node.prototype.deserialize = function(data,contentType) {
+    Node.prototype.deserialize = function (data, contentType) {
         api.base.Node.prototype.deserialize.apply(this, arguments);
 
-        if(typeof this.permissions === "string"){
+        if (typeof this.permissions === "string") {
             this.permissions = JSON.parse(this.permissions);
         }
 
-        if(typeof this.version === "string"){
+        if (typeof this.version === "string") {
             this.version = JSON.parse(this.version);
         }
     };
@@ -15668,7 +15972,7 @@ ozpIwc.api.data.node.NodeV2 = (function (api, util) {
      */
     Node.prototype.deserializedEntity = function (data) {
         /*jshint camelcase: false */
-        data = data  || {};
+        data = data || {};
         return JSON.parse(data.entity);
     };
 
@@ -15681,16 +15985,685 @@ ozpIwc.api.data.node.NodeV2 = (function (api, util) {
     Node.prototype.resourceFallback = function () {
         if (this.self.href) {
             var baseUrl = api.endpoint("ozp:user-data").baseUrl;
-            while(baseUrl.slice(-1) === "/"){
-                baseUrl = baseUrl.slice(0,-1);
+            while (baseUrl.slice(-1) === "/") {
+                baseUrl = baseUrl.slice(0, -1);
             }
-            if(this.self.href.indexOf(baseUrl) === 0){
+            if (this.self.href.indexOf(baseUrl) === 0) {
                 return this.self.href.replace(baseUrl, "");
             }
         }
     };
 
     return Node;
+}(ozpIwc.api, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.data = ozpIwc.api.data || {};
+/**
+ * @module ozpIwc.api
+ * @submodule ozpIwc.api.data
+ * @class ozpIwc.api.data.Api
+ */
+
+ozpIwc.api.data.Api = (function (api, DataApi) {
+
+    // Default handlers are fine for all common actions
+    DataApi.useDefaultRoute(api.base.Api.allActions);
+
+//---------------------------------------------------------
+// Add/Remove Child Functionality
+//---------------------------------------------------------
+    //-----------------------------------------------------
+    // Filters
+    //-----------------------------------------------------
+
+    /**
+     * A filter for adding children nodes to the data api. assigns the parent node a pattern & sets it as a collector.
+     * @method addChildFilters
+     * @private
+     * @static
+     * @return {function[]}
+     */
+    var addChildFilters = function () {
+        var childData = {};
+        var filters = api.filter.standard.createAndCollectFilters(api.data.node.Node);
+
+        //Stash the child's pattern for now and create the parent.
+        filters.unshift(function (packet, context, pathParams, next) {
+            childData.pattern = packet.pattern;
+            childData.lifespan = packet.lifespan;
+            packet.pattern = undefined;
+            packet.lifespan = undefined;
+            return next();
+        });
+        //Make sure the parent node has it's pattern set then replace the childs pattern at the end of the filter chain
+        filters.push(function (packet, context, pathParams, next) {
+            context.node.set({
+                pattern: packet.pattern
+            });
+            packet.pattern = childData.pattern;
+            packet.lifespan = childData.lifespan;
+            return next();
+        });
+        return filters;
+    };
+
+    //-----------------------------------------------------
+    // Routes
+    //-----------------------------------------------------
+
+    DataApi.declareRoute({
+        action: ["addChild"],
+        resource: "{resource:.*}",
+        filters: addChildFilters()
+    }, function (packet, context, pathParams) {
+        var key = this.createKey(context.node.pattern);
+        packet.resource = key;
+        packet.pattern = packet.pattern || key + "/";
+        var childNode = this.createNode({
+            resource: key,
+            lifespan: packet.lifespan,
+            src: packet.src
+        }, api.data.node.Node);
+        this.markForChange(childNode);
+        childNode.set(packet);
+
+        return {
+            response: "ok",
+            entity: {
+                resource: childNode.resource
+            }
+        };
+    });
+
+    DataApi.declareRoute({
+        action: ["removeChild"],
+        resource: "{resource:.*}",
+        filters: api.filter.standard.deleteFilters()
+    }, function (packet, context, pathParams) {
+        if (packet.entity && packet.entity.resource) {
+            packet.resource = packet.entity.resource;
+            context.node = this.data[packet.resource];
+            if (context.node) {
+                this.markForChange(context.node);
+                context.node.markAsDeleted(packet);
+            }
+        }
+        return {response: "ok"};
+    });
+
+    return DataApi;
+}(ozpIwc.api, ozpIwc.api.data.Api || {}));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.intents = ozpIwc.api.intents || {};
+
+/**
+ * @module ozpIwc.api
+ * @submodule ozpIwc.api.intents
+ */
+
+
+ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
+    /**
+     * The Intents Api.
+     * Subclasses the {{#crossLink "ozpIwc.api.base.Api"}}{{/crossLink}}.
+     *
+     * @class Api
+     * @namespace ozpIwc.api.intents
+     * @extends ozpIwc.api.base.Api
+     * @constructor
+     * @param {Object} config
+     * @param {String} [config.name="intents.api"]
+     * @param {ozpIwc.transport.Router} config.router
+     */
+    var Api = api.createApi("intents.api", function (config) {
+        this.endpoints = config.endpoints || [{link: ozpConfig.linkRelPrefix + ":intent", headers: []}];
+        this.contentTypeMappings = util.genContentTypeMappings(api.intents.node);
+    });
+
+//--------------------------------------------------
+// API state initialization methods
+//--------------------------------------------------
+    Api.prototype.initializeData = function (deathScream) {
+        deathScream = deathScream || {watchers: {}, collectors: [], data: []};
+        this.watchers = deathScream.watchers;
+        this.collectors = deathScream.collectors;
+        deathScream.data.forEach(function (packet) {
+            if (packet.resource.indexOf("/inFlightIntent") === 0) {
+                packet.entity = packet.entity || {};
+                packet.entity.dState = packet.entity.state;
+                packet.entity.state = "deserialize";
+                this.createNode({
+                    resource: packet.resource, invokePacket: {},
+                    handlerChoices: [0, 1],
+                    state: "deserialize"
+                }, api.intents.InFlightNode).deserializeLive(packet);
+            } else {
+                this.createNode({resource: packet.resource}).deserializeLive(packet);
+            }
+        }, this);
+
+        this.updateCollections();
+        if (this.endpoints) {
+            var self = this;
+            var onResource = function (resource) {
+                self.loadedResourceHandler(resource);
+            };
+            return Promise.all(this.endpoints.map(function (u) {
+                return util.halLoader.load(u.link, u.headers, onResource).catch(function (err) {
+                    log.error(self.logPrefix, "load from endpoint failed. Reason: ", err);
+                });
+            }));
+        } else {
+            return Promise.resolve();
+        }
+    };
+
+//--------------------------------------------------
+// Node creation/modification methods
+//--------------------------------------------------
+    /**
+     * Maps a content-type to an IWC Node type. Overriden in APIs.
+     * @method findNodeType
+     * @param {Object} contentTypeObj an object-formatted content-type
+     * @param {String} contentTypeObj.name the content-type without any variables
+     * @param {Number} [contentTypeObj.version] the version of the content-type.
+     * @returns {undefined}
+     */
+    Api.prototype.findNodeType = function (contentType) {
+        var formattedContentType = util.getFormattedContentType(contentType);
+        var type = this.contentTypeMappings[formattedContentType.name];
+        if (type) {
+            if (formattedContentType.version) {
+                return type[formattedContentType.version];
+            } else {
+                return type;
+            }
+        }
+    };
+
+
+//---------------------------------------------------------
+// Intent Invocation Methods
+//---------------------------------------------------------
+    /**
+     * A handler for invoke calls. Creates an inFlight-intent node and kicks off the inflight state machine.
+     *
+     * @method invokeIntentHandler
+     * @param {Object} packet
+     * @param {String} type
+     * @param {String} action
+     * @param {Object[]} handlers
+     * @param {String} pattern
+     * @return {Promise}
+     */
+    Api.prototype.invokeIntentHandler = function (packet, type, action, handlers, pattern) {
+        var self = this;
+        var inflightNode = new api.intents.node.InFlightNode({
+            resource: this.createKey("/inFlightIntent/"),
+            src: packet.src,
+            invokePacket: packet,
+            type: type,
+            action: action,
+            handlerChoices: handlers,
+            pattern: pattern
+        });
+
+        this.data[inflightNode.resource] = inflightNode;
+        this.addCollector(inflightNode.resource);
+
+        this.data[inflightNode.resource] = api.intents.FSM.transition(inflightNode);
+        return this.handleInflightIntentState(inflightNode).then(function () {
+            return {
+                entity: {
+                    inFlightIntent: self.data[inflightNode.resource].toPacket()
+                }
+            };
+        });
+    };
+
+    /**
+     * Handles the current state of the state machine.
+     * If "choosing", the intent chooser will open.
+     * If "delivering", the api will send the intent to the chosen handler
+     * If "complete", the api will send the intent handler's reply back to the invoker and mark the inflight intent as
+     * deleted.
+     * @param {Object} inflightNode
+     * @return {*}
+     */
+    Api.prototype.handleInflightIntentState = function (inflightNode) {
+        switch (inflightNode.entity.state) {
+            case "choosing":
+                return this.handleChoosing(inflightNode);
+            case "delivering":
+                this.handleDelivering(inflightNode);
+                break;
+            case "complete":
+                this.handleComplete(inflightNode);
+                break;
+            default:
+                break;
+        }
+        return Promise.resolve(inflightNode);
+    };
+
+    /**
+     * A handler for the "choosing" state of an in-flight intent node.
+     * @method handleChoosing
+     * @param node
+     * @return {Promise} Resolves when either a preference is gathered or the intent chooser is opened.
+     */
+    Api.prototype.handleChoosing = function (node) {
+
+        var useRegisteredChooser = function (intentNode) {
+
+            var tryChooser = function (chooser) {
+                var packet = util.clone(chooser.entity.invokeIntent);
+                packet.entity = packet.entity || {};
+                packet.src = packet.src || packet.dst;
+                packet.replyTo = chooser.entity.replyTo;
+                packet.entity.inFlightIntent = intentNode.toPacket();
+                packet.entity.force = (util.getInternetExplorerVersion() === 11);
+                if (util.runningInWorker()) {
+                    packet.entity.config = ozpConfig;
+                    packet.entity.config.intentSelection = "intents.api" + node.resource;
+                }
+
+                return self.invokeIntentHandler(packet, '/inFlightIntent/chooser', 'choose', [chooser], '/inFlightIntent/chooser/choose/').then(function (packet) {
+                    //This is because we are manually using the packetRouter route.
+                    var inFlightNode = packet.entity.inFlightIntent;
+                    inFlightNode.entity = inFlightNode.entity || {};
+
+                    if (inFlightNode.entity.state === "complete") {
+                        return true;
+                    } else if (inFlightNode.entity.state === "error") {
+                        throw "err";
+                    } else {
+                        var res, rej;
+                        var promise = new Promise(function (resolve, reject) {
+                            res = resolve;
+                            rej = reject;
+                        });
+                        var onComplete = function (node) {
+                            if (node.resource === inFlightNode.resource) {
+                                api.intents.FSM.off("complete", onComplete);
+                                res(true);
+                            }
+                        };
+                        var onError = function (node) {
+                            if (node.resource === inFlightNode.resource) {
+                                api.intents.FSM.off("error", onError);
+                                rej("err");
+                            }
+                        };
+                        api.intents.FSM.on("complete", onComplete);
+                        api.intents.FSM.on("error", onError);
+                        return promise;
+                    }
+                });
+            };
+
+            var itterChoosers = function (choosers) {
+                if (choosers.length > 0) {
+                    return tryChooser(choosers[0]).then(function () {
+                        return Promise.resolve();
+                    }).catch(function (err) {
+                        choosers.shift();
+                        return itterChoosers(choosers);
+                    });
+                } else {
+                    return Promise.reject("no choosers.");
+                }
+            };
+
+
+            var registeredChoosers = self.matchingNodes('/inFlightIntent/chooser/choose/');
+            return itterChoosers(registeredChoosers);
+        };
+
+        var showChooser = function (err) {
+            log.info("Picking chooser because", err);
+            return useRegisteredChooser(node).catch(function (err) {
+
+                if (util.getInternetExplorerVersion() !== 11) {
+                    log.info("launching popup chooser because: ", err);
+                    if (!util.runningInWorker()) {
+                        util.openWindow(ozpConfig.intentsChooserUri, {
+                            "ozpIwc.peer": ozpConfig._busRoot,
+                            "ozpIwc.intentSelection": "intents.api" + node.resource
+                        }, ozpConfig.intentChooserFeatures);
+                    }
+                } else {
+                    log.error("Failed to handle intent choosing: Internet Explorer 11 is not supported" +
+                        " for the default intent chooser.");
+                    node = api.intents.FSM.transition(node, {state: "error"});
+                }
+            });
+        };
+        var self = this;
+        return this.getPreference(node.entity.intent.type + "/" + node.entity.intent.action).then(function (handlerResource) {
+            if (handlerResource in self.data) {
+                node = api.intents.FSM.transition(node, {
+                    entity: {
+                        state: "delivering",
+                        'handler': {
+                            'resource': handlerResource,
+                            'reason': "remembered"
+                        }
+                    }
+                });
+                return self.handleInflightIntentState(node);
+            } else {
+                return showChooser();
+            }
+        }).catch(showChooser);
+    };
+
+    /**
+     *  A handler for the "delivering" state of an in-flight intent node.
+     *  Sends a packet to the chosen handler.
+     *
+     *  @TODO should resolve on response from the handler that transitions the node to "running".
+     *
+     * @method handleDelivering
+     * @param {ozpIwc.api.base.Node} node
+     */
+    Api.prototype.handleDelivering = function (node) {
+        var handlerNode = this.data[node.entity.handler.resource];
+
+        var packet = util.clone(handlerNode.entity.invokeIntent);
+        packet.entity = packet.entity || {};
+        packet.replyTo = handlerNode.entity.replyTo;
+        packet.entity.inFlightIntent = node.toPacket();
+        log.debug(this.logPrefix + "delivering intent:", packet);
+        // TODO: packet permissions
+        return this.send(packet);
+    };
+
+    /**
+     * A handler for the "complete" state of an in-flight intent node.
+     * Sends notification to the invoker that the intent was handled & deletes the in-flight intent node as it is no
+     * longer needed.
+     *
+     * @method handleComplete
+     * @param {ozpIwc.api.base.Node} node
+     */
+    Api.prototype.handleComplete = function (node) {
+        if (node.entity.invokePacket && node.entity.invokePacket.src && node.entity.reply) {
+            this.send({
+                dst: node.entity.invokePacket.src,
+                replyTo: node.entity.invokePacket.msgId,
+                contentType: node.entity.reply.contentType,
+                response: "complete",
+                entity: node.entity.reply.entity
+            });
+        }
+        node.markAsDeleted();
+    };
+
+    return Api;
+
+}(ozpIwc.api, ozpIwc.log, ozpIwc.config, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.intents = ozpIwc.api.intents || {};
+
+/**
+ * @module ozpIwc.api
+ * @submodule ozpIwc.api.intents
+ */
+
+
+ozpIwc.api.intents.FSM = (function (api, util) {
+    /**
+     * A Finite State Machine for in-flight intent resources. This state machine is static and manipulates the apiNodes
+     * it receives given the packet context received.
+     * @class FSM
+     * @namespace ozpIwc.api.intents
+     * @uses ozpIwc.util.Event
+     * @static
+     * @type {Object}
+     */
+    var FSM = {};
+
+    FSM.events = new util.Event();
+    FSM.events.mixinOnOff(FSM);
+
+//===============================================
+// States.
+// Called with node as scope.
+//===============================================
+    /**
+     * A collection of states in the FSM. Each state is a function that is called when a node transitions to it via
+     * ozpIwc.InFlightFSM.transition.
+     * Each state function is called with the node's scope.
+     *
+     * @property states
+     * @type {Object}
+     */
+    FSM.states = {};
+
+    /**
+     * The initial state.
+     * This state immediately determines the next state of the node based on the number of handler choices it contains.
+     *
+     * @method init
+     * @return {Object}
+     */
+    FSM.states.init = function () {
+        var choices = this.entity.handlerChoices;
+        var nextEntity = {};
+
+        if (!choices || choices === []) {
+            nextEntity.state = "error";
+            nextEntity.error = "noChoices";
+            return FSM.transition(this, {entity: nextEntity});
+        }
+
+        if (Array.isArray(choices)) {
+            //If there is only 1 choice & its a launcher, enforce the popup to choose it (similar to Windows chooser
+            // feel).
+            var onlyLauncher = (choices.length === 1 && choices[0] && choices[0].entity && choices[0].entity.invokeIntent &&
+            choices[0].entity.invokeIntent.action === "launch");
+            if (choices.length === 1 && !onlyLauncher) {
+                nextEntity.handler = {
+                    resource: choices[0].resource,
+                    reason: "onlyOne"
+                };
+                nextEntity.state = "delivering";
+            } else {
+                nextEntity.state = "choosing";
+            }
+        } else if (typeof choices === "object") {
+            nextEntity.handler = {
+                resource: choices.resource,
+                reason: "onlyOne"
+            };
+            nextEntity.state = "delivering";
+        } else {
+            nextEntity.state = "error";
+            nextEntity.error = "unknown choices.";
+        }
+
+        return FSM.transition(this, {entity: nextEntity});
+    };
+
+    /**
+     * The error handling state.
+     * This state is called when unexpected state changes and missing data occurs in the state
+     * machine.
+     *
+     * @method error
+     * @param {Object} entity The entity of the request packet received by the Api.
+     * @return {ozpIwc.api.base.Node}
+     */
+    FSM.states.error = function (entity) {
+        this.entity = this.entity || {};
+        this.entity.reply = entity.error;
+        this.entity.state = "error";
+        this.version++;
+        return FSM.stateEvent(this);
+    };
+
+    /**
+     * The delivering state.
+     * The node is in a delivering state when it's registered handler is called to operate on the
+     * intent data. The register handler will respond with "running" to signify it has received the request.
+     *
+     * @method delivering
+     * @param {Object} entity The entity of the request packet received by the Api.
+     * @return {ozpIwc.api.base.Node}
+     */
+    FSM.states.delivering = function (entity) {
+        if (!entity.handler || !entity.handler.resource || !entity.handler.reason) {
+            throw new api.error.BadStateError("Choosing state requires a resource and reason");
+        }
+        this.entity.handler = entity.handler;
+        this.entity.state = "delivering";
+        this.version++;
+        return FSM.stateEvent(this);
+    };
+
+    /**
+     * The running state.
+     * The node is in a running state when the registered handler has received the request data. The
+     * node will transition to the "complete" state upon receiving a response from the handler's operation.
+     * @TODO currently running/complete are sent at once and no data is returned. When these states are sent the intent
+     *     is handled.
+     *
+     * @method running
+     * @param {Object} entity The entity of the request packet received by the Api.
+     * @return {ozpIwc.api.base.Node}
+     */
+    FSM.states.running = function (entity) {
+        if (!entity.handler || !entity.handler.address) {
+            throw new api.error.BadContentError("Entity lacks a 'handler.address' field");
+        }
+        this.entity.handler.address = entity.handler.address;
+        this.entity.state = "running";
+        this.version++;
+        return FSM.stateEvent(this);
+    };
+
+    /**
+     * The choosing state.
+     * The node is in a choosing state when:
+     *  (1) the intent chooser is opened.
+     *  (2) the api is gathering the preference-stored designated handler.
+     *
+     * The node will transition to delivering once the handler has been chosen.
+     *
+     * @method choosing
+     * @return {ozpIwc.api.base.Node}
+     */
+    FSM.states.choosing = function () {
+        this.entity.state = "choosing";
+        this.version++;
+        return FSM.stateEvent(this);
+    };
+
+    /**
+     * The Complete state.
+     * Once the intent has been handled or canceled the node will transition to the complete state. From here the API
+     * will mark the node for deletion as it is no longer needed.
+     *
+     * @method complete
+     * @param {Object} entity The entity of the request packet received by the Api.
+     * @return {ozpIwc.api.base.Node}
+     */
+    FSM.states.complete = function (entity) {
+        this.entity.reply = entity.reply;
+        this.entity.state = "complete";
+        this.version++;
+        return FSM.stateEvent(this);
+    };
+
+
+//===============================================
+//State Transitions
+//===============================================
+    /**
+     * A collection of state transitions for the Finite State machine. The first level of properties represent current
+     * state and the second level represents states that can be transitioned to.
+     *
+     * @property stateTransitions
+     * @type {Object}
+     */
+    FSM.stateTransitions = {
+        "init": {
+            "init": FSM.states.init,
+            "error": FSM.states.error,
+            "delivering": FSM.states.delivering,
+            "choosing": FSM.states.choosing
+        },
+        "choosing": {
+            "error": FSM.states.error,
+            "delivering": FSM.states.delivering,
+            "complete": FSM.states.complete
+        },
+        "delivering": {
+            "error": FSM.states.error,
+            "running": FSM.states.running,
+            "complete": FSM.states.complete
+        },
+        "running": {
+            "error": FSM.states.error,
+            "complete": FSM.states.complete
+        },
+        "complete": {},
+        "error": {}
+    };
+
+    /**
+     * The transition utility function. This determines if the requested state change from the packet is valid, then
+     * calls the state transition and returns the modified node for storage.
+     * @method transition
+     * @param {ozpIwc.api.base.Node} node
+     * @param {ozpIwc.PacketContext} [packet] If not provided, FSM assumes initial state transition.
+     * @return {ozpIwc.api.base.Node}
+     */
+    FSM.transition = function (node, packet) {
+        packet = packet || {entity: {state: "init"}};
+        if (!packet.entity || !packet.entity.state) {
+            throw new api.error.BadContentError("Entity lacks a 'state' field");
+        }
+        if (node.deleted) {
+            throw new api.error.BadContentError("Already handled.");
+        }
+        var transist = FSM.stateTransitions[node.entity.state];
+        if (!transist) {
+            // we're in a bad state.  pretty much unrecoverable
+            return FSM.states.error.call(node, {
+                entity: {
+                    error: "Inflight intent is in an invalid state.  Cannot proceed.",
+                }
+            });
+        }
+
+        transist = transist[packet.entity.state];
+        if (!transist) {
+            throw new api.error.BadStateError("In-flight intent cannot transition from " +
+                node.entity.state + " to " + packet.entity.state);
+        }
+
+        return transist.call(node, packet.entity);
+    };
+
+    /**
+     * Triggers node's state event and returns the node.
+     * @method stateReturn
+     * @param node
+     * @return {ozpIwc.api.base.Node}
+     */
+    FSM.stateEvent = function (node) {
+        if (node.entity && node.entity.state) {
+            FSM.events.trigger(node.entity.state, node);
+        }
+        return node;
+    };
+
+    return FSM;
 }(ozpIwc.api, ozpIwc.util));
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
@@ -15891,819 +16864,35 @@ ozpIwc.api.intents.node.InFlightNode = (function (api, util) {
 }(ozpIwc.api, ozpIwc.util));
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
-ozpIwc.api.system = ozpIwc.api.system || {};
-ozpIwc.api.system.node = ozpIwc.api.system.node || {};
-
-/**
- * @module ozpIwc.api.system
- * @submodule ozpIwc.api.system.node
- */
-
-
-ozpIwc.api.system.node.ApplicationNode = (function (api, util) {
-    /**
-     * @class ApplicationNode
-     * @namespace ozpIwc.api.system.node
-     * @extends ozpIwc.api.base.Node
-     * @constructor
-     */
-    var Node = util.extend(api.base.Node, function (config) {
-        api.base.Node.apply(this, arguments);
-    });
-
-    /**
-     * The content type of the data returned by serialize()
-     * @Property {string} serializedContentType
-     */
-    Node.serializedContentType = "application/vnd.ozp-application-v1+json";
-
-    /**
-     * Sets the api node from the serialized form.
-     *
-     *
-     * @method deserializedEntity
-     * @param {Object} data
-     */
-    Node.prototype.deserializedEntity = function (data) {
-        var blacklist = ["_embedded","_links"];
-        var entity = {};
-        for(var i in data){
-            if(data.hasOwnProperty(i) && blacklist.indexOf(i) === -1){
-                entity[i] = data[i];
-            }
-        }
-        return entity;
-    };
-
-    /**
-     * If a resource path isn't given, this takes the best guess at assigning it.
-     * @override
-     * @method resourceFallback
-     * @param serializedForm
-     * @return String
-     */
-    Node.prototype.resourceFallback = function (serializedForm) {
-        if(serializedForm.id) {
-            return "/application/" + serializedForm.id;
-        }
-    };
-
-    return Node;
-}(ozpIwc.api, ozpIwc.util));
-var ozpIwc = ozpIwc || {};
-ozpIwc.api = ozpIwc.api || {};
-ozpIwc.api.system = ozpIwc.api.system || {};
-ozpIwc.api.system.node = ozpIwc.api.system.node|| {};
-
-
-/**
- * @module ozpIwc.api.system
- * @submodule ozpIwc.api.system.node
- */
-
-
-ozpIwc.api.system.node.ApplicationNodeV2 = (function (api, util) {
-    /**
-     * @class ApplicationNodeV2
-     * @namespace ozpIwc.api.system.node
-     * @extends ozpIwc.api.base.Node
-     * @constructor
-     */
-    var Node = util.extend(api.system.node.ApplicationNode, function (config) {
-        api.system.node.ApplicationNode.apply(this, arguments);
-    });
-
-    /**
-     * The content type of the data returned by serialize()
-     * @Property {string} serializedContentType
-     */
-    Node.serializedContentType = "application/vnd.ozp-iwc-application+json;version=2";
-
-    /**
-     * Sets the api node from the serialized form.
-     *
-     * @method deserializedEntity
-     * @param {Object} data
-     */
-    Node.prototype.deserializedEntity = function (data) {
-        /*jshint camelcase: false */
-        data = data || {};
-        data.small_icon = data.small_icon || {};
-       return {
-            id: data.id,
-            name: data.title,
-            launchUrls: {
-                default: data.launch_url
-            },
-            icons: {
-                small: data.small_icon.url
-            },
-            intents: util.ensureArray(data.intents)
-        };
-    };
-
-    return Node;
-}(ozpIwc.api, ozpIwc.util));
-var ozpIwc = ozpIwc || {};
-ozpIwc.api = ozpIwc.api || {};
-ozpIwc.api.system = ozpIwc.api.system || {};
-ozpIwc.api.system.node = ozpIwc.api.system.node|| {};
-
-/**
- * @module ozpIwc.api.system
- * @submodule ozpIwc.api.system.node
- */
-
-
-ozpIwc.api.system.node.SystemNode = (function (api, util) {
-    /**
-     * @class SystemNode
-     * @namespace ozpIwc.api.system.node
-     * @extends ozpIwc.api.base.Node
-     * @constructor
-     */
-    var Node = util.extend(api.base.Node, function (config) {
-        api.base.Node.apply(this, arguments);
-    });
-
-
-    /**
-     * The content type of the data returned by serialize()
-     * @Property {string} serializedContentType
-     */
-    Node.serializedContentType = "application/vnd.ozp-iwc-system-v1+json";
-
-    /**
-     * Sets the api node from the serialized form.
-     *
-     * @method deserializedEntity
-     * @param {Object} data
-     */
-    Node.prototype.deserializedEntity = function (data) {
-        /*jshint camelcase: false */
-        data = data  || {};
-
-        return {
-            name : data.name,
-            version: data.version
-        };
-    };
-
-    /**
-     * If a resource path isn't given, this takes the best guess at assigning it.
-     * @override
-     * @method resourceFallback
-     * @return String
-     */
-    Node.prototype.resourceFallback = function () {
-        return "/system";
-    };
-
-    return Node;
-}(ozpIwc.api, ozpIwc.util));
-var ozpIwc = ozpIwc || {};
-ozpIwc.api = ozpIwc.api || {};
-ozpIwc.api.system = ozpIwc.api.system || {};
-ozpIwc.api.system.node = ozpIwc.api.system.node|| {};
-
-/**
- * @module ozpIwc.api.system
- * @submodule ozpIwc.api.system.node
- */
-
-
-ozpIwc.api.system.node.SystemNodeV2 = (function (api, util) {
-    /**
-     * The same schema as SystemNode, but content type naming scheme changed.
-     * @class UserNodeV2
-     * @namespace ozpIwc.api.system.node
-     * @extends ozpIwc.api.system.node.SystemNode
-     * @constructor
-     */
-    var Node = util.extend(api.system.node.SystemNode, function (config) {
-        api.system.node.SystemNode.apply(this, arguments);
-    });
-
-
-    /**
-     * The content type of the data returned by serialize()
-     * @Property {string} serializedContentType
-     */
-    Node.serializedContentType = "application/vnd.ozp-iwc-system+json;version=2";
-
-    return Node;
-}(ozpIwc.api, ozpIwc.util));
-var ozpIwc = ozpIwc || {};
-ozpIwc.api = ozpIwc.api || {};
-ozpIwc.api.system = ozpIwc.api.system || {};
-ozpIwc.api.system.node = ozpIwc.api.system.node|| {};
-
-/**
- * @module ozpIwc.api.system
- * @submodule ozpIwc.api.system.node
- */
-
-
-ozpIwc.api.system.node.UserNode = (function (api, util) {
-    /**
-     * @class UserNode
-     * @namespace ozpIwc.api.system.node
-     * @extends ozpIwc.api.base.Node
-     * @constructor
-     */
-    var Node = util.extend(api.base.Node, function (config) {
-        api.base.Node.apply(this, arguments);
-    });
-
-
-    /**
-     * The content type of the data returned by serialize()
-     * @Property {string} serializedContentType
-     */
-    Node.serializedContentType = "application/vnd.ozp-profile-v1+json";
-
-    /**
-     * Sets the api node from the serialized form.
-     *
-     * @method deserializedEntity
-     * @param {Object} data
-     */
-    Node.prototype.deserializedEntity = function (data) {
-        /*jshint camelcase: false */
-        data = data  || {};
-
-        return {
-            displayName : data.displayName,
-            id: data.id,
-            username: data.username
-        };
-    };
-
-    /**
-     * If a resource path isn't given, this takes the best guess at assigning it.
-     * @override
-     * @method resourceFallback
-     * @return String
-     */
-    Node.prototype.resourceFallback = function () {
-        return "/user";
-    };
-
-    return Node;
-}(ozpIwc.api, ozpIwc.util));
-var ozpIwc = ozpIwc || {};
-ozpIwc.api = ozpIwc.api || {};
-ozpIwc.api.system = ozpIwc.api.system || {};
-ozpIwc.api.system.node = ozpIwc.api.system.node|| {};
-
-/**
- * @module ozpIwc.api.system
- * @submodule ozpIwc.api.system.node
- */
-
-
-ozpIwc.api.system.node.UserNodeV2 = (function (api, util) {
-    /**
-     * The same schema as UserNode, but content type naming scheme changed.
-     * @class UserNodeV2
-     * @namespace ozpIwc.api.system.node
-     * @extends ozpIwc.api.system.node.UserNode
-     * @constructor
-     */
-    var Node = util.extend(api.system.node.UserNode, function (config) {
-        api.system.node.UserNode.apply(this, arguments);
-    });
-
-
-    /**
-     * The content type of the data returned by serialize()
-     * @Property {string} serializedContentType
-     */
-    Node.serializedContentType = "application/vnd.ozp-iwc-user+json;version=2";
-
-    /**
-     * Sets the api node from the serialized form.
-     *
-     * @method deserializedEntity
-     * @param {Object} data
-     */
-    Node.prototype.deserializedEntity = function (data) {
-        /*jshint camelcase: false */
-        data = data  || {};
-
-        return {
-            displayName : data.display_name,
-            id: data.id,
-            username: data.username
-        };
-    };
-    return Node;
-}(ozpIwc.api, ozpIwc.util));
-var ozpIwc = ozpIwc || {};
-ozpIwc.api = ozpIwc.api || {};
-ozpIwc.api.data = ozpIwc.api.data || {};
-/**
- * @module ozpIwc.api
- * @submodule ozpIwc.api.data
- */
-
-
-ozpIwc.api.data.Api = (function (api, ozpConfig, util) {
-    /**
-     * The Data Api.
-     * Subclasses the {{#crossLink "ozpIwc.api.base.Api"}}{{/crossLink}}.
-     *
-     * @class Api
-     * @namespace ozpIwc.api.data
-     * @extends ozpIwc.api.base.Api
-     * @constructor
-     * @param {Object} config
-     * @param {String} [config.name="data.api"]
-     * @param {ozpIwc.transport.Router} config.router
-     */
-    var Api = api.createApi("data.api", function (config) {
-        this.endpoints = config.endpoints || [{link: ozpConfig.linkRelPrefix + ":user-data",headers: []}];
-        this.contentTypeMappings = util.genContentTypeMappings(api.data.node);
-    });
-
-    // Default handlers are fine anything
-    Api.useDefaultRoute(api.base.Api.allActions);
-
-    /**
-     * Maps a content-type to an IWC Node type. Overriden in APIs.
-     * @method findNodeType
-     * @param {Object} contentTypeObj an object-formatted content-type
-     * @param {String} contentTypeObj.name the content-type without any variables
-     * @param {Number} [contentTypeObj.version] the version of the content-type.
-     * @returns {undefined}
-     */
-    Api.prototype.findNodeType = function(contentType){
-        var formattedContentType = util.getFormattedContentType(contentType);
-        if(!formattedContentType.name){
-            var template = api.uriTemplate('ozp:data-item') || {};
-            formattedContentType = util.getFormattedContentType(template.type);
-        }
-
-        var type = this.contentTypeMappings[formattedContentType.name];
-        if(type){
-            if(formattedContentType.version) {
-                return type[formattedContentType.version];
-            }else{
-                return type;
-            }
-        }
-        return api.data.node.NodeV2;
-    };
-
-    /**
-     * Creates a node appropriate for the given config.  This does
-     * NOT add the node to this.data.
-     *
-     * Calls findNodeType to gather NodeType from contentType.
-     *
-     * @method createNodeObject
-     * @param {Object} config The node configuration configuration.
-     * @param {Function} NodeType The contructor call for the given node type to be created.
-     * @return {ozpIwc.api.base.Node}
-     */
-    Api.prototype.createNodeObject = function (config, NodeType) {
-        if(NodeType) {
-            return new NodeType(config);
-        }
-    };
-//============================================
-// Add/Remove Child:
-//============================================
-    /**
-     * A filter for adding children nodes to the data api. assigns the parent node a pattern & sets it as a collector.
-     * @method addChildFilters
-     * @static
-     * @return {function[]}
-     */
-    Api.addChildFilters = function () {
-        var childData = {};
-        var filters = api.filter.standard.createAndCollectFilters(api.data.node.Node);
-
-        //Stash the child's pattern for now and create the parent.
-        filters.unshift(function (packet, context, pathParams, next) {
-            childData.pattern = packet.pattern;
-            childData.lifespan = packet.lifespan;
-            packet.pattern = undefined;
-            packet.lifespan = undefined;
-            return next();
-        });
-        //Make sure the parent node has it's pattern set then replace the childs pattern at the end of the filter chain
-        filters.push(function (packet, context, pathParams, next) {
-            context.node.set({
-                pattern: packet.pattern
-            });
-            packet.pattern = childData.pattern;
-            packet.lifespan = childData.lifespan;
-            return next();
-        });
-        return filters;
-    };
-
-    Api.declareRoute({
-        action: ["addChild"],
-        resource: "{resource:.*}",
-        filters: Api.addChildFilters()
-    }, function (packet, context, pathParams) {
-        var key = this.createKey(context.node.pattern);
-        packet.resource = key;
-        packet.pattern = packet.pattern || key + "/";
-        var childNode = this.createNode({
-            resource: key,
-            lifespan: packet.lifespan,
-            src: packet.src
-        }, api.data.node.Node);
-        this.markForChange(childNode);
-        childNode.set(packet);
-
-        return {
-            response: "ok",
-            entity: {
-                resource: childNode.resource
-            }
-        };
-    });
-
-    Api.declareRoute({
-        action: ["removeChild"],
-        resource: "{resource:.*}",
-        filters: api.filter.standard.deleteFilters()
-    }, function (packet, context, pathParams) {
-        if (packet.entity && packet.entity.resource) {
-            packet.resource = packet.entity.resource;
-            context.node = this.data[packet.resource];
-            if (context.node) {
-                this.markForChange(context.node);
-                context.node.markAsDeleted(packet);
-            }
-        }
-        return {response: "ok"};
-    });
-
-    return Api;
-}(ozpIwc.api, ozpIwc.config, ozpIwc.util));
-var ozpIwc = ozpIwc || {};
-ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.intents = ozpIwc.api.intents || {};
-
 /**
  * @module ozpIwc.api
  * @submodule ozpIwc.api.intents
+ * @class ozpIwc.api.intents.Api
  */
 
+ozpIwc.api.intents.Api = (function (api, IntentsApi, log) {
 
-ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
-    /**
-     * The Intents Api.
-     * Subclasses the {{#crossLink "ozpIwc.api.base.Api"}}{{/crossLink}}.
-     *
-     * @class Api
-     * @namespace ozpIwc.api.intents
-     * @extends ozpIwc.api.base.Api
-     * @constructor
-     * @param {Object} config
-     * @param {String} [config.name="intents.api"]
-     * @param {ozpIwc.transport.Router} config.router
-     */
-    var Api = api.createApi("intents.api", function (config) {
-        this.endpoints = config.endpoints || [{link: ozpConfig.linkRelPrefix + ":intent",headers: []}];
-        this.contentTypeMappings = util.genContentTypeMappings(api.intents.node);
-    });
+//---------------------------------------------------------
+// Default Routes
+//---------------------------------------------------------
+    // turn on bulkGet and list for everything
+    IntentsApi.useDefaultRoute(["bulkGet", "list"]);
+    IntentsApi.useDefaultRoute(["watch", "unwatch", "delete"], "/inFlightIntent/{id}");
+    IntentsApi.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/{major}/{minor}/{action}/{handlerId}");
+    IntentsApi.useDefaultRoute(["delete", "watch", "unwatch", "get"], "/{major}/{minor}/{action}");
 
-    Api.prototype.initializeData = function (deathScream) {
-        deathScream = deathScream || {watchers: {}, collectors: [], data: []};
-        this.watchers = deathScream.watchers;
-        this.collectors = deathScream.collectors;
-        deathScream.data.forEach(function (packet) {
-            if (packet.resource.indexOf("/inFlightIntent") === 0) {
-                packet.entity = packet.entity || {};
-                packet.entity.dState = packet.entity.state;
-                packet.entity.state = "deserialize";
-                this.createNode({
-                    resource: packet.resource, invokePacket: {},
-                    handlerChoices: [0, 1],
-                    state: "deserialize"
-                }, api.intents.InFlightNode).deserializeLive(packet);
-            } else {
-                this.createNode({resource: packet.resource}).deserializeLive(packet);
-            }
-        }, this);
-
-        this.updateCollections();
-        if (this.endpoints) {
-            var self = this;
-            return Promise.all(this.endpoints.map(function (u) {
-                var e = api.endpoint(u.link);
-                return self.loadFromEndpoint(e, u.headers).catch(function (err) {
-                    log.error(self.logPrefix, "load from endpoint failed. Reason: ", err);
-                });
-            }));
-        } else {
-            return Promise.resolve();
-        }
-    };
-
-    /**
-     * Maps a content-type to an IWC Node type. Overriden in APIs.
-     * @method findNodeType
-     * @param {Object} contentTypeObj an object-formatted content-type
-     * @param {String} contentTypeObj.name the content-type without any variables
-     * @param {Number} [contentTypeObj.version] the version of the content-type.
-     * @returns {undefined}
-     */
-    Api.prototype.findNodeType = function(contentType){
-        var formattedContentType = util.getFormattedContentType(contentType);
-        var type = this.contentTypeMappings[formattedContentType.name];
-        if(type){
-            if(formattedContentType.version) {
-                return type[formattedContentType.version];
-            }else{
-                return type;
-            }
-        }
-    };
-
-
-// turn on bulkGet and list for everything
-    Api.useDefaultRoute(["bulkGet", "list"]);
-
-//====================================================================
-// Intent Invocation Endpoints
-//====================================================================
-
-    Api.useDefaultRoute(["watch", "unwatch", "delete"], "/inFlightIntent/{id}");
-
-    /**
-     * A handler for invoke calls. Creates an inFlight-intent node and kicks off the inflight state machine.
-     *
-     * @method invokeIntentHandler
-     * @param {Object} packet
-     * @param {String} type
-     * @param {String} action
-     * @param {Object[]} handlers
-     * @param {String} pattern
-     * @return {Promise}
-     */
-    Api.prototype.invokeIntentHandler = function (packet, type, action, handlers, pattern) {
-        var self = this;
-        var inflightNode = new api.intents.node.InFlightNode({
-            resource: this.createKey("/inFlightIntent/"),
-            src: packet.src,
-            invokePacket: packet,
-            type: type,
-            action: action,
-            handlerChoices: handlers,
-            pattern: pattern
-        });
-
-        this.data[inflightNode.resource] = inflightNode;
-        this.addCollector(inflightNode.resource);
-
-        this.data[inflightNode.resource] = api.intents.FSM.transition(inflightNode);
-        return this.handleInflightIntentState(inflightNode).then(function () {
-            return {
-                entity: {
-                    inFlightIntent: self.data[inflightNode.resource].toPacket()
-                }
-            };
-        });
-    };
-
-    /**
-     * Handles the current state of the state machine.
-     * If "choosing", the intent chooser will open.
-     * If "delivering", the api will send the intent to the chosen handler
-     * If "complete", the api will send the intent handler's reply back to the invoker and mark the inflight intent as
-     * deleted.
-     * @param {Object} inflightNode
-     * @return {*}
-     */
-    Api.prototype.handleInflightIntentState = function (inflightNode) {
-        switch (inflightNode.entity.state) {
-            case "choosing":
-                return this.handleChoosing(inflightNode);
-            case "delivering":
-                this.handleDelivering(inflightNode);
-                break;
-            case "complete":
-                this.handleComplete(inflightNode);
-                break;
-            default:
-                break;
-        }
-        return Promise.resolve(inflightNode);
-    };
-
-    /**
-     * A handler for the "choosing" state of an in-flight intent node.
-     * @method handleChoosing
-     * @param node
-     * @return {Promise} Resolves when either a preference is gathered or the intent chooser is opened.
-     */
-    Api.prototype.handleChoosing = function (node) {
-
-        var useRegisteredChooser = function (intentNode) {
-
-            var tryChooser = function (chooser) {
-                var packet = util.clone(chooser.entity.invokeIntent);
-                packet.entity = packet.entity || {};
-                packet.src = packet.src || packet.dst;
-                packet.replyTo = chooser.entity.replyTo;
-                packet.entity.inFlightIntent = intentNode.toPacket();
-                packet.entity.force = (util.getInternetExplorerVersion() === 11);
-                if(util.runningInWorker()) {
-                    packet.entity.config = ozpConfig;
-                    packet.entity.config.intentSelection = "intents.api" + node.resource;
-                }
-
-                return self.invokeIntentHandler(packet, '/inFlightIntent/chooser', 'choose', [chooser], '/inFlightIntent/chooser/choose/').then(function (packet) {
-                    //This is because we are manually using the packetRouter route.
-                    var inFlightNode = packet.entity.inFlightIntent;
-                    inFlightNode.entity = inFlightNode.entity || {};
-
-                    if (inFlightNode.entity.state === "complete") {
-                        return true;
-                    } else if (inFlightNode.entity.state === "error") {
-                        throw "err";
-                    } else {
-                        var res, rej;
-                        var promise = new Promise(function (resolve, reject) {
-                            res = resolve;
-                            rej = reject;
-                        });
-                        var onComplete = function (node) {
-                            if (node.resource === inFlightNode.resource) {
-                                api.intents.FSM.off("complete", onComplete);
-                                res(true);
-                            }
-                        };
-                        var onError = function (node) {
-                            if (node.resource === inFlightNode.resource) {
-                                api.intents.FSM.off("error", onError);
-                                rej("err");
-                            }
-                        };
-                        api.intents.FSM.on("complete", onComplete);
-                        api.intents.FSM.on("error", onError);
-                        return promise;
-                    }
-                });
-            };
-
-            var itterChoosers = function (choosers) {
-                if (choosers.length > 0) {
-                    return tryChooser(choosers[0]).then(function () {
-                        return Promise.resolve();
-                    }).catch(function (err) {
-                        choosers.shift();
-                        return itterChoosers(choosers);
-                    });
-                } else {
-                    return Promise.reject("no choosers.");
-                }
-            };
-
-
-            var registeredChoosers = self.matchingNodes('/inFlightIntent/chooser/choose/');
-            return itterChoosers(registeredChoosers);
-        };
-
-        var showChooser = function (err) {
-            log.info("Picking chooser because", err);
-            return useRegisteredChooser(node).catch(function (err) {
-
-                if (util.getInternetExplorerVersion() !== 11) {
-                    log.info("launching popup chooser because: ", err);
-                    if(!util.runningInWorker()) {
-                        util.openWindow(ozpConfig.intentsChooserUri, {
-                            "ozpIwc.peer": ozpConfig._busRoot,
-                            "ozpIwc.intentSelection": "intents.api" + node.resource
-                        }, ozpConfig.intentChooserFeatures);
-                    }
-                } else {
-                    log.error("Failed to handle intent choosing: Internet Explorer 11 is not supported" +
-                        " for the default intent chooser.");
-                    node = api.intents.FSM.transition(node, {state: "error"});
-                }
-            });
-        };
-        var self = this;
-        return this.getPreference(node.entity.intent.type + "/" + node.entity.intent.action).then(function (handlerResource) {
-            if (handlerResource in self.data) {
-                node = api.intents.FSM.transition(node, {
-                    entity: {
-                        state: "delivering",
-                        'handler': {
-                            'resource': handlerResource,
-                            'reason': "remembered"
-                        }
-                    }
-                });
-                return self.handleInflightIntentState(node);
-            } else {
-                return showChooser();
-            }
-        }).catch(showChooser);
-    };
-
-    /**
-     *  A handler for the "delivering" state of an in-flight intent node.
-     *  Sends a packet to the chosen handler.
-     *
-     *  @TODO should resolve on response from the handler that transitions the node to "running".
-     *
-     * @method handleDelivering
-     * @param {ozpIwc.api.base.Node} node
-     */
-    Api.prototype.handleDelivering = function (node) {
-        var handlerNode = this.data[node.entity.handler.resource];
-
-        var packet = util.clone(handlerNode.entity.invokeIntent);
-        packet.entity = packet.entity || {};
-        packet.replyTo = handlerNode.entity.replyTo;
-        packet.entity.inFlightIntent = node.toPacket();
-        log.debug(this.logPrefix + "delivering intent:", packet);
-        // TODO: packet permissions
-        return this.send(packet);
-    };
-
-    /**
-     * A handler for the "complete" state of an in-flight intent node.
-     * Sends notification to the invoker that the intent was handled & deletes the in-flight intent node as it is no
-     * longer needed.
-     *
-     * @method handleComplete
-     * @param {ozpIwc.api.base.Node} node
-     */
-    Api.prototype.handleComplete = function (node) {
-        if (node.entity.invokePacket && node.entity.invokePacket.src && node.entity.reply) {
-            this.send({
-                dst: node.entity.invokePacket.src,
-                replyTo: node.entity.invokePacket.msgId,
-                contentType: node.entity.reply.contentType,
-                response: "complete",
-                entity: node.entity.reply.entity
-            });
-        }
-        node.markAsDeleted();
-    };
-
-    Api.declareRoute({
-        action: "set",
-        resource: "/inFlightIntent/{id}",
-        filters: api.filter.standard.setFilters(api.intents.node.InFlightNode)
-    }, function (packet, context, pathParams) {
-        context.node = api.intents.FSM.transition(context.node, packet);
-        return this.handleInflightIntentState(context.node).then(function () {
-            return {response: "ok"};
-        });
-    });
-
-//====================================================================
-// Handler endpoints
-//====================================================================
-    Api.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/{major}/{minor}/{action}/{handlerId}");
-
-    /**
-     * A route for intent handler invocations.
-     * Invokes a specific handler directly
-     */
-    Api.declareRoute({
-        action: "invoke",
-        resource: "/{major}/{minor}/{action}/{handlerId}",
-        filters: []
-    }, function (packet, context, pathParams) {
-        return this.invokeIntentHandler(
-            packet,
-            pathParams.major + "/" + pathParams.minor,
-            pathParams.action,
-            context.node
-        );
-    });
-    Api.declareRoute({
-        action: "set",
-        resource: "/{major}/{minor}/{action}/{handlerId}",
-        filters: api.filter.standard.setFilters(api.intents.HandlerNode)
-    }, function (packet, context, pathParams) {
-        context.node.set(packet);
-        return {"response": "ok"};
-    });
-
-//====================================================================
-// Action endpoints
-//====================================================================
+//---------------------------------------------------------
+// Filters
+//---------------------------------------------------------
     /**
      * A route filter for creating an intent definition (/{major}/{minor}/{action}) if it does not exist.
      * @method registerDefinitionFilter
-     * @param {String} nodeType
-     * @param {String} contentType
+     * @private
+     * @static
      * @return {*}
      */
-    Api.registerDefinitionFilter = function () {
+    var registerDefinitionFilter = function () {
         var setDefinition = function (packet, context, pathParams, next) {
             this.addCollector(context.node.resource);
             return next();
@@ -16720,11 +16909,11 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
      * A route filter for creating an intent definition node (/{major}/{minor}/{action}) if it does not exist, then
      * creates an intent handler node with the specified handlerId ({major}/{minor}/{action}/{handlerId})
      * @method registerHandlerFilter
-     * @param {String} nodeType
-     * @param {String} contentType
+     * @private
+     * @static
      * @return {*}
      */
-    Api.registerHandlerFilter = function (nodeType, contentType) {
+    var registerHandlerFilter = function () {
         var generateDefinitionResource = function (packet, context, pathParams, next) {
             packet.resource = "/" + pathParams.major + "/" + pathParams.minor + "/" + pathParams.action;
             context.node = this.data[packet.resource];
@@ -16739,7 +16928,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
             return next();
         };
 
-        var definitionFilter = Api.registerDefinitionFilter();
+        var definitionFilter = registerDefinitionFilter();
         definitionFilter.unshift(generateDefinitionResource);
 
         definitionFilter.push(generateHandlerResource);
@@ -16747,81 +16936,28 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         return definitionFilter;
     };
 
-    /**
-     * Registration handler when a handlerId is not specified
-     */
-    Api.declareRoute({
-        action: "register",
-        resource: "/{major}/{minor}/{action}",
-        filters: Api.registerDefinitionFilter()
+//---------------------------------------------------------
+// Routes
+//---------------------------------------------------------
+
+    //-----------------------------------------------------
+    // In Flight Intents
+    //-----------------------------------------------------
+    IntentsApi.declareRoute({
+        action: "set",
+        resource: "/inFlightIntent/{id}",
+        filters: api.filter.standard.setFilters(api.intents.node.InFlightNode)
     }, function (packet, context, pathParams) {
-
-        var childNode = this.createNode({
-            'resource': this.createKey(context.node.resource + "/"),
-            'src': packet.src
-        }, api.intents.node.HandlerNode);
-        childNode.set(packet);
-
-        log.debug(this.logPrefix + " registered ", context.node);
-        return {
-            'response': 'ok',
-            'entity': {
-                'resource': childNode.resource
-            }
-        };
+        context.node = api.intents.FSM.transition(context.node, packet);
+        return this.handleInflightIntentState(context.node).then(function () {
+            return {response: "ok"};
+        });
     });
 
-    /**
-     * Registration handler when a handlerId is specified
-     */
-    Api.declareRoute({
-        action: "register",
-        resource: "/{major}/{minor}/{action}/{handlerId}",
-        filters: Api.registerHandlerFilter()
-    }, function (packet, context, pathParams) {
-        var childNode = this.createNode({
-            'resource': packet.resource,
-            'src': packet.src
-        }, api.intents.node.HandlerNode);
-        childNode.set(packet);
-
-        log.debug(this.logPrefix + " registered ", context.node);
-        return {
-            'response': 'ok',
-            'entity': {
-                'resource': childNode.resource
-            }
-        };
-    });
-
-    /**
-     * A route for intent action invocations.
-     * Will launch direct for user input if multiple options.
-     */
-    Api.declareRoute({
-        action: "invoke",
-        resource: "/{major}/{minor}/{action}",
-        filters: api.filter.standard.getFilters()
-    }, function (packet, context, pathParams) {
-        return this.invokeIntentHandler(
-            packet,
-            pathParams.major + "/" + pathParams.minor,
-            pathParams.action,
-            this.matchingNodes(context.node.pattern),
-            context.node.pattern
-        );
-    });
-
-    /**
-     * A route for the following actions not handled by other routes: bulkGet, list, delete, watch, and unwatch.
-     * Default route used.
-     */
-    Api.useDefaultRoute(["delete", "watch", "unwatch", "get"], "/{major}/{minor}/{action}");
-
-//====================================================================
-// Content Type endpoints
-//====================================================================
-    Api.declareRoute({
+    //-----------------------------------------------------
+    // Intent Types
+    //-----------------------------------------------------
+    IntentsApi.declareRoute({
         action: ["set", "delete"],
         resource: "/{major}/{minor}",
         filters: []
@@ -16829,7 +16965,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         throw new api.error.NoPermissionError(packet);
     });
 
-    Api.declareRoute({
+    IntentsApi.declareRoute({
         action: "get",
         resource: "/{major}/{minor}",
         filters: []
@@ -16851,7 +16987,49 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         }
     });
 
-    Api.declareRoute({
+    //-----------------------------------------------------
+    // Intent Definitions
+    //-----------------------------------------------------
+    IntentsApi.declareRoute({
+        action: "register",
+        resource: "/{major}/{minor}/{action}",
+        filters: registerDefinitionFilter()
+    }, function (packet, context, pathParams) {
+
+        var childNode = this.createNode({
+            'resource': this.createKey(context.node.resource + "/"),
+            'src': packet.src
+        }, api.intents.node.HandlerNode);
+        childNode.set(packet);
+
+        log.debug(this.logPrefix + " registered ", context.node);
+        return {
+            'response': 'ok',
+            'entity': {
+                'resource': childNode.resource
+            }
+        };
+    });
+
+    /**
+     * A route for intent action invocations.
+     * Will launch direct for user input if multiple options.
+     */
+    IntentsApi.declareRoute({
+        action: "invoke",
+        resource: "/{major}/{minor}/{action}",
+        filters: api.filter.standard.getFilters()
+    }, function (packet, context, pathParams) {
+        return this.invokeIntentHandler(
+            packet,
+            pathParams.major + "/" + pathParams.minor,
+            pathParams.action,
+            this.matchingNodes(context.node.pattern),
+            context.node.pattern
+        );
+    });
+
+    IntentsApi.declareRoute({
         action: "broadcast",
         resource: "/{major}/{minor}/{action}",
         filters: api.filter.standard.getFilters()
@@ -16874,268 +17052,56 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         };
     });
 
-    return Api;
+    //-----------------------------------------------------
+    // Intent Handlers
+    //-----------------------------------------------------
+    IntentsApi.declareRoute({
+        action: "invoke",
+        resource: "/{major}/{minor}/{action}/{handlerId}",
+        filters: []
+    }, function (packet, context, pathParams) {
+        return this.invokeIntentHandler(
+            packet,
+            pathParams.major + "/" + pathParams.minor,
+            pathParams.action,
+            context.node
+        );
+    });
 
-}(ozpIwc.api, ozpIwc.log, ozpIwc.config, ozpIwc.util));
-var ozpIwc = ozpIwc || {};
-ozpIwc.api = ozpIwc.api || {};
-ozpIwc.api.intents = ozpIwc.api.intents || {};
-
-/**
- * @module ozpIwc.api
- * @submodule ozpIwc.api.intents
- */
-
-
-ozpIwc.api.intents.FSM = (function (api, util) {
-    /**
-     * A Finite State Machine for in-flight intent resources. This state machine is static and manipulates the apiNodes
-     * it receives given the packet context received.
-     * @class FSM
-     * @namespace ozpIwc.api.intents
-     * @uses ozpIwc.util.Event
-     * @static
-     * @type {Object}
-     */
-    var FSM = {};
-
-    FSM.events = new util.Event();
-    FSM.events.mixinOnOff(FSM);
-
-//===============================================
-// States.
-// Called with node as scope.
-//===============================================
-    /**
-     * A collection of states in the FSM. Each state is a function that is called when a node transitions to it via
-     * ozpIwc.InFlightFSM.transition.
-     * Each state function is called with the node's scope.
-     *
-     * @property states
-     * @type {Object}
-     */
-    FSM.states = {};
+    IntentsApi.declareRoute({
+        action: "set",
+        resource: "/{major}/{minor}/{action}/{handlerId}",
+        filters: api.filter.standard.setFilters(api.intents.HandlerNode)
+    }, function (packet, context, pathParams) {
+        context.node.set(packet);
+        return {"response": "ok"};
+    });
 
     /**
-     * The initial state.
-     * This state immediately determines the next state of the node based on the number of handler choices it contains.
-     *
-     * @method init
-     * @return {Object}
+     * Registration handler when a handlerId is specified
      */
-    FSM.states.init = function () {
-        var choices = this.entity.handlerChoices;
-        var nextEntity = {};
+    IntentsApi.declareRoute({
+        action: "register",
+        resource: "/{major}/{minor}/{action}/{handlerId}",
+        filters: registerHandlerFilter()
+    }, function (packet, context, pathParams) {
+        var childNode = this.createNode({
+            'resource': packet.resource,
+            'src': packet.src
+        }, api.intents.node.HandlerNode);
+        childNode.set(packet);
 
-        if(!choices || choices === []){
-            nextEntity.state = "error";
-            nextEntity.error = "noChoices";
-            return FSM.transition(this, {entity: nextEntity});
-        }
-
-        if(Array.isArray(choices)){
-            //If there is only 1 choice & its a launcher, enforce the popup to choose it (similar to Windows chooser feel).
-            var onlyLauncher = (choices.length === 1 && choices[0] && choices[0].entity && choices[0].entity.invokeIntent &&
-            choices[0].entity.invokeIntent.action === "launch");
-            if (choices.length === 1 && !onlyLauncher) {
-                nextEntity.handler = {
-                    resource: choices[0].resource,
-                    reason: "onlyOne"
-                };
-                nextEntity.state = "delivering";
-            } else {
-                nextEntity.state = "choosing";
+        log.debug(this.logPrefix + " registered ", context.node);
+        return {
+            'response': 'ok',
+            'entity': {
+                'resource': childNode.resource
             }
-        } else if (typeof choices === "object") {
-            nextEntity.handler = {
-                resource: choices.resource,
-                reason: "onlyOne"
-            };
-            nextEntity.state = "delivering";
-        } else {
-            nextEntity.state = "error";
-            nextEntity.error = "unknown choices.";
-        }
+        };
+    });
 
-        return FSM.transition(this, {entity: nextEntity});
-    };
-
-    /**
-     * The error handling state.
-     * This state is called when unexpected state changes and missing data occurs in the state
-     * machine.
-     *
-     * @method error
-     * @param {Object} entity The entity of the request packet received by the Api.
-     * @return {ozpIwc.api.base.Node}
-     */
-    FSM.states.error = function (entity) {
-        this.entity = this.entity || {};
-        this.entity.reply = entity.error;
-        this.entity.state = "error";
-        this.version++;
-        return FSM.stateEvent(this);
-    };
-
-    /**
-     * The delivering state.
-     * The node is in a delivering state when it's registered handler is called to operate on the
-     * intent data. The register handler will respond with "running" to signify it has received the request.
-     *
-     * @method delivering
-     * @param {Object} entity The entity of the request packet received by the Api.
-     * @return {ozpIwc.api.base.Node}
-     */
-    FSM.states.delivering = function (entity) {
-        if (!entity.handler || !entity.handler.resource || !entity.handler.reason) {
-            throw new api.error.BadStateError("Choosing state requires a resource and reason");
-        }
-        this.entity.handler = entity.handler;
-        this.entity.state = "delivering";
-        this.version++;
-        return FSM.stateEvent(this);
-    };
-
-    /**
-     * The running state.
-     * The node is in a running state when the registered handler has received the request data. The
-     * node will transition to the "complete" state upon receiving a response from the handler's operation.
-     * @TODO currently running/complete are sent at once and no data is returned. When these states are sent the intent
-     *     is handled.
-     *
-     * @method running
-     * @param {Object} entity The entity of the request packet received by the Api.
-     * @return {ozpIwc.api.base.Node}
-     */
-    FSM.states.running = function (entity) {
-        if (!entity.handler || !entity.handler.address) {
-            throw new api.error.BadContentError("Entity lacks a 'handler.address' field");
-        }
-        this.entity.handler.address = entity.handler.address;
-        this.entity.state = "running";
-        this.version++;
-        return FSM.stateEvent(this);
-    };
-
-    /**
-     * The choosing state.
-     * The node is in a choosing state when:
-     *  (1) the intent chooser is opened.
-     *  (2) the api is gathering the preference-stored designated handler.
-     *
-     * The node will transition to delivering once the handler has been chosen.
-     *
-     * @method choosing
-     * @return {ozpIwc.api.base.Node}
-     */
-    FSM.states.choosing = function () {
-        this.entity.state = "choosing";
-        this.version++;
-        return FSM.stateEvent(this);
-    };
-
-    /**
-     * The Complete state.
-     * Once the intent has been handled or canceled the node will transition to the complete state. From here the API
-     * will mark the node for deletion as it is no longer needed.
-     *
-     * @method complete
-     * @param {Object} entity The entity of the request packet received by the Api.
-     * @return {ozpIwc.api.base.Node}
-     */
-    FSM.states.complete = function (entity) {
-        this.entity.reply = entity.reply;
-        this.entity.state = "complete";
-        this.version++;
-        return FSM.stateEvent(this);
-    };
-
-
-//===============================================
-//State Transitions
-//===============================================
-    /**
-     * A collection of state transitions for the Finite State machine. The first level of properties represent current
-     * state and the second level represents states that can be transitioned to.
-     *
-     * @property stateTransitions
-     * @type {Object}
-     */
-    FSM.stateTransitions = {
-        "init": {
-            "init":FSM.states.init,
-            "error":FSM.states.error,
-            "delivering":FSM.states.delivering,
-            "choosing":FSM.states.choosing
-        },
-        "choosing": {
-            "error":FSM.states.error,
-            "delivering":FSM.states.delivering,
-            "complete":FSM.states.complete
-        },
-        "delivering": {
-            "error":FSM.states.error,
-            "running":FSM.states.running,
-            "complete":FSM.states.complete
-        },
-        "running": {
-            "error":FSM.states.error,
-            "complete":FSM.states.complete
-        },
-        "complete": {},
-        "error": {}
-    };
-
-    /**
-     * The transition utility function. This determines if the requested state change from the packet is valid, then
-     * calls the state transition and returns the modified node for storage.
-     * @method transition
-     * @param {ozpIwc.api.base.Node} node
-     * @param {ozpIwc.PacketContext} [packet] If not provided, FSM assumes initial state transition.
-     * @return {ozpIwc.api.base.Node}
-     */
-   FSM.transition = function (node, packet) {
-        packet = packet || {entity: {state: "init"}};
-        if (!packet.entity || !packet.entity.state) {
-            throw new api.error.BadContentError("Entity lacks a 'state' field");
-        }
-        if (node.deleted) {
-            throw new api.error.BadContentError("Already handled.");
-        }
-        var transist =FSM.stateTransitions[node.entity.state];
-        if (!transist) {
-            // we're in a bad state.  pretty much unrecoverable
-            return FSM.states.error.call(node, {
-                entity: {
-                    error: "Inflight intent is in an invalid state.  Cannot proceed.",
-                }
-            });
-        }
-
-        transist = transist[packet.entity.state];
-        if (!transist) {
-            throw new api.error.BadStateError("In-flight intent cannot transition from " +
-                node.entity.state + " to " + packet.entity.state);
-        }
-
-        return transist.call(node, packet.entity);
-    };
-
-    /**
-     * Triggers node's state event and returns the node.
-     * @method stateReturn
-     * @param node
-     * @return {ozpIwc.api.base.Node}
-     */
-   FSM.stateEvent = function (node) {
-        if (node.entity && node.entity.state) {
-           FSM.events.trigger(node.entity.state, node);
-        }
-        return node;
-    };
-
-    return FSM;
-}(ozpIwc.api, ozpIwc.util));
+    return IntentsApi;
+}(ozpIwc.api, ozpIwc.api.intents.Api || {}, ozpIwc.log));
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.names = ozpIwc.api.names || {};
@@ -17145,7 +17111,7 @@ ozpIwc.api.names = ozpIwc.api.names || {};
  * @submodule ozpIwc.api.names
  */
 
-ozpIwc.api.names.Api = (function (api, apiMap, ozpConfig, util) {
+ozpIwc.api.names.Api = (function (api, apiMap, log, ozpConfig, util) {
     /**
      * The Names Api. Collects information about current IWC state, Manages names, aliases, and permissions through the
      * IWC. Subclasses the {{#crossLink "ozpIwc.api.base.Api"}}{{/crossLink}}.
@@ -17169,20 +17135,47 @@ ozpIwc.api.names.Api = (function (api, apiMap, ozpConfig, util) {
                 contentType: 'application/vnd.ozp-iwc-api-v1+json'
             });
         }
-        var self = this;
-        this.on("addressDisconnects", function (address) {
-            var len = address.length;
-            util.object.eachEntry(self.data, function (k, v) {
-                if (k.substr(-len) === address) {
-                    self.markForChange(v);
-                    v.markAsDeleted();
-                }
-            });
-        });
-        this.leaderPromise.then(function () {
-            window.setInterval(function () {self.checkForNonresponsives();}, ozpConfig.heartBeatFrequency);
-        });
     });
+
+//--------------------------------------------------
+// Distributed Computing: Mutex lock on handling API requests/holding active state
+//--------------------------------------------------
+
+    /**
+     * Called when the API begins operation as leader. Registers interval checks on nodes for non-responsiveness.
+     * @method onStart
+     */
+    Api.prototype.onStart = function () {
+        var self = this;
+        window.setInterval(function () {self.checkForNonresponsives();}, ozpConfig.heartBeatFrequency);
+    };
+
+//--------------------------------------------------
+// Bus event handlers
+//--------------------------------------------------
+    /**
+     * A handler for the names Api receiving notification of a disconnection from the bus. Calls the base Api
+     * handler then the names API will check all nodes based on the router ID (portion of address after ".") and remove
+     * all records pertaining to that router (all connections closed).
+     *
+     * @method onClientDisconnect
+     * @param {String} address
+     */
+    Api.prototype.onClientDisconnect = function (address) {
+        api.base.Api.prototype.onClientDisconnect.apply(this, arguments);
+        var len = address.length;
+        var self = this;
+        util.object.eachEntry(this.data, function (k, v) {
+            if (k.substr(-len) === address) {
+                self.markForChange(v);
+                v.markAsDeleted();
+            }
+        });
+    };
+
+//--------------------------------------------------
+// Node creation/modification methods
+//--------------------------------------------------
 
     /**
      * Names API resources are not loaded from server, thus use the default IWC Node structure by default.
@@ -17192,12 +17185,13 @@ ozpIwc.api.names.Api = (function (api, apiMap, ozpConfig, util) {
      * @return {ozpIwc.api.base.Node}
      */
     Api.prototype.createNodeObject = function (config, NodeType) {
-        if(NodeType){
+        if (NodeType) {
             return new NodeType(config);
         } else {
             return new api.base.Node(config);
         }
     };
+
     /**
      * Cycles through all /address/{address} resources and disconnects them from the bus if they have not responded in
      * the last 2 heartbeats.
@@ -17210,7 +17204,7 @@ ozpIwc.api.names.Api = (function (api, apiMap, ozpConfig, util) {
             var delta = util.now() - node.entity.time;
 
             if (delta > 3 * ozpConfig.heartBeatFrequency) {
-                console.log("[" + node.resource + "] [Removing] Time since update:", util.now() - node.entity.time);
+                log.log("[" + node.resource + "] [Removing] Time since update:", util.now() - node.entity.time);
                 self.participant.send({
                     "dst": "$bus.multicast",
                     "action": "disconnect",
@@ -17221,112 +17215,8 @@ ozpIwc.api.names.Api = (function (api, apiMap, ozpConfig, util) {
         });
     };
 
-// Default handlers are fine for list, bulkGet, watch, and unwatch with any properly formed resource
-    Api.useDefaultRoute(["list", "bulkGet"], "{c:/}");
-    Api.useDefaultRoute(["list", "bulkGet"], "{c:/(?:api|address|multicast|router).*}");
-
-//====================================================================
-// Address, Multicast, and Router endpoints
-//====================================================================
-    Api.declareRoute({
-        action: ["set", "delete"],
-        resource: "/{collection:api|address|multicast|router}",
-        filters: []
-    }, function (packet, context, pathParams) {
-        throw new api.error.NoPermissionError(packet);
-    });
-    Api.declareRoute({
-        action: "get",
-        resource: "/{collection:api|address|multicast|router}",
-        filters: []
-    }, function (packet, context, pathParams) {
-        return {
-            "contentType": "application/json",
-            "entity": this.matchingNodes(packet.resource).map(function (node) {
-                return node.resource;
-            })
-        };
-    });
-
-//====================================================================
-// API endpoints
-//====================================================================
-    Api.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/api/{addr}");
-
-    Api.declareRoute({
-        action: "set",
-        resource: "/api/{addr}",
-        filters: api.filter.standard.setFilters(api.base.Node, "application/vnd.ozp-iwc-api-v1+json")
-    }, function (packet, context, pathParams) {
-        // validate that the entity is an address
-        context.node.set(packet);
-        return {response: "ok"};
-    });
-
-//====================================================================
-// Address endpoints
-//====================================================================
-    Api.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/address/{addr}");
-
-    Api.declareRoute({
-        action: "set",
-        resource: "/address/{addr}",
-        filters: api.filter.standard.setFilters(api.names.Node, "application/vnd.ozp-iwc-address-v1+json")
-    }, function (packet, context, pathParams) {
-        // validate that the entity is an address
-
-        context.node.set(packet);
-        return {response: "ok"};
-    });
-
-//====================================================================
-// Multicast endpoints
-//====================================================================
-    Api.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/multicast/{group}");
-    Api.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/multicast/{group}/{memberAddr}");
-
-    Api.declareRoute({
-        action: "set",
-        resource: "/multicast/{addr}",
-        filters: api.filter.standard.setFilters(api.base.Node, "application/vnd.ozp-iwc-multicast-address-v1+json")
-    }, function (packet, context, pathParams) {
-        // validate that the entity is an address
-
-        //
-        context.node.set(packet);
-        return {response: "ok"};
-    });
-    Api.declareRoute({
-        action: "set",
-        resource: "/multicast/{group}/{member}",
-        filters: api.filter.standard.setFilters(api.names.Node, "application/vnd.ozp-iwc-multicast-address-v1+json")
-    }, function (packet, context, pathParams) {
-        // validate that the entity is an address
-
-        //
-        context.node.set(packet);
-        return {response: "ok"};
-    });
-
-//====================================================================
-// Router endpoints
-//====================================================================
-    Api.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/router/{addr}");
-
-    Api.declareRoute({
-        action: "set",
-        resource: "/router/{addr}",
-        filters: api.filter.standard.setFilters(api.names.Node, "application/vnd.ozp-iwc-router-v1+json")
-    }, function (packet, context, pathParams) {
-        // validate that the entity is an address
-
-        //
-        context.node.set(packet);
-        return {response: "ok"};
-    });
-
     return Api;
-}(ozpIwc.api, ozpIwc.apiMap, ozpIwc.config, ozpIwc.util));
+}(ozpIwc.api, ozpIwc.apiMap, ozpIwc.log, ozpIwc.config, ozpIwc.util));
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.names = ozpIwc.api.names || {};
@@ -17370,6 +17260,120 @@ ozpIwc.api.names.Node = (function (api, util) {
 }(ozpIwc.api, ozpIwc.util));
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.names = ozpIwc.api.names || {};
+/**
+ * @module ozpIwc.api
+ * @submodule ozpIwc.api.names
+ * @class ozpIwc.api.names.Api
+ */
+
+ozpIwc.api.names.Api = (function (api, NamesApi) {
+
+//---------------------------------------------------------
+// Default Routes
+//---------------------------------------------------------
+    // Default handlers are fine for list, bulkGet, watch, and unwatch with any properly formed resource
+    NamesApi.useDefaultRoute(["list", "bulkGet"], "{c:/}");
+    NamesApi.useDefaultRoute(["list", "bulkGet"], "{c:/(?:api|address|multicast|router).*}");
+    NamesApi.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/api/{addr}");
+    NamesApi.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/address/{addr}");
+    NamesApi.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/multicast/{group}");
+    NamesApi.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/multicast/{group}/{memberAddr}");
+    NamesApi.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/router/{addr}");
+
+//---------------------------------------------------------
+// Routes
+//---------------------------------------------------------
+    //-----------------------------------------------------
+    // Address, Multicast, and Router resources
+    //-----------------------------------------------------
+    NamesApi.declareRoute({
+        action: ["set", "delete"],
+        resource: "/{collection:api|address|multicast|router}",
+        filters: []
+    }, function (packet, context, pathParams) {
+        throw new api.error.NoPermissionError(packet);
+    });
+
+    NamesApi.declareRoute({
+        action: "get",
+        resource: "/{collection:api|address|multicast|router}",
+        filters: []
+    }, function (packet, context, pathParams) {
+        return {
+            "contentType": "application/json",
+            "entity": this.matchingNodes(packet.resource).map(function (node) {
+                return node.resource;
+            })
+        };
+    });
+    //-----------------------------------------------------
+    // Api resources
+    //-----------------------------------------------------
+    NamesApi.declareRoute({
+        action: "set",
+        resource: "/api/{addr}",
+        filters: api.filter.standard.setFilters(api.base.Node, "application/vnd.ozp-iwc-api-v1+json")
+    }, function (packet, context, pathParams) {
+        // validate that the entity is an address
+        context.node.set(packet);
+        return {response: "ok"};
+    });
+
+    //-----------------------------------------------------
+    // Address resources
+    //-----------------------------------------------------
+    NamesApi.declareRoute({
+        action: "set",
+        resource: "/address/{addr}",
+        filters: api.filter.standard.setFilters(api.names.Node, "application/vnd.ozp-iwc-address-v1+json")
+    }, function (packet, context, pathParams) {
+        // validate that the entity is an address
+        context.node.set(packet);
+        return {response: "ok"};
+    });
+
+    //-----------------------------------------------------
+    // Multicast resources
+    //-----------------------------------------------------
+    NamesApi.declareRoute({
+        action: "set",
+        resource: "/multicast/{addr}",
+        filters: api.filter.standard.setFilters(api.base.Node, "application/vnd.ozp-iwc-multicast-address-v1+json")
+    }, function (packet, context, pathParams) {
+        // validate that the entity is an address
+        context.node.set(packet);
+        return {response: "ok"};
+    });
+
+    NamesApi.declareRoute({
+        action: "set",
+        resource: "/multicast/{group}/{member}",
+        filters: api.filter.standard.setFilters(api.names.Node, "application/vnd.ozp-iwc-multicast-address-v1+json")
+    }, function (packet, context, pathParams) {
+        // validate that the entity is an address
+        context.node.set(packet);
+        return {response: "ok"};
+    });
+
+    //-----------------------------------------------------
+    // Router resources
+    //-----------------------------------------------------
+    NamesApi.declareRoute({
+        action: "set",
+        resource: "/router/{addr}",
+        filters: api.filter.standard.setFilters(api.names.Node, "application/vnd.ozp-iwc-router-v1+json")
+    }, function (packet, context, pathParams) {
+        // validate that the entity is an address
+
+        //
+        context.node.set(packet);
+        return {response: "ok"};
+    });
+    return NamesApi;
+}(ozpIwc.api, ozpIwc.api.names.Api || {}));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.system = ozpIwc.api.system || {};
 
 /**
@@ -17390,7 +17394,7 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
      * @param {String} [config.name="system.api"]
      * @param {ozpIwc.transport.Router} config.router
      */
-    var Api = api.createApi("system.api",function (config) {
+    var Api = api.createApi("system.api", function (config) {
         // The stock initializeData should do fine for us here as we're not using
         // any special subclasses for these items.  Might have to revisit this at
         // some point.
@@ -17399,39 +17403,84 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
          * @type {Object[]}
          */
         this.endpoints = config.endpoints || [
-                {link: ozpConfig.linkRelPrefix + ":user",headers: []},
-                {link: ozpConfig.linkRelPrefix + ":system",headers: []},
+                {link: ozpConfig.linkRelPrefix + ":user", headers: []},
+                {link: ozpConfig.linkRelPrefix + ":system", headers: []},
                 {link: ozpConfig.linkRelPrefix + ":application", headers: []}
             ];
 
         this.contentTypeMappings = util.genContentTypeMappings(api.system.node);
-        var self = this;
         this.on("createdNode", this.updateIntents, this);
-
-        //The system API cant launch applications directly from a worker, ozpIwc.Client's register in that case.
-        if(!util.runningInWorker()) {
-            this.leaderPromise.then(function () {
-                log.debug("System.api registering for the launch intent");
-                var registerData = {
-                    'lifespan': "ephemeral",
-                    'entity': {
-                        'type': "application/vnd.ozp-iwc-launch-data-v1+json",
-                        'action': "run",
-                        'label': "Open in new tab",
-                        'invokeIntent': {
-                            'dst': "system.api",
-                            'action': 'invoke',
-                            'resource': "/launchNewWindow"
-                        }
-                    }
-                };
-                return self.participant.intents().register("/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",
-                    registerData).catch(function (error) {
-                        log.error("System.api failed to register for launch intent: ", error);
-                    });
-            });
-        }
     });
+
+//--------------------------------------------------
+// Distributed Computing: Mutex lock on handling API requests/holding active state
+//--------------------------------------------------
+
+    /**
+     * Called when the API begins operation as leader. Registers launching intent if not running in a worker.
+     * @method onStart
+     */
+    Api.prototype.onStart = function () {
+        //The system API cant launch applications directly from a worker, ozpIwc.Client's register in that case.
+        if (!util.runningInWorker()) {
+            log.debug("System.api registering for the launch intent");
+            var registerData = {
+                'lifespan': "ephemeral",
+                'entity': {
+                    'type': "application/vnd.ozp-iwc-launch-data-v1+json",
+                    'action': "run",
+                    'label': "Open in new tab",
+                    'invokeIntent': {
+                        'dst': "system.api",
+                        'action': 'invoke',
+                        'resource': "/launchNewWindow"
+                    }
+                }
+            };
+            return this.participant.intents().register("/application/vnd.ozp-iwc-launch-data-v1+json/run/system.api",
+                registerData).catch(function (error) {
+                    log.error("System.api failed to register for launch intent: ", error);
+                });
+        }
+    };
+
+
+//--------------------------------------------------
+// Node creation/modification methods
+//--------------------------------------------------
+    /**
+     * Maps a content-type to an IWC System Node type.
+     * @method findNodeType
+     * @param {Object} contentTypeObj an object-formatted content-type
+     * @param {String} contentTypeObj.name the content-type without any variables
+     * @param {Number} [contentTypeObj.version] the version of the content-type.
+     * @returns {undefined}
+     */
+    Api.prototype.findNodeType = function (contentType) {
+        var formattedContentType = util.getFormattedContentType(contentType);
+        var type = this.contentTypeMappings[formattedContentType.name];
+        if (type) {
+            if (formattedContentType.version) {
+                return type[formattedContentType.version];
+            } else {
+                return type;
+            }
+        }
+    };
+
+    /**
+     * Override the default node type to be a System Node.
+     * @override
+     * @method createNodeObject
+     * @param {type} config
+     * @param {Function} NodeType
+     * @return {ozpIwc.api.system.Node}
+     */
+    Api.prototype.createNodeObject = function (config, NodeType) {
+        if (NodeType) {
+            return new NodeType(config);
+        }
+    };
 
     /**
      * Updates intents API registrations for the given system api application.
@@ -17477,30 +17526,345 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
 
     };
 
+
+    return Api;
+}(ozpIwc.api, ozpIwc.log, ozpIwc.config, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.system = ozpIwc.api.system || {};
+ozpIwc.api.system.node = ozpIwc.api.system.node || {};
+
+/**
+ * @module ozpIwc.api.system
+ * @submodule ozpIwc.api.system.node
+ */
+
+
+ozpIwc.api.system.node.ApplicationNode = (function (api, util) {
     /**
-     * Maps a content-type to an IWC System Node type.
-     * @method findNodeType
-     * @param {Object} contentTypeObj an object-formatted content-type
-     * @param {String} contentTypeObj.name the content-type without any variables
-     * @param {Number} [contentTypeObj.version] the version of the content-type.
-     * @returns {undefined}
+     * @class ApplicationNode
+     * @namespace ozpIwc.api.system.node
+     * @extends ozpIwc.api.base.Node
+     * @constructor
      */
-    Api.prototype.findNodeType = function(contentType){
-        var formattedContentType = util.getFormattedContentType(contentType);
-        var type = this.contentTypeMappings[formattedContentType.name];
-        if(type){
-            if(formattedContentType.version) {
-                return type[formattedContentType.version];
-            }else{
-                return type;
+    var Node = util.extend(api.base.Node, function (config) {
+        api.base.Node.apply(this, arguments);
+    });
+
+    /**
+     * The content type of the data returned by serialize()
+     * @Property {string} serializedContentType
+     */
+    Node.serializedContentType = "application/vnd.ozp-application-v1+json";
+
+    /**
+     * Sets the api node from the serialized form.
+     *
+     *
+     * @method deserializedEntity
+     * @param {Object} data
+     */
+    Node.prototype.deserializedEntity = function (data) {
+        var blacklist = ["_embedded", "_links"];
+        var entity = {};
+        for (var i in data) {
+            if (data.hasOwnProperty(i) && blacklist.indexOf(i) === -1) {
+                entity[i] = data[i];
             }
         }
+        return entity;
     };
-//====================================================================
-// Collection endpoints
-//====================================================================
-    Api.useDefaultRoute(["bulkGet", "list"]);
-    Api.declareRoute({
+
+    /**
+     * If a resource path isn't given, this takes the best guess at assigning it.
+     * @override
+     * @method resourceFallback
+     * @param serializedForm
+     * @return String
+     */
+    Node.prototype.resourceFallback = function (serializedForm) {
+        if (serializedForm.id) {
+            return "/application/" + serializedForm.id;
+        }
+    };
+
+    return Node;
+}(ozpIwc.api, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.system = ozpIwc.api.system || {};
+ozpIwc.api.system.node = ozpIwc.api.system.node || {};
+
+
+/**
+ * @module ozpIwc.api.system
+ * @submodule ozpIwc.api.system.node
+ */
+
+
+ozpIwc.api.system.node.ApplicationNodeV2 = (function (api, util) {
+    /**
+     * @class ApplicationNodeV2
+     * @namespace ozpIwc.api.system.node
+     * @extends ozpIwc.api.base.Node
+     * @constructor
+     */
+    var Node = util.extend(api.system.node.ApplicationNode, function (config) {
+        api.system.node.ApplicationNode.apply(this, arguments);
+    });
+
+    /**
+     * The content type of the data returned by serialize()
+     * @Property {string} serializedContentType
+     */
+    Node.serializedContentType = "application/vnd.ozp-iwc-application+json;version=2";
+
+    /**
+     * Sets the api node from the serialized form.
+     *
+     * @method deserializedEntity
+     * @param {Object} data
+     */
+    Node.prototype.deserializedEntity = function (data) {
+        /*jshint camelcase: false */
+        data = data || {};
+        data.small_icon = data.small_icon || {};
+        return {
+            id: data.id,
+            name: data.title,
+            launchUrls: {
+                default: data.launch_url
+            },
+            icons: {
+                small: data.small_icon.url
+            },
+            intents: util.ensureArray(data.intents)
+        };
+    };
+
+    return Node;
+}(ozpIwc.api, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.system = ozpIwc.api.system || {};
+ozpIwc.api.system.node = ozpIwc.api.system.node || {};
+
+/**
+ * @module ozpIwc.api.system
+ * @submodule ozpIwc.api.system.node
+ */
+
+
+ozpIwc.api.system.node.SystemNode = (function (api, util) {
+    /**
+     * @class SystemNode
+     * @namespace ozpIwc.api.system.node
+     * @extends ozpIwc.api.base.Node
+     * @constructor
+     */
+    var Node = util.extend(api.base.Node, function (config) {
+        api.base.Node.apply(this, arguments);
+    });
+
+
+    /**
+     * The content type of the data returned by serialize()
+     * @Property {string} serializedContentType
+     */
+    Node.serializedContentType = "application/vnd.ozp-iwc-system-v1+json";
+
+    /**
+     * Sets the api node from the serialized form.
+     *
+     * @method deserializedEntity
+     * @param {Object} data
+     */
+    Node.prototype.deserializedEntity = function (data) {
+        /*jshint camelcase: false */
+        data = data || {};
+
+        return {
+            name: data.name,
+            version: data.version
+        };
+    };
+
+    /**
+     * If a resource path isn't given, this takes the best guess at assigning it.
+     * @override
+     * @method resourceFallback
+     * @return String
+     */
+    Node.prototype.resourceFallback = function () {
+        return "/system";
+    };
+
+    return Node;
+}(ozpIwc.api, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.system = ozpIwc.api.system || {};
+ozpIwc.api.system.node = ozpIwc.api.system.node || {};
+
+/**
+ * @module ozpIwc.api.system
+ * @submodule ozpIwc.api.system.node
+ */
+
+
+ozpIwc.api.system.node.SystemNodeV2 = (function (api, util) {
+    /**
+     * The same schema as SystemNode, but content type naming scheme changed.
+     * @class UserNodeV2
+     * @namespace ozpIwc.api.system.node
+     * @extends ozpIwc.api.system.node.SystemNode
+     * @constructor
+     */
+    var Node = util.extend(api.system.node.SystemNode, function (config) {
+        api.system.node.SystemNode.apply(this, arguments);
+    });
+
+
+    /**
+     * The content type of the data returned by serialize()
+     * @Property {string} serializedContentType
+     */
+    Node.serializedContentType = "application/vnd.ozp-iwc-system+json;version=2";
+
+    return Node;
+}(ozpIwc.api, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.system = ozpIwc.api.system || {};
+ozpIwc.api.system.node = ozpIwc.api.system.node || {};
+
+/**
+ * @module ozpIwc.api.system
+ * @submodule ozpIwc.api.system.node
+ */
+
+
+ozpIwc.api.system.node.UserNode = (function (api, util) {
+    /**
+     * @class UserNode
+     * @namespace ozpIwc.api.system.node
+     * @extends ozpIwc.api.base.Node
+     * @constructor
+     */
+    var Node = util.extend(api.base.Node, function (config) {
+        api.base.Node.apply(this, arguments);
+    });
+
+
+    /**
+     * The content type of the data returned by serialize()
+     * @Property {string} serializedContentType
+     */
+    Node.serializedContentType = "application/vnd.ozp-profile-v1+json";
+
+    /**
+     * Sets the api node from the serialized form.
+     *
+     * @method deserializedEntity
+     * @param {Object} data
+     */
+    Node.prototype.deserializedEntity = function (data) {
+        /*jshint camelcase: false */
+        data = data || {};
+
+        return {
+            displayName: data.displayName,
+            id: data.id,
+            username: data.username
+        };
+    };
+
+    /**
+     * If a resource path isn't given, this takes the best guess at assigning it.
+     * @override
+     * @method resourceFallback
+     * @return String
+     */
+    Node.prototype.resourceFallback = function () {
+        return "/user";
+    };
+
+    return Node;
+}(ozpIwc.api, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.system = ozpIwc.api.system || {};
+ozpIwc.api.system.node = ozpIwc.api.system.node || {};
+
+/**
+ * @module ozpIwc.api.system
+ * @submodule ozpIwc.api.system.node
+ */
+
+
+ozpIwc.api.system.node.UserNodeV2 = (function (api, util) {
+    /**
+     * The same schema as UserNode, but content type naming scheme changed.
+     * @class UserNodeV2
+     * @namespace ozpIwc.api.system.node
+     * @extends ozpIwc.api.system.node.UserNode
+     * @constructor
+     */
+    var Node = util.extend(api.system.node.UserNode, function (config) {
+        api.system.node.UserNode.apply(this, arguments);
+    });
+
+
+    /**
+     * The content type of the data returned by serialize()
+     * @Property {string} serializedContentType
+     */
+    Node.serializedContentType = "application/vnd.ozp-iwc-user+json;version=2";
+
+    /**
+     * Sets the api node from the serialized form.
+     *
+     * @method deserializedEntity
+     * @param {Object} data
+     */
+    Node.prototype.deserializedEntity = function (data) {
+        /*jshint camelcase: false */
+        data = data || {};
+
+        return {
+            displayName: data.display_name,
+            id: data.id,
+            username: data.username
+        };
+    };
+    return Node;
+}(ozpIwc.api, ozpIwc.util));
+var ozpIwc = ozpIwc || {};
+ozpIwc.api = ozpIwc.api || {};
+ozpIwc.api.system = ozpIwc.api.system || {};
+/**
+ * @module ozpIwc.api
+ * @submodule ozpIwc.api.system
+ * @class ozpIwc.api.system.Api
+ */
+
+ozpIwc.api.system.Api = (function (api, SystemApi, log, ozpConfig, util) {
+
+//---------------------------------------------------------
+// Default Routes
+//---------------------------------------------------------
+    SystemApi.useDefaultRoute(["bulkGet", "list"]);
+    SystemApi.useDefaultRoute(["get", "watch", "unwatch"], "/user");
+    SystemApi.useDefaultRoute(["get", "watch", "unwatch"], "/system");
+    SystemApi.useDefaultRoute(["get", "watch", "unwatch"], "/application/{id}");
+//---------------------------------------------------------
+// Routes
+//---------------------------------------------------------
+
+    //-----------------------------------------------------
+    // application collection
+    //-----------------------------------------------------
+    SystemApi.declareRoute({
         action: "get",
         resource: "/{collection:application}",
         filters: []
@@ -17513,11 +17877,10 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
         };
     });
 
-//====================================================================
-// User endpoints
-//====================================================================
-    Api.useDefaultRoute(["get", "watch", "unwatch"], "/user");
-    Api.declareRoute({
+    //-----------------------------------------------------
+    // user resource
+    //-----------------------------------------------------
+    SystemApi.declareRoute({
         action: ["set", "delete"],
         resource: "/user",
         filters: []
@@ -17525,12 +17888,10 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
         throw new api.error.BadActionError(packet);
     });
 
-//====================================================================
-// System endpoints
-//====================================================================
-    Api.useDefaultRoute(["get", "watch", "unwatch"], "/system");
-
-    Api.declareRoute({
+    //-----------------------------------------------------
+    // system resource
+    //-----------------------------------------------------
+    SystemApi.declareRoute({
         action: ["set", "delete"],
         resource: "/system",
         filters: []
@@ -17538,18 +17899,18 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
         throw new api.error.BadActionError(packet);
     });
 
-//====================================================================
-// Application Endpoints
-//====================================================================
-    Api.useDefaultRoute(["get", "watch", "unwatch"], "/application/{id}");
-    Api.declareRoute({
+    //-----------------------------------------------------
+    // application listing resources
+    //-----------------------------------------------------
+    SystemApi.declareRoute({
         action: ["set", "delete"],
         resource: "/application/{id}",
         filters: []
     }, function (packet, context, pathParams) {
         throw new api.error.BadActionError(packet);
     });
-    Api.declareRoute({
+
+    SystemApi.declareRoute({
         action: ["launch"],
         resource: "/application/{id}",
         filters: api.filter.standard.getFilters()
@@ -17563,15 +17924,15 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
         };
         var resource = "/application/vnd.ozp-iwc-launch-data-v1+json/run";
 
-        if(util.runningInWorker()){
-            resource+= "/";
+        if (util.runningInWorker()) {
+            resource += "/";
 
             //if this is launching a routed intent make the source of the intent invoke open it.
-            if(packet.entity && packet.entity.inFlightIntent && packet.entity.inFlightIntent.entity &&
+            if (packet.entity && packet.entity.inFlightIntent && packet.entity.inFlightIntent.entity &&
                 packet.entity.inFlightIntent.entity.invokePacket &&
                 packet.entity.inFlightIntent.entity.invokePacket.src) {
-                   resource +=  packet.entity.inFlightIntent.entity.invokePacket.src;
-            }else {
+                resource += packet.entity.inFlightIntent.entity.invokePacket.src;
+            } else {
                 resource += packet.src;
             }
         }
@@ -17585,7 +17946,7 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
         return {response: "ok"};
     });
 
-    Api.declareRoute({
+    SystemApi.declareRoute({
         action: ["invoke"],
         resource: "/launchNewWindow",
         filters: []
@@ -17603,22 +17964,8 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
 
     });
 
-    /**
-     * Override the default node type to be a System Node.
-     * @override
-     * @method createNodeObject
-     * @param {type} config
-     * @param {Function} NodeType
-     * @return {ozpIwc.api.system.Node}
-     */
-    Api.prototype.createNodeObject = function (config,NodeType) {
-        if(NodeType){
-            return new NodeType(config);
-        }
-    };
-
-    return Api;
-}(ozpIwc.api, ozpIwc.log, ozpIwc.config, ozpIwc.util));
+    return SystemApi;
+}(ozpIwc.api, ozpIwc.api.system.Api || {}, ozpIwc.log, ozpIwc.config, ozpIwc.util));
 /**
  * If backend support is disabled the following functionality changes:
  *
@@ -17626,7 +17973,7 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
  * - API endpoints are removed
  *
  */
-if(!ozpIwc.config.backendSupport) {
+if (!ozpIwc.config.backendSupport) {
     /**
      * APIs that use endpoints do a check on their endpoint property to go out and gather.
      * If set to an empty array the endpoints will not be gathered.
@@ -17649,17 +17996,17 @@ if(!ozpIwc.config.backendSupport) {
  * - Structured Clone Support is removed.
  *
  */
-if(ozpIwc.config.legacySupport) {
-    ozpIwc.util.structuredCloneSupport=function() {
+if (ozpIwc.config.legacySupport) {
+    ozpIwc.util.structuredCloneSupport = function () {
         return false;
     };
 }
 
 /**
- * baseInit.js contains any bus component instantiation that does not have a configuration flag that can toggle behavior.
- * defaultWiring.js follows baseInit.js in load order.
+ * baseInit.js contains any bus component instantiation that does not have a configuration flag that can toggle
+ * behavior. defaultWiring.js follows baseInit.js in load order.
  */
-var ozpIwc=ozpIwc || {};
+var ozpIwc = ozpIwc || {};
 ozpIwc.wiring = (function (config, wiring, log) {
     // Configure logging, take precedence of query param over config param.
     var params = ozpIwc.util.parseQueryParams();
@@ -17737,7 +18084,7 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config, util) {
         if (config.allowLocalClients) {
             wiring.listeners = wiring.listeners || {};
             if (!util.runningInWorker()) {
-                wiring.listeners.postMessage= new transport.listener.PostMessage({
+                wiring.listeners.postMessage = new transport.listener.PostMessage({
                     authorization: wiring.authorization,
                     router: wiring.router,
                     ready: new Promise(function (resolve) {

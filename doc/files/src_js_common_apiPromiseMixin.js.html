@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.9</em>
+            <em>API Docs for: 1.1.11</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -113,6 +113,7 @@
                                 <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.MutexClient.html">ozpIwc.transport.participant.MutexClient</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
@@ -123,6 +124,7 @@
                                 <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
                                 <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
                                 <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
@@ -451,8 +453,20 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     }
                 }
                 if (!handled) {
-                    // Otherwise trigger &quot;receive&quot; for someone to handle it
-                    this.events.trigger(&quot;receive&quot;, packetContext);
+                    //Drop own packets
+                    if (packet.src === this.address) {
+                        return;
+                    }
+
+                    if (packet.dst === &quot;$bus.multicast&quot;) {
+                        //If not handle-able by the mixin, trigger &quot;busPacket&quot; for someone to handle
+                        if (!handleBusPacket(this, packet)) {
+                            this.events.trigger(&quot;busPacket&quot;, packetContext);
+                        }
+                    } else {
+                        //Not bus packet, trigger &quot;receive&quot; for someone to handle
+                        this.events.trigger(&quot;receive&quot;, packetContext);
+                    }
                 }
             },
 
@@ -633,11 +647,11 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     });
                 }).then(function () {
                     // Run the intent handler. Wrapped in a promise chain in case the callback itself is async.
-                    return callback(res.entity,inFlightIntent);
+                    return callback(res.entity, inFlightIntent);
                 }).then(function (result) {
                     // Allow the callback to override the intent state (usefull for preventing intent resolution if
                     // chained operations are performed.
-                    if(result &amp;&amp; result.intentIncomplete){
+                    if (result &amp;&amp; result.intentIncomplete) {
                         return Promise.resolve();
                     }
                     // Respond to the inflight resource
@@ -975,7 +989,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                             }
                         });
 
-                        if(self.launchParams.launchData &amp;&amp; self.launchParams.launchData.inFlightIntent){
+                        if (self.launchParams.launchData &amp;&amp; self.launchParams.launchData.inFlightIntent) {
                             self.launchedIntents.push(self.launchParams.launchData.inFlightIntent);
                         }
                     }
@@ -987,6 +1001,31 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
             }
 
         };
+    };
+//---------------------------------------------------------
+// Private Methods
+//---------------------------------------------------------
+
+    /**
+     * Handles packets received with a destination of &quot;$bus.multicast&quot;.
+     * If the packet action isn&#x27;t handled, the function will return falsy.
+     *
+     * @method handleBusPacket
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Object} packetContext
+     * @return {*}
+     */
+    var handleBusPacket = function (mixer, packet) {
+        switch (packet.action) {
+            case &quot;connect&quot;:
+                mixer.events.trigger(&quot;addressConnects&quot;, packet.entity.address, packet);
+                return true;
+            case &quot;disconnect&quot;:
+                mixer.events.trigger(&quot;addressDisconnects&quot;, packet.entity.address, packet);
+                return true;
+        }
     };
 
     return ApiPromiseMixin;

@@ -17,11 +17,11 @@ ozpIwc.worker = ozpIwc.worker || {};
  * @namespace ozpIwc.worker
  * @method timerThrottleUnlock
  */
-ozpIwc.worker.timerThrottleUnlock = function() {
+ozpIwc.worker.timerThrottleUnlock = function () {
     var timerRegistrations = {};
 
 
-    self.addEventListener('connect',function(evt){
+    self.addEventListener('connect', function (evt) {
         var port = evt.ports[0];
 
         port.addEventListener('message', function (evt) {
@@ -30,7 +30,7 @@ ozpIwc.worker.timerThrottleUnlock = function() {
             var timer = evt.data;
 
             // silently give up if not formatted right
-            if (!timer.hasOwnProperty("id")|| !timer.type) {
+            if (!timer.hasOwnProperty("id") || !timer.type) {
                 return;
             }
 
@@ -69,5 +69,5 @@ ozpIwc.worker.timerThrottleUnlock = function() {
 ozpIwc = ozpIwc || {};
 ozpIwc.worker = ozpIwc.worker || {};
 
-(function(){ozpIwc.worker.timerThrottleUnlock();}());
+(function () {ozpIwc.worker.timerThrottleUnlock();}());
 //# sourceMappingURL=ozpIwc.timer.js.map

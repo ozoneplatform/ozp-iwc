@@ -77,6 +77,7 @@ YUI.add("yuidoc-meta", function(Y) {
         "ozpIwc.transport.participant.Debugger",
         "ozpIwc.transport.participant.Internal",
         "ozpIwc.transport.participant.Multicast",
+        "ozpIwc.transport.participant.MutexClient",
         "ozpIwc.transport.participant.PostMessage",
         "ozpIwc.transport.participant.RouterWatchdog",
         "ozpIwc.transport.participant.SharedWorker",
@@ -87,6 +88,7 @@ YUI.add("yuidoc-meta", function(Y) {
         "ozpIwc.util.CancelableEvent",
         "ozpIwc.util.Event",
         "ozpIwc.util.PacketRouter",
+        "ozpIwc.util.mutex",
         "ozpIwc.util.object",
         "ozpIwc.wiring"
     ],

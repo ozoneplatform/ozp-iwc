@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.9</em>
+            <em>API Docs for: 1.1.11</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -113,6 +113,7 @@
                                 <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.MutexClient.html">ozpIwc.transport.participant.MutexClient</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
@@ -123,6 +124,7 @@
                                 <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
                                 <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
                                 <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
@@ -225,7 +227,7 @@ ozpIwc.Client = (function (util) {
         this.type = &quot;default&quot;;
 
         var self = this;
-        util.addEventListener(&#x27;beforeunload&#x27;, function(){
+        util.addEventListener(&#x27;beforeunload&#x27;, function () {
             self.disconnect();
         });
         genPeerUrlCheck(this, config.peerUrl);
@@ -249,7 +251,7 @@ ozpIwc.Client = (function (util) {
      * @param {Promise.resolve} resolve
      * @param {Promise.rej} reject
      */
-    var initPing = function (client,resolve,reject) {
+    var initPing = function (client, resolve, reject) {
         client.send({dst: &quot;$transport&quot;, type: client.type}).then(function (response) {
             resolve(response);
         }).catch(function (err) {
@@ -270,7 +272,7 @@ ozpIwc.Client = (function (util) {
      * @param {Promise.rej} reject
      * @returns {Function}
      */
-    var genPostMessageHandler = function(client,resolve,reject){
+    var genPostMessageHandler = function (client, resolve, reject) {
 
         return function (event) {
             if (!client.peer || event.origin !== client.peerOrigin || event.source !== client.peer) {
@@ -283,7 +285,7 @@ ozpIwc.Client = (function (util) {
                 }
                 // Calls APIPromiseMixin receive handler
                 if (message.iwcInit &amp;&amp; client.address === &quot;$nobody&quot;) {
-                    initPing(client,resolve,reject);
+                    initPing(client, resolve, reject);
                 } else {
                     client.receiveFromRouterImpl(message);
                     client.receivedBytes += (event.data.length * 2);
@@ -305,10 +307,10 @@ ozpIwc.Client = (function (util) {
      * @static
      * @properties {Client} client
      */
-    var createIframeShim = function (client,resolve,reject) {
+    var createIframeShim = function (client, resolve, reject) {
 
-        client.postMessageHandler = genPostMessageHandler(client,resolve,reject);
-        util.addEventListener(&quot;message&quot;, client.postMessageHandler );
+        client.postMessageHandler = genPostMessageHandler(client, resolve, reject);
+        util.addEventListener(&quot;message&quot;, client.postMessageHandler);
 
         window.setTimeout(function () {
             client.iframe = document.createElement(&quot;iframe&quot;);
@@ -328,9 +330,9 @@ ozpIwc.Client = (function (util) {
             document.body.appendChild(client.iframe);
             client.peer = client.iframe.contentWindow;
 
-            if(!window.SharedWorker){
+            if (!window.SharedWorker) {
                 client.iframe.addEventListener(&quot;load&quot;, function () {
-                    initPing(client,resolve,reject);
+                    initPing(client, resolve, reject);
                 });
             }
         }, 200);
@@ -435,8 +437,8 @@ ozpIwc.Client = (function (util) {
      * @method disconnect
      */
     Client.prototype.disconnect = function () {
-        var resolve,reject;
-        var retPromise = new Promise(function(res,rej){
+        var resolve, reject;
+        var retPromise = new Promise(function (res, rej) {
             resolve = res;
             reject = rej;
         });
@@ -504,10 +506,10 @@ ozpIwc.Client = (function (util) {
 
             // need at least the body tag to be loaded, so wait until it&#x27;s loaded
             if (document.readyState === &#x27;complete&#x27;) {
-                createIframeShim(self,resolve,reject);
+                createIframeShim(self, resolve, reject);
             } else {
-                util.addEventListener(&quot;load&quot;, function(){
-                    createIframeShim(self,resolve,reject);
+                util.addEventListener(&quot;load&quot;, function () {
+                    createIframeShim(self, resolve, reject);
                 });
             }
         });
@@ -532,9 +534,9 @@ ozpIwc.Client = (function (util) {
      * @method getLaunchData
      * @returns {Promise}
      */
-    Client.prototype.getLaunchData = function(){
+    Client.prototype.getLaunchData = function () {
         var self = this;
-        return this.connect().then(function() {
+        return this.connect().then(function () {
             return self.launchParams.launchData;
         });
     };

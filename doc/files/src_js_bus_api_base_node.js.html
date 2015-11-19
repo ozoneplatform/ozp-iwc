@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.9</em>
+            <em>API Docs for: 1.1.11</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -113,6 +113,7 @@
                                 <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.MutexClient.html">ozpIwc.transport.participant.MutexClient</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
@@ -123,6 +124,7 @@
                                 <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
                                 <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
                                 <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
@@ -312,7 +314,7 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
          * @type String
          */
         this.self = config.self || {};
-        this.self.type = this.self.type ||this.contentType;
+        this.self.type = this.self.type || this.contentType;
 
         if (config.serializedEntity) {
             this.deserialize(config.serializedEntity, config.contentType);
@@ -447,11 +449,11 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
         this.self = data.self || data._links.self || this.self;
         this.contentType = contentType;
         this.pattern = data.pattern;
-        this.version = data.version ||  this.version;
+        this.version = data.version || this.version;
         this.permissions = data.permissions || {};
         this.collection = data.collection || [];
 
-        this.entity = this.deserializedEntity(data,contentType);
+        this.entity = this.deserializedEntity(data, contentType);
 
         if (!this.resource &amp;&amp; !this.useIwcSelf()) {
             this.resource = this.resourceFallback(data);
@@ -477,8 +479,8 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
      * @static
      * @returns {boolean}
      */
-    Node.prototype.useIwcSelf= function(){
-        if(this.self[&quot;ozp:iwcSelf&quot;]) {
+    Node.prototype.useIwcSelf = function () {
+        if (this.self[&quot;ozp:iwcSelf&quot;]) {
             this.resource = this.self[&quot;ozp:iwcSelf&quot;].href.replace(/web\+ozp:\/\/[^/]+/, &quot;&quot;);
             return true;
         }

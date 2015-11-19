@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.9</em>
+            <em>API Docs for: 1.1.11</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -113,6 +113,7 @@
                                 <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.MutexClient.html">ozpIwc.transport.participant.MutexClient</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
@@ -123,6 +124,7 @@
                                 <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
                                 <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
                                 <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
@@ -228,10 +230,10 @@ ozpIwc.Debugger = (function (Client, util) {
     // Private Properties
     //----------------------------------------------------------------------
 
-    var sendSelf = function(dbg,packet,cb){
-        return dbg.connect().then(function(){
+    var sendSelf = function (dbg, packet, cb) {
+        return dbg.connect().then(function () {
             packet.dst = dbg.address;
-            return dbg.send(packet,cb);
+            return dbg.send(packet, cb);
         });
     };
 
@@ -258,10 +260,10 @@ ozpIwc.Debugger = (function (Client, util) {
             }
         };
 
-        return sendSelf(this,{
+        return sendSelf(this, {
             resource: &quot;traffic&quot;,
             action: &quot;start&quot;
-        },unwrap).then(function (response) {
+        }, unwrap).then(function (response) {
             return response.replyTo;
         });
     };
@@ -292,7 +294,7 @@ ozpIwc.Debugger = (function (Client, util) {
      * @returns {Promise} a promise that will resolve with array of api endpoint data.
      */
     Debugger.prototype.getApiEndpoints = function () {
-        return sendSelf(this,{resource: &quot;apis&quot;,action: &quot;getEndpoints&quot;}).then(function(response){
+        return sendSelf(this, {resource: &quot;apis&quot;, action: &quot;getEndpoints&quot;}).then(function (response) {
             return response.entity;
         });
     };
@@ -303,7 +305,7 @@ ozpIwc.Debugger = (function (Client, util) {
      * @returns {Promise} a promise that will resolve with an array of metrics
      */
     Debugger.prototype.getMetrics = function () {
-        return sendSelf(this,{resource: &quot;metrics&quot;,action: &quot;getAll&quot;}).then(function(response){
+        return sendSelf(this, {resource: &quot;metrics&quot;, action: &quot;getAll&quot;}).then(function (response) {
             return response.entity;
         });
     };
@@ -314,7 +316,7 @@ ozpIwc.Debugger = (function (Client, util) {
      * @returns {Promise} a promise that will resolve with an object of configurations
      */
     Debugger.prototype.getConfig = function () {
-        return sendSelf(this,{resource: &quot;config&quot;,action: &quot;getAll&quot;}).then(function(response){
+        return sendSelf(this, {resource: &quot;config&quot;, action: &quot;getAll&quot;}).then(function (response) {
             return response.entity;
         });
     };

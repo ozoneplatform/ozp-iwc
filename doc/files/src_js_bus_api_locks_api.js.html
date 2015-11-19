@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.9</em>
+            <em>API Docs for: 1.1.11</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -113,6 +113,7 @@
                                 <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.MutexClient.html">ozpIwc.transport.participant.MutexClient</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
@@ -123,6 +124,7 @@
                                 <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
                                 <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
                                 <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
@@ -246,7 +248,6 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
 
         consensusConfiguration(this, config.consensusMember);
         participantConfiguration(this);
-        this.on(&quot;addressDisconnects&quot;, this.unlockAll, this);
 
         this.logPrefix = &quot;[&quot; + this.name + &quot;/&quot; + this.participant.address + &quot;] &quot;;
 
@@ -304,6 +305,8 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
         api.participant.on(&quot;receive&quot;, function (packetContext) {
             api.receivePacketContext(packetContext);
         });
+
+        api.participant.on(&quot;addressDisconnects&quot;, api.unlockAll, api);
         api.router.registerMulticast(api.participant, [api.name]);
         if (api.consensusMember.state === &quot;coordinator&quot;) {
             api.deliverRequestQueue();
@@ -435,10 +438,6 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
      * @return
      */
     Api.prototype.shutdown = function () {
-        if (this.leaderState === &quot;leader&quot;) {
-            this.broadcastDeathScream(this.createDeathScream());
-        }
-
         this.participant.send({
             dst: &quot;locks.api&quot;,
             resource: &quot;/mutex/&quot; + this.name,
@@ -517,7 +516,8 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
         if (context.node) {
             this.updateLock(context.node, context.node.unlock({
                 src: packet.entity.src || packet.src,
-                msgId: packet.entity.msgId || packet.msgId
+                msgId: packet.entity.msgId || packet.msgId,
+                entity: packet.entity.state || context.node.entity.state
             }));
         }
     });
@@ -541,7 +541,8 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
                 &#x27;src&#x27;: this.participant.name,
                 &#x27;replyTo&#x27;: newOwner.msgId,
                 &#x27;response&#x27;: &#x27;ok&#x27;,
-                &#x27;resource&#x27;: node.resource
+                &#x27;resource&#x27;: node.resource,
+                &#x27;entity&#x27;: node.entity.state
             };
 
             if (this.isSendQueueing) {

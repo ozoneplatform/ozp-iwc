@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.9</em>
+            <em>API Docs for: 1.1.11</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -113,6 +113,7 @@
                                 <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.MutexClient.html">ozpIwc.transport.participant.MutexClient</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
@@ -123,6 +124,7 @@
                                 <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
                                 <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
                                 <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
@@ -269,7 +271,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
          */
         this.metrics = config.metrics;
 
-        if(this.metrics) {
+        if (this.metrics) {
             this.metricsPrefix = &quot;keyBroadcastLocalStorageLink.&quot; + this.selfId;
             this.droppedFragmentsCounter = this.metrics.counter(this.metricsPrefix, &#x27;fragmentsDropped&#x27;);
             this.fragmentsReceivedCounter = this.metrics.counter(this.metricsPrefix, &#x27;fragmentsReceived&#x27;);
@@ -372,7 +374,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
                     packet = JSON.parse(event.newValue);
                 } catch (e) {
                     log.error(&quot;Parse error on &quot; + event.newValue);
-                    if(self.metrics) {
+                    if (self.metrics) {
                         self.packetParseErrorCounter.inc();
                     }
                     return;
@@ -417,11 +419,11 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
      */
     var forwardToPeer = function (link, packet) {
         link.peer.receive(link.linkId, packet);
-        if(link.metrics) {
+        if (link.metrics) {
             link.packetsReceivedCounter.inc();
         }
         if (packet.data.time) {
-            if(link.metrics) {
+            if (link.metrics) {
                 link.latencyInTimer.mark(util.now() - packet.data.time);
             }
         }
@@ -468,7 +470,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
 
             // Add a timeout to destroy the fragment should the whole message not be received.
             link.fragments[key].timeoutFunc = function () {
-                if(link.metrics) {
+                if (link.metrics) {
                     link.droppedFragmentsCounter.inc(link.total);
                 }
                 delete link.fragments[link.key];
@@ -491,7 +493,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
             link.fragments[key].srcPeer === undefined) {
             return null;
         } else {
-            if(link.metrics) {
+            if (link.metrics) {
                 link.fragmentsReceivedCounter.inc();
             }
             return true;
@@ -544,7 +546,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
                 attemptSend(link, link.sendQueue.shift());
             }
         } else {
-            if(link.metrics) {
+            if (link.metrics) {
                 link.packetsFailedCounter.inc();
             }
             log.error(&quot;Failed to write packet(len=&quot; + packet.length + &quot;):&quot; + &quot; Send queue full.&quot;);
@@ -578,7 +580,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
                     attemptSend(link, packet, retryCount);
                 }, timeOut);
             } else {
-                if(link.metrics) {
+                if (link.metrics) {
                     link.packetsFailedCounter.inc();
                 }
                 log.error(&quot;Failed to write packet(len=&quot; + packet.length + &quot;):&quot; + sendStatus);
@@ -638,7 +640,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
         try {
             str = JSON.stringify(packet.data);
         } catch (e) {
-            if(this.metrics) {
+            if (this.metrics) {
                 this.packetsFailedCounter.inc();
             }
             var msgId = packet.msgId || &quot;unknown&quot;;
@@ -690,11 +692,11 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
         try {
             var p = JSON.stringify(packet);
             localStorage.setItem(util.localStorageKey, p);
-            if(this.metrics) {
+            if (this.metrics) {
                 this.packetsSentCounter.inc();
             }
             if (packet.data.time) {
-                if(this.metrics) {
+                if (this.metrics) {
                     this.latencyOutTimer.mark(util.now() - packet.data.time);
                 }
             }

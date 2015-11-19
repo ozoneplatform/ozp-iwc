@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.9</em>
+            <em>API Docs for: 1.1.11</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -113,6 +113,7 @@
                                 <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.MutexClient.html">ozpIwc.transport.participant.MutexClient</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
@@ -123,6 +124,7 @@
                                 <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
                                 <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
                                 <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
@@ -201,7 +203,7 @@
 
 
         <div class="foundat">
-            Defined in: <a href="../files/app_js_bus_api_base_api.js.html#l15"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:15</code></a>
+            Defined in: <a href="../files/src_js_bus_util_halLoader.js.html#l4"><code>src&#x2F;js&#x2F;bus&#x2F;util&#x2F;halLoader.js:4</code></a>
         </div>
 
             Module: <a href="../modules/ozpIwc.api.base.html">ozpIwc.api.base</a><br>
@@ -252,7 +254,7 @@ through a linear series of states:  member -&gt; loading -&gt; leader</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l15"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:15</code></a>
+        <a href="../files/src_js_bus_util_halLoader.js.html#l4"><code>src&#x2F;js&#x2F;bus&#x2F;util&#x2F;halLoader.js:4</code></a>
         </p>
 
 
@@ -362,19 +364,11 @@ connection to use for communication</p>
 
                             </li>
                             <li class="index-item method">
-                                <a href="#method_changedHandler">changedHandler</a>
-
-                            </li>
-                            <li class="index-item method">
                                 <a href="#method_checkAuthorization">checkAuthorization</a>
 
                             </li>
                             <li class="index-item method">
                                 <a href="#method_createDeathScream">createDeathScream</a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_createdHandler">createdHandler</a>
 
                             </li>
                             <li class="index-item method">
@@ -391,10 +385,6 @@ connection to use for communication</p>
                             </li>
                             <li class="index-item method private">
                                 <a href="#method_deliverSendQueue">deliverSendQueue</a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_disconnectHandler">disconnectHandler</a>
 
                             </li>
                             <li class="index-item method private">
@@ -435,22 +425,16 @@ connection to use for communication</p>
 
                                     <span class="flag static">static</span>
                             </li>
-                            <li class="index-item method private">
-                                <a href="#method_handleLockChange">handleLockChange</a>
-
-                                    <span class="flag static">static</span>
-                            </li>
-                            <li class="index-item method private">
-                                <a href="#method_handleResource">handleResource</a>
-
-                                    <span class="flag static">static</span>
-                            </li>
                             <li class="index-item method">
                                 <a href="#method_initializeData">initializeData</a>
 
                             </li>
                             <li class="index-item method">
-                                <a href="#method_loadFromEndpoint">loadFromEndpoint</a>
+                                <a href="#method_loadedResourceHandler">loadedResourceHandler</a>
+
+                            </li>
+                            <li class="index-item method inherited inherited">
+                                <a href="#method_"></a>
 
                             </li>
                             <li class="index-item method">
@@ -459,10 +443,6 @@ connection to use for communication</p>
                             </li>
                             <li class="index-item method">
                                 <a href="#method_matchingNodes">matchingNodes</a>
-
-                            </li>
-                            <li class="index-item method inherited inherited">
-                                <a href="#method_"></a>
 
                             </li>
                             <li class="index-item method inherited inherited">
@@ -477,15 +457,33 @@ connection to use for communication</p>
                                 <a href="#method_on">on</a>
 
                             </li>
-                            <li class="index-item method private">
-                                <a href="#method_queueForCoordination">queueForCoordination</a>
+                            <li class="index-item method">
+                                <a href="#method_onClientDisconnect">onClientDisconnect</a>
 
-                                    <span class="flag static">static</span>
                             </li>
-                            <li class="index-item method private">
-                                <a href="#method_receiveBusPacket">receiveBusPacket</a>
+                            <li class="index-item method">
+                                <a href="#method_onLock">onLock</a>
 
-                                    <span class="flag static">static</span>
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_onNodeChanged">onNodeChanged</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_onNodeCreated">onNodeCreated</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_onRelease">onRelease</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_onStart">onStart</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_onStart">onStart</a>
+
                             </li>
                             <li class="index-item method private">
                                 <a href="#method_receiveCoordinationPacket">receiveCoordinationPacket</a>
@@ -523,6 +521,10 @@ connection to use for communication</p>
                                 <a href="#method_shutdown">shutdown</a>
 
                             </li>
+                            <li class="index-item method">
+                                <a href="#method_transitionFromLeader">transitionFromLeader</a>
+
+                            </li>
                             <li class="index-item method private">
                                 <a href="#method_transitionToLeader">transitionToLeader</a>
 
@@ -548,11 +550,6 @@ connection to use for communication</p>
                                 <a href="#method_updateCollections">updateCollections</a>
 
                             </li>
-                            <li class="index-item method">
-                                <a href="#method_useDefaultRoute">useDefaultRoute</a>
-
-                                    <span class="flag static">static</span>
-                            </li>
                     </ul>
                 </div>
 
@@ -560,6 +557,10 @@ connection to use for communication</p>
                     <h3>Properties</h3>
 
                     <ul class="index-list properties">
+                            <li class="index-item property">
+                                <a href="#property_ajaxQueue">ajaxQueue</a>
+
+                            </li>
                             <li class="index-item property">
                                 <a href="#property_allActions">allActions</a>
 
@@ -661,7 +662,7 @@ connection to use for communication</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l842"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:842</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l678"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:678</code></a>
         </p>
 
 
@@ -717,7 +718,7 @@ connection to use for communication</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l802"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:802</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l638"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:638</code></a>
         </p>
 
 
@@ -814,7 +815,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l1031"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1031</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l545"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:545</code></a>
         </p>
 
 
@@ -862,7 +863,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l1020"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1020</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l534"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:534</code></a>
         </p>
 
 
@@ -874,86 +875,6 @@ be sent out after the request completes.</p>
 
     </div>
 
-
-
-
-</div>
-<div id="method_changedHandler" class="method item">
-    <h3 class="name"><code>changedHandler</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>node</code>
-                </li>
-                <li class="arg">
-                        <code>entity</code>
-                </li>
-                <li class="arg">
-                        <code>packetContext</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l480"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:480</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>A handler function called after a node is changed but before it's watchers are notified. Can be overridden by
-inherited APIs.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">node</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">entity</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">packetContext</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-            </ul>
-        </div>
 
 
 
@@ -991,7 +912,7 @@ inherited APIs.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l744"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:744</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l563"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:563</code></a>
         </p>
 
 
@@ -1078,7 +999,7 @@ inherited APIs.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l514"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:514</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l241"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:241</code></a>
         </p>
 
 
@@ -1106,59 +1027,6 @@ handoff data.  This MUST be a synchronous call that returns immediately.</p>
 
 
 </div>
-<div id="method_createdHandler" class="method item">
-    <h3 class="name"><code>createdHandler</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>node</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l470"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:470</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>A handler function for when a node is created. Can be overridden by inherited APIs.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">node</code>
-                        <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node</a></span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-</div>
 <div id="method_createNode" class="method item">
     <h3 class="name"><code>createNode</code></h3>
 
@@ -1183,7 +1051,7 @@ handoff data.  This MUST be a synchronous call that returns immediately.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l601"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:601</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l356"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:356</code></a>
         </p>
 
 
@@ -1251,7 +1119,7 @@ and fires off the right events.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l621"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:621</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l376"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:376</code></a>
         </p>
 
 
@@ -1323,7 +1191,7 @@ from resource to resource.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l958"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:958</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l787"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:787</code></a>
         </p>
 
 
@@ -1355,7 +1223,7 @@ from resource to resource.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l993"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:993</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l827"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:827</code></a>
         </p>
 
 
@@ -1367,60 +1235,6 @@ from resource to resource.</p>
 
     </div>
 
-
-
-
-</div>
-<div id="method_disconnectHandler" class="method item">
-    <h3 class="name"><code>disconnectHandler</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>address</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l496"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:496</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>A handler function called when an instance of this API has disconnected from the bus.Can be overridden by
-inherited APIs.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">address</code>
-                        <span class="type">String</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-            </ul>
-        </div>
 
 
 
@@ -1441,7 +1255,7 @@ inherited APIs.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l947"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:947</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l776"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:776</code></a>
         </p>
 
 
@@ -1474,7 +1288,7 @@ called.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l981"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:981</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l815"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:815</code></a>
         </p>
 
 
@@ -1515,7 +1329,7 @@ initialization).</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l589"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:589</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l344"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:344</code></a>
         </p>
 
 
@@ -1594,7 +1408,7 @@ initialization).</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l971"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:971</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l804"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:804</code></a>
         </p>
 
 
@@ -1626,7 +1440,7 @@ initialization).</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l1005"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1005</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l839"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:839</code></a>
         </p>
 
 
@@ -1666,7 +1480,7 @@ initialization).</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l1183"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1183</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l591"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:591</code></a>
         </p>
 
 
@@ -1729,7 +1543,7 @@ initialization).</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l536"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:536</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l327"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:327</code></a>
         </p>
 
 
@@ -1774,6 +1588,75 @@ initialization).</p>
         <div class="args">
             <span class="paren">(</span><ul class="args-list inline commas">
                 <li class="arg">
+                        <code>endpoint</code>
+                </li>
+                <li class="arg">
+                        <code>_embedded</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+        <span class="flag private">private</span>
+
+
+        <span class="flag static">static</span>
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_js_bus_util_halLoader.js.html#l48"><code>src&#x2F;js&#x2F;bus&#x2F;util&#x2F;halLoader.js:48</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Recursive HAL _embedded parser</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">endpoint</code>
+                        <span class="type">ozpIwc.api.endpoint</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">_embedded</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>the _embedded object of the HAL resource</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_handleLinks" class="method item private">
+    <h3 class="name"><code>handleLinks</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
                         <code>api</code>
                 </li>
                 <li class="arg">
@@ -1797,7 +1680,7 @@ initialization).</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l1089"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1089</code></a>
+        <a href="../files/src_js_bus_util_halLoader.js.html#l76"><code>src&#x2F;js&#x2F;bus&#x2F;util&#x2F;halLoader.js:76</code></a>
         </p>
 
 
@@ -1850,238 +1733,6 @@ initialization).</p>
 
 
 </div>
-<div id="method_handleLinks" class="method item private">
-    <h3 class="name"><code>handleLinks</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>api</code>
-                </li>
-                <li class="arg">
-                        <code>endpoint</code>
-                </li>
-                <li class="arg">
-                        <code>_embedded</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-        <span class="flag private">private</span>
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l1125"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1125</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Recursive HAL _embedded parser</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">api</code>
-                        <span class="type">Api</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">endpoint</code>
-                        <span class="type">ozpIwc.api.endpoint</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">_embedded</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        <p>the _embedded object of the HAL resource</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-</div>
-<div id="method_handleLockChange" class="method item private">
-    <h3 class="name"><code>handleLockChange</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>apiBase</code>
-                </li>
-                <li class="arg">
-                        <code>response</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-        <span class="flag private">private</span>
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l204"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:204</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>A static utility method for the api to handle a change in it's lock api mutex.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">apiBase</code>
-                        <span class="type"><a href="../classes/ozpIwc.api.base.Api.html" class="crosslink">ozpIwc.api.base.Api</a></span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">response</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-</div>
-<div id="method_handleResource" class="method item private">
-    <h3 class="name"><code>handleResource</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>api</code>
-                </li>
-                <li class="arg">
-                        <code>endpoint</code>
-                </li>
-                <li class="arg">
-                        <code>resourceObj</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-        <span class="flag private">private</span>
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l1050"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1050</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Recursive HAL resource parser.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">api</code>
-                        <span class="type">Api</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">endpoint</code>
-                        <span class="type">ozpIwc.api.endpoint</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">resourceObj</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        <p>the body of the Resource</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-</div>
 <div id="method_initializeData" class="method item">
     <h3 class="name"><code>initializeData</code></h3>
 
@@ -2106,7 +1757,7 @@ initialization).</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l552"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:552</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l168"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:168</code></a>
         </p>
 
 
@@ -2151,23 +1802,17 @@ if available, otherwise undefined.</p>
 
 
 </div>
-<div id="method_loadFromEndpoint" class="method item">
-    <h3 class="name"><code>loadFromEndpoint</code></h3>
+<div id="method_loadedResourceHandler" class="method item">
+    <h3 class="name"><code>loadedResourceHandler</code></h3>
 
         <div class="args">
             <span class="paren">(</span><ul class="args-list inline commas">
                 <li class="arg">
-                        <code>endpoint</code>
-                </li>
-                <li class="arg">
-                        <code>headers</code>
+                        <code>resource</code>
                 </li>
             </ul><span class="paren">)</span>
         </div>
 
-        <span class="returns-inline">
-            <span class="type">Promise</span>
-        </span>
 
 
 
@@ -2178,7 +1823,7 @@ if available, otherwise undefined.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l1150"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1150</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l210"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:210</code></a>
         </p>
 
 
@@ -2186,8 +1831,9 @@ if available, otherwise undefined.</p>
     </div>
 
     <div class="description">
-        <p>Loads data from the provided endpoint.  The endpoint must point to a HAL JSON document
-that embeds or links to all resources for this api.</p>
+        <p>A handler method for the API to process a resource loaded from an endpoint.
+Extracts the type field of the resources self link (HAL) to determine the type of node to create and store
+in the api's data object.</p>
 
     </div>
 
@@ -2196,18 +1842,8 @@ that embeds or links to all resources for this api.</p>
 
             <ul class="params-list">
                 <li class="param">
-                        <code class="param-name">endpoint</code>
-                        <span class="type"><a href="../classes/ozpIwc.api.Endpoint.html" class="crosslink">ozpIwc.api.Endpoint</a></span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">headers</code>
-                        <span class="type">Array</span>
+                        <code class="param-name">resource</code>
+                        <span class="type">Object</span>
 
 
                     <div class="param-description">
@@ -2218,13 +1854,83 @@ that embeds or links to all resources for this api.</p>
             </ul>
         </div>
 
+
+
+</div>
+<div id="method_" class="method item inherited">
+    <h3 class="name"><code></code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>eventName</code>
+                </li>
+                <li class="arg">
+                        <code>event</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Object</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+            <p>Inherited from
+            <a href="../classes/ozpIwc.util.Event.html#method_">
+                ozpIwc.util.Event
+            </a>
+            but overwritten in
+        <a href="../files/src_js_common_events_event.js.html#l64"><code>src&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:64</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        Fires an event that will be received by all handlers.
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">eventName</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                        Name of the event.
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">event</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        Event object to pass to the handlers.
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
         <div class="returns">
             <h4>Returns:</h4>
 
             <div class="returns-description">
-                        <span class="type">Promise</span>:
-                    <p>resolved when all data has been loaded.</p>
-
+                        <span class="type">Object</span>:
+                    The event after all handlers have processed it.
             </div>
         </div>
 
@@ -2251,7 +1957,7 @@ that embeds or links to all resources for this api.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l777"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:777</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l613"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:613</code></a>
         </p>
 
 
@@ -2308,7 +2014,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l759"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:759</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l578"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:578</code></a>
         </p>
 
 
@@ -2349,85 +2055,6 @@ be sent out after the request completes.</p>
 
 
 </div>
-<div id="method_" class="method item inherited">
-    <h3 class="name"><code></code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>eventName</code>
-                </li>
-                <li class="arg">
-                        <code>event</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type">Object</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-            <p>Inherited from
-            <a href="../classes/ozpIwc.util.Event.html#method_">
-                ozpIwc.util.Event
-            </a>
-            but overwritten in
-        <a href="../files/app_js_common_events_event.js.html#l64"><code>app&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:64</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        Fires an event that will be received by all handlers.
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">eventName</code>
-                        <span class="type">String</span>
-
-
-                    <div class="param-description">
-                        Name of the event.
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">event</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        Event object to pass to the handlers.
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Object</span>:
-                    The event after all handlers have processed it.
-            </div>
-        </div>
-
-
-</div>
 <div id="method_mixinOnOff" class="method item inherited">
     <h3 class="name"><code>mixinOnOff</code></h3>
 
@@ -2452,7 +2079,7 @@ be sent out after the request completes.</p>
                 ozpIwc.util.Event
             </a>
             but overwritten in
-        <a href="../files/app_js_common_events_event.js.html#l110"><code>app&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:110</code></a>
+        <a href="../files/src_js_common_events_event.js.html#l110"><code>src&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:110</code></a>
         </p>
 
 
@@ -2461,7 +2088,8 @@ be sent out after the request completes.</p>
 
     <div class="description">
         Adds an {{#crossLink "ozpIwc.util.Event/off:method"}}on(){{/crossLink}} and
-{{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this object.
+{{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this
+object.
     </div>
 
         <div class="params">
@@ -2508,7 +2136,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.Event.html#method_off">ozpIwc.util.Event</a>:
-        <a href="../files/app_js_common_events_event.js.html#l51"><code>app&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:51</code></a>
+        <a href="../files/src_js_common_events_event.js.html#l51"><code>src&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:51</code></a>
         </p>
 
 
@@ -2579,7 +2207,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.Event.html#method_on">ozpIwc.util.Event</a>:
-        <a href="../files/app_js_common_events_event.js.html#l27"><code>app&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:27</code></a>
+        <a href="../files/src_js_common_events_event.js.html#l27"><code>src&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:27</code></a>
         </p>
 
 
@@ -2640,33 +2268,28 @@ be sent out after the request completes.</p>
 
 
 </div>
-<div id="method_queueForCoordination" class="method item private">
-    <h3 class="name"><code>queueForCoordination</code></h3>
+<div id="method_onClientDisconnect" class="method item">
+    <h3 class="name"><code>onClientDisconnect</code></h3>
 
         <div class="args">
             <span class="paren">(</span><ul class="args-list inline commas">
                 <li class="arg">
-                        <code>apiBase</code>
-                </li>
-                <li class="arg">
-                        <code class="optional">[promise]</code>
+                        <code>address</code>
                 </li>
             </ul><span class="paren">)</span>
         </div>
 
 
 
-        <span class="flag private">private</span>
 
 
-        <span class="flag static">static</span>
 
 
 
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l155"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:155</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l854"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:854</code></a>
         </p>
 
 
@@ -2674,7 +2297,10 @@ be sent out after the request completes.</p>
     </div>
 
     <div class="description">
-        <p>A static utility method for the api to queue for leadership in the locks api.</p>
+        <p>A handler function called when a participant has disconnected from the bus.
+Each node in the API is checked to see if its lifespan was tied to said participant, and if the lifespan deems
+necessary, removes the node.
+Can be overridden by inherited APIs.</p>
 
     </div>
 
@@ -2683,19 +2309,8 @@ be sent out after the request completes.</p>
 
             <ul class="params-list">
                 <li class="param">
-                        <code class="param-name">apiBase</code>
-                        <span class="type"><a href="../classes/ozpIwc.api.base.Api.html" class="crosslink">ozpIwc.api.base.Api</a></span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name optional">[promise]</code>
-                        <span class="type">Promise</span>
-                        <span class="flag optional" title="This parameter is optional.">optional</span>
+                        <code class="param-name">address</code>
+                        <span class="type">String</span>
 
 
                     <div class="param-description">
@@ -2709,36 +2324,22 @@ be sent out after the request completes.</p>
 
 
 </div>
-<div id="method_receiveBusPacket" class="method item private">
-    <h3 class="name"><code>receiveBusPacket</code></h3>
+<div id="method_onLock" class="method item">
+    <h3 class="name"><code>onLock</code></h3>
 
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>apiBase</code>
-                </li>
-                <li class="arg">
-                        <code>packetContext</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type"></span>
-        </span>
+        <span class="paren">()</span>
 
 
-        <span class="flag private">private</span>
 
 
-        <span class="flag static">static</span>
+
 
 
 
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l339"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:339</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l402"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:402</code></a>
         </p>
 
 
@@ -2746,7 +2347,58 @@ be sent out after the request completes.</p>
     </div>
 
     <div class="description">
-        <p>Handles packets received with a destination of &quot;$bus.multicast&quot;.</p>
+        <p>A handler method for the API's acquisition of the mutex.</p>
+<ul>
+<li>An api will initialize any state passed on from the last leader (received as a broadcasted deathscream).</li>
+<li>If no initial state passed and backend connnectivity is configured, the backend will be reached for
+persistent state.</li>
+<li>Handle any requests during the transition to being the active API.</li>
+<li>Call the API's onStart method to handle any custom API init functionality.</li>
+</ul>
+
+    </div>
+
+
+
+
+</div>
+<div id="method_onNodeChanged" class="method item">
+    <h3 class="name"><code>onNodeChanged</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>node</code>
+                </li>
+                <li class="arg">
+                        <code>entity</code>
+                </li>
+                <li class="arg">
+                        <code>packetContext</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_js_bus_api_base_api.js.html#l311"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:311</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>A handler function called after a node is changed but before it's watchers are notified. Can be overridden by
+inherited APIs.</p>
 
     </div>
 
@@ -2755,8 +2407,18 @@ be sent out after the request completes.</p>
 
             <ul class="params-list">
                 <li class="param">
-                        <code class="param-name">apiBase</code>
-                        <span class="type"><a href="../classes/ozpIwc.api.base.Api.html" class="crosslink">ozpIwc.api.base.Api</a></span>
+                        <code class="param-name">node</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">entity</code>
+                        <span class="type">Object</span>
 
 
                     <div class="param-description">
@@ -2777,13 +2439,152 @@ be sent out after the request completes.</p>
             </ul>
         </div>
 
-        <div class="returns">
-            <h4>Returns:</h4>
 
-            <div class="returns-description">
-                        <span class="type"></span>:
-            </div>
+
+</div>
+<div id="method_onNodeCreated" class="method item">
+    <h3 class="name"><code>onNodeCreated</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>node</code>
+                </li>
+            </ul><span class="paren">)</span>
         </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_js_bus_api_base_api.js.html#l301"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:301</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>A handler function for when a node is created. Can be overridden by inherited APIs.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">node</code>
+                        <span class="type"><a href="../classes/ozpIwc.api.base.Node.html" class="crosslink">ozpIwc.api.base.Node</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_onRelease" class="method item">
+    <h3 class="name"><code>onRelease</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_js_bus_api_base_api.js.html#l422"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:422</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>A handler method for the API's release of the mutex.</p>
+
+    </div>
+
+
+
+
+</div>
+<div id="method_onStart" class="method item">
+    <h3 class="name"><code>onStart</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_js_bus_api_base_api.js.html#l440"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:440</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Called when the API ends operation as leader. To be overriden by inherited APIs.</p>
+
+    </div>
+
+
+
+
+</div>
+<div id="method_onStart" class="method item">
+    <h3 class="name"><code>onStart</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_js_bus_api_base_api.js.html#l432"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:432</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Called when the API begins operation as leader. To be overriden by inherited APIs.</p>
+
+    </div>
+
+
 
 
 </div>
@@ -2816,7 +2617,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l384"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:384</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l1033"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1033</code></a>
         </p>
 
 
@@ -2889,7 +2690,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l926"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:926</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l755"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:755</code></a>
         </p>
 
 
@@ -2953,7 +2754,7 @@ it replies with BadAction, BadResource, or BadRequest, as appropriate.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l859"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:859</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l695"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:695</code></a>
         </p>
 
 
@@ -3012,7 +2813,7 @@ changes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l363"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:363</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l1012"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1012</code></a>
         </p>
 
 
@@ -3079,7 +2880,7 @@ remove all of its participants watch registrations.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l822"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:822</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l658"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:658</code></a>
         </p>
 
 
@@ -3177,7 +2978,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l230"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:230</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l902"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:902</code></a>
         </p>
 
 
@@ -3265,7 +3066,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l285"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:285</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l957"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:957</code></a>
         </p>
 
 
@@ -3326,7 +3127,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l691"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:691</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l263"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:263</code></a>
         </p>
 
 
@@ -3348,6 +3149,36 @@ be sent out after the request completes.</p>
 
 
 </div>
+<div id="method_transitionFromLeader" class="method item">
+    <h3 class="name"><code>transitionFromLeader</code></h3>
+
+        <span class="paren">()</span>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_js_bus_api_base_api.js.html#l485"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:485</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+
+</div>
 <div id="method_transitionToLeader" class="method item private">
     <h3 class="name"><code>transitionToLeader</code></h3>
 
@@ -3364,7 +3195,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l670"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:670</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l466"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:466</code></a>
         </p>
 
 
@@ -3398,7 +3229,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l648"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:648</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l451"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:451</code></a>
         </p>
 
 
@@ -3441,7 +3272,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l726"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:726</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l516"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:516</code></a>
         </p>
 
 
@@ -3488,7 +3319,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l708"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:708</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l500"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:500</code></a>
         </p>
 
 
@@ -3552,7 +3383,7 @@ be sent out after the request completes.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l302"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:302</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l974"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:974</code></a>
         </p>
 
 
@@ -3613,7 +3444,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l873"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:873</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l709"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:709</code></a>
         </p>
 
 
@@ -3629,79 +3460,35 @@ property.</p>
 
 
 </div>
-<div id="method_useDefaultRoute" class="method item">
-    <h3 class="name"><code>useDefaultRoute</code></h3>
+            </div>
 
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>actions</code>
-                </li>
-                <li class="arg">
-                        <code>resource=&quot;{resource:.*}&quot;</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
+            <div id="properties" class="api-class-tabpanel">
+                <h2 class="off-left">Properties</h2>
+
+<div id="property_ajaxQueue" class="property item">
+    <h3 class="name"><code>ajaxQueue</code></h3>
+    <span class="type"><a href="../classes/ozpIwc.util.AjaxPersistenceQueue.html" class="crosslink">ozpIwc.util.AjaxPersistenceQueue</a></span>
 
 
-
-
-
-        <span class="flag static">static</span>
 
 
 
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l1285"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1285</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l151"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:151</code></a>
         </p>
-
 
 
     </div>
 
     <div class="description">
-        <p>Install the default handler and filters for the provided actions and resources.</p>
-
+        
     </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">actions</code>
-                        <span class="type">String | String</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">resource=&quot;{resource:.*}&quot;</code>
-                        <span class="type">String</span>
-
-
-                    <div class="param-description">
-                        <p>The resource template to install the default handler on.</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
 
 
 
 </div>
-            </div>
-
-            <div id="properties" class="api-class-tabpanel">
-                <h2 class="off-left">Properties</h2>
-
 <div id="property_allActions" class="property item">
     <h3 class="name"><code>allActions</code></h3>
     <span class="type">String</span>
@@ -3714,7 +3501,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l1277"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1277</code></a>
+        <a href="../files/src_js_bus_api_base_routes.js.html#l91"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;routes.js:91</code></a>
         </p>
 
 
@@ -3739,7 +3526,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l55"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:55</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l54"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:54</code></a>
         </p>
 
 
@@ -3764,7 +3551,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l120"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:120</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l105"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:105</code></a>
         </p>
 
 
@@ -3788,7 +3575,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l114"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:114</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l99"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:99</code></a>
         </p>
 
 
@@ -3812,7 +3599,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l82"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:82</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l67"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:67</code></a>
         </p>
 
 
@@ -3836,7 +3623,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l102"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:102</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l87"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:87</code></a>
         </p>
 
 
@@ -3861,7 +3648,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l1201"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1201</code></a>
+        <a href="../files/src_js_bus_api_base_routes.js.html#l15"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;routes.js:15</code></a>
         </p>
 
 
@@ -3886,7 +3673,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l96"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:96</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l81"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:81</code></a>
         </p>
 
 
@@ -3913,7 +3700,7 @@ property.</p>
                 ozpIwc.util.Event
             </a>
             but overwritten in
-        <a href="../files/app_js_bus_api_base_api.js.html#l89"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:89</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l74"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:74</code></a>
         </p>
 
 
@@ -3937,7 +3724,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l126"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:126</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l111"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:111</code></a>
         </p>
 
 
@@ -3961,7 +3748,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l139"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:139</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l145"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:145</code></a>
         </p>
 
 
@@ -3985,7 +3772,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l76"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:76</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l61"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:61</code></a>
         </p>
 
 
@@ -4010,7 +3797,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l899"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:899</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l735"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:735</code></a>
         </p>
 
 
@@ -4035,7 +3822,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l62"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:62</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l117"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:117</code></a>
         </p>
 
 
@@ -4059,7 +3846,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l132"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:132</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l138"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:138</code></a>
         </p>
 
 
@@ -4083,7 +3870,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l108"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:108</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l93"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:93</code></a>
         </p>
 
 
@@ -4109,7 +3896,7 @@ property.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/app_js_bus_api_base_api.js.html#l406"><code>app&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:406</code></a>
+        <a href="../files/src_js_bus_api_base_api.js.html#l1055"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;base&#x2F;api.js:1055</code></a>
         </p>
 
 

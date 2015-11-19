@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.9</em>
+            <em>API Docs for: 1.1.11</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -113,6 +113,7 @@
                                 <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.MutexClient.html">ozpIwc.transport.participant.MutexClient</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
@@ -123,6 +124,7 @@
                                 <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
                                 <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
                                 <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
@@ -254,7 +256,7 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
          */
         this.metrics = config.metrics;
 
-        if(this.metrics) {
+        if (this.metrics) {
             this.metrics.gauge(&quot;transport.participants&quot;).set(function () {
                 return Object.keys(self.participants).length;
             });
@@ -301,7 +303,7 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
         if (!config.disableBus) {
             this.participants[&quot;$bus.multicast&quot;] = new transport.participant.Multicast({
                 authorization: this.authorization,
-                name:&quot;$bus.multicast&quot;
+                name: &quot;$bus.multicast&quot;
             });
         }
         /**
@@ -316,7 +318,7 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
         });
         this.registerParticipant(this.watchdog);
         this.recursionDepth = 0;
-        if(this.metrics) {
+        if (this.metrics) {
             this.metrics.gauge(&#x27;transport.router.participants&#x27;).set(function () {
                 return self.getParticipantCount();
             });
@@ -423,12 +425,12 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
             });
 
             if (this.events.trigger(&quot;preDeliver&quot;, preDeliverEvent).canceled) {
-                if(this.metrics) {
+                if (this.metrics) {
                     this.metrics.counter(&quot;transport.packets.rejected&quot;).inc();
                 }
                 return;
             }
-            if(this.metrics) {
+            if (this.metrics) {
                 this.metrics.counter(&quot;transport.packets.delivered&quot;).inc();
             }
             localParticipant.receiveFromRouter(packetContext);
@@ -496,12 +498,12 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
         this.events.trigger(&quot;preSend&quot;, preSendEvent);
 
         if (preSendEvent.canceled) {
-            if(this.metrics) {
+            if (this.metrics) {
                 this.metrics.counter(&quot;transport.packets.sendCanceled&quot;);
             }
             return;
         }
-        if(this.metrics) {
+        if (this.metrics) {
             this.metrics.counter(&quot;transport.packets.sent&quot;).inc();
         }
         this.deliverLocal(packet, sendingParticipant);
@@ -518,7 +520,7 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
      */
     Router.prototype.receiveFromPeer = function (packet) {
         var now = Date.now();
-        if(this.metrics) {
+        if (this.metrics) {
             this.metrics.counter(&quot;transport.packets.receivedFromPeer&quot;).inc();
             this.metrics.histogram(&quot;transport.packets.latency&quot;).mark(now - packet.data.time, now);
         }

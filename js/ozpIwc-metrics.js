@@ -1,5 +1,9 @@
-/*jshint -W079 */
-var window = window || self;
+// If running in a worker, there is no window, rather only self.
+// Reassign window to self in this environment
+if(!window){
+    /*jshint -W020 */
+    window = self;
+}
 /*!
  * https://github.com/es-shims/es5-shim
  * @license es5-shim Copyright 2009-2015 by contributors, MIT License
@@ -3353,6 +3357,16 @@ ozpIwc.util = (function (util) {
         }
     };
 
+    /**
+     * Returns a promise that will resolve after the given delay with any additional arguments passed
+     * @param {Number} delay miliseconds to delay
+     * @returns {Promise}
+     */
+    util.promiseDelay = function (delay) {
+        return new Promise(function (res) {
+            window.setTimeout(function () { res();}, delay);
+        });
+    };
     return util;
 }(ozpIwc.util || {}));
 
@@ -3680,8 +3694,20 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     }
                 }
                 if (!handled) {
-                    // Otherwise trigger "receive" for someone to handle it
-                    this.events.trigger("receive", packetContext);
+                    //Drop own packets
+                    if (packet.src === this.address) {
+                        return;
+                    }
+
+                    if (packet.dst === "$bus.multicast") {
+                        //If not handle-able by the mixin, trigger "busPacket" for someone to handle
+                        if (!handleBusPacket(this, packet)) {
+                            this.events.trigger("busPacket", packetContext);
+                        }
+                    } else {
+                        //Not bus packet, trigger "receive" for someone to handle
+                        this.events.trigger("receive", packetContext);
+                    }
                 }
             },
 
@@ -3862,11 +3888,11 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     });
                 }).then(function () {
                     // Run the intent handler. Wrapped in a promise chain in case the callback itself is async.
-                    return callback(res.entity,inFlightIntent);
+                    return callback(res.entity, inFlightIntent);
                 }).then(function (result) {
                     // Allow the callback to override the intent state (usefull for preventing intent resolution if
                     // chained operations are performed.
-                    if(result && result.intentIncomplete){
+                    if (result && result.intentIncomplete) {
                         return Promise.resolve();
                     }
                     // Respond to the inflight resource
@@ -4204,7 +4230,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                             }
                         });
 
-                        if(self.launchParams.launchData && self.launchParams.launchData.inFlightIntent){
+                        if (self.launchParams.launchData && self.launchParams.launchData.inFlightIntent) {
                             self.launchedIntents.push(self.launchParams.launchData.inFlightIntent);
                         }
                     }
@@ -4216,6 +4242,31 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
             }
 
         };
+    };
+//---------------------------------------------------------
+// Private Methods
+//---------------------------------------------------------
+
+    /**
+     * Handles packets received with a destination of "$bus.multicast".
+     * If the packet action isn't handled, the function will return falsy.
+     *
+     * @method handleBusPacket
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Object} packetContext
+     * @return {*}
+     */
+    var handleBusPacket = function (mixer, packet) {
+        switch (packet.action) {
+            case "connect":
+                mixer.events.trigger("addressConnects", packet.entity.address, packet);
+                return true;
+            case "disconnect":
+                mixer.events.trigger("addressDisconnects", packet.entity.address, packet);
+                return true;
+        }
     };
 
     return ApiPromiseMixin;
@@ -4385,7 +4436,8 @@ ozpIwc.util.Event = (function (util) {
 
     /**
      * Adds an {{#crossLink "ozpIwc.util.Event/off:method"}}on(){{/crossLink}} and
-     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this object.
+     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this
+     * object.
      *
      * @method mixinOnOff
      * @param {Object} target Target to receive the on/off functions
@@ -4398,7 +4450,8 @@ ozpIwc.util.Event = (function (util) {
 
     /**
      * Adds an {{#crossLink "ozpIwc.util.Event/off:method"}}on(){{/crossLink}} and
-     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this object.
+     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this
+     * object.
      *
      * @method mixinOnOff
      * @param {Object} target Target to receive the on/off functions
@@ -4413,13 +4466,13 @@ ozpIwc.util.Event = (function (util) {
 }(ozpIwc.util));
 
 
-if(!(window.console && console.log)) {
+if (!(window.console && console.log)) {
     console = {
-        log: function(){},
-        debug: function(){},
-        info: function(){},
-        warn: function(){},
-        error: function(){}
+        log: function () {},
+        debug: function () {},
+        info: function () {},
+        warn: function () {},
+        error: function () {}
     };
 }
 var ozpIwc = ozpIwc || {};
@@ -5484,7 +5537,7 @@ ozpIwc.metric.stats = (function (stats) {
 }(ozpIwc.metric.stats));
 var ozpIwc = ozpIwc || {};
 ozpIwc.metric = ozpIwc.metric || {};
-ozpIwc.metric.types = ozpIwc.metric.types|| {};
+ozpIwc.metric.types = ozpIwc.metric.types || {};
 
 /**
  * @module ozpIwc.metric
@@ -5553,7 +5606,7 @@ ozpIwc.metric.types.BaseMetric = (function () {
 
 var ozpIwc = ozpIwc || {};
 ozpIwc.metric = ozpIwc.metric || {};
-ozpIwc.metric.types = ozpIwc.metric.types|| {};
+ozpIwc.metric.types = ozpIwc.metric.types || {};
 
 /**
  * @module ozpIwc.metric
@@ -5598,7 +5651,7 @@ ozpIwc.metric.types.Counter = (function (metricTypes, util) {
 }(ozpIwc.metric.types, ozpIwc.util));
 var ozpIwc = ozpIwc || {};
 ozpIwc.metric = ozpIwc.metric || {};
-ozpIwc.metric.types = ozpIwc.metric.types|| {};
+ozpIwc.metric.types = ozpIwc.metric.types || {};
 
 /**
  * @module ozpIwc.metric
@@ -6044,7 +6097,8 @@ ozpIwc.metric.Registry = (function (metricTypes) {
     };
 
     /**
-     * Returns the ozpIwc.metric.types.Histogram instance(s) for the given name(s). If it does not exist it will be created.
+     * Returns the ozpIwc.metric.types.Histogram instance(s) for the given name(s). If it does not exist it will be
+     * created.
      *
      * @method histogram
      * @param {String} name Components of the name.

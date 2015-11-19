@@ -1,5 +1,9 @@
-/*jshint -W079 */
-var window = window || self;
+// If running in a worker, there is no window, rather only self.
+// Reassign window to self in this environment
+if(!window){
+    /*jshint -W020 */
+    window = self;
+}
 /*!
  * https://github.com/es-shims/es5-shim
  * @license es5-shim Copyright 2009-2015 by contributors, MIT License
@@ -3353,6 +3357,16 @@ ozpIwc.util = (function (util) {
         }
     };
 
+    /**
+     * Returns a promise that will resolve after the given delay with any additional arguments passed
+     * @param {Number} delay miliseconds to delay
+     * @returns {Promise}
+     */
+    util.promiseDelay = function (delay) {
+        return new Promise(function (res) {
+            window.setTimeout(function () { res();}, delay);
+        });
+    };
     return util;
 }(ozpIwc.util || {}));
 
@@ -3680,8 +3694,20 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     }
                 }
                 if (!handled) {
-                    // Otherwise trigger "receive" for someone to handle it
-                    this.events.trigger("receive", packetContext);
+                    //Drop own packets
+                    if (packet.src === this.address) {
+                        return;
+                    }
+
+                    if (packet.dst === "$bus.multicast") {
+                        //If not handle-able by the mixin, trigger "busPacket" for someone to handle
+                        if (!handleBusPacket(this, packet)) {
+                            this.events.trigger("busPacket", packetContext);
+                        }
+                    } else {
+                        //Not bus packet, trigger "receive" for someone to handle
+                        this.events.trigger("receive", packetContext);
+                    }
                 }
             },
 
@@ -3862,11 +3888,11 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     });
                 }).then(function () {
                     // Run the intent handler. Wrapped in a promise chain in case the callback itself is async.
-                    return callback(res.entity,inFlightIntent);
+                    return callback(res.entity, inFlightIntent);
                 }).then(function (result) {
                     // Allow the callback to override the intent state (usefull for preventing intent resolution if
                     // chained operations are performed.
-                    if(result && result.intentIncomplete){
+                    if (result && result.intentIncomplete) {
                         return Promise.resolve();
                     }
                     // Respond to the inflight resource
@@ -4204,7 +4230,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                             }
                         });
 
-                        if(self.launchParams.launchData && self.launchParams.launchData.inFlightIntent){
+                        if (self.launchParams.launchData && self.launchParams.launchData.inFlightIntent) {
                             self.launchedIntents.push(self.launchParams.launchData.inFlightIntent);
                         }
                     }
@@ -4216,6 +4242,31 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
             }
 
         };
+    };
+//---------------------------------------------------------
+// Private Methods
+//---------------------------------------------------------
+
+    /**
+     * Handles packets received with a destination of "$bus.multicast".
+     * If the packet action isn't handled, the function will return falsy.
+     *
+     * @method handleBusPacket
+     * @private
+     * @static
+     * @param {ozpIwc.api.base.Api} apiBase
+     * @param {Object} packetContext
+     * @return {*}
+     */
+    var handleBusPacket = function (mixer, packet) {
+        switch (packet.action) {
+            case "connect":
+                mixer.events.trigger("addressConnects", packet.entity.address, packet);
+                return true;
+            case "disconnect":
+                mixer.events.trigger("addressDisconnects", packet.entity.address, packet);
+                return true;
+        }
     };
 
     return ApiPromiseMixin;
@@ -4385,7 +4436,8 @@ ozpIwc.util.Event = (function (util) {
 
     /**
      * Adds an {{#crossLink "ozpIwc.util.Event/off:method"}}on(){{/crossLink}} and
-     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this object.
+     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this
+     * object.
      *
      * @method mixinOnOff
      * @param {Object} target Target to receive the on/off functions
@@ -4398,7 +4450,8 @@ ozpIwc.util.Event = (function (util) {
 
     /**
      * Adds an {{#crossLink "ozpIwc.util.Event/off:method"}}on(){{/crossLink}} and
-     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this object.
+     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this
+     * object.
      *
      * @method mixinOnOff
      * @param {Object} target Target to receive the on/off functions
@@ -4413,13 +4466,13 @@ ozpIwc.util.Event = (function (util) {
 }(ozpIwc.util));
 
 
-if(!(window.console && console.log)) {
+if (!(window.console && console.log)) {
     console = {
-        log: function(){},
-        debug: function(){},
-        info: function(){},
-        warn: function(){},
-        error: function(){}
+        log: function () {},
+        debug: function () {},
+        info: function () {},
+        warn: function () {},
+        error: function () {}
     };
 }
 var ozpIwc = ozpIwc || {};
@@ -4951,7 +5004,7 @@ ozpIwc.Client = (function (util) {
         this.type = "default";
 
         var self = this;
-        util.addEventListener('beforeunload', function(){
+        util.addEventListener('beforeunload', function () {
             self.disconnect();
         });
         genPeerUrlCheck(this, config.peerUrl);
@@ -4975,7 +5028,7 @@ ozpIwc.Client = (function (util) {
      * @param {Promise.resolve} resolve
      * @param {Promise.rej} reject
      */
-    var initPing = function (client,resolve,reject) {
+    var initPing = function (client, resolve, reject) {
         client.send({dst: "$transport", type: client.type}).then(function (response) {
             resolve(response);
         }).catch(function (err) {
@@ -4996,7 +5049,7 @@ ozpIwc.Client = (function (util) {
      * @param {Promise.rej} reject
      * @returns {Function}
      */
-    var genPostMessageHandler = function(client,resolve,reject){
+    var genPostMessageHandler = function (client, resolve, reject) {
 
         return function (event) {
             if (!client.peer || event.origin !== client.peerOrigin || event.source !== client.peer) {
@@ -5009,7 +5062,7 @@ ozpIwc.Client = (function (util) {
                 }
                 // Calls APIPromiseMixin receive handler
                 if (message.iwcInit && client.address === "$nobody") {
-                    initPing(client,resolve,reject);
+                    initPing(client, resolve, reject);
                 } else {
                     client.receiveFromRouterImpl(message);
                     client.receivedBytes += (event.data.length * 2);
@@ -5031,10 +5084,10 @@ ozpIwc.Client = (function (util) {
      * @static
      * @properties {Client} client
      */
-    var createIframeShim = function (client,resolve,reject) {
+    var createIframeShim = function (client, resolve, reject) {
 
-        client.postMessageHandler = genPostMessageHandler(client,resolve,reject);
-        util.addEventListener("message", client.postMessageHandler );
+        client.postMessageHandler = genPostMessageHandler(client, resolve, reject);
+        util.addEventListener("message", client.postMessageHandler);
 
         window.setTimeout(function () {
             client.iframe = document.createElement("iframe");
@@ -5054,9 +5107,9 @@ ozpIwc.Client = (function (util) {
             document.body.appendChild(client.iframe);
             client.peer = client.iframe.contentWindow;
 
-            if(!window.SharedWorker){
+            if (!window.SharedWorker) {
                 client.iframe.addEventListener("load", function () {
-                    initPing(client,resolve,reject);
+                    initPing(client, resolve, reject);
                 });
             }
         }, 200);
@@ -5161,8 +5214,8 @@ ozpIwc.Client = (function (util) {
      * @method disconnect
      */
     Client.prototype.disconnect = function () {
-        var resolve,reject;
-        var retPromise = new Promise(function(res,rej){
+        var resolve, reject;
+        var retPromise = new Promise(function (res, rej) {
             resolve = res;
             reject = rej;
         });
@@ -5230,10 +5283,10 @@ ozpIwc.Client = (function (util) {
 
             // need at least the body tag to be loaded, so wait until it's loaded
             if (document.readyState === 'complete') {
-                createIframeShim(self,resolve,reject);
+                createIframeShim(self, resolve, reject);
             } else {
-                util.addEventListener("load", function(){
-                    createIframeShim(self,resolve,reject);
+                util.addEventListener("load", function () {
+                    createIframeShim(self, resolve, reject);
                 });
             }
         });
@@ -5258,9 +5311,9 @@ ozpIwc.Client = (function (util) {
      * @method getLaunchData
      * @returns {Promise}
      */
-    Client.prototype.getLaunchData = function(){
+    Client.prototype.getLaunchData = function () {
         var self = this;
-        return this.connect().then(function() {
+        return this.connect().then(function () {
             return self.launchParams.launchData;
         });
     };
@@ -5301,10 +5354,10 @@ ozpIwc.Debugger = (function (Client, util) {
     // Private Properties
     //----------------------------------------------------------------------
 
-    var sendSelf = function(dbg,packet,cb){
-        return dbg.connect().then(function(){
+    var sendSelf = function (dbg, packet, cb) {
+        return dbg.connect().then(function () {
             packet.dst = dbg.address;
-            return dbg.send(packet,cb);
+            return dbg.send(packet, cb);
         });
     };
 
@@ -5331,10 +5384,10 @@ ozpIwc.Debugger = (function (Client, util) {
             }
         };
 
-        return sendSelf(this,{
+        return sendSelf(this, {
             resource: "traffic",
             action: "start"
-        },unwrap).then(function (response) {
+        }, unwrap).then(function (response) {
             return response.replyTo;
         });
     };
@@ -5365,7 +5418,7 @@ ozpIwc.Debugger = (function (Client, util) {
      * @returns {Promise} a promise that will resolve with array of api endpoint data.
      */
     Debugger.prototype.getApiEndpoints = function () {
-        return sendSelf(this,{resource: "apis",action: "getEndpoints"}).then(function(response){
+        return sendSelf(this, {resource: "apis", action: "getEndpoints"}).then(function (response) {
             return response.entity;
         });
     };
@@ -5376,7 +5429,7 @@ ozpIwc.Debugger = (function (Client, util) {
      * @returns {Promise} a promise that will resolve with an array of metrics
      */
     Debugger.prototype.getMetrics = function () {
-        return sendSelf(this,{resource: "metrics",action: "getAll"}).then(function(response){
+        return sendSelf(this, {resource: "metrics", action: "getAll"}).then(function (response) {
             return response.entity;
         });
     };
@@ -5387,7 +5440,7 @@ ozpIwc.Debugger = (function (Client, util) {
      * @returns {Promise} a promise that will resolve with an object of configurations
      */
     Debugger.prototype.getConfig = function () {
-        return sendSelf(this,{resource: "config",action: "getAll"}).then(function(response){
+        return sendSelf(this, {resource: "config", action: "getAll"}).then(function (response) {
             return response.entity;
         });
     };

@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.9</em>
+            <em>API Docs for: 1.1.11</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -113,6 +113,7 @@
                                 <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.MutexClient.html">ozpIwc.transport.participant.MutexClient</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
@@ -123,6 +124,7 @@
                                 <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
                                 <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
                                 <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
@@ -242,16 +244,16 @@ ozpIwc.util.AjaxPersistenceQueue = (function (log, util) {
      * @param {Function} cb
      * @returns {*}
      */
-    var acquireSlot = function(queue, uuid,cb){
+    var acquireSlot = function (queue, uuid, cb) {
         // If the slot requested is filled reject to notify caller.
-        if(!queue.queuedSyncs[uuid]){
+        if (!queue.queuedSyncs[uuid]) {
             queue.nextSlot = (queue.nextSlot + 1) % queue.poolSize;
             queue.syncPool[queue.nextSlot] = queue.queuedSyncs[uuid] = queue.syncPool[queue.nextSlot].then(function () {
                 return cb();
-            }).then(function(resp){
+            }).then(function (resp) {
                 delete queue.queuedSyncs[uuid];
                 return resp;
-            },function(err){
+            }, function (err) {
                 delete queue.queuedSyncs[uuid];
                 throw err;
             });
@@ -330,12 +332,12 @@ ozpIwc.util.AjaxPersistenceQueue = (function (log, util) {
      * @return {*}
      */
     AjaxPersistenceQueue.prototype.queueNode = function (iwcUri, node) {
-        var slotCall = function(){
-            return syncNode(node).catch(function(){
-                log.info(&quot;[AJAX] [&quot;+iwcUri+&quot;] Ignoring persist, as one is already queued.&quot;);
+        var slotCall = function () {
+            return syncNode(node).catch(function () {
+                log.info(&quot;[AJAX] [&quot; + iwcUri + &quot;] Ignoring persist, as one is already queued.&quot;);
             });
         };
-        return acquireSlot(this,&quot;Node:&quot;+iwcUri,slotCall);
+        return acquireSlot(this, &quot;Node:&quot; + iwcUri, slotCall);
     };
 
     /**
@@ -349,21 +351,25 @@ ozpIwc.util.AjaxPersistenceQueue = (function (log, util) {
      *
      * @returns {Promise}
      */
-    AjaxPersistenceQueue.prototype.queueAjax = function (config){
+    AjaxPersistenceQueue.prototype.queueAjax = function (config) {
         config = config || {};
-        if(!config.href){ throw &quot;Ajax queue requires href&quot;;}
-        if(!config.method){ throw &quot;Ajax queue requires method&quot;;}
+        if (!config.href) {
+            throw &quot;Ajax queue requires href&quot;;
+        }
+        if (!config.method) {
+            throw &quot;Ajax queue requires method&quot;;
+        }
 
-        var resolve,reject;
-        var retPromise = new Promise(function(res,rej){
+        var resolve, reject;
+        var retPromise = new Promise(function (res, rej) {
             resolve = res;
             reject = rej;
         });
-        var slotCall = function(){
-            return util.ajax(config).then(resolve,reject);
+        var slotCall = function () {
+            return util.ajax(config).then(resolve, reject);
         };
 
-        acquireSlot(this,config.method+&quot;:&quot;+config.href+&quot;:&quot;+Date.now(),slotCall);
+        acquireSlot(this, config.method + &quot;:&quot; + config.href + &quot;:&quot; + Date.now(), slotCall);
 
         return retPromise;
     };

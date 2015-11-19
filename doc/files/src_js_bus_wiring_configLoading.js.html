@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.9</em>
+            <em>API Docs for: 1.1.11</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -113,6 +113,7 @@
                                 <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.MutexClient.html">ozpIwc.transport.participant.MutexClient</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
@@ -123,6 +124,7 @@
                                 <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
                                 <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
                                 <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
@@ -197,7 +199,7 @@
 /**
  * Configs, override in iwc.conf.js and include prior to ozpIwc-bus.js.
  */
-var ozpIwc=ozpIwc || {};
+var ozpIwc = ozpIwc || {};
 /**
  * An object of configuration variables for the IWC Bus.
  * @namespace ozpIwc
@@ -208,7 +210,7 @@ ozpIwc.config = ozpIwc.config || {};
 
 
 //If this is in a worker the config file needs to be loaded.
-if(ozpIwc.util.runningInWorker()){
+if (ozpIwc.util.runningInWorker()) {
     importScripts(&#x27;ozpIwc.conf.js&#x27;);
 }
 
@@ -248,7 +250,7 @@ ozpIwc.config.logLevel = ozpIwc.util.ifUndef(ozpIwc.config.logLevel || 6);
  * @type Number
  * @default 3000
  */
-ozpIwc.config.consensusTimeout = ozpIwc.util.ifUndef(ozpIwc.config.consensusTimeout  || 3000);
+ozpIwc.config.consensusTimeout = ozpIwc.util.ifUndef(ozpIwc.config.consensusTimeout || 3000);
 
 /**
  * A configurable time for bus components to use for their heartbeat intervals.
@@ -266,7 +268,7 @@ ozpIwc.config.heartBeatFrequency = ozpIwc.util.ifUndef(ozpIwc.config.heartBeatFr
  * @type String
  * @default &quot;/&quot;
  */
-ozpIwc.config.apiRootUrl =  ozpIwc.util.ifUndef(ozpIwc.config.apiRootUrl || &quot;/&quot;);
+ozpIwc.config.apiRootUrl = ozpIwc.util.ifUndef(ozpIwc.config.apiRootUrl || &quot;/&quot;);
 
 /**
  * A configurable url for security policy loading. Override with backend specific path in ozpIwc.conf.js.
@@ -303,43 +305,45 @@ ozpIwc.config.intentsChooserUri = ozpIwc.util.ifUndef(ozpIwc.config.intentsChoos
  * @type Boolean
  * @default true
  */
-ozpIwc.config.legacySupport = ozpIwc.util.ifUndef(ozpIwc.config.legacySupport,true);
+ozpIwc.config.legacySupport = ozpIwc.util.ifUndef(ozpIwc.config.legacySupport, true);
 
 /**
- * A configuration flag for the iwc.conf.js file. If false, app/js/build-config/backendSupport.js configurations are used.
+ * A configuration flag for the iwc.conf.js file. If false, app/js/build-config/backendSupport.js configurations are
+ * used.
  * @namespace ozpIwc
  * @property ozpIwc.config.backendSupport
  * @type Boolean
  * @default false
  */
-ozpIwc.config.backendSupport = ozpIwc.util.ifUndef(ozpIwc.config.backendSupport,false);
-ozpIwc.config.defaultContentTypes = ozpIwc.util.ifUndef(ozpIwc.config.requiredContentType,{});
+ozpIwc.config.backendSupport = ozpIwc.util.ifUndef(ozpIwc.config.backendSupport, false);
+ozpIwc.config.defaultContentTypes = ozpIwc.util.ifUndef(ozpIwc.config.requiredContentType, {});
 ozpIwc.config.defaultContentTypes[&quot;ozp:data-item&quot;] =
     ozpIwc.util.ifUndef(ozpIwc.config.defaultContentTypes[&quot;ozp:data-item&quot;], &quot;application/vnd.ozp-iwc-data-object+json;version=2&quot;);
 
 /**
- * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js instantiates the Api modules.
+ * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js instantiates the Api
+ * modules.
  * @namespace ozpIwc
  * @property ozpIwc.config.runApis
  * @type Boolean
  * @default true
  */
-ozpIwc.config.runApis = ozpIwc.util.ifUndef(ozpIwc.config.runApis,true);
+ozpIwc.config.runApis = ozpIwc.util.ifUndef(ozpIwc.config.runApis, true);
 
 /**
- * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js allows connections to ozpIwc clients
- * in the same browsing window. Often set to false for the intent chooser/debugger as they are directly connected to the
- * bus.
+ * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js allows connections to
+ * ozpIwc clients in the same browsing window. Often set to false for the intent chooser/debugger as they are directly
+ * connected to the bus.
  *
  * @namespace ozpIwc
  * @property ozpIwc.config.allowLocalClients
  * @type Boolean
  * @default true
  */
-ozpIwc.config.allowLocalClients = ozpIwc.util.ifUndef(ozpIwc.config.allowLocalClients,true);
+ozpIwc.config.allowLocalClients = ozpIwc.util.ifUndef(ozpIwc.config.allowLocalClients, true);
 
 /**
- * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js will instantiate the 
+ * A configuration flag for the iwc.conf.js file. If true, app/js/bus/config/defaultWiring.js will instantiate the
  * default components of the bus if false. Used for integration testing, not intended for end user modification.
  *
  * @namespace ozpIwc
@@ -348,7 +352,7 @@ ozpIwc.config.allowLocalClients = ozpIwc.util.ifUndef(ozpIwc.config.allowLocalCl
  * @type Boolean
  * @default true
  */
-ozpIwc.config._testMode = ozpIwc.util.ifUndef(ozpIwc.config._testMode,false);
+ozpIwc.config._testMode = ozpIwc.util.ifUndef(ozpIwc.config._testMode, false);
 
 /**
  * The absolute path for the bus&#x27;s root location (ex. http://localhost:13000/).
@@ -360,10 +364,10 @@ ozpIwc.config._testMode = ozpIwc.util.ifUndef(ozpIwc.config._testMode,false);
  * @type String
  * @default &quot;&lt;Absolute root path of current browser URL&gt;&quot;
  */
-ozpIwc.config._busRoot = ozpIwc.util.ifUndef(ozpIwc.config._busRoot,(function(){
+ozpIwc.config._busRoot = ozpIwc.util.ifUndef(ozpIwc.config._busRoot, (function () {
     return window.location.protocol + &quot;//&quot; +
         window.location.host +
-        window.location.pathname.replace(/[^\/]+$/,&quot;&quot;);
+        window.location.pathname.replace(/[^\/]+$/, &quot;&quot;);
 })());
 
 
@@ -376,7 +380,7 @@ ozpIwc.config._busRoot = ozpIwc.util.ifUndef(ozpIwc.config._busRoot,(function(){
  * @type String
  * @default &quot;width=330,height=500&quot;
  */
-ozpIwc.config.intentChooserFeatures = ozpIwc.util.ifUndef(ozpIwc.config.intentChooserFeatures,&quot;width=330,height=500&quot;);
+ozpIwc.config.intentChooserFeatures = ozpIwc.util.ifUndef(ozpIwc.config.intentChooserFeatures, &quot;width=330,height=500&quot;);
 
 /**
  * Root location for owf7 legacy preferences should this bus support legacy widgets through the ozp-iwc-owf7-adapter.
@@ -387,7 +391,7 @@ ozpIwc.config.intentChooserFeatures = ozpIwc.util.ifUndef(ozpIwc.config.intentCh
  * @type String
  * @default &quot;/owf/prefs&quot;
  */
-ozpIwc.config.owf7PrefsUrl = ozpIwc.util.ifUndef(ozpIwc.config.owf7PrefsUrl,&quot;/owf/prefs&quot;);
+ozpIwc.config.owf7PrefsUrl = ozpIwc.util.ifUndef(ozpIwc.config.owf7PrefsUrl, &quot;/owf/prefs&quot;);
 
 /**
  *
@@ -399,7 +403,7 @@ ozpIwc.config.owf7PrefsUrl = ozpIwc.util.ifUndef(ozpIwc.config.owf7PrefsUrl,&quo
  * @type Number
  * @default 1
  */
-ozpIwc.config.ajaxPoolSize = ozpIwc.util.ifUndef(ozpIwc.config.ajaxPoolSize,1);
+ozpIwc.config.ajaxPoolSize = ozpIwc.util.ifUndef(ozpIwc.config.ajaxPoolSize, 1);
 
 /**
  * A configuration variable for the ozpIwc.config.js file. Templates for the IWC to use to map content-types to hrefs
@@ -426,7 +430,7 @@ ozpIwc.config.ajaxPoolSize = ozpIwc.util.ifUndef(ozpIwc.config.ajaxPoolSize,1);
  * @type Object
  * @default {}
  */
-ozpIwc.config.templates = ozpIwc.util.ifUndef(ozpIwc.config.templates,{});
+ozpIwc.config.templates = ozpIwc.util.ifUndef(ozpIwc.config.templates, {});
     </pre>
 </div>
                     </div>

@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.9</em>
+            <em>API Docs for: 1.1.11</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -113,6 +113,7 @@
                                 <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.MutexClient.html">ozpIwc.transport.participant.MutexClient</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
@@ -123,6 +124,7 @@
                                 <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
                                 <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
                                 <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
@@ -249,8 +251,14 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
          */
         this.gatherLogs = config.gatherLogs || function () {};
 
+        var self = this;
+        util.addEventListener(&quot;beforeunload&quot;, function () {
+            self.shutdown();
+            self.events.trigger(&quot;shutdown&quot;);
+        });
+
         //Give some arbitrary time for the query to respond before kicking off an election
-        restartCoordinatorTimeout(this,1000);
+        restartCoordinatorTimeout(this);
         sendQueryMessage(this);
     });
 
@@ -314,27 +322,11 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
 
     ///**
     // * @TODO: Unused, a modified bully algorithm was implemented.
-    // * Sends an acknowledge message to the consensusId that sent an election message to inform them that this module out
-    // * ranks them.
-    // *
-    // * @method sendAckMessage
-    // * @private
-    // * @static
-    // * @param {ozpIwc.transport.consensus.Bully} bully
-    // * @param {String}consensusSender
-    // */
-    //var sendAckMessage = function (bully, consensusSender) {
-    //    bully.participant.send({
-    //        &#x27;dst&#x27;: bully.consensusAddress,
-    //        &#x27;action&#x27;: &quot;acknowledge&quot;,
-    //        &#x27;entity&#x27;: {
-    //            &#x27;consensusId&#x27;: bully.consensusId,
-    //            &#x27;replyTo&#x27;: {
-    //                &#x27;consensusId&#x27;: consensusSender
-    //            }
-    //        }
-    //    });
-    //};
+    // * Sends an acknowledge message to the consensusId that sent an election message to inform them that this module
+    // out * ranks them. * * @method sendAckMessage * @private * @static * @param {ozpIwc.transport.consensus.Bully}
+    // bully * @param {String}consensusSender */ var sendAckMessage = function (bully, consensusSender) {
+    // bully.participant.send({ &#x27;dst&#x27;: bully.consensusAddress, &#x27;action&#x27;: &quot;acknowledge&quot;, &#x27;entity&#x27;: { &#x27;consensusId&#x27;:
+    // bully.consensusId, &#x27;replyTo&#x27;: { &#x27;consensusId&#x27;: consensusSender } } }); };
 
     /**
      * Sends a victory message to other bully modules informing them of this modules role as Coordinator.
@@ -345,7 +337,7 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      * @param {ozpIwc.transport.consensus.Bully} bully
      */
     var sendVictoryMessage = function (bully) {
-        var logs = bully.gatherLogs();
+        var logs = bully.gatherLogs() || bully.logs;
         bully.participant.send({
             &#x27;dst&#x27;: bully.consensusAddress,
             &#x27;action&#x27;: &quot;victory&quot;,
@@ -396,17 +388,18 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
         }
         var consensusId = entity.consensusId;
 
+        if (entity.logs) {
+            bully.logs = entity.logs;
+        }
         // Ignore it if they out rank us.
         if (consensusId &gt; bully.consensusId) {
             cancelElection(bully);
-            restartCoordinatorTimeout(bully, bully.coordinatorTimeoutHeartbeat, true);
+            restartCoordinatorTimeout(bully);
             return;
         }
-
         // Let them know that we out rank them.
-        //sendAckMessage(bully, consensusId);
-        cancelElection(bully);
         startElection(bully);
+        restartCoordinatorTimeout(bully);
     };
 
     /**
@@ -454,16 +447,20 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
         }
         var consensusId = entity.consensusId;
 
+
+        if (entity.logs) {
+            bully.logs = entity.logs || bully.logs;
+        }
         // Ignore it if they out rank us.
         if (consensusId &gt; bully.consensusId) {
-            cancelElection(bully);
             if (entity.logs) {
                 bully.events.trigger(&quot;receivedLogs&quot;, entity.logs);
+                bully.logs = undefined;
             }
+            cancelElection(bully);
             restartCoordinatorTimeout(bully);
             return;
         }
-
         //Rebel if needed.
         startElection(bully);
 
@@ -514,7 +511,7 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
             bully.changeState(&quot;member&quot;);
         }
         bully.coordinatorTimeout = window.setTimeout(function () {
-            bully.onCoordinatorTimeout(timeout);
+            bully.onCoordinatorTimeout();
         }, timeout);
     };
 
@@ -524,8 +521,8 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      * @method onCoordinatorTimeout
      * @param timeout
      */
-    Bully.prototype.onCoordinatorTimeout = function (timeout) {
-        startElection(this, timeout);
+    Bully.prototype.onCoordinatorTimeout = function () {
+        startElection(this);
     };
 
 
@@ -540,15 +537,22 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      */
     Bully.prototype.onBecomeCoordinator = function () {
         var self = this;
+        window.clearTimeout(this.coordinatorTimeout);
         window.clearInterval(this.coordinatorInterval);
 
-        sendVictoryMessage(this, this.lastElection);
+        sendVictoryMessage(this);
         this.changeState(&quot;coordinator&quot;);
         this.coordinatorInterval = window.setInterval(function () {
-            sendVictoryMessage(self, self.lastElection);
+            sendVictoryMessage(self);
         }, this.coordinatorIntervalHeartbeat);
     };
 
+    Bully.prototype.shutdown = function () {
+        if (this.state === &quot;coordinator&quot; || this.logs) {
+            this.consensusId = -Number.MAX_VALUE;
+            sendVictoryMessage(this);
+        }
+    };
 //==================================================================
 // Election control
 //==================================================================
@@ -562,7 +566,7 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      * @param {Number} [timeout]
      */
     var startElection = function (bully, timeout) {
-        timeout = timeout || bully.coordinatorTimeoutHeartbeat;
+        timeout = timeout || (bully.coordinatorTimeoutHeartbeat * 2 / 3);
         window.clearTimeout(bully.electionTimeout);
 
         bully.electionTimeout = window.setTimeout(function () {

@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.9</em>
+            <em>API Docs for: 1.1.11</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -113,6 +113,7 @@
                                 <li><a href="../classes/ozpIwc.transport.participant.Debugger.html">ozpIwc.transport.participant.Debugger</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Internal.html">ozpIwc.transport.participant.Internal</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.Multicast.html">ozpIwc.transport.participant.Multicast</a></li>
+                                <li><a href="../classes/ozpIwc.transport.participant.MutexClient.html">ozpIwc.transport.participant.MutexClient</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.PostMessage.html">ozpIwc.transport.participant.PostMessage</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.RouterWatchdog.html">ozpIwc.transport.participant.RouterWatchdog</a></li>
                                 <li><a href="../classes/ozpIwc.transport.participant.SharedWorker.html">ozpIwc.transport.participant.SharedWorker</a></li>
@@ -123,6 +124,7 @@
                                 <li><a href="../classes/ozpIwc.util.AsyncAction.html">ozpIwc.util.AsyncAction</a></li>
                                 <li><a href="../classes/ozpIwc.util.CancelableEvent.html">ozpIwc.util.CancelableEvent</a></li>
                                 <li><a href="../classes/ozpIwc.util.Event.html">ozpIwc.util.Event</a></li>
+                                <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
@@ -203,7 +205,7 @@ ozpIwc.policyAuth.points = ozpIwc.policyAuth.points || {};
  * @submodule ozpIwc.policyAuth.points
  */
 
-ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
+ozpIwc.policyAuth.points.PRP = (function (policyAuth, util) {
     /**
      * Policy Repository Point
      * @class PRP
@@ -213,7 +215,7 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
      * @param {Object} [config.policyCache]
      * @constructor
      */
-    var PRP = function(config){
+    var PRP = function (config) {
         config = config || {};
 
         /**
@@ -232,23 +234,23 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
     /**
      * Gathers policies by their URN. These policies may need formatting by the formatPolicies function to gather any
      * attribute data needed for the policy evaluation.
-     * If a policy cannot be found, it is labeled as a &quot;denyAll&quot; policy and placed in the cache. Thus, making any permission
-     * check using said policy always deny.
+     * If a policy cannot be found, it is labeled as a &quot;denyAll&quot; policy and placed in the cache. Thus, making any
+     * permission check using said policy always deny.
      *
      * @method getPolicy(policyURIs)
      * @param {String | Array&lt;String&gt; } [policyURIs] The subject attributes or id performing the action.
      * @param {String} [combiningAlgorithm] Defaults to “deny-overrides”.
      * @return {ozpIwc.util.AsyncAction} will resolve with an array of policy data.
      */
-    PRP.prototype.getPolicies = function(policyURIs){
+    PRP.prototype.getPolicies = function (policyURIs) {
         var asyncAction = new util.AsyncAction();
         policyURIs = policyURIs || [];
         policyURIs = util.ensureArray(policyURIs);
         var policies = [];
 
         var policiesToGather = this.persistentPolicies.concat(policyURIs);
-        for(var i in policiesToGather){
-            if(this.policyCache[policiesToGather[i]]){
+        for (var i in policiesToGather) {
+            if (this.policyCache[policiesToGather[i]]) {
                 policies.push(util.clone(this.policyCache[policiesToGather[i]]));
             } else {
                 var async = this.fetchPolicy(policiesToGather[i]);
@@ -259,8 +261,8 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
         }
 
         // If there are no policies to check against, assume trivial and permit
-        if(policies.length === 0){
-            return asyncAction.resolve(&#x27;success&#x27;,[policyAuth.policies.permitAll]);
+        if (policies.length === 0) {
+            return asyncAction.resolve(&#x27;success&#x27;, [policyAuth.policies.permitAll]);
         }
 
         return util.AsyncAction.all(policies);
@@ -274,7 +276,7 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
      * @type {String}
      * @default &#x27;deny-overrides&#x27;
      */
-    PRP.prototype.defaultCombiningAlgorithm =&#x27;deny-overrides&#x27;;
+    PRP.prototype.defaultCombiningAlgorithm = &#x27;deny-overrides&#x27;;
 
     /**
      * Fetches the requested policy and stores a copy of it in the cache. Returns a denyAll if policy is unobtainable.
@@ -282,18 +284,18 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
      * @param {String} policyURI the uri to gather the policy from
      * @return {util.AsyncAction} will resolve with the gathered policy constructed as an ozpIwc.policyAuth.Policy.
      */
-    PRP.prototype.fetchPolicy = function(policyURI){
+    PRP.prototype.fetchPolicy = function (policyURI) {
         var asyncAction = new util.AsyncAction();
         var self = this;
         util.ajax({
             &#x27;method&#x27;: &quot;GET&quot;,
             &#x27;href&#x27;: policyURI
-        }).then(function(data){
+        }).then(function (data) {
             self.policyCache[policyURI] = self.formatPolicy(data.response);
-            asyncAction.resolve(&#x27;success&#x27;,util.clone(self.policyCache[policyURI]));
-        })[&#x27;catch&#x27;](function(e){
+            asyncAction.resolve(&#x27;success&#x27;, util.clone(self.policyCache[policyURI]));
+        })[&#x27;catch&#x27;](function (e) {
             //Note: failure resolves success because we force a denyAll policy.
-            asyncAction.resolve(&#x27;success&#x27;,self.getDenyall(policyURI));
+            asyncAction.resolve(&#x27;success&#x27;, self.getDenyall(policyURI));
         });
         return asyncAction;
     };
@@ -304,7 +306,7 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
      * @param data
      * @return {ozpIwc.policyAuth.Policy}
      */
-    PRP.prototype.formatPolicy = function(data){
+    PRP.prototype.formatPolicy = function (data) {
         return new policyAuth.Policy(data);
     };
 
@@ -313,8 +315,8 @@ ozpIwc.policyAuth.points.PRP = (function(policyAuth, util){
      * @param urn
      * @return {ozpIwc.policyAuth.Policy} a denyAll policy
      */
-    PRP.prototype.getDenyall = function(urn){
-        if(this.policyCache[urn]){
+    PRP.prototype.getDenyall = function (urn) {
+        if (this.policyCache[urn]) {
             return this.policyCache[urn];
         } else {
             this.policyCache[urn] = policyAuth.policies.denyAll;
