@@ -620,7 +620,7 @@ module.exports = function(grunt) {
         ['build','karma:unit','bump:major','readpkg', 'shell:releaseGit']
     );
     grunt.registerTask('update-gh-pages',
-        ['build', 'gitbook', 'gh-pages']
+        ['build', 'copy:ghPages', 'gitbook', 'gh-pages']
     );
     grunt.registerTask('default',
         ['dist']
