@@ -1,0 +1,22 @@
+---
+layout: default
+---
+
+<div class="side-nav">
+    <h3 id="tutTitle">Tutorials</h3>
+    <ul>
+        {% for p in site.pages %}
+        {% if p.layout == 'tutorial' %}
+        {% if p.url == page.url %}
+        <li><a class="selected" href="{{ p.url }}">{{ p.title }}</a></li>
+        {% else %}
+        <li><a href="{{ p.url }}">{{ p.title }}</a></li>
+        {% endif %}
+
+        {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+<div class="side-nav-main">{{ content }}</div>
+
+
