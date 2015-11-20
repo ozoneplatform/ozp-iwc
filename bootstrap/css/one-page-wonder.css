@@ -11,6 +11,13 @@ body {
     border-width: 0;
     box-shadow: 0 0.1em 1em 0 rgba(0, 0, 0, 0.4);
 }
+.navbar-main {
+    position: fixed;
+    width:100%;
+    bottom: 0;
+    top: 50px;
+    overflow: auto;
+}
 
 .header-image {
     display: block;

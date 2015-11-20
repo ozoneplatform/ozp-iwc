@@ -117,7 +117,7 @@ of the past state (oldValue) and new state (newValue).
 
 ## Cross-Domain example
 Up to this point our tutorial has all ran within the same application within the same domain, 
-[codepen](http://codepen.io/). This isn't leveraging the IWC use-case so lets throw another domain in the mix.
+[codepen](http://codepen.io/). This isn't leveraging the IWC use case so lets throw another domain in the mix.
 
 Building from the publish/subscribe example above, lets create a similar application on 
 [jsfiddle](https://jsfiddle.net/). There's no point in re-inventing the time generation logic since we are running the 
