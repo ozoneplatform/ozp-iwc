@@ -57,5 +57,9 @@
 }
 .side-nav-main {
   padding-left: 260px;
-  padding-top: 10px;
+  padding-right: 60px;
+  overflow:auto;
+  position: fixed;
+  top: 50px;
+  bottom: 0px;
 }

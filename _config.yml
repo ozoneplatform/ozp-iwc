@@ -9,4 +9,6 @@
 baseurl: "/ozp-iwc" # the subpath of your site, e.g. /blog
 
 # Build settings
-markdown: kramdown
+markdown: redcarpet
+highlighter: pygments
+pygments_options: ['lineanchors', 'linenos=table']
