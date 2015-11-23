@@ -1,6 +1,7 @@
 ---
 layout: tutorial
 title: Quick Start
+permalink: "tutorial/index.html"
 ---
 
 # Quick Start
