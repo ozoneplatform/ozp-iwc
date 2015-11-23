@@ -1,29 +1,51 @@
 ---
 layout: default
 ---
-
-<div class="side-nav">
-    <h3 id="tutTitle">Tutorials</h3>
-    <ul>
-        {% for p in site.pages %}
-        {% if p.layout == 'tutorial' %}
-        {% if p.url == page.url %}
-        <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
-        {% else %}
-        <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
-        {% endif %}
-
-        {% endif %}
-        {% endfor %}
-    </ul>
+<div class="side-nav-mobile">
+    <button type="button" class="btn btn-sm" id="open-side">
+        <span class="glyphicon glyphicon-chevron-right"/>
+    </button>
 </div>
-<div class="side-nav-main">
-    <div>
-    {{ content }}
-    <script async src="//assets.codepen.io/assets/embed/ei.js"></script>
-    <link href="{{site.baseurl}}/bootstrap/css/syntax.css" rel="stylesheet">
+<div id="wrapper">
+    <div class="side-nav" id="sidebar-wrapper">
+        <div id="title-bar">
+            <button type="button" class="btn btn-sm" id="close-side">
+                <span class="glyphicon glyphicon-chevron-left"/>
+            </button>
+            <h3>Tutorials</h3>
+        </div>
+        <ul>
+            {% for p in site.pages %}
+            {% if p.layout == 'tutorial' %}
+            {% if p.url == page.url %}
+            <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+            {% else %}
+            <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+            {% endif %}
+
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="side-nav-main" id="page-content-wrapper">
+        <div>
+        {{ content }}
+        <script async src="//assets.codepen.io/assets/embed/ei.js"></script>
+        </div>
     </div>
 </div>
+<script>
+    $('#close-side').click(function(e){
+        e.preventDefault();
+        $(".navbar-fixed-top").addClass("toggled");
+        $("#wrapper").addClass("toggled");
+    });
 
+    $('#open-side').click(function(e){
+        e.preventDefault();
+        $(".navbar-fixed-top").removeClass("toggled");
+        $("#wrapper").removeClass("toggled");
+    });
+</script>
 
 
