@@ -1,6 +1,6 @@
 ---
 layout: tutorial
-title: OWF7 Migration: Eventing API 
+title: OWF7 Migration Eventing API 
 ---
 # Migration from OWF Eventing to IWC Data API
 This tutorial is for developers who are migrating applications previously developed for the Ozone Widget Framework (OWF)

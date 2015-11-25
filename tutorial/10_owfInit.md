@@ -1,6 +1,6 @@
 ---
 layout: tutorial
-title: OWF7 Migration: Application Setup 
+title: OWF7 Migration Application Setup 
 ---
 # Migration from OWF to IWC 
 This tutorial is for developers who are migrating applications previously developed for the Ozone Widget Framework (OWF)
