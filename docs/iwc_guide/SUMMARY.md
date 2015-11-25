@@ -49,3 +49,4 @@
         * [System API System Nodes](bus/endpoints/system.md)
         * [Intents API Handler Definition Nodes](bus/endpoints/intents.md)
 * [FAQs](FAQ.md)
+* [Performance Findings](performance/sharedWorkerMetrics.md)
