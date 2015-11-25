@@ -9,7 +9,7 @@ to use IWC. This tutorial has the following prerequisites:
 
   1. [Quick Start](index.html)
   2. [Basic Data Sharing](01_dataApi.html)
-  3. [OWF7 Migration: Application Setup](10_owfInit.md)
+  3. [(OWF) Application Setup](10_owfInit.md)
   
 ***
 

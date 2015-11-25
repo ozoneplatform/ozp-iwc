@@ -13,6 +13,7 @@ to use IWC. This tutorial has the following prerequisites:
 
 ## Overview
 This tutorial covers:
+
   1. Handling the required JavaScript dependencies.
   2. Differences in instantiating IWC vs OWF.
 
