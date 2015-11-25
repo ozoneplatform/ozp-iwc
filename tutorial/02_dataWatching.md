@@ -1,6 +1,6 @@
 ---
 layout: tutorial
-title: Watch for Changes 
+title: Resource Watching 
 ---
 # Leveraging the Watch Action
 As explained in the [Basic Data Sharing](01_dataApi.html) tutorial, the `watch` action will notify IWC client's when
