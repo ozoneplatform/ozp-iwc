@@ -64,9 +64,13 @@
   overflow:auto;
 }
 
-#title-bar {
+.title-bar {
   height: 30px;
   overflow: hidden;
+}
+
+.title-bar.secondary {
+  margin-top: 20px;
 }
 
 #close-side {

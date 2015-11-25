@@ -8,7 +8,7 @@ layout: default
 </div>
 <div id="wrapper">
     <div class="side-nav" id="sidebar-wrapper">
-        <div id="title-bar">
+        <div class="title-bar">
             <button type="button" class="btn btn-sm" id="close-side">
                 <span class="glyphicon glyphicon-chevron-left"/>
             </button>
@@ -17,12 +17,29 @@ layout: default
         <ul>
             {% for p in site.pages %}
             {% if p.layout == 'tutorial' %}
+            {% if p.category != 'owf' %}
             {% if p.url == page.url %}
             <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
             {% else %}
             <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
             {% endif %}
-
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </ul>
+        <div class="title-bar secondary" >
+            <h3>OWF Migration</h3>
+        </div>
+        <ul>
+            {% for p in site.pages %}
+            {% if p.layout == 'tutorial' %}
+            {% if p.category == 'owf' %}
+            {% if p.url == page.url %}
+            <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+            {% else %}
+            <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+            {% endif %}
+            {% endif %}
             {% endif %}
             {% endfor %}
         </ul>
