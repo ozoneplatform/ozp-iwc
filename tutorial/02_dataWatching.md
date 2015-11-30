@@ -56,7 +56,7 @@ newCollection, pertain to resource filtering and will be covered in a later tuto
 | oldValue| * | The last value of the resource. |
 | deleted| Boolean | A boolean flag indicating if the resource was deleted.|
 | newCollection| Array | Current array of resources in this resources collection.|
-| newCollection| Array | Previous array of resources in this resources collection.|
+| oldCollection| Array | Previous array of resources in this resources collection.|
 
 #### "done"
 The done argument is a function passed into the callback for user's to call when they wish to not watch the resource 
@@ -88,5 +88,6 @@ count to 0 if it is undefined.
 ***
 
 ### Advanced Watch information
-While more tutorials will be added, if more advanced watch techniques are desired (resource filtering) check out
-the [watch action documentation in our gitbook]({{site.baseurl}}/gitbook/client/apis/common/watch.html)
+While more tutorials will be added,check out the 
+[watch action documentation in our gitbook]({{site.baseurl}}/gitbook/client/apis/common/watch.html). Watching for
+addition/removal of a collection of resources is covered in the [Resource Collections](04_collections.html) tutorial.

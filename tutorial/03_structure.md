@@ -2,6 +2,10 @@
 layout: tutorial
 title: Resource Structuring 
 ---
+# Why the / ?
+The IWC utilizes forward slashes to signify hierarchy of resources. Borrowing from REST, IWC uses the `/` to show 
+the pathing of a resource relative to its API. This naming schema translates well for coupling backend requests with IWC
+resources both against IWC & non-IWC backends.
 
 # Abstracting Resources
 In the previous tutorials, IWC resource interaction has been on the individual resource level 
