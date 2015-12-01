@@ -12,12 +12,13 @@ layout: default
             <button type="button" class="btn btn-sm" id="close-side">
                 <span class="glyphicon glyphicon-chevron-left"/>
             </button>
-            <h3>Tutorials</h3>
+            <h3>General</h3>
         </div>
+
         <ul>
             {% for p in site.pages %}
             {% if p.layout == 'tutorial' %}
-            {% if p.category != 'owf' %}
+            {% if p.category == 'data' %}
             {% if p.url == page.url %}
             <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
             {% else %}
@@ -47,7 +48,6 @@ layout: default
     <div class="side-nav-main" id="page-content-wrapper">
         <div>
         {{ content }}
-        <script async src="//assets.codepen.io/assets/embed/ei.js"></script>
         </div>
     </div>
 </div>

@@ -1,6 +1,7 @@
 ---
 layout: tutorial
-title: Basic Data Sharing  
+title: Basic Data Sharing
+category: data
 ---
 
 # Sharing Data with the Data Api

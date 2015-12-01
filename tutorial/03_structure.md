@@ -1,6 +1,7 @@
 ---
 layout: tutorial
 title: Resource Structuring 
+category: data
 ---
 # Why the / ?
 The IWC utilizes forward slashes to signify hierarchy of resources. Borrowing from REST, IWC uses the `/` to show 

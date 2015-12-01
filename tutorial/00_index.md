@@ -2,6 +2,7 @@
 layout: tutorial
 title: Quick Start
 permalink: "tutorial/index.html"
+category: data
 ---
 
 # Quick Start

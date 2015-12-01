@@ -1,6 +1,7 @@
 ---
 layout: tutorial
 title: Resource Collections 
+category: data
 ---
 
 # Collections of Resources
