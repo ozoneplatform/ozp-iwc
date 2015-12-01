@@ -14879,6 +14879,7 @@ ozpIwc.api.error = (function (error) {
      * Thrown when an invalid action is called on an api.
      *
      * @class BadActionError
+     * @namespace ozpIwc.api.error
      * @extends ozpIwc.api.error.BaseError
      */
     error.BadActionError = error.BaseError.subclass("badAction");
@@ -14887,6 +14888,7 @@ ozpIwc.api.error = (function (error) {
      * Thrown when an invalid resource is called on an api.
      *
      * @class BadResourceError
+     * @namespace ozpIwc.api.error
      * @extends ozpIwc.api.error.BaseError
      */
     error.BadResourceError = error.BaseError.subclass("badResource");
@@ -14895,6 +14897,7 @@ ozpIwc.api.error = (function (error) {
      * Thrown when an invalid request is made against an api.
      *
      * @class BadRequestError
+     * @namespace ozpIwc.api.error
      * @extends ozpIwc.api.error.BaseError
      */
     error.BadRequestError = error.BaseError.subclass("badRequest");
@@ -14903,6 +14906,7 @@ ozpIwc.api.error = (function (error) {
      * Thrown when an invalid contentType is used in a request against an api.
      *
      * @class BadContentError
+     * @namespace ozpIwc.api.error
      * @extends ozpIwc.api.error.BaseError
      */
     error.BadContentError = error.BaseError.subclass("badContent");
@@ -14911,6 +14915,7 @@ ozpIwc.api.error = (function (error) {
      * Thrown when the action or entity is not valid for the resource's state.
      *
      * @class BadStateError
+     * @namespace ozpIwc.api.error
      * @extends ozpIwc.api.error.BaseError
      */
     error.BadStateError = error.BaseError.subclass("badState");
@@ -14919,6 +14924,7 @@ ozpIwc.api.error = (function (error) {
      * Thrown when no action is given in a request against an api.
      *
      * @class NoActionError
+     * @namespace ozpIwc.api.error
      * @extends ozpIwc.api.error.BaseError
      */
     error.NoActionError = error.BaseError.subclass("noAction");
@@ -14927,6 +14933,7 @@ ozpIwc.api.error = (function (error) {
      * Thrown when no resource is given in a request against an api.
      *
      * @class NoResourceError
+     * @namespace ozpIwc.api.error
      * @extends ozpIwc.api.error.BaseError
      * @static
      */
@@ -14936,6 +14943,7 @@ ozpIwc.api.error = (function (error) {
      * Thrown if an api request packets ifTag exists but does not match the node's version property.
      *
      * @class NoMatchError
+     * @namespace ozpIwc.api.error
      * @extends ozpIwc.api.error.BaseError
      */
     error.NoMatchError = error.BaseError.subclass("noMatch");
@@ -14944,6 +14952,7 @@ ozpIwc.api.error = (function (error) {
      * Thrown when an api request is not permitted.
      *
      * @class NoPermissionError
+     * @namespace ozpIwc.api.error
      * @extends ozpIwc.api.error.BaseError
      */
     error.NoPermissionError = error.BaseError.subclass("noPermission");

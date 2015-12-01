@@ -75,18 +75,20 @@
             "name": "src/js/bus/api/error/errors.js",
             "modules": {},
             "classes": {
-                "BadActionError": 1,
-                "BadResourceError": 1,
-                "BadRequestError": 1,
-                "BadContentError": 1,
-                "BadStateError": 1,
-                "NoActionError": 1,
-                "NoResourceError": 1,
-                "NoMatchError": 1,
-                "NoPermissionError": 1
+                "ozpIwc.api.error.BadActionError": 1,
+                "ozpIwc.api.error.BadResourceError": 1,
+                "ozpIwc.api.error.BadRequestError": 1,
+                "ozpIwc.api.error.BadContentError": 1,
+                "ozpIwc.api.error.BadStateError": 1,
+                "ozpIwc.api.error.NoActionError": 1,
+                "ozpIwc.api.error.NoResourceError": 1,
+                "ozpIwc.api.error.NoMatchError": 1,
+                "ozpIwc.api.error.NoPermissionError": 1
             },
             "fors": {},
-            "namespaces": {}
+            "namespaces": {
+                "ozpIwc.api.error": 1
+            }
         },
         "src/js/bus/api/filter/base.js": {
             "name": "src/js/bus/api/filter/base.js",
@@ -1149,15 +1151,15 @@
                 "ozpIwc.api.base.Node": 1,
                 "ozpIwc.api.Endpoint": 1,
                 "ozpIwc.api.error.BaseError": 1,
-                "BadActionError": 1,
-                "BadResourceError": 1,
-                "BadRequestError": 1,
-                "BadContentError": 1,
-                "BadStateError": 1,
-                "NoActionError": 1,
-                "NoResourceError": 1,
-                "NoMatchError": 1,
-                "NoPermissionError": 1,
+                "ozpIwc.api.error.BadActionError": 1,
+                "ozpIwc.api.error.BadResourceError": 1,
+                "ozpIwc.api.error.BadRequestError": 1,
+                "ozpIwc.api.error.BadContentError": 1,
+                "ozpIwc.api.error.BadStateError": 1,
+                "ozpIwc.api.error.NoActionError": 1,
+                "ozpIwc.api.error.NoResourceError": 1,
+                "ozpIwc.api.error.NoMatchError": 1,
+                "ozpIwc.api.error.NoPermissionError": 1,
                 "ozpIwc.api.filter.Function": 1,
                 "ozpIwc.api.filter.base": 1,
                 "ozpIwc.api.filter.standard": 1,
@@ -1221,15 +1223,15 @@
             "elements": {},
             "classes": {
                 "ozpIwc.api.error.BaseError": 1,
-                "BadActionError": 1,
-                "BadResourceError": 1,
-                "BadRequestError": 1,
-                "BadContentError": 1,
-                "BadStateError": 1,
-                "NoActionError": 1,
-                "NoResourceError": 1,
-                "NoMatchError": 1,
-                "NoPermissionError": 1
+                "ozpIwc.api.error.BadActionError": 1,
+                "ozpIwc.api.error.BadResourceError": 1,
+                "ozpIwc.api.error.BadRequestError": 1,
+                "ozpIwc.api.error.BadContentError": 1,
+                "ozpIwc.api.error.BadStateError": 1,
+                "ozpIwc.api.error.NoActionError": 1,
+                "ozpIwc.api.error.NoResourceError": 1,
+                "ozpIwc.api.error.NoMatchError": 1,
+                "ozpIwc.api.error.NoPermissionError": 1
             },
             "fors": {},
             "is_submodule": 1,
@@ -1239,7 +1241,7 @@
             "module": "ozpIwc.api",
             "namespace": "",
             "file": "src/js/bus/api/error/errors.js",
-            "line": 75,
+            "line": 83,
             "description": "A base class for IWC error objects."
         },
         "ozpIwc.api.filter": {
@@ -1938,9 +1940,9 @@
                 }
             ]
         },
-        "BadActionError": {
-            "name": "BadActionError",
-            "shortname": "BadActionError",
+        "ozpIwc.api.error.BadActionError": {
+            "name": "ozpIwc.api.error.BadActionError",
+            "shortname": "ozpIwc.api.error.BadActionError",
             "classitems": [],
             "plugins": [],
             "extensions": [],
@@ -1948,15 +1950,15 @@
             "extension_for": [],
             "module": "ozpIwc.api",
             "submodule": "ozpIwc.api.error",
-            "namespace": "",
+            "namespace": "ozpIwc.api.error",
             "file": "src/js/bus/api/error/errors.js",
             "line": 10,
             "description": "Thrown when an invalid action is called on an api.",
             "extends": "ozpIwc.api.error.BaseError"
         },
-        "BadResourceError": {
-            "name": "BadResourceError",
-            "shortname": "BadResourceError",
+        "ozpIwc.api.error.BadResourceError": {
+            "name": "ozpIwc.api.error.BadResourceError",
+            "shortname": "ozpIwc.api.error.BadResourceError",
             "classitems": [],
             "plugins": [],
             "extensions": [],
@@ -1964,15 +1966,15 @@
             "extension_for": [],
             "module": "ozpIwc.api",
             "submodule": "ozpIwc.api.error",
-            "namespace": "",
+            "namespace": "ozpIwc.api.error",
             "file": "src/js/bus/api/error/errors.js",
-            "line": 18,
+            "line": 19,
             "description": "Thrown when an invalid resource is called on an api.",
             "extends": "ozpIwc.api.error.BaseError"
         },
-        "BadRequestError": {
-            "name": "BadRequestError",
-            "shortname": "BadRequestError",
+        "ozpIwc.api.error.BadRequestError": {
+            "name": "ozpIwc.api.error.BadRequestError",
+            "shortname": "ozpIwc.api.error.BadRequestError",
             "classitems": [],
             "plugins": [],
             "extensions": [],
@@ -1980,15 +1982,15 @@
             "extension_for": [],
             "module": "ozpIwc.api",
             "submodule": "ozpIwc.api.error",
-            "namespace": "",
+            "namespace": "ozpIwc.api.error",
             "file": "src/js/bus/api/error/errors.js",
-            "line": 26,
+            "line": 28,
             "description": "Thrown when an invalid request is made against an api.",
             "extends": "ozpIwc.api.error.BaseError"
         },
-        "BadContentError": {
-            "name": "BadContentError",
-            "shortname": "BadContentError",
+        "ozpIwc.api.error.BadContentError": {
+            "name": "ozpIwc.api.error.BadContentError",
+            "shortname": "ozpIwc.api.error.BadContentError",
             "classitems": [],
             "plugins": [],
             "extensions": [],
@@ -1996,15 +1998,15 @@
             "extension_for": [],
             "module": "ozpIwc.api",
             "submodule": "ozpIwc.api.error",
-            "namespace": "",
+            "namespace": "ozpIwc.api.error",
             "file": "src/js/bus/api/error/errors.js",
-            "line": 34,
+            "line": 37,
             "description": "Thrown when an invalid contentType is used in a request against an api.",
             "extends": "ozpIwc.api.error.BaseError"
         },
-        "BadStateError": {
-            "name": "BadStateError",
-            "shortname": "BadStateError",
+        "ozpIwc.api.error.BadStateError": {
+            "name": "ozpIwc.api.error.BadStateError",
+            "shortname": "ozpIwc.api.error.BadStateError",
             "classitems": [],
             "plugins": [],
             "extensions": [],
@@ -2012,15 +2014,15 @@
             "extension_for": [],
             "module": "ozpIwc.api",
             "submodule": "ozpIwc.api.error",
-            "namespace": "",
+            "namespace": "ozpIwc.api.error",
             "file": "src/js/bus/api/error/errors.js",
-            "line": 42,
+            "line": 46,
             "description": "Thrown when the action or entity is not valid for the resource's state.",
             "extends": "ozpIwc.api.error.BaseError"
         },
-        "NoActionError": {
-            "name": "NoActionError",
-            "shortname": "NoActionError",
+        "ozpIwc.api.error.NoActionError": {
+            "name": "ozpIwc.api.error.NoActionError",
+            "shortname": "ozpIwc.api.error.NoActionError",
             "classitems": [],
             "plugins": [],
             "extensions": [],
@@ -2028,15 +2030,15 @@
             "extension_for": [],
             "module": "ozpIwc.api",
             "submodule": "ozpIwc.api.error",
-            "namespace": "",
+            "namespace": "ozpIwc.api.error",
             "file": "src/js/bus/api/error/errors.js",
-            "line": 50,
+            "line": 55,
             "description": "Thrown when no action is given in a request against an api.",
             "extends": "ozpIwc.api.error.BaseError"
         },
-        "NoResourceError": {
-            "name": "NoResourceError",
-            "shortname": "NoResourceError",
+        "ozpIwc.api.error.NoResourceError": {
+            "name": "ozpIwc.api.error.NoResourceError",
+            "shortname": "ozpIwc.api.error.NoResourceError",
             "classitems": [],
             "plugins": [],
             "extensions": [],
@@ -2044,16 +2046,16 @@
             "extension_for": [],
             "module": "ozpIwc.api",
             "submodule": "ozpIwc.api.error",
-            "namespace": "",
+            "namespace": "ozpIwc.api.error",
             "file": "src/js/bus/api/error/errors.js",
-            "line": 58,
+            "line": 64,
             "description": "Thrown when no resource is given in a request against an api.",
             "extends": "ozpIwc.api.error.BaseError",
             "static": 1
         },
-        "NoMatchError": {
-            "name": "NoMatchError",
-            "shortname": "NoMatchError",
+        "ozpIwc.api.error.NoMatchError": {
+            "name": "ozpIwc.api.error.NoMatchError",
+            "shortname": "ozpIwc.api.error.NoMatchError",
             "classitems": [],
             "plugins": [],
             "extensions": [],
@@ -2061,15 +2063,15 @@
             "extension_for": [],
             "module": "ozpIwc.api",
             "submodule": "ozpIwc.api.error",
-            "namespace": "",
+            "namespace": "ozpIwc.api.error",
             "file": "src/js/bus/api/error/errors.js",
-            "line": 67,
+            "line": 74,
             "description": "Thrown if an api request packets ifTag exists but does not match the node's version property.",
             "extends": "ozpIwc.api.error.BaseError"
         },
-        "NoPermissionError": {
-            "name": "NoPermissionError",
-            "shortname": "NoPermissionError",
+        "ozpIwc.api.error.NoPermissionError": {
+            "name": "ozpIwc.api.error.NoPermissionError",
+            "shortname": "ozpIwc.api.error.NoPermissionError",
             "classitems": [],
             "plugins": [],
             "extensions": [],
@@ -2077,9 +2079,9 @@
             "extension_for": [],
             "module": "ozpIwc.api",
             "submodule": "ozpIwc.api.error",
-            "namespace": "",
+            "namespace": "ozpIwc.api.error",
             "file": "src/js/bus/api/error/errors.js",
-            "line": 75,
+            "line": 83,
             "description": "Thrown when an api request is not permitted.",
             "extends": "ozpIwc.api.error.BaseError"
         },
