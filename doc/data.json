@@ -2,7 +2,7 @@
     "project": {
         "name": "ozpIwc",
         "description": "",
-        "version": "1.1.12",
+        "version": "1.1.13",
         "url": ""
     },
     "files": {
@@ -6302,7 +6302,7 @@
         },
         {
             "file": "src/js/bus/api/locks/api.js",
-            "line": 92,
+            "line": 99,
             "description": "For Api call handling, the Locks Api uses a clientParticipant.",
             "itemtype": "method",
             "name": "participantConfiguration",
@@ -6323,7 +6323,7 @@
         },
         {
             "file": "src/js/bus/api/locks/api.js",
-            "line": 118,
+            "line": 125,
             "description": "If the Locks Api object has not been initialized, it will initialize with the data passed in to the handleLogs\nfunction.",
             "itemtype": "method",
             "name": "handleLogs",
@@ -6343,7 +6343,7 @@
         },
         {
             "file": "src/js/bus/api/locks/api.js",
-            "line": 136,
+            "line": 143,
             "description": "When the Consensus Module changes state, the Locks Api behaves differently. It's participant will only send\noutbound messages if it is the \"Coordinator\".",
             "itemtype": "method",
             "name": "handleConsensusState",
@@ -6363,7 +6363,7 @@
         },
         {
             "file": "src/js/bus/api/locks/api.js",
-            "line": 161,
+            "line": 168,
             "description": "Transitions the Lock Api's leader state to leader if its state currently is \"loading\". Broadcasts leader ready\nevent.",
             "itemtype": "method",
             "name": "transitionToLeader",
@@ -6374,7 +6374,7 @@
         },
         {
             "file": "src/js/bus/api/locks/api.js",
-            "line": 176,
+            "line": 183,
             "description": "Unlocks All queued locks for the given address in the Locks Api.",
             "todo": [
                 ": Right now cycles through Every node",
@@ -6396,7 +6396,7 @@
         },
         {
             "file": "src/js/bus/api/locks/api.js",
-            "line": 193,
+            "line": 200,
             "description": "Iterates over all node's and cleans out any rouge locks queue'd for no-longer/non-existent addresses.",
             "itemtype": "method",
             "name": "cleanup",
@@ -6407,7 +6407,7 @@
         },
         {
             "file": "src/js/bus/api/locks/api.js",
-            "line": 223,
+            "line": 230,
             "description": "Override the default node type to be a Locks Api Value.",
             "override": "",
             "itemtype": "method",
@@ -6430,7 +6430,7 @@
         },
         {
             "file": "src/js/bus/api/locks/api.js",
-            "line": 236,
+            "line": 243,
             "description": "Shuts down the api, issuing a deathscream and releasing the lock, if possible.",
             "itemtype": "method",
             "name": "shutdown",
@@ -6444,7 +6444,7 @@
         },
         {
             "file": "src/js/bus/api/locks/api.js",
-            "line": 331,
+            "line": 338,
             "description": "Notifies the owner of the node's lock/unlock.",
             "itemtype": "method",
             "name": "updateLock",
@@ -16715,7 +16715,7 @@
         },
         {
             "message": "unknown tag: override",
-            "line": " src/js/bus/api/locks/api.js:223"
+            "line": " src/js/bus/api/locks/api.js:230"
         },
         {
             "message": "unknown tag: override",
