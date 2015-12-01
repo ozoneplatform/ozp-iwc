@@ -87,6 +87,13 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
             });
         api.consensusMember.on("receivedLogs", handleLogs, api);
         api.consensusMember.on("changedState", handleConsensusState, api);
+
+        //If we're using a shared worker we won't have to elect a leader, its always the same one.
+        if (util.runningInWorker()) {
+            api.consensusMember.participant.connect().then(function () {
+                api.consensusMember.onBecomeCoordinator();
+            });
+        }
     };
 
     /**
