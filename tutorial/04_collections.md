@@ -5,13 +5,13 @@ category: data
 ---
 
 # Collections of Resources
-In the last tutorial, [Resource Structure](03_structure.md), the concept of abstracting resource data  and its benefits
+In the last tutorial, [Resource Structure](03_structure.html), the concept of abstracting resource data  and its benefits
 were conveyed. The IWC read Actions utilize the naming structure of IWC resources to open up multi-resource based 
 actions.
 
 ## The "pattern" property
 When specifying a read-based action, the tutorials up to this point have not included any **config** objects in 
-demonstration. While there are numerous configuration properties that can be called, documented [here](TODOLINK), this
+demonstration. While there are numerous configuration properties that can be called, documented [here](TODO), this
 tutorial will focus on the `pattern` property.
 
 The `pattern` property is a string used to do **prefix matching** against resources in the API. This is not a regular
