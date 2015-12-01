@@ -96,14 +96,17 @@ resources can be obtained immediately in the promise resolution.
 The `pattern` for the watch goes in the **config** object of a **set** action on the resource **watched**:
 
 ``` js
+// First configure the resource's pattern
 var config = {
   pattern: "/shoppingCart/"
 };
 
+client.data().set("/myCollection",config);
+
+
+// Then register the watch, react on the collection data.
 var onChange = function(response, done) {
-  //the new collection of resources pertaining to the pattern
   var newCollection = response.entity.newCollection;
-  //the old collection of resources pertaining to the pattern
   var oldCollection = response.entity.oldCollection;
 };
 
@@ -112,7 +115,6 @@ var onResolve = function(response, done) {
   var collection = response.collection;
 };
 
-client.data().set("/myCollection",config);
 client.data().watch("/myCollection", onChange).then(onResolve);
 ```
 
