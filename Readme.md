@@ -22,8 +22,8 @@ presentation, including a tiny client library that adds a single, invisible elem
 
 Links
 --------------
-  * [Quick Start](http://ozone-development.github.io/ozp-iwc/introduction/quickStart.html)
-  * [FAQ](http://ozone-development.github.io/ozp-iwc/FAQ.html)
+  * [Quick Start](http://ozone-development.github.io/ozp-iwc/tutorial/index.html)
+  * [FAQ](http://ozone-development.github.io/ozp-iwc/gitbook/FAQ.html)
 
 
 Demo
@@ -37,5 +37,5 @@ grunt serve
 ```
 
 A list of IWC registered applications can be found under the "My Apps" tab of the system.api page in the 
-[IWC Debugger](http://localhost:13000/debugger.html#/system-api) once the server is running.
+[IWC Debugger](http://localhost:13000/debugger/index.html#/system-api) once the server is running.
 
