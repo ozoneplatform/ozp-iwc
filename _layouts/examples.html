@@ -7,8 +7,8 @@ layout: default
         <h1 class="title"><img src="../style/img/logo_o.png" /></h1>
         <nav>
             <ul>
-                <li><a href="{{site.baseurl}}/examples">Examples</a></li>
-                <li><a href="{{site.baseurl}}/tutorial" class="live one">Tutorial</a></li>
+                <li><a href="{{site.baseurl}}/examples" class="live one">Examples</a></li>
+                <li><a href="{{site.baseurl}}/tutorial">Tutorial</a></li>
                 <li><a href="{{site.baseurl}}/">Overview</a></li>
             </ul>
         </nav>
@@ -18,25 +18,11 @@ layout: default
 <div class="main-container">
     <div class="main wrapper clearfix">
         <aside>
-            <h3>General</h3>
+            <h3>Basic</h3>
             <ul>
                 {% for p in site.pages %}
-                {% if p.layout == 'tutorial' %}
-                {% if p.category == 'data' %}
-                {% if p.url == page.url %}
-                <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
-                {% else %}
-                <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
-                {% endif %}
-                {% endif %}
-                {% endif %}
-                {% endfor %}
-            </ul>
-            <h3>OWF Migration</h3>
-            <ul>
-                {% for p in site.pages %}
-                {% if p.layout == 'tutorial' %}
-                {% if p.category == 'owf' %}
+                {% if p.layout == 'examples' %}
+                {% if p.category == 'basic' %}
                 {% if p.url == page.url %}
                 <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
                 {% else %}

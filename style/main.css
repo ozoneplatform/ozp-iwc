@@ -64,11 +64,11 @@ textarea {
 @font-face
 {
   font-family: 'Ubuntu';
-  src: url('fonts/ubuntu-webfont.eot'); 
+  src: url('fonts/ubuntu-webfont.eot');
   src: url('fonts/ubuntu-webfont.eot?#iefix') format('embedded-opentype'),
        url('fonts/ubuntu-webfont.woff') format('woff'),
        url('fonts/ubuntu-webfont.ttf')  format('truetype'),
-       url('fonts/ubuntu-webfont.svg#Ubuntu') format('svg'); 
+       url('fonts/ubuntu-webfont.svg#Ubuntu') format('svg');
        font-weight: normal;
        font-style: normal;
        font-variant: normal;
@@ -245,7 +245,7 @@ h1[class^="icon-"], h1[class*=" icon-"] {
         background: #009dd3;
         background-image:
         linear-gradient(
-            to top right, 
+            to top right,
             #0e5772, #71c9e7
         );
         background: rgba(0, 157, 211, .2);
@@ -255,7 +255,7 @@ h1[class^="icon-"], h1[class*=" icon-"] {
         background: #0e5772;
         background-image:
         linear-gradient(
-            to top right, 
+            to top right,
             #009dd3, #0e5772
         );
         background: rgba(0, 0, 0, .2);
@@ -268,7 +268,7 @@ h1[class^="icon-"], h1[class*=" icon-"] {
         color: #ccc;
         text-align: center;
     }
-    
+
         .section-container.one h1,
         .section-container.two h1,
         .section-container.one h3,
@@ -356,7 +356,7 @@ nav ul {
     nav.two a {
         background: rgba(0, 0, 0, .3);
     }
-    
+
         nav.one a:hover,
         nav.one a:active,
         nav.two a:hover,
@@ -403,9 +403,9 @@ nav ul {
     float: left;
 }
 
-    .col2 img, 
-    .col3 img, 
-    .col4 img, 
+    .col2 img,
+    .col3 img,
+    .col4 img,
     .col5 img {
         max-width: 100%;
     }
@@ -774,4 +774,24 @@ nav ul {
 .browser-mockup > * {
     display: block;
     width: inherit
+}
+
+/* ==========================================================================
+   Examples Section UI
+   ========================================================================== */
+
+.app-list {
+}
+
+.app-list a {
+    display: block;
+    padding: 0.5em 1em;
+    border: 1px solid #ccc;
+    margin-bottom: -1px;
+    overflow: auto;
+    background-color: #ffffff;
+}
+
+.app-list a:hover{
+    background-color: #f4f7f8;
 }
