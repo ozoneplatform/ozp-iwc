@@ -1,68 +1,54 @@
 ---
 layout: default
 ---
-<div class="side-nav-mobile">
-    <button type="button" class="btn btn-sm" id="open-side">
-        <span class="glyphicon glyphicon-chevron-right"/>
-    </button>
+
+<div class="header-container">
+    <header class="wrapper clearfix">
+        <h1 class="title"><img src="../style/img/logo_o.png" /></h1>
+        <nav>
+            <ul>
+                <li><a href="{{site.baseurl}}/tutorial" class="live one">Tutorial</a></li>
+                <li><a href="{{site.baseurl}}/">Overview</a></li>
+            </ul>
+        </nav>
+    </header>
 </div>
-<div id="wrapper">
-    <div class="side-nav" id="sidebar-wrapper">
-        <div class="title-bar">
-            <button type="button" class="btn btn-sm" id="close-side">
-                <span class="glyphicon glyphicon-chevron-left"/>
-            </button>
+
+<div class="main-container">
+    <div class="main wrapper clearfix">
+        <aside>
             <h3>General</h3>
-        </div>
-
-        <ul>
-            {% for p in site.pages %}
-            {% if p.layout == 'tutorial' %}
-            {% if p.category == 'data' %}
-            {% if p.url == page.url %}
-            <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
-            {% else %}
-            <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
-            {% endif %}
-            {% endif %}
-            {% endif %}
-            {% endfor %}
-        </ul>
-        <div class="title-bar secondary" >
+            <ul>
+                {% for p in site.pages %}
+                {% if p.layout == 'tutorial' %}
+                {% if p.category == 'data' %}
+                {% if p.url == page.url %}
+                <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% else %}
+                <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% endif %}
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            </ul>
             <h3>OWF Migration</h3>
-        </div>
-        <ul>
-            {% for p in site.pages %}
-            {% if p.layout == 'tutorial' %}
-            {% if p.category == 'owf' %}
-            {% if p.url == page.url %}
-            <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
-            {% else %}
-            <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
-            {% endif %}
-            {% endif %}
-            {% endif %}
-            {% endfor %}
-        </ul>
-    </div>
-    <div class="side-nav-main" id="page-content-wrapper">
-        <div>
-        {{ content }}
-        </div>
+            <ul>
+                {% for p in site.pages %}
+                {% if p.layout == 'tutorial' %}
+                {% if p.category == 'owf' %}
+                {% if p.url == page.url %}
+                <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% else %}
+                <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% endif %}
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </aside>
+        <article>
+            {{ content }}
+        </article>
     </div>
 </div>
-<script>
-    $('#close-side').click(function(e){
-        e.preventDefault();
-        $(".navbar-fixed-top").addClass("toggled");
-        $("#wrapper").addClass("toggled");
-    });
-
-    $('#open-side').click(function(e){
-        e.preventDefault();
-        $(".navbar-fixed-top").removeClass("toggled");
-        $("#wrapper").removeClass("toggled");
-    });
-</script>
-
 
