@@ -19,6 +19,7 @@ screen. By sharing the ball's state through the Data API, other applications can
 These applications set resources to the IWC to create & modify balls on the Ball Viewer above.
 <div class="app-list">
     <a href="#"  onClick="openPopup('wMwjGW','Stationary Ball');return false;" >Stationary Ball</a>
+    <a href="#"  onClick="openPopup('WreBEg','Sequenced Ball');return false;" >Sequenced Ball</a>
 </div>
 
 <script type="text/javascript">
@@ -40,7 +41,7 @@ These applications set resources to the IWC to create & modify balls on the Ball
 | API | Resource | Action | Reason| Resource Entity Sample |
 |-----|----------|------------|---|----------------------|
 | Data| /github/example/balls| Watch | Listen for ball collection|  n/a | 
-| Data| /github/example/balls/{ballId}| Watch | Listen for individual ball updates|  ``` { x: 50, y: 50, radius: 20, color: "yellow" } ``` | 
+| Data| /github/example/balls/{ballId}| Watch | Listen for individual ball updates|  ``` { x: 50, y: 50, radius: 20, color: "#FF0000" } ``` | 
 
 ### Data Api: /github/example/balls
 A resource for applications to watch for addition/deletion of ball resources. This information is in the resources 
