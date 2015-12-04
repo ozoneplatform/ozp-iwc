@@ -20,6 +20,7 @@ These applications set resources to the IWC to create & modify balls on the Ball
 <div class="app-list">
     <a href="#"  onClick="openPopup('wMwjGW','Stationary Ball');return false;" >Stationary Ball</a>
     <a href="#"  onClick="openPopup('WreBEg','Sequenced Ball');return false;" >Sequenced Ball</a>
+    <a href="#"  onClick="openPopup('KVKqyp','User Controlled');return false;" >User Controlled Ball</a>
 </div>
 
 <script type="text/javascript">
@@ -37,7 +38,7 @@ These applications set resources to the IWC to create & modify balls on the Ball
 
 ***
 
-## IWC Resources Used by Ball Viewer
+## IWC Resources Used by Ball Viewer 
 | API | Resource | Action | Reason| Resource Entity Sample |
 |-----|----------|------------|---|----------------------|
 | Data| /github/example/balls| Watch | Listen for ball collection|  n/a | 
