@@ -9,6 +9,10 @@ category: basic
 Below is an application that generates balls on a canvas. Alone, it is just drawing the ball's current position to the
 screen. By sharing the ball's state through the Data API, other applications can manipulate ball positions.
 
+**Note:** While these examples are running on the same domain (codepen), they are not domain bound. You can have a
+codepen snippet talk to a jsfiddle, plunkr, jsbin, ect. The benefit of the IWC here is minimal overhead for developers
+in **cross domain communication**.
+
 ## Ball Viewer
 <p data-height="500" data-theme-id="0" data-slug-hash="vNMyoE" data-default-tab="Result" data-user="Kevin-K" class='codepen'>
 
