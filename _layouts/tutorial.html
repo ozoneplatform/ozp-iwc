@@ -32,6 +32,20 @@ layout: default
                 {% endif %}
                 {% endfor %}
             </ul>
+            <h3>Advanced</h3>
+            <ul>
+                {% for p in site.pages %}
+                {% if p.layout == 'tutorial' %}
+                {% if p.category == 'intents' %}
+                {% if p.url == page.url %}
+                <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% else %}
+                <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% endif %}
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            </ul>
             <h3>OWF Migration</h3>
             <ul>
                 {% for p in site.pages %}
