@@ -88,7 +88,7 @@ advanced intents in a later tutorial.
 
 | property | type   | description                                                                                                                      |
 |----------|--------|----------------------------------------------------------------------------------------------------------------------------------|
-| entity   | *      | The payload of the intent invocation to be handled. Should match the schema for the /{Type}/{Sub-type} of the registered function|
+| entity   | *      | The payload of the intent invocation to be handled. Should match the schema for the /{Type}/{Sub-type} of the registered function.|
 
 
 <p data-height="245" data-theme-id="0" data-slug-hash="xZbdLv" data-default-tab="js" data-user="Kevin-K" class='codepen'>
