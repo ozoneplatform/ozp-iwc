@@ -77,6 +77,9 @@ A promise that resolves with a response object upon handling of the request:
 | response | String | The status of the message. "ok" means the request was successfully handled.                 |
 | replyTo  | String | The ID of the request this response pertains to.                                            |
 | dst      | String | The address of the recipient of this message.                                               |
+| entity   | Object |  A response payload to the registration request.                                            |
+| entity.resource| String|  The resource name assigned to the registration, if the handlerId was given in the path this will be the user specified resource name. If not a handler Id is generated.|
+
 
 ####Callback
 The callback expects 1 parameter: `reply`, which contains various information about an intent. For the introductory
