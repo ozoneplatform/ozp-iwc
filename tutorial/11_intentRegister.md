@@ -19,12 +19,12 @@ If your intent use is private to your applications, utilize `/application/vnd.{u
 Documentation on /type/sub-type paths are developed based on community support. As the IWC is in its infant years of
 community use, if you can't find documentation on your desired data type, it is very well possible you are the first 
 to use it. Open an [issue](http://www.github.com/ozone-development/ozp-iwc/issues) with the data type/subtype, 
-proposed schema, and a description. The IWC development team will follow community suggestions and add them to the
-[Community Intent Book](about:blank) documentation as a centralized resource for developers. 
+proposed schema, and a description. The IWC [Community Intent Book](about:blank) is a community driven
+set of data type documents used as a centralized resource for developers. 
 
 ### What is action my function handles?
 The action is the verb of the handler, it should be a single word describing what the intent handler does (print, graph,
-map, ect). As stated above, check the [Community Intent Book](about:blank) for community-driven standardized action formatting.
+map, ect). As stated above, check the [Community Intent Book](about:blank) for community-driven formatting and actions.
 
 ### What if the /type/sub-type/action I want to use is already in the Community Intent Book?
 **This is ideal!** If your desired /type/sub-type/action exists in the [Community Intent Book](about:blank), this does not mean your
