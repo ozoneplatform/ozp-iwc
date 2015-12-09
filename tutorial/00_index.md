@@ -29,7 +29,7 @@ When gathering the IWC through bower, the client library will be located at  `bo
 Include it in your applications HTML as so:
 
 ``` html
-<script type="text/javascript" src="/bower_components/ozp_iwc/dist/js/ozpIwc.client.min.js"></script>
+<script type="text/javascript" src="/bower_components/ozp_iwc/dist/js/ozpIwc-client.min.js"></script>
 ```
 
 ### Github
