@@ -50,6 +50,7 @@ describe("Intent API Class", function () {
         ozpIwc.api.endpoint = jasmine.createSpy("ozpIwc.api.endpoint");
         ozpIwc.api.endpoint.and.returnValue(endpoint);
         spyOn(ozpIwc.util, "openWindow");
+        spyOn(apiBase.participant, "send");
 
         endpoint.get.and.callFake(function (url) {
             return Promise.resolve(data[url]);
@@ -151,10 +152,8 @@ describe("Intent API Class", function () {
                 dst: invocationPacket.packet.src,
                 response: "ok"
             });
-            jasmine.clock().tick(100);
             return invocationPacket.responses[0].then(function (resp) {
-                var inflightIntent = resp.entity.inFlightIntent;
-                expect(inflightIntent.entity.state).toEqual("delivering");
+                expect(resp.entity.state).toEqual("delivering");
             });
 
         });
@@ -167,15 +166,11 @@ describe("Intent API Class", function () {
                 response: "ok"
             });
             return invocationPacket.responses[0].then(function (resp) {
-                var inflightIntent = resp.entity.inFlightIntent;
-                expect(apiBase.participant).toHaveSent({
+                expect(apiBase.participant.send).toHaveBeenCalledWith(jasmine.objectContaining({
                     dst: "system.api",
                     resource: "/intentHandler",
-                    action: "view",
-                    entity: {
-                        inFlightIntent: inflightIntent
-                    }
-                });
+                    action: "view"
+                }));
             });
         });
 
@@ -187,12 +182,11 @@ describe("Intent API Class", function () {
                 response: "ok"
             });
             return invocationPacket.responses[0].then(function (resp) {
-                var inflightIntent = resp.entity.inFlightIntent;
-                expect(inflightIntent.entity.state).toEqual("choosing");
+                expect(resp.entity.state).toEqual("choosing");
                 expect(ozpIwc.util.openWindow)
                     .toHaveBeenCalledWith(ozpIwc.config.intentsChooserUri, jasmine.objectContaining({
                         "ozpIwc.peer": ozpIwc.config._busRoot,
-                        "ozpIwc.intentSelection": "intents.api" + inflightIntent.resource
+                        "ozpIwc.intentSelection": "intents.api" + resp.resource
                     }), ozpIwc.config.intentChooserFeatures);
             });
         });
@@ -206,8 +200,7 @@ describe("Intent API Class", function () {
                 response: "ok"
             });
             return invocationPacket.responses[0].then(function (resp) {
-                var inflightIntent = resp.entity.inFlightIntent;
-                expect(inflightIntent.entity.state).toEqual("delivering");
+                expect(resp.entity.state).toEqual("delivering");
                 expect(ozpIwc.util.openWindow)
                     .not.toHaveBeenCalled();
             });
@@ -222,12 +215,11 @@ describe("Intent API Class", function () {
                 response: "ok"
             });
             return invocationPacket.responses[0].then(function (resp) {
-                var inflightIntent = resp.entity.inFlightIntent;
-                expect(inflightIntent.entity.state).toEqual("choosing");
+                expect(resp.entity.state).toEqual("choosing");
                 expect(ozpIwc.util.openWindow)
                     .toHaveBeenCalledWith(ozpIwc.config.intentsChooserUri, jasmine.objectContaining({
                         "ozpIwc.peer": ozpIwc.config._busRoot,
-                        "ozpIwc.intentSelection": "intents.api" + inflightIntent.resource
+                        "ozpIwc.intentSelection": "intents.api" + resp.resource
                     }), ozpIwc.config.intentChooserFeatures);
             });
         });
@@ -236,10 +228,9 @@ describe("Intent API Class", function () {
             var invocationPacket = makeInvocationPacket(handlerResource);
             apiBase.receivePacketContext(invocationPacket);
             return invocationPacket.responses[0].then(function (resp) {
-                var inflightIntent = resp.entity.inFlightIntent;
                 var runningPacket = new TestPacketContext({
                     'packet': {
-                        'resource': inflightIntent.resource,
+                        'resource': resp.resource,
                         'action': "set",
                         'entity': {
                             'state': "running",
@@ -251,7 +242,7 @@ describe("Intent API Class", function () {
                     }
                 });
                 apiBase.receivePacketContext(runningPacket);
-                expect(apiBase.data[inflightIntent.resource].entity.state).toEqual("running");
+                expect(apiBase.data[resp.resource].entity.state).toEqual("running");
             });
         });
     });
