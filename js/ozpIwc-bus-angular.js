@@ -3688,17 +3688,17 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 if (!handled && packet.replyTo && this.registeredCallbacks[packet.replyTo]) {
 
                     var registeredCancel = false;
+                    var self = this;
                     var registeredDone = function () {
                         registeredCancel = true;
+
+                        if (self.watchMsgMap[packet.replyTo] && self.watchMsgMap[packet.replyTo].action === "watch") {
+                            self.api(self.watchMsgMap[packet.replyTo].dst).unwatch(self.watchMsgMap[packet.replyTo].resource);
+                        }
+                        self.cancelRegisteredCallback(packet.replyTo);
                     };
 
                     handled = this.registeredCallbacks[packet.replyTo](packet, registeredDone);
-                    if (registeredCancel) {
-                        if (this.watchMsgMap[packet.replyTo] && this.watchMsgMap[packet.replyTo].action === "watch") {
-                            this.api(this.watchMsgMap[packet.replyTo].dst).unwatch(this.watchMsgMap[packet.replyTo].resource);
-                        }
-                        this.cancelRegisteredCallback(packet.replyTo);
-                    }
                 }
                 if (!handled) {
                     //Drop own packets
@@ -3880,6 +3880,10 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 }
                 return promiseChain.then(function (inFlightIntentRes) {
                     res = inFlightIntentRes;
+                    if (res.entity.invokePacket.msgId === packet.msgId) {
+                        callback(packet);
+                        return Promise.reject("ownInvoke");
+                    }
                     return self.send({
                         dst: "intents.api",
                         contentType: res.contentType,
@@ -3890,6 +3894,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                                 resource: packet.resource,
                                 address: self.address
                             },
+                            me: Date.now(),
                             state: "running"
                         }
                     });
@@ -3917,7 +3922,12 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         }
                     });
                 })['catch'](function (e) {
-                    log.error("Error in handling intent: ", e, " -- Reporting error on in-flight intent node:",
+                    if (e === "ownInvoke") {
+                        //Filter out own invocations (this occurs when watching an invoke state).
+                        return;
+                    }
+
+                    console.error("Error in handling intent: ", e, " -- Reporting error on in-flight intent node:",
                         res.resource);
                     // Respond to the inflight resource
                     return self.send({
@@ -3970,13 +3980,27 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         var packet = message.packet;
 
 
-                        if (packet.dst === "intents.api" && packet.action === "register") {
-                            for (var i in client.launchedIntents) {
-                                var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
-                                if (resource === loadedResource) {
-                                    client.intentInvocationHandling(packet, client.launchedIntents[i], message.callback);
-                                    delete client.launchedIntents[i];
+                        if (packet.dst === "intents.api") {
+                            if (packet.action === "register") {
+                                for (var i in client.launchedIntents) {
+                                    var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
+                                    if (resource === loadedResource) {
+                                        client.intentInvocationHandling(packet, client.launchedIntents[i], message.callback);
+                                        delete client.launchedIntents[i];
+                                    }
                                 }
+                            } else if (packet.action === "invoke") {
+                                var wrappedCallback = message.callback;
+
+                                // Wrap the callback to make sure it is removed when the intent state machine stops.
+                                message.callback = function (reply, done) {
+                                    wrappedCallback(reply, done);
+                                    reply = reply || {};
+                                    reply.entity = reply.entity || {};
+                                    if (reply.entity.state === "error" || reply.entity.state === "complete") {
+                                        done();
+                                    }
+                                };
                             }
                         }
                         return client.send(packet, message.callback);
@@ -4133,7 +4157,9 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 //respondOn "all", "error", or no value (default all) will register a promise callback.
                 if (packet.respondOn !== "none") {
                     this.promiseCallbacks[packet.msgId] = function (reply, done) {
-                        if (reply.src === "$transport" || /(ok).*/.test(reply.response)) {
+                        if (reply.src === "intents.api" && packet.action === "invoke" && /(ok).*/.test(reply.response)) {
+                            // dont sent the response to the promise
+                        } else if (reply.src === "$transport" || /(ok).*/.test(reply.response) || /(complete).*/.test(reply.response)) {
                             done();
                             promiseRes(reply);
                         } else if (/(bad|no).*/.test(reply.response)) {
@@ -16211,6 +16237,30 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
 // Intent Invocation Methods
 //---------------------------------------------------------
     /**
+     * Notifies the invoker when the state of the in flight intent changes.
+     * @method updateInvoker
+     * @static
+     * @private
+     * @param {ozpIwc.api.intents.Api} api
+     * @param node
+     */
+    var updateInvoker = function (api, node) {
+        var response = node.entity.reply || {};
+        return api.send({
+            dst: node.entity.invokePacket.src,
+            replyTo: node.entity.invokePacket.msgId,
+            response: "update",
+            entity: {
+                request: node.entity.entity,
+                response: response.entity,
+                handler: node.entity.handler,
+                state: node.entity.state,
+                status: node.entity.status
+            }
+        });
+    };
+
+    /**
      * A handler for invoke calls. Creates an inFlight-intent node and kicks off the inflight state machine.
      *
      * @method invokeIntentHandler
@@ -16222,7 +16272,6 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
      * @return {Promise}
      */
     Api.prototype.invokeIntentHandler = function (packet, type, action, handlers, pattern) {
-        var self = this;
         var inflightNode = new api.intents.node.InFlightNode({
             resource: this.createKey("/inFlightIntent/"),
             src: packet.src,
@@ -16235,15 +16284,9 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
 
         this.data[inflightNode.resource] = inflightNode;
         this.addCollector(inflightNode.resource);
-
+        updateInvoker(this, inflightNode);
         this.data[inflightNode.resource] = api.intents.FSM.transition(inflightNode);
-        return this.handleInflightIntentState(inflightNode).then(function () {
-            return {
-                entity: {
-                    inFlightIntent: self.data[inflightNode.resource].toPacket()
-                }
-            };
-        });
+        return this.handleInflightIntentState(inflightNode);
     };
 
     /**
@@ -16266,6 +16309,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 this.handleComplete(inflightNode);
                 break;
             default:
+                updateInvoker(this, inflightNode);
                 break;
         }
         return Promise.resolve(inflightNode);
@@ -16293,9 +16337,8 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                     packet.entity.config.intentSelection = "intents.api" + node.resource;
                 }
 
-                return self.invokeIntentHandler(packet, '/inFlightIntent/chooser', 'choose', [chooser], '/inFlightIntent/chooser/choose/').then(function (packet) {
+                return self.invokeIntentHandler(packet, '/inFlightIntent/chooser', 'choose', [chooser], '/inFlightIntent/chooser/choose/').then(function (inFlightNode) {
                     //This is because we are manually using the packetRouter route.
-                    var inFlightNode = packet.entity.inFlightIntent;
                     inFlightNode.entity = inFlightNode.entity || {};
 
                     if (inFlightNode.entity.state === "complete") {
@@ -16362,9 +16405,12 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                         " for the default intent chooser.");
                     node = api.intents.FSM.transition(node, {state: "error"});
                 }
+
+                return node;
             });
         };
         var self = this;
+        updateInvoker(this, node);
         return this.getPreference(node.entity.intent.type + "/" + node.entity.intent.action).then(function (handlerResource) {
             if (handlerResource in self.data) {
                 node = api.intents.FSM.transition(node, {
@@ -16376,6 +16422,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                         }
                     }
                 });
+                updateInvoker(self, node);
                 return self.handleInflightIntentState(node);
             } else {
                 return showChooser();
@@ -16400,6 +16447,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         packet.replyTo = handlerNode.entity.replyTo;
         packet.entity.inFlightIntent = node.toPacket();
         log.debug(this.logPrefix + "delivering intent:", packet);
+        updateInvoker(this, node);
         // TODO: packet permissions
         return this.send(packet);
     };
@@ -16421,6 +16469,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 response: "complete",
                 entity: node.entity.reply.entity
             });
+            updateInvoker(this, node);
         }
         node.markAsDeleted();
     };
@@ -17087,7 +17136,8 @@ ozpIwc.api.intents.Api = (function (api, IntentsApi, log) {
             packet,
             pathParams.major + "/" + pathParams.minor,
             pathParams.action,
-            context.node
+            context.node,
+            undefined
         );
     });
 

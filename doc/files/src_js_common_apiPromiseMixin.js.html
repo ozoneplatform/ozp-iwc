@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.13</em>
+            <em>API Docs for: 1.1.14</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -440,17 +440,17 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 if (!handled &amp;&amp; packet.replyTo &amp;&amp; this.registeredCallbacks[packet.replyTo]) {
 
                     var registeredCancel = false;
+                    var self = this;
                     var registeredDone = function () {
                         registeredCancel = true;
+
+                        if (self.watchMsgMap[packet.replyTo] &amp;&amp; self.watchMsgMap[packet.replyTo].action === &quot;watch&quot;) {
+                            self.api(self.watchMsgMap[packet.replyTo].dst).unwatch(self.watchMsgMap[packet.replyTo].resource);
+                        }
+                        self.cancelRegisteredCallback(packet.replyTo);
                     };
 
                     handled = this.registeredCallbacks[packet.replyTo](packet, registeredDone);
-                    if (registeredCancel) {
-                        if (this.watchMsgMap[packet.replyTo] &amp;&amp; this.watchMsgMap[packet.replyTo].action === &quot;watch&quot;) {
-                            this.api(this.watchMsgMap[packet.replyTo].dst).unwatch(this.watchMsgMap[packet.replyTo].resource);
-                        }
-                        this.cancelRegisteredCallback(packet.replyTo);
-                    }
                 }
                 if (!handled) {
                     //Drop own packets
@@ -632,6 +632,10 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 }
                 return promiseChain.then(function (inFlightIntentRes) {
                     res = inFlightIntentRes;
+                    if (res.entity.invokePacket.msgId === packet.msgId) {
+                        callback(packet);
+                        return Promise.reject(&quot;ownInvoke&quot;);
+                    }
                     return self.send({
                         dst: &quot;intents.api&quot;,
                         contentType: res.contentType,
@@ -642,6 +646,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                                 resource: packet.resource,
                                 address: self.address
                             },
+                            me: Date.now(),
                             state: &quot;running&quot;
                         }
                     });
@@ -669,7 +674,12 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         }
                     });
                 })[&#x27;catch&#x27;](function (e) {
-                    log.error(&quot;Error in handling intent: &quot;, e, &quot; -- Reporting error on in-flight intent node:&quot;,
+                    if (e === &quot;ownInvoke&quot;) {
+                        //Filter out own invocations (this occurs when watching an invoke state).
+                        return;
+                    }
+
+                    console.error(&quot;Error in handling intent: &quot;, e, &quot; -- Reporting error on in-flight intent node:&quot;,
                         res.resource);
                     // Respond to the inflight resource
                     return self.send({
@@ -722,13 +732,27 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         var packet = message.packet;
 
 
-                        if (packet.dst === &quot;intents.api&quot; &amp;&amp; packet.action === &quot;register&quot;) {
-                            for (var i in client.launchedIntents) {
-                                var loadedResource = &#x27;/&#x27; + client.launchedIntents[i].entity.intent.type + &#x27;/&#x27; + client.launchedIntents[i].entity.intent.action;
-                                if (resource === loadedResource) {
-                                    client.intentInvocationHandling(packet, client.launchedIntents[i], message.callback);
-                                    delete client.launchedIntents[i];
+                        if (packet.dst === &quot;intents.api&quot;) {
+                            if (packet.action === &quot;register&quot;) {
+                                for (var i in client.launchedIntents) {
+                                    var loadedResource = &#x27;/&#x27; + client.launchedIntents[i].entity.intent.type + &#x27;/&#x27; + client.launchedIntents[i].entity.intent.action;
+                                    if (resource === loadedResource) {
+                                        client.intentInvocationHandling(packet, client.launchedIntents[i], message.callback);
+                                        delete client.launchedIntents[i];
+                                    }
                                 }
+                            } else if (packet.action === &quot;invoke&quot;) {
+                                var wrappedCallback = message.callback;
+
+                                // Wrap the callback to make sure it is removed when the intent state machine stops.
+                                message.callback = function (reply, done) {
+                                    wrappedCallback(reply, done);
+                                    reply = reply || {};
+                                    reply.entity = reply.entity || {};
+                                    if (reply.entity.state === &quot;error&quot; || reply.entity.state === &quot;complete&quot;) {
+                                        done();
+                                    }
+                                };
                             }
                         }
                         return client.send(packet, message.callback);
@@ -885,7 +909,9 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 //respondOn &quot;all&quot;, &quot;error&quot;, or no value (default all) will register a promise callback.
                 if (packet.respondOn !== &quot;none&quot;) {
                     this.promiseCallbacks[packet.msgId] = function (reply, done) {
-                        if (reply.src === &quot;$transport&quot; || /(ok).*/.test(reply.response)) {
+                        if (reply.src === &quot;intents.api&quot; &amp;&amp; packet.action === &quot;invoke&quot; &amp;&amp; /(ok).*/.test(reply.response)) {
+                            // dont sent the response to the promise
+                        } else if (reply.src === &quot;$transport&quot; || /(ok).*/.test(reply.response) || /(complete).*/.test(reply.response)) {
                             done();
                             promiseRes(reply);
                         } else if (/(bad|no).*/.test(reply.response)) {

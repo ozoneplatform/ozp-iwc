@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.13</em>
+            <em>API Docs for: 1.1.14</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -290,6 +290,30 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
 // Intent Invocation Methods
 //---------------------------------------------------------
     /**
+     * Notifies the invoker when the state of the in flight intent changes.
+     * @method updateInvoker
+     * @static
+     * @private
+     * @param {ozpIwc.api.intents.Api} api
+     * @param node
+     */
+    var updateInvoker = function (api, node) {
+        var response = node.entity.reply || {};
+        return api.send({
+            dst: node.entity.invokePacket.src,
+            replyTo: node.entity.invokePacket.msgId,
+            response: &quot;update&quot;,
+            entity: {
+                request: node.entity.entity,
+                response: response.entity,
+                handler: node.entity.handler,
+                state: node.entity.state,
+                status: node.entity.status
+            }
+        });
+    };
+
+    /**
      * A handler for invoke calls. Creates an inFlight-intent node and kicks off the inflight state machine.
      *
      * @method invokeIntentHandler
@@ -301,7 +325,6 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
      * @return {Promise}
      */
     Api.prototype.invokeIntentHandler = function (packet, type, action, handlers, pattern) {
-        var self = this;
         var inflightNode = new api.intents.node.InFlightNode({
             resource: this.createKey(&quot;/inFlightIntent/&quot;),
             src: packet.src,
@@ -314,15 +337,9 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
 
         this.data[inflightNode.resource] = inflightNode;
         this.addCollector(inflightNode.resource);
-
+        updateInvoker(this, inflightNode);
         this.data[inflightNode.resource] = api.intents.FSM.transition(inflightNode);
-        return this.handleInflightIntentState(inflightNode).then(function () {
-            return {
-                entity: {
-                    inFlightIntent: self.data[inflightNode.resource].toPacket()
-                }
-            };
-        });
+        return this.handleInflightIntentState(inflightNode);
     };
 
     /**
@@ -345,6 +362,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 this.handleComplete(inflightNode);
                 break;
             default:
+                updateInvoker(this, inflightNode);
                 break;
         }
         return Promise.resolve(inflightNode);
@@ -372,9 +390,8 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                     packet.entity.config.intentSelection = &quot;intents.api&quot; + node.resource;
                 }
 
-                return self.invokeIntentHandler(packet, &#x27;/inFlightIntent/chooser&#x27;, &#x27;choose&#x27;, [chooser], &#x27;/inFlightIntent/chooser/choose/&#x27;).then(function (packet) {
+                return self.invokeIntentHandler(packet, &#x27;/inFlightIntent/chooser&#x27;, &#x27;choose&#x27;, [chooser], &#x27;/inFlightIntent/chooser/choose/&#x27;).then(function (inFlightNode) {
                     //This is because we are manually using the packetRouter route.
-                    var inFlightNode = packet.entity.inFlightIntent;
                     inFlightNode.entity = inFlightNode.entity || {};
 
                     if (inFlightNode.entity.state === &quot;complete&quot;) {
@@ -441,9 +458,12 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                         &quot; for the default intent chooser.&quot;);
                     node = api.intents.FSM.transition(node, {state: &quot;error&quot;});
                 }
+
+                return node;
             });
         };
         var self = this;
+        updateInvoker(this, node);
         return this.getPreference(node.entity.intent.type + &quot;/&quot; + node.entity.intent.action).then(function (handlerResource) {
             if (handlerResource in self.data) {
                 node = api.intents.FSM.transition(node, {
@@ -455,6 +475,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                         }
                     }
                 });
+                updateInvoker(self, node);
                 return self.handleInflightIntentState(node);
             } else {
                 return showChooser();
@@ -479,6 +500,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         packet.replyTo = handlerNode.entity.replyTo;
         packet.entity.inFlightIntent = node.toPacket();
         log.debug(this.logPrefix + &quot;delivering intent:&quot;, packet);
+        updateInvoker(this, node);
         // TODO: packet permissions
         return this.send(packet);
     };
@@ -500,6 +522,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 response: &quot;complete&quot;,
                 entity: node.entity.reply.entity
             });
+            updateInvoker(this, node);
         }
         node.markAsDeleted();
     };
