@@ -55,7 +55,7 @@ var intents = client.intents();
 | parameter | type   | description                                                                                                                                                            |
 |-----------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | resource  | String | A string path-name used as a key for the value. As explained in the [Intents Explained](10_intentInit.html) tutorial, intent registrations use a `/{Type}/{Sub-type/{Action}/{Handler}` format. If the `/{Handler}` portion is not provided the IWC will auto-generate a handler Id.                                |
-| options   | Object | An object of options for the action. More options are covered in later tutorials, for now we will focus on the`config.entity` option, which is metadata for the intent. |
+| options   | Object | (Optional) An object of options for the action. More options are covered in later tutorials, for now we will focus on the`config.entity` option, which is metadata for the intent. |
 | callback  | Function| The function to call with the type/sub-type matching data.
 
 #####Options.entity 
@@ -82,9 +82,14 @@ A promise that resolves with a response object upon handling of the request:
 
 
 ####Callback
-The callback expects 1 parameter: `reply`, which contains various information about an intent. For the introductory
-purposes of intent registrations, only `reply.entity` is covered here, other properties will be covered for more 
-advanced intents in a later tutorial.
+The callback receives 2 parameters:
+ 1. `reply`: contains various information about an intent. For the introductory purposes of intent registrations, only 
+ `reply.entity` is covered here, other properties will be covered for more advanced intents in a later tutorial. 
+ 2. `done`: A function to call to stop handling intent requests. Useful for conditionally stopping intent handling.
+
+**The return value of the callback is returned to the intent invoker.** This means when developing an application, if
+there is some complex computation an application can do that other applications may also need (complex sorting for example),
+returning the value of the intent handling means other applications can leverage the functionality.
 
 | property | type   | description                                                                                                                      |
 |----------|--------|----------------------------------------------------------------------------------------------------------------------------------|
@@ -95,8 +100,9 @@ advanced intents in a later tutorial.
  
 ***
  
-## Invoke: calling a shared function
+## Invoking: calling an intent function
+Invoking an intent function across the IWC is done with the `invoke` action. It is covered in its own [tutorial](12_intentInvoking.html).
+For purpose of seeing the above code snippet work, click the button on the example below.
  
-#### TODO: code pen of sample invoke to trigger above register below:
 <p data-height="245" data-theme-id="0" data-slug-hash="LGEyQV" data-default-tab="result" data-user="Kevin-K" class='codepen'>
  
