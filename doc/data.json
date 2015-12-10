@@ -2,7 +2,7 @@
     "project": {
         "name": "ozpIwc",
         "description": "",
-        "version": "1.1.13",
+        "version": "1.1.14",
         "url": ""
     },
     "files": {
@@ -6981,6 +6981,31 @@
         {
             "file": "src/js/bus/api/services/intents/api.js",
             "line": 94,
+            "description": "Notifies the invoker when the state of the in flight intent changes.",
+            "itemtype": "method",
+            "name": "updateInvoker",
+            "static": 1,
+            "access": "private",
+            "tagname": "",
+            "params": [
+                {
+                    "name": "api",
+                    "description": "",
+                    "type": "ozpIwc.api.intents.Api"
+                },
+                {
+                    "name": "node",
+                    "description": ""
+                }
+            ],
+            "class": "ozpIwc.api.intents.Api",
+            "module": "ozpIwc.api",
+            "submodule": "ozpIwc.api.intents",
+            "namespace": "ozpIwc.api.intents"
+        },
+        {
+            "file": "src/js/bus/api/services/intents/api.js",
+            "line": 118,
             "description": "A handler for invoke calls. Creates an inFlight-intent node and kicks off the inflight state machine.",
             "itemtype": "method",
             "name": "invokeIntentHandler",
@@ -7022,7 +7047,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/api.js",
-            "line": 130,
+            "line": 147,
             "description": "Handles the current state of the state machine.\nIf \"choosing\", the intent chooser will open.\nIf \"delivering\", the api will send the intent to the chosen handler\nIf \"complete\", the api will send the intent handler's reply back to the invoker and mark the inflight intent as\ndeleted.",
             "params": [
                 {
@@ -7042,7 +7067,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/api.js",
-            "line": 155,
+            "line": 173,
             "description": "A handler for the \"choosing\" state of an in-flight intent node.",
             "itemtype": "method",
             "name": "handleChoosing",
@@ -7063,7 +7088,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/api.js",
-            "line": 267,
+            "line": 288,
             "description": "A handler for the \"delivering\" state of an in-flight intent node.\nSends a packet to the chosen handler.",
             "todo": [
                 "should resolve on response from the handler that transitions the node to \"running\"."
@@ -7084,7 +7109,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/api.js",
-            "line": 288,
+            "line": 310,
             "description": "A handler for the \"complete\" state of an in-flight intent node.\nSends notification to the invoker that the intent was handled & deletes the in-flight intent node as it is no\nlonger needed.",
             "itemtype": "method",
             "name": "handleComplete",
@@ -7338,7 +7363,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/routes.js",
-            "line": 216,
+            "line": 217,
             "description": "Registration handler when a handlerId is specified",
             "class": "ozpIwc.api.intents.Api",
             "module": "ozpIwc.api",
@@ -14512,7 +14537,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 493,
+            "line": 503,
             "description": "Calls the specific api wrapper given an api name specified.\nIf the wrapper does not exist it is created.",
             "itemtype": "method",
             "name": "api",
@@ -14534,7 +14559,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 504,
+            "line": 514,
             "description": "Updates the wrapper map for api use. Whenever functionality is added or removed from the apiMap the\nupdateApi must be called to reflect said changes on the wrapper map.",
             "itemtype": "method",
             "name": "updateApi",
@@ -14556,7 +14581,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 514,
+            "line": 524,
             "description": "Function generator. Generates API functions given a messageBuilder function.",
             "itemtype": "method",
             "name": "augment",
@@ -14581,7 +14606,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 540,
+            "line": 564,
             "description": "Function generator. Generates API message formatting functions for a client-destination-action\npairing. These are generated for bulk sending capabilities, since the message needs to be formatted\nbut not transmitted until desired.",
             "itemtype": "method",
             "name": "messageBuilderAugment",
@@ -14610,7 +14635,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 586,
+            "line": 610,
             "description": "All message formatting calls sits inside the API wrapper's messageBuilder object. These\ncalls will return a formatted message ready to be sent.\n(e.g: data().messageBuilder.set)",
             "class": "ozpIwc.util.ApiPromiseMixin",
             "module": "ozpIwc",
@@ -14619,7 +14644,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 606,
+            "line": 630,
             "description": "All function calls are on the root level of the API wrapper. These calls will format messages and\nthen send them to the router.\n(e.g: data().set)",
             "class": "ozpIwc.util.ApiPromiseMixin",
             "module": "ozpIwc",
@@ -14628,7 +14653,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 618,
+            "line": 642,
             "description": "Iterate over all mapped function calls and augment their message formatter and function call.",
             "class": "ozpIwc.util.ApiPromiseMixin",
             "module": "ozpIwc",
@@ -14637,7 +14662,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 633,
+            "line": 657,
             "description": "Applies necessary properties to the packet to be transmitted through the router.",
             "itemtype": "method",
             "name": "fixPacket",
@@ -14659,7 +14684,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 659,
+            "line": 683,
             "description": "Registers callbacks for API request callbacks and promises.",
             "itemtype": "property",
             "name": "packet",
@@ -14688,7 +14713,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 714,
+            "line": 740,
             "description": "Sends a packet through the IWC.\nWill call the participants sendImpl function.",
             "itemtype": "method",
             "name": "send",
@@ -14721,7 +14746,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 760,
+            "line": 786,
             "description": "Generic handler for a bus connection to handle any queued messages & launch data after its connected.",
             "itemtype": "method",
             "name": "afterConnected",
@@ -14736,7 +14761,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 811,
+            "line": 837,
             "description": "Handles packets received with a destination of \"$bus.multicast\".\nIf the packet action isn't handled, the function will return falsy.",
             "itemtype": "method",
             "name": "handleBusPacket",
@@ -16915,7 +16940,7 @@
         },
         {
             "message": "Missing item type\nHandles the current state of the state machine.\nIf \"choosing\", the intent chooser will open.\nIf \"delivering\", the api will send the intent to the chosen handler\nIf \"complete\", the api will send the intent handler's reply back to the invoker and mark the inflight intent as\ndeleted.",
-            "line": " src/js/bus/api/services/intents/api.js:130"
+            "line": " src/js/bus/api/services/intents/api.js:147"
         },
         {
             "message": "Missing item type\nA route for intent action invocations.\nWill launch direct for user input if multiple options.",
@@ -16923,7 +16948,7 @@
         },
         {
             "message": "Missing item type\nRegistration handler when a handlerId is specified",
-            "line": " src/js/bus/api/services/intents/routes.js:216"
+            "line": " src/js/bus/api/services/intents/routes.js:217"
         },
         {
             "message": "Missing item type\nA static method for gathering the uri template of an endpoint name in the EndpointRegistry",
@@ -16971,15 +16996,15 @@
         },
         {
             "message": "Missing item type\nAll message formatting calls sits inside the API wrapper's messageBuilder object. These\ncalls will return a formatted message ready to be sent.\n(e.g: data().messageBuilder.set)",
-            "line": " src/js/common/apiPromiseMixin.js:586"
+            "line": " src/js/common/apiPromiseMixin.js:610"
         },
         {
             "message": "Missing item type\nAll function calls are on the root level of the API wrapper. These calls will format messages and\nthen send them to the router.\n(e.g: data().set)",
-            "line": " src/js/common/apiPromiseMixin.js:606"
+            "line": " src/js/common/apiPromiseMixin.js:630"
         },
         {
             "message": "Missing item type\nIterate over all mapped function calls and augment their message formatter and function call.",
-            "line": " src/js/common/apiPromiseMixin.js:618"
+            "line": " src/js/common/apiPromiseMixin.js:642"
         },
         {
             "message": "Missing item type\nThe default scope of the router.",

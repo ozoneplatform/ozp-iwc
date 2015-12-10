@@ -3687,17 +3687,17 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 if (!handled && packet.replyTo && this.registeredCallbacks[packet.replyTo]) {
 
                     var registeredCancel = false;
+                    var self = this;
                     var registeredDone = function () {
                         registeredCancel = true;
+
+                        if (self.watchMsgMap[packet.replyTo] && self.watchMsgMap[packet.replyTo].action === "watch") {
+                            self.api(self.watchMsgMap[packet.replyTo].dst).unwatch(self.watchMsgMap[packet.replyTo].resource);
+                        }
+                        self.cancelRegisteredCallback(packet.replyTo);
                     };
 
                     handled = this.registeredCallbacks[packet.replyTo](packet, registeredDone);
-                    if (registeredCancel) {
-                        if (this.watchMsgMap[packet.replyTo] && this.watchMsgMap[packet.replyTo].action === "watch") {
-                            this.api(this.watchMsgMap[packet.replyTo].dst).unwatch(this.watchMsgMap[packet.replyTo].resource);
-                        }
-                        this.cancelRegisteredCallback(packet.replyTo);
-                    }
                 }
                 if (!handled) {
                     //Drop own packets
@@ -3879,6 +3879,10 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 }
                 return promiseChain.then(function (inFlightIntentRes) {
                     res = inFlightIntentRes;
+                    if (res.entity.invokePacket.msgId === packet.msgId) {
+                        callback(packet);
+                        return Promise.reject("ownInvoke");
+                    }
                     return self.send({
                         dst: "intents.api",
                         contentType: res.contentType,
@@ -3889,6 +3893,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                                 resource: packet.resource,
                                 address: self.address
                             },
+                            me: Date.now(),
                             state: "running"
                         }
                     });
@@ -3916,7 +3921,12 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         }
                     });
                 })['catch'](function (e) {
-                    log.error("Error in handling intent: ", e, " -- Reporting error on in-flight intent node:",
+                    if (e === "ownInvoke") {
+                        //Filter out own invocations (this occurs when watching an invoke state).
+                        return;
+                    }
+
+                    console.error("Error in handling intent: ", e, " -- Reporting error on in-flight intent node:",
                         res.resource);
                     // Respond to the inflight resource
                     return self.send({
@@ -3969,13 +3979,27 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         var packet = message.packet;
 
 
-                        if (packet.dst === "intents.api" && packet.action === "register") {
-                            for (var i in client.launchedIntents) {
-                                var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
-                                if (resource === loadedResource) {
-                                    client.intentInvocationHandling(packet, client.launchedIntents[i], message.callback);
-                                    delete client.launchedIntents[i];
+                        if (packet.dst === "intents.api") {
+                            if (packet.action === "register") {
+                                for (var i in client.launchedIntents) {
+                                    var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
+                                    if (resource === loadedResource) {
+                                        client.intentInvocationHandling(packet, client.launchedIntents[i], message.callback);
+                                        delete client.launchedIntents[i];
+                                    }
                                 }
+                            } else if (packet.action === "invoke") {
+                                var wrappedCallback = message.callback;
+
+                                // Wrap the callback to make sure it is removed when the intent state machine stops.
+                                message.callback = function (reply, done) {
+                                    wrappedCallback(reply, done);
+                                    reply = reply || {};
+                                    reply.entity = reply.entity || {};
+                                    if (reply.entity.state === "error" || reply.entity.state === "complete") {
+                                        done();
+                                    }
+                                };
                             }
                         }
                         return client.send(packet, message.callback);
@@ -4132,7 +4156,9 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 //respondOn "all", "error", or no value (default all) will register a promise callback.
                 if (packet.respondOn !== "none") {
                     this.promiseCallbacks[packet.msgId] = function (reply, done) {
-                        if (reply.src === "$transport" || /(ok).*/.test(reply.response)) {
+                        if (reply.src === "intents.api" && packet.action === "invoke" && /(ok).*/.test(reply.response)) {
+                            // dont sent the response to the promise
+                        } else if (reply.src === "$transport" || /(ok).*/.test(reply.response) || /(complete).*/.test(reply.response)) {
                             done();
                             promiseRes(reply);
                         } else if (/(bad|no).*/.test(reply.response)) {
