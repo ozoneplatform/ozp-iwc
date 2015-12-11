@@ -322,6 +322,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 replyTo: node.entity.invokePacket.msgId,
                 contentType: node.entity.reply.contentType,
                 response: "complete",
+                resource: node.entity.handler.resource,
                 entity: node.entity.reply.entity
             });
             updateInvoker(this, node);

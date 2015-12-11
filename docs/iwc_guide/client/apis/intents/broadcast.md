@@ -24,9 +24,34 @@ var payload = {
 };
 
 intentsApi.broadcast("/application/view/json",{ entity: payload}).then(function(res){
-    // resolves when the intent API receives the request.
+    // resolves when all of the handlers have handled the intent request.
 });
 ```
+
+Additionally, a callback can be added as a 3rd parameter to watch the status of the intent. **The callback acts just
+as it does for the invoke action, except status updates are received for every handler.**
+
+The callback receives 2 parameters:
+ 1. `reply`: contains various information about an intent. For the introductory purposes of intent registrations, only 
+ `reply.entity` is covered here, other properties will be covered for more advanced intents in a later tutorial. 
+ 2. `done`: A function to call to stop handling intent requests. Useful for conditionally stopping intent handling.
+
+| property | type   | description                                |
+|----------|--------|--------------------------------------------|
+| entity   | Object | Data pertaining to the state of the intent.|
+| entity.handler| Object| Data pertaining to the IWC client handling the request.|
+| entity.handler.address| String| The address of the handling IWC client.|
+| entity.handler.reason| String| The reason for this handler being used("onlyOne", "userSelected", or "remembered"|
+| entity.handler.resource| String| The resource path of the handler function.|
+| entity.request| * | The data passed to the IWC in the invoke request.|
+| entity.response | * | The data returned from the handler when finished computing (only available if state is "complete").|
+| entity.state | String | The state of the intent handling explained in table below.|
+| entity.status | String | Will be "ok" if this callback is reachable (internal use).|
+
+
+The broadcast promise resolves with a formatted entity of handler responses. The overall format of `res` above matches
+that of any other IWC message packet, but `res.entity` contains a map of results, where the **key is the handler 
+resource name** and the **value is the result returned by the handler's function**.
 
 ***
 

@@ -181,7 +181,7 @@ ozpIwc.api.intents.Api = (function (api, IntentsApi, log) {
         }
 
         return {
-            response: "ok",
+            response: "pending",
             entity: {
                 handlers: context.node.collection
             }

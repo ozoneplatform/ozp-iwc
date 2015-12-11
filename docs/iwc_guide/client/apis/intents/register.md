@@ -31,7 +31,7 @@ var config = {
 
 var onInvoke = function(event) {
     var payload = event.entity;
-    someWidgetFunction(payload);
+    return someWidgetFunction(payload); 
 };
 
 intentsApi.register("/application/json/view", config, onInvoke);
@@ -63,3 +63,7 @@ delete said node:
 ```
 intentsApi.delete("/application/json/view/3228d7e2");
 ```
+
+###Responding to the invoker
+The callback registered with the `register` action can return any serialized value (stirng,number,bool,object). The
+value that is returned will be sent back to the IWC client that called `invoke`.
