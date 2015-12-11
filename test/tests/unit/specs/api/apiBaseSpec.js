@@ -377,6 +377,162 @@ describe("Base Api request handling", function () {
         });
 
     });
+
+    describe("action watch on a non-existent resource with collect", function () {
+        var watchContext;
+        beforeEach(function () {
+            watchContext = testPacket({
+                src: "unitTest",
+                msgId: "i:100",
+                action: "watch",
+                resource: "/does-not-exist",
+                collect: true
+            });
+        });
+        afterEach(function () {
+            watchContext = null;
+        });
+
+        it("creates & returns the current value & collection ", function () {
+            apiBase.receivePacketContext(watchContext);
+            expect(watchContext.responses.length).toEqual(1);
+            expect(watchContext.responses[0].response).toEqual("ok");
+            expect(watchContext.responses[0].entity).toBeUndefined();
+            expect(watchContext.responses[0].collection).toEqual([]);
+        });
+
+        it("updates the new resource when resources match its collection", function () {
+            apiBase.receivePacketContext(watchContext);
+            var context = testPacket({
+                resource: "/does-not-exist/1",
+                action: "set",
+                msgId: "i:50"
+            });
+            apiBase.receivePacketContext(watchContext);
+            apiBase.receivePacketContext(context);
+            expect(apiBase.participant).toHaveSent({
+                resource: "/does-not-exist",
+                dst: "unitTest",
+                replyTo: "i:100",
+                entity: {
+                    newValue: undefined,
+                    oldValue: undefined,
+                    newCollection: ['/does-not-exist/1'],
+                    oldCollection: [],
+                    deleted: false
+                }
+            });
+        });
+
+        it("can watch a specific pattern", function(){
+            watchContext = testPacket({
+                src: "unitTest",
+                msgId: "i:100",
+                action: "watch",
+                resource: "/does-not-exist",
+                collect: true,
+                pattern: "/foo/"
+            });
+            apiBase.receivePacketContext(watchContext);
+            expect(watchContext.responses.length).toEqual(1);
+            expect(watchContext.responses[0].response).toEqual("ok");
+            expect(watchContext.responses[0].entity).toEqual(undefined);
+            expect(watchContext.responses[0].collection).toEqual(['/foo/1', '/foo/2']);
+        });
+
+        it("can change it's collect pattern", function(){
+            watchContext = testPacket({
+                src: "unitTest",
+                msgId: "i:100",
+                action: "watch",
+                resource: "/does-not-exist",
+                collect: true,
+                pattern: "/foo/"
+            });
+            apiBase.receivePacketContext(watchContext);
+            expect(watchContext.responses.length).toEqual(1);
+            expect(watchContext.responses[0].response).toEqual("ok");
+            expect(watchContext.responses[0].entity).toEqual(undefined);
+            expect(watchContext.responses[0].collection).toEqual(['/foo/1', '/foo/2']);
+
+           var updatedwatchContext = testPacket({
+                src: "unitTest",
+                msgId: "i:105",
+                action: "watch",
+                resource: "/does-not-exist",
+                collect: true,
+                pattern: "/foo"
+            });
+            apiBase.receivePacketContext(updatedwatchContext);
+            expect(updatedwatchContext.responses.length).toEqual(1);
+            expect(updatedwatchContext.responses[0].response).toEqual("ok");
+            expect(updatedwatchContext.responses[0].entity).toEqual(undefined);
+            expect(updatedwatchContext.responses[0].collection).toEqual(['/foo','/foo/1', '/foo/2']);
+            expect(apiBase.participant).toHaveSent({
+                resource: "/does-not-exist",
+                dst: "unitTest",
+                replyTo: "i:100",
+                entity: {
+                    newValue: undefined,
+                    oldValue: undefined,
+                    newCollection: ['/foo','/foo/1', '/foo/2'],
+                    oldCollection: ['/foo/1', '/foo/2'],
+                    deleted: false
+                }
+            });
+        });
+
+    });
+
+
+    describe("action watch on an existent resource with collect", function () {
+        var watchContext;
+        beforeEach(function () {
+            watchContext = testPacket({
+                src: "unitTest",
+                msgId: "i:100",
+                action: "watch",
+                resource: "/foo",
+                collect: true
+            });
+        });
+        afterEach(function () {
+            watchContext = null;
+        });
+
+        it("returns the current value & collection ", function () {
+            apiBase.receivePacketContext(watchContext);
+            expect(watchContext.responses.length).toEqual(1);
+            expect(watchContext.responses[0].response).toEqual("ok");
+            expect(watchContext.responses[0].contentType).toEqual("text/plain");
+            expect(watchContext.responses[0].entity).toEqual("hello world");
+            expect(watchContext.responses[0].collection).toEqual(['/foo/1', '/foo/2']);
+        });
+        it("broadcasts to watchers when collection data was added to the node", function () {
+            var context = testPacket({
+                resource: "/foo",
+                action: "watch",
+                msgId: "i:50"
+            });
+            apiBase.receivePacketContext(context);
+            console.log("Sending set packet");
+            apiBase.receivePacketContext(watchContext);
+            console.log("Checking for change packet");
+            expect(apiBase.participant).toHaveSent({
+                resource: "/foo",
+                dst: "unitTest",
+                replyTo: "i:50",
+                entity: {
+                    newValue: "hello world",
+                    oldValue: "hello world",
+                    newCollection: ['/foo/1', '/foo/2'],
+                    oldCollection: [],
+                    deleted: false
+                }
+            });
+        });
+
+    });
 //=====================================================================
 // Basic Actions: unWatch
 //=====================================================================
