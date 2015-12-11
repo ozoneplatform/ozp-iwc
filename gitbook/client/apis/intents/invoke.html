@@ -34,7 +34,7 @@
 
 
         
-    <div class="book" data-level="1.4.2" data-basepath="../../.." data-revision="1449778355627">
+    <div class="book" data-level="1.4.2" data-basepath="../../.." data-revision="1449853826056">
     
 
 <div class="book-summary">
@@ -1045,9 +1045,72 @@ var payload = {
 };
 
 intentsApi.invoke(&quot;/application/view/json&quot;,{ entity: payload}).then(function(res){
-    // resolves when the intent API receives the request.
+    // resolves when the intent was handled.
 });
-</code></pre><hr>
+</code></pre><p>Additionally, a callback can be added as a 3rd parameter to watch the status of the intent.</p>
+<p>The callback receives 2 parameters:</p>
+<ol>
+<li><code>reply</code>: contains various information about an intent. For the introductory purposes of intent registrations, only 
+<code>reply.entity</code> is covered here, other properties will be covered for more advanced intents in a later tutorial. </li>
+<li><code>done</code>: A function to call to stop handling intent requests. Useful for conditionally stopping intent handling.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>entity</td>
+<td>Object</td>
+<td>Data pertaining to the state of the intent.</td>
+</tr>
+<tr>
+<td>entity.handler</td>
+<td>Object</td>
+<td>Data pertaining to the IWC client handling the request.</td>
+</tr>
+<tr>
+<td>entity.handler.address</td>
+<td>String</td>
+<td>The address of the handling IWC client.</td>
+</tr>
+<tr>
+<td>entity.handler.reason</td>
+<td>String</td>
+<td>The reason for this handler being used(&quot;onlyOne&quot;, &quot;userSelected&quot;, or &quot;remembered&quot;</td>
+</tr>
+<tr>
+<td>entity.handler.resource</td>
+<td>String</td>
+<td>The resource path of the handler function.</td>
+</tr>
+<tr>
+<td>entity.request</td>
+<td>*</td>
+<td>The data passed to the IWC in the invoke request.</td>
+</tr>
+<tr>
+<td>entity.response</td>
+<td>*</td>
+<td>The data returned from the handler when finished computing (only available if state is &quot;complete&quot;).</td>
+</tr>
+<tr>
+<td>entity.state</td>
+<td>String</td>
+<td>The state of the intent handling explained in table below.</td>
+</tr>
+<tr>
+<td>entity.status</td>
+<td>String</td>
+<td>Will be &quot;ok&quot; if this callback is reachable (internal use).</td>
+</tr>
+</tbody>
+</table>
+<hr>
 <h3 id="what-if-there-are-no-handlers">What if there are no handlers?</h3>
 <p>If there are no handlers open for the desired intent invocation, the invoke promise will reject with a response of 
 &quot;noResource&quot;. At current state of the platform, launching a registered application to handle an intent invocation has

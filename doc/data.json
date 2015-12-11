@@ -2,7 +2,7 @@
     "project": {
         "name": "ozpIwc",
         "description": "",
-        "version": "1.1.14",
+        "version": "1.1.15",
         "url": ""
     },
     "files": {
@@ -14582,6 +14582,103 @@
         {
             "file": "src/js/common/apiPromiseMixin.js",
             "line": 524,
+            "description": "Augmentation for Intents Api register. Automatically invokes a registration if the invoke was passed\ninto the application opening.",
+            "itemtype": "method",
+            "name": "intentRegisterAugment",
+            "access": "private",
+            "tagname": "",
+            "static": 1,
+            "params": [
+                {
+                    "name": "client",
+                    "description": ""
+                },
+                {
+                    "name": "message",
+                    "description": ""
+                }
+            ],
+            "class": "ozpIwc.util.ApiPromiseMixin",
+            "module": "ozpIwc",
+            "submodule": "ozpIwc.util",
+            "namespace": "ozpIwc.util"
+        },
+        {
+            "file": "src/js/common/apiPromiseMixin.js",
+            "line": 543,
+            "description": "Augmentation for Intents Api invoke. Wraps callback to remove the callback when reaching\nerror/complete state.",
+            "itemtype": "method",
+            "name": "intentRegisterAugment",
+            "access": "private",
+            "tagname": "",
+            "static": 1,
+            "params": [
+                {
+                    "name": "client",
+                    "description": ""
+                },
+                {
+                    "name": "message",
+                    "description": ""
+                }
+            ],
+            "class": "ozpIwc.util.ApiPromiseMixin",
+            "module": "ozpIwc",
+            "submodule": "ozpIwc.util",
+            "namespace": "ozpIwc.util"
+        },
+        {
+            "file": "src/js/common/apiPromiseMixin.js",
+            "line": 567,
+            "description": "Augmentation for Intents Api broadcast. Compiles the results of all intent handlers and then,\nreturns the responfixese in the promise resolution. Callback acts like invoke callback.",
+            "itemtype": "method",
+            "name": "intentRegisterAugment",
+            "access": "private",
+            "tagname": "",
+            "static": 1,
+            "params": [
+                {
+                    "name": "client",
+                    "description": ""
+                },
+                {
+                    "name": "message",
+                    "description": ""
+                }
+            ],
+            "class": "ozpIwc.util.ApiPromiseMixin",
+            "module": "ozpIwc",
+            "submodule": "ozpIwc.util",
+            "namespace": "ozpIwc.util"
+        },
+        {
+            "file": "src/js/common/apiPromiseMixin.js",
+            "line": 613,
+            "description": "Augmenters for Intent Api specific actions.",
+            "itemtype": "method",
+            "name": "intentAugment",
+            "access": "private",
+            "tagname": "",
+            "static": 1,
+            "params": [
+                {
+                    "name": "client",
+                    "description": ""
+                },
+                {
+                    "name": "message",
+                    "description": "",
+                    "type": "Object"
+                }
+            ],
+            "class": "ozpIwc.util.ApiPromiseMixin",
+            "module": "ozpIwc",
+            "submodule": "ozpIwc.util",
+            "namespace": "ozpIwc.util"
+        },
+        {
+            "file": "src/js/common/apiPromiseMixin.js",
+            "line": 636,
             "description": "Function generator. Generates API functions given a messageBuilder function.",
             "itemtype": "method",
             "name": "augment",
@@ -14606,7 +14703,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 564,
+            "line": 655,
             "description": "Function generator. Generates API message formatting functions for a client-destination-action\npairing. These are generated for bulk sending capabilities, since the message needs to be formatted\nbut not transmitted until desired.",
             "itemtype": "method",
             "name": "messageBuilderAugment",
@@ -14635,7 +14732,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 610,
+            "line": 701,
             "description": "All message formatting calls sits inside the API wrapper's messageBuilder object. These\ncalls will return a formatted message ready to be sent.\n(e.g: data().messageBuilder.set)",
             "class": "ozpIwc.util.ApiPromiseMixin",
             "module": "ozpIwc",
@@ -14644,7 +14741,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 630,
+            "line": 721,
             "description": "All function calls are on the root level of the API wrapper. These calls will format messages and\nthen send them to the router.\n(e.g: data().set)",
             "class": "ozpIwc.util.ApiPromiseMixin",
             "module": "ozpIwc",
@@ -14653,7 +14750,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 642,
+            "line": 733,
             "description": "Iterate over all mapped function calls and augment their message formatter and function call.",
             "class": "ozpIwc.util.ApiPromiseMixin",
             "module": "ozpIwc",
@@ -14662,7 +14759,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 657,
+            "line": 748,
             "description": "Applies necessary properties to the packet to be transmitted through the router.",
             "itemtype": "method",
             "name": "fixPacket",
@@ -14684,7 +14781,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 683,
+            "line": 774,
             "description": "Registers callbacks for API request callbacks and promises.",
             "itemtype": "property",
             "name": "packet",
@@ -14713,7 +14810,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 740,
+            "line": 842,
             "description": "Sends a packet through the IWC.\nWill call the participants sendImpl function.",
             "itemtype": "method",
             "name": "send",
@@ -14746,7 +14843,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 786,
+            "line": 888,
             "description": "Generic handler for a bus connection to handle any queued messages & launch data after its connected.",
             "itemtype": "method",
             "name": "afterConnected",
@@ -14761,7 +14858,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 837,
+            "line": 939,
             "description": "Handles packets received with a destination of \"$bus.multicast\".\nIf the packet action isn't handled, the function will return falsy.",
             "itemtype": "method",
             "name": "handleBusPacket",
@@ -16996,15 +17093,15 @@
         },
         {
             "message": "Missing item type\nAll message formatting calls sits inside the API wrapper's messageBuilder object. These\ncalls will return a formatted message ready to be sent.\n(e.g: data().messageBuilder.set)",
-            "line": " src/js/common/apiPromiseMixin.js:610"
+            "line": " src/js/common/apiPromiseMixin.js:701"
         },
         {
             "message": "Missing item type\nAll function calls are on the root level of the API wrapper. These calls will format messages and\nthen send them to the router.\n(e.g: data().set)",
-            "line": " src/js/common/apiPromiseMixin.js:630"
+            "line": " src/js/common/apiPromiseMixin.js:721"
         },
         {
             "message": "Missing item type\nIterate over all mapped function calls and augment their message formatter and function call.",
-            "line": " src/js/common/apiPromiseMixin.js:642"
+            "line": " src/js/common/apiPromiseMixin.js:733"
         },
         {
             "message": "Missing item type\nThe default scope of the router.",

@@ -34,7 +34,7 @@
 
 
         
-    <div class="book" data-level="1.4.1" data-basepath="../../.." data-revision="1449778355627">
+    <div class="book" data-level="1.4.1" data-basepath="../../.." data-revision="1449853826056">
     
 
 <div class="book-summary">
@@ -1053,7 +1053,7 @@ var config = {
 
 var onInvoke = function(event) {
     var payload = event.entity;
-    someWidgetFunction(payload);
+    return someWidgetFunction(payload); 
 };
 
 intentsApi.register(&quot;/application/json/view&quot;, config, onInvoke);
@@ -1077,7 +1077,10 @@ handler Id given will be used. </p>
 </code></pre><p>The <code>entity.resource</code> property of the response is the node that was used for the handler. To unregister simply
 delete said node:</p>
 <pre><code>intentsApi.delete(&quot;/application/json/view/3228d7e2&quot;);
-</code></pre>
+</code></pre><h3 id="responding-to-the-invoker">Responding to the invoker</h3>
+<p>The callback registered with the <code>register</code> action can return any serialized value (stirng,number,bool,object). The
+value that is returned will be sent back to the IWC client that called <code>invoke</code>.</p>
+
                     
                     </section>
                 

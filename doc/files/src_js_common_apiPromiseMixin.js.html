@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.14</em>
+            <em>API Docs for: 1.1.15</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -720,6 +720,118 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
             updateApi: function (apiName) {
 
                 /**
+                 * Augmentation for Intents Api register. Automatically invokes a registration if the invoke was passed
+                 * into the application opening.
+                 * @method intentRegisterAugment
+                 * @private
+                 * @static
+                 * @param client
+                 * @param message
+                 */
+                var intentRegisterAugment = function (client, message) {
+                    for (var i in client.launchedIntents) {
+                        var loadedResource = &#x27;/&#x27; + client.launchedIntents[i].entity.intent.type + &#x27;/&#x27; + client.launchedIntents[i].entity.intent.action;
+                        if (message.packet.resource === loadedResource) {
+                            client.intentInvocationHandling(message.packet, client.launchedIntents[i], message.callback);
+                            delete client.launchedIntents[i];
+                        }
+                    }
+                };
+
+                /**
+                 * Augmentation for Intents Api invoke. Wraps callback to remove the callback when reaching
+                 * error/complete state.
+                 * @method intentRegisterAugment
+                 * @private
+                 * @static
+                 * @param client
+                 * @param message
+                 */
+                var intentInvokeAugment = function (message) {
+                    if (message.callback) {
+                        var wrappedCallback = message.callback;
+                        // Wrap the callback to make sure it is removed when the intent state machine stops.
+                        message.callback = function (reply, done) {
+                            wrappedCallback(reply, done);
+                            reply = reply || {};
+                            reply.entity = reply.entity || {};
+                            if (reply.entity.state === &quot;error&quot; || reply.entity.state === &quot;complete&quot;) {
+                                done();
+                            }
+                        };
+                    }
+                };
+
+                /**
+                 * Augmentation for Intents Api broadcast. Compiles the results of all intent handlers and then,
+                 * returns the responfixese in the promise resolution. Callback acts like invoke callback.
+                 * @method intentRegisterAugment
+                 * @private
+                 * @static
+                 * @param client
+                 * @param message
+                 */
+                var intentBroadcastAugment = function (client, message) {
+                    var broadcastWrappedCallback = message.callback || function () {};
+                    var registeredCallbacks = client.registeredCallbacks;
+
+                    // Wrap the callback to filter out all of the &quot;complete&quot; messages from each handler sent
+                    // intended for a promise resolution. Also store all results for the promise resolution.
+                    message.callback = function (reply, done) {
+                        if (!registeredCallbacks[reply.replyTo]) {
+                            return;
+                        }
+                        var callback = registeredCallbacks[reply.replyTo];
+                        var handlers = callback.handlers;
+                        var attemptResolve = function (resource) {
+                            var handlerIndex = handlers.indexOf(resource);
+                            if (handlerIndex &gt; -1) {
+                                handlers.splice(handlerIndex, 1);
+                            }
+                            if (handlers.length === 0) {
+                                callback.reply.entity = callback.results;
+                                callback.reply.response = &quot;complete&quot;;
+                                callback.pRes(callback.reply);
+                                done();
+                            }
+                        };
+                        if (reply.response === &quot;complete&quot;) {
+                            callback.results = callback.results || {};
+                            callback.results[reply.resource] = reply.entity;
+                            attemptResolve(reply.resource);
+
+                        } else if (reply.entity &amp;&amp; reply.entity.state === &quot;error&quot; &amp;&amp; client.registeredCallbacks[reply.replyTo]) {
+                            attemptResolve(reply.entity.handler.resource);
+                        } else {
+                            broadcastWrappedCallback(reply, done);
+                        }
+                    };
+                };
+
+                /**
+                 * Augmenters for Intent Api specific actions.
+                 * @method intentAugment
+                 * @private
+                 * @static
+                 * @param client
+                 * @param message {Object}
+                 */
+                var intentAugment = function (client, message) {
+                    switch (message.packet.action) {
+                        case &quot;register&quot;:
+                            intentRegisterAugment(client, message);
+                            break;
+                        case &quot;invoke&quot;:
+                            intentInvokeAugment(message);
+                            break;
+                        case &quot;broadcast&quot;:
+                            intentBroadcastAugment(client, message);
+                            break;
+
+                    }
+                };
+
+                /**
                  * Function generator. Generates API functions given a messageBuilder function.
                  * @method augment
                  * @param messageBuilder
@@ -729,33 +841,12 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 var augment = function (messageBuilder, client) {
                     return function (resource, fragment, otherCallback) {
                         var message = messageBuilder(resource, fragment, otherCallback);
-                        var packet = message.packet;
 
 
-                        if (packet.dst === &quot;intents.api&quot;) {
-                            if (packet.action === &quot;register&quot;) {
-                                for (var i in client.launchedIntents) {
-                                    var loadedResource = &#x27;/&#x27; + client.launchedIntents[i].entity.intent.type + &#x27;/&#x27; + client.launchedIntents[i].entity.intent.action;
-                                    if (resource === loadedResource) {
-                                        client.intentInvocationHandling(packet, client.launchedIntents[i], message.callback);
-                                        delete client.launchedIntents[i];
-                                    }
-                                }
-                            } else if (packet.action === &quot;invoke&quot;) {
-                                var wrappedCallback = message.callback;
-
-                                // Wrap the callback to make sure it is removed when the intent state machine stops.
-                                message.callback = function (reply, done) {
-                                    wrappedCallback(reply, done);
-                                    reply = reply || {};
-                                    reply.entity = reply.entity || {};
-                                    if (reply.entity.state === &quot;error&quot; || reply.entity.state === &quot;complete&quot;) {
-                                        done();
-                                    }
-                                };
-                            }
+                        if (message.packet.dst === &quot;intents.api&quot;) {
+                            intentAugment(client, message);
                         }
-                        return client.send(packet, message.callback);
+                        return client.send(message.packet, message.callback);
                     };
                 };
 
@@ -909,8 +1000,19 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 //respondOn &quot;all&quot;, &quot;error&quot;, or no value (default all) will register a promise callback.
                 if (packet.respondOn !== &quot;none&quot;) {
                     this.promiseCallbacks[packet.msgId] = function (reply, done) {
-                        if (reply.src === &quot;intents.api&quot; &amp;&amp; packet.action === &quot;invoke&quot; &amp;&amp; /(ok).*/.test(reply.response)) {
+                        if (reply.src === &quot;intents.api&quot; &amp;&amp;
+                            (packet.action === &quot;invoke&quot; &amp;&amp; /(ok).*/.test(reply.response)) ||
+                            (packet.action === &quot;broadcast&quot; &amp;&amp; /(complete).*/.test(reply.response))) {
                             // dont sent the response to the promise
+                        } else if (reply.src === &quot;intents.api&quot; &amp;&amp; packet.action === &quot;broadcast&quot; &amp;&amp; /(pending).*/.test(reply.response)) {
+                            //Broadcast request acknowledged and prepares logic ot handle resolving once all runners
+                            // finish.
+                            if (self.registeredCallbacks[packet.msgId]) {
+                                self.registeredCallbacks[packet.msgId].handlers = reply.entity.handlers || [];
+                                self.registeredCallbacks[packet.msgId].pRes = promiseRes;
+                                self.registeredCallbacks[packet.msgId].reply = reply;
+                            }
+                            done();
                         } else if (reply.src === &quot;$transport&quot; || /(ok).*/.test(reply.response) || /(complete).*/.test(reply.response)) {
                             done();
                             promiseRes(reply);
