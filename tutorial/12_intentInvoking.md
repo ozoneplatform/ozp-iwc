@@ -12,6 +12,7 @@ the Intents Api, calling the intent functions.
 ## Invoking any handler
 When invoking an intent on the IWC, the default behavior is to invoke an **intent action** and allow the IWC to process
  which registered handler to use. The choosing falls into 3 cases:
+ 
  1. There is only one handler matching that action: simply, the only handler is chosen.
  2. There are multiple handlers and the user has no stored preference: A pop-up window opens to prompt the user which
  application to use to handle the invocation. The user has the option there to store their preference (for as long
@@ -94,11 +95,11 @@ the `{HandlerId}` will be runtime generated and can not be statically referenced
 The `broadcast` follows the same signature & functionality as `invoke` with one key difference. It **invokes on all
 handlers matching the supplied action**. 
 
-There are two differences between broadcasting and invoking:
+There are three differences between broadcasting and invoking:
 
 1. Broadcast receives callback messages for state changes of every handler rather than an individual.
-2. The entity of the promise resolution holds a property `handlers` which is an array of resource names of those 
-handlers that processed the broadcast. **This is intended to change to a mapping of resource names to responses**, but
-has not been implemented as of 1.1.14.
+2. Broadcast promises resolve **when all handlers finish handling**.
+3. The entity of the promise resolution holds a map of handler resource names with their respective results. If a handler
+failed, its result is undefined.
 
 <p data-height="500" data-theme-id="0" data-slug-hash="qbdQbO" data-default-tab="js" data-user="Kevin-K" class='codepen'>
