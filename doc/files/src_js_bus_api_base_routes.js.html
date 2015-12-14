@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.15</em>
+            <em>API Docs for: 1.1.16</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -258,20 +258,34 @@ ozpIwc.api.base.Api = (function (Api) {
             };
         },
         &quot;watch&quot;: function (packet, context, pathParams) {
+            // If a watch with a collect flag comes in for a non-existent resource, create the resource and start
+            // the watch &amp; collection. If a collect flag comes in for an existent resource, start collecting
+            // based on the resources pattern property or the pattern supplied.
+            if(!context.node &amp;&amp; packet.collect){
+                context.node = this.createNode({
+                    resource: packet.resource,
+                    pattern: packet.pattern ?
+                            packet.pattern : (packet.resource === &quot;/&quot;) ? &quot;/&quot; : packet.resource + &quot;/&quot;
+                });
+            } else if (context.node &amp;&amp; packet.collect) {
+                context.node.set({
+                    pattern: packet.pattern ?
+                            packet.pattern : (packet.resource === &quot;/&quot;) ? &quot;/&quot; : packet.resource + &quot;/&quot;
+                });
+            }
+
             this.addWatcher(packet.resource, {
                 src: packet.src,
                 replyTo: packet.msgId
             });
 
-            //Only if the node has a pattern applied will it actually be added as a collector.
+            // addCollector will only succeed if the resource has a pattern set to it.
             this.addCollector(packet.resource);
 
-            if (context.node) {
-                var p = context.node.toPacket();
-                p.collection = this.getCollection(p.pattern);
-                return p;
-            } else {
+            if(!context.node){
                 return {response: &quot;ok&quot;};
+            } else {
+                return context.node.toPacket();
             }
         },
         &quot;unwatch&quot;: function (packet, context, pathParams) {

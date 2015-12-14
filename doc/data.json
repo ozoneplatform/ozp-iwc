@@ -2,7 +2,7 @@
     "project": {
         "name": "ozpIwc",
         "description": "",
-        "version": "1.1.15",
+        "version": "1.1.16",
         "url": ""
     },
     "files": {
@@ -5537,7 +5537,7 @@
         },
         {
             "file": "src/js/bus/api/base/routes.js",
-            "line": 91,
+            "line": 105,
             "description": "A list of all of the default actions.",
             "itemtype": "property",
             "name": "allActions",
@@ -7321,7 +7321,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/routes.js",
-            "line": 24,
+            "line": 27,
             "description": "A route filter for creating an intent definition (/{major}/{minor}/{action}) if it does not exist.",
             "itemtype": "method",
             "name": "registerDefinitionFilter",
@@ -7338,7 +7338,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/routes.js",
-            "line": 44,
+            "line": 47,
             "description": "A route filter for creating an intent definition node (/{major}/{minor}/{action}) if it does not exist, then\ncreates an intent handler node with the specified handlerId ({major}/{minor}/{action}/{handlerId})",
             "itemtype": "method",
             "name": "registerHandlerFilter",
@@ -7355,7 +7355,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/routes.js",
-            "line": 150,
+            "line": 153,
             "description": "A route for intent action invocations.\nWill launch direct for user input if multiple options.",
             "class": "ozpIwc.api.intents.Api",
             "module": "ozpIwc.api",
@@ -7363,7 +7363,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/routes.js",
-            "line": 217,
+            "line": 220,
             "description": "Registration handler when a handlerId is specified",
             "class": "ozpIwc.api.intents.Api",
             "module": "ozpIwc.api",
@@ -17041,11 +17041,11 @@
         },
         {
             "message": "Missing item type\nA route for intent action invocations.\nWill launch direct for user input if multiple options.",
-            "line": " src/js/bus/api/services/intents/routes.js:150"
+            "line": " src/js/bus/api/services/intents/routes.js:153"
         },
         {
             "message": "Missing item type\nRegistration handler when a handlerId is specified",
-            "line": " src/js/bus/api/services/intents/routes.js:217"
+            "line": " src/js/bus/api/services/intents/routes.js:220"
         },
         {
             "message": "Missing item type\nA static method for gathering the uri template of an endpoint name in the EndpointRegistry",

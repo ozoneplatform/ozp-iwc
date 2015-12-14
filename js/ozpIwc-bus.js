@@ -14739,7 +14739,7 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
         }
         this.lifespan = api.Lifespan.getLifespan(this, packet) || this.lifespan;
         this.contentType = packet.contentType || this.contentType;
-        this.entity = packet.entity;
+        this.entity = packet.entity || this.entity;
         this.pattern = packet.pattern || this.pattern;
         this.deleted = false;
         if (packet.eTag) {
@@ -14882,20 +14882,34 @@ ozpIwc.api.base.Api = (function (Api) {
             };
         },
         "watch": function (packet, context, pathParams) {
+            // If a watch with a collect flag comes in for a non-existent resource, create the resource and start
+            // the watch & collection. If a collect flag comes in for an existent resource, start collecting
+            // based on the resources pattern property or the pattern supplied.
+            if(!context.node && packet.collect){
+                context.node = this.createNode({
+                    resource: packet.resource,
+                    pattern: packet.pattern ?
+                            packet.pattern : (packet.resource === "/") ? "/" : packet.resource + "/"
+                });
+            } else if (context.node && packet.collect) {
+                context.node.set({
+                    pattern: packet.pattern ?
+                            packet.pattern : (packet.resource === "/") ? "/" : packet.resource + "/"
+                });
+            }
+
             this.addWatcher(packet.resource, {
                 src: packet.src,
                 replyTo: packet.msgId
             });
 
-            //Only if the node has a pattern applied will it actually be added as a collector.
+            // addCollector will only succeed if the resource has a pattern set to it.
             this.addCollector(packet.resource);
 
-            if (context.node) {
-                var p = context.node.toPacket();
-                p.collection = this.getCollection(p.pattern);
-                return p;
-            } else {
+            if(!context.node){
                 return {response: "ok"};
+            } else {
+                return context.node.toPacket();
             }
         },
         "unwatch": function (packet, context, pathParams) {
@@ -17054,7 +17068,10 @@ ozpIwc.api.intents.Api = (function (api, IntentsApi, log) {
     IntentsApi.useDefaultRoute(["bulkGet", "list"]);
     IntentsApi.useDefaultRoute(["watch", "unwatch", "delete"], "/inFlightIntent/{id}");
     IntentsApi.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/{major}/{minor}/{action}/{handlerId}");
-    IntentsApi.useDefaultRoute(["delete", "watch", "unwatch", "get"], "/{major}/{minor}/{action}");
+    IntentsApi.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/{major}/{minor}/{action}");
+    IntentsApi.useDefaultRoute(["watch", "unwatch", "get"], "/");
+    IntentsApi.useDefaultRoute(["watch", "unwatch", "get"], "/{major}");
+    IntentsApi.useDefaultRoute(["watch", "unwatch", "get"], "/{major}/{minor}");
 
 //---------------------------------------------------------
 // Filters

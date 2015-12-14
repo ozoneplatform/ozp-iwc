@@ -335,7 +335,7 @@ ozpIwc.api.base.Node = (function (api, ozpConfig, util) {
         }
         this.lifespan = api.Lifespan.getLifespan(this, packet) || this.lifespan;
         this.contentType = packet.contentType || this.contentType;
-        this.entity = packet.entity;
+        this.entity = packet.entity || this.entity;
         this.pattern = packet.pattern || this.pattern;
         this.deleted = false;
         if (packet.eTag) {
