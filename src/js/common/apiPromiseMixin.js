@@ -491,8 +491,8 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         resource: res.resource,
                         entity: {
                             reply: {
-                                'entity': e || {},
-                                'contentType': res.entity.intent.type
+                                'entity': e.toString() || {},
+                                'contentType': "text/plain"
                             },
                             state: "error"
                         }
