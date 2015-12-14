@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.16</em>
+            <em>API Docs for: 1.1.17</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -689,8 +689,8 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         resource: res.resource,
                         entity: {
                             reply: {
-                                &#x27;entity&#x27;: e || {},
-                                &#x27;contentType&#x27;: res.entity.intent.type
+                                &#x27;entity&#x27;: e.toString() || {},
+                                &#x27;contentType&#x27;: &quot;text/plain&quot;
                             },
                             state: &quot;error&quot;
                         }

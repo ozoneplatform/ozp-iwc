@@ -3937,8 +3937,8 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         resource: res.resource,
                         entity: {
                             reply: {
-                                'entity': e || {},
-                                'contentType': res.entity.intent.type
+                                'entity': e.toString() || {},
+                                'contentType': "text/plain"
                             },
                             state: "error"
                         }
@@ -16424,6 +16424,9 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
             case "complete":
                 this.handleComplete(inflightNode);
                 break;
+            case "error":
+                this.handleError(inflightNode);
+                break;
             default:
                 updateInvoker(this, inflightNode);
                 break;
@@ -16590,6 +16593,28 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         }
         node.markAsDeleted();
     };
+    /**
+     * A handler for the "error" state of an in-flight intent node.
+     * Sends notification to the invoker that the intent was handled & deletes the in-flight intent node as it is no
+     * longer needed.
+     *
+     * @method handleError
+     * @param {ozpIwc.api.base.Node} node
+     */
+    Api.prototype.handleError = function (node) {
+        if (node.entity.invokePacket && node.entity.invokePacket.src) {
+            this.send({
+                dst: node.entity.invokePacket.src,
+                replyTo: node.entity.invokePacket.msgId,
+                contentType: node.entity.reply.contentType,
+                response: "noResult",
+                resource: node.entity.handler.resource,
+                entity: node.entity.reply.entity
+            });
+            updateInvoker(this, node);
+        }
+        node.markAsDeleted();
+    };
 
     return Api;
 
@@ -16688,8 +16713,12 @@ ozpIwc.api.intents.FSM = (function (api, util) {
      * @return {ozpIwc.api.base.Node}
      */
     FSM.states.error = function (entity) {
+        var reply = entity.reply || {};
+        reply.entity = reply.entity || "Unknown Error.";
+        reply.contentType = reply.contentType || "text/plain";
+
         this.entity = this.entity || {};
-        this.entity.reply = entity.error;
+        this.entity.reply = reply;
         this.entity.state = "error";
         this.version++;
         return FSM.stateEvent(this);

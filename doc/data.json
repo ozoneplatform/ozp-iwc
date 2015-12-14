@@ -2,7 +2,7 @@
     "project": {
         "name": "ozpIwc",
         "description": "",
-        "version": "1.1.16",
+        "version": "1.1.17",
         "url": ""
     },
     "files": {
@@ -7067,7 +7067,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/api.js",
-            "line": 173,
+            "line": 176,
             "description": "A handler for the \"choosing\" state of an in-flight intent node.",
             "itemtype": "method",
             "name": "handleChoosing",
@@ -7088,7 +7088,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/api.js",
-            "line": 288,
+            "line": 291,
             "description": "A handler for the \"delivering\" state of an in-flight intent node.\nSends a packet to the chosen handler.",
             "todo": [
                 "should resolve on response from the handler that transitions the node to \"running\"."
@@ -7109,10 +7109,28 @@
         },
         {
             "file": "src/js/bus/api/services/intents/api.js",
-            "line": 310,
+            "line": 313,
             "description": "A handler for the \"complete\" state of an in-flight intent node.\nSends notification to the invoker that the intent was handled & deletes the in-flight intent node as it is no\nlonger needed.",
             "itemtype": "method",
             "name": "handleComplete",
+            "params": [
+                {
+                    "name": "node",
+                    "description": "",
+                    "type": "ozpIwc.api.base.Node"
+                }
+            ],
+            "class": "ozpIwc.api.intents.Api",
+            "module": "ozpIwc.api",
+            "submodule": "ozpIwc.api.intents",
+            "namespace": "ozpIwc.api.intents"
+        },
+        {
+            "file": "src/js/bus/api/services/intents/api.js",
+            "line": 335,
+            "description": "A handler for the \"error\" state of an in-flight intent node.\nSends notification to the invoker that the intent was handled & deletes the in-flight intent node as it is no\nlonger needed.",
+            "itemtype": "method",
+            "name": "handleError",
             "params": [
                 {
                     "name": "node",
@@ -7176,7 +7194,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/fsm.js",
-            "line": 102,
+            "line": 106,
             "description": "The delivering state.\nThe node is in a delivering state when it's registered handler is called to operate on the\nintent data. The register handler will respond with \"running\" to signify it has received the request.",
             "itemtype": "method",
             "name": "delivering",
@@ -7198,7 +7216,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/fsm.js",
-            "line": 121,
+            "line": 125,
             "description": "The running state.\nThe node is in a running state when the registered handler has received the request data. The\nnode will transition to the \"complete\" state upon receiving a response from the handler's operation.",
             "todo": [
                 "currently running/complete are sent at once and no data is returned. When these states are sent the intent\n    is handled."
@@ -7223,7 +7241,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/fsm.js",
-            "line": 142,
+            "line": 146,
             "description": "The choosing state.\nThe node is in a choosing state when:\n (1) the intent chooser is opened.\n (2) the api is gathering the preference-stored designated handler.\n\nThe node will transition to delivering once the handler has been chosen.",
             "itemtype": "method",
             "name": "choosing",
@@ -7238,7 +7256,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/fsm.js",
-            "line": 159,
+            "line": 163,
             "description": "The Complete state.\nOnce the intent has been handled or canceled the node will transition to the complete state. From here the API\nwill mark the node for deletion as it is no longer needed.",
             "itemtype": "method",
             "name": "complete",
@@ -7260,7 +7278,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/fsm.js",
-            "line": 179,
+            "line": 183,
             "description": "A collection of state transitions for the Finite State machine. The first level of properties represent current\nstate and the second level represents states that can be transitioned to.",
             "itemtype": "property",
             "name": "stateTransitions",
@@ -7272,7 +7290,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/fsm.js",
-            "line": 211,
+            "line": 215,
             "description": "The transition utility function. This determines if the requested state change from the packet is valid, then\ncalls the state transition and returns the modified node for storage.",
             "itemtype": "method",
             "name": "transition",
@@ -7300,7 +7318,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/fsm.js",
-            "line": 246,
+            "line": 250,
             "description": "Triggers node's state event and returns the node.",
             "itemtype": "method",
             "name": "stateReturn",
