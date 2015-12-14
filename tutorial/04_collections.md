@@ -88,21 +88,24 @@ client.data().list("/").then(function(response){
 ***
 
 ## Watch
-A `watch` action takes 2 parameters, a resource and callback. A watch can be configured to be triggered **when 
-new resources match its pattern and when resources that did match were deleted**. In order for watches added 
-asynchronously to the instantiation of the IWC, the resources matching the pattern are stored in the given resources 
-**collection** property. This means when a new watch action is performed on a resource, its stored collection of 
-resources can be obtained immediately in the promise resolution.
+A `watch` action takes 3 parameters, a resource, a (optional) config, and callback. 
 
-The `pattern` for the watch goes in the **config** object of a **set** action on the resource **watched**:
+A watch can be configured to be triggered **when new resources match its pattern and when resources that did match were 
+deleted**. In order to immediately notify new watcher's of the state of a watch, the resources matching the pattern are 
+stored in the given resources **collection** property. This means when a new watch action is performed on a resource, 
+its stored collection of resources can be obtained immediately in the promise resolution.
+
+The `pattern` for the watch goes in the **config** object of the action, it specifies that any resource who prefix-matches
+this string should be tracked in the collection. In order for the IWC to accept the `pattern` in the watch request 
+(this is normally a `set` action's responsibility to alter the resource), the `collect: true` property must be added
+to the configuration as well:
 
 ``` js
 // First configure the resource's pattern
 var config = {
-  pattern: "/shoppingCart/"
+  pattern: "/shoppingCart/",
+  collect: true
 };
-
-client.data().set("/myCollection",config);
 
 
 // Then register the watch, react on the collection data.
@@ -116,8 +119,18 @@ var onResolve = function(response, done) {
   var collection = response.collection;
 };
 
-client.data().watch("/myCollection", onChange).then(onResolve);
+client.data().watch("/myCollection", config, onChange).then(onResolve);
 ```
 
 <p data-height="450" data-theme-id="0" data-slug-hash="yYmRbm" data-default-tab="result" data-user="Kevin-K" class='codepen'>
- 
+
+
+### Changing the watched pattern
+To change the pattern of collection on a watch action, simply change the `pattern` property with a `set` action:
+
+``` js
+
+client.data().set("/myCollection", { pattern: "/trashCan/"});
+```
+
+This will update the collection to match the new pattern and notify all who are watching `/myCollection`.
