@@ -16,7 +16,10 @@ ozpIwc.api.intents.Api = (function (api, IntentsApi, log) {
     IntentsApi.useDefaultRoute(["bulkGet", "list"]);
     IntentsApi.useDefaultRoute(["watch", "unwatch", "delete"], "/inFlightIntent/{id}");
     IntentsApi.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/{major}/{minor}/{action}/{handlerId}");
-    IntentsApi.useDefaultRoute(["delete", "watch", "unwatch", "get"], "/{major}/{minor}/{action}");
+    IntentsApi.useDefaultRoute(["get", "delete", "watch", "unwatch"], "/{major}/{minor}/{action}");
+    IntentsApi.useDefaultRoute(["watch", "unwatch", "get"], "/");
+    IntentsApi.useDefaultRoute(["watch", "unwatch", "get"], "/{major}");
+    IntentsApi.useDefaultRoute(["watch", "unwatch", "get"], "/{major}/{minor}");
 
 //---------------------------------------------------------
 // Filters
