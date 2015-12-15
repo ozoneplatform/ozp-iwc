@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html ng-app="ozpIwc.debugger">
+
+<head>
+    <title>OZP IWC Debugger</title>
+    <link rel="stylesheet" type="text/css" href="css/debugger.css">
+    <link rel="shortcut icon" href="favicon.ico?v=2"/>
+
+    <script type="text/javascript">
+        // for resizing the height of an iframe (hal-browser)
+        function resizeIframe(obj) {
+            obj.style.height = window.innerHeight + 'px';
+        }
+    </script>
+    <script type="text/javascript" src="../js/ozpIwc.conf.js"></script>
+    <script src="../js/ozpIwc-client.js"></script>
+    <script src="js/debuggerConcat.js"></script>
+</head>
+<body ng-controller="debuggerController">
+<div class="loading" ng-show="loading">
+    <p>Loading</p>
+</div>
+<!-- Sidenav -->
+<div id="side-wrap">
+    <ul class="side-nav">
+        <li>
+            <a ui-sref="general" ui-sref-active="selected">General</a>
+        </li>
+        <hr/>
+        <li>
+            <a ui-sref="traffic-snooper" ui-sref-active="selected">Traffic Snooper </a>
+        </li>
+        <li>
+            <a ui-sref="metrics" ui-sref-active="selected">Metrics </a>
+        </li>
+        <li>
+            <a ui-sref="elections" ui-sref-active="selected">Elections</a>
+        </li>
+        <hr/>
+        <li>
+            <a ui-sref="system-api" ui-sref-active="selected">System API</a>
+        </li>
+        <li>
+            <a ui-sref="data-api" ui-sref-active="selected">Data API</a>
+        </li>
+        <li>
+            <a ui-sref="intents-api" ui-sref-active="selected">Intents API</a>
+        </li>
+        <li>
+            <a ui-sref="names-api" ui-sref-active="selected">Names API</a>
+        </li>
+        <hr/>
+        <li>
+            <a ui-sref="hal-browser({url: ozpIwc.config.apiRootUrl})" ui-sref-active="selected">HAL Browser</a>
+        </li>
+        <hr/>
+        <li style="word-wrap: break-word; font-size: 0.75em"> {{::address}}</li>
+    </ul>
+</div>
+<!-- Apps -->
+<div ui-view class="app-pane"></div>
+</body>
+</html>
