@@ -163,6 +163,9 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
             case "complete":
                 this.handleComplete(inflightNode);
                 break;
+            case "error":
+                this.handleError(inflightNode);
+                break;
             default:
                 updateInvoker(this, inflightNode);
                 break;
@@ -322,6 +325,28 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 replyTo: node.entity.invokePacket.msgId,
                 contentType: node.entity.reply.contentType,
                 response: "complete",
+                resource: node.entity.handler.resource,
+                entity: node.entity.reply.entity
+            });
+            updateInvoker(this, node);
+        }
+        node.markAsDeleted();
+    };
+    /**
+     * A handler for the "error" state of an in-flight intent node.
+     * Sends notification to the invoker that the intent was handled & deletes the in-flight intent node as it is no
+     * longer needed.
+     *
+     * @method handleError
+     * @param {ozpIwc.api.base.Node} node
+     */
+    Api.prototype.handleError = function (node) {
+        if (node.entity.invokePacket && node.entity.invokePacket.src) {
+            this.send({
+                dst: node.entity.invokePacket.src,
+                replyTo: node.entity.invokePacket.msgId,
+                contentType: node.entity.reply.contentType,
+                response: "noResult",
                 resource: node.entity.handler.resource,
                 entity: node.entity.reply.entity
             });

@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.16</em>
+            <em>API Docs for: 1.1.17</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -361,6 +361,9 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
             case &quot;complete&quot;:
                 this.handleComplete(inflightNode);
                 break;
+            case &quot;error&quot;:
+                this.handleError(inflightNode);
+                break;
             default:
                 updateInvoker(this, inflightNode);
                 break;
@@ -520,6 +523,28 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 replyTo: node.entity.invokePacket.msgId,
                 contentType: node.entity.reply.contentType,
                 response: &quot;complete&quot;,
+                resource: node.entity.handler.resource,
+                entity: node.entity.reply.entity
+            });
+            updateInvoker(this, node);
+        }
+        node.markAsDeleted();
+    };
+    /**
+     * A handler for the &quot;error&quot; state of an in-flight intent node.
+     * Sends notification to the invoker that the intent was handled &amp; deletes the in-flight intent node as it is no
+     * longer needed.
+     *
+     * @method handleError
+     * @param {ozpIwc.api.base.Node} node
+     */
+    Api.prototype.handleError = function (node) {
+        if (node.entity.invokePacket &amp;&amp; node.entity.invokePacket.src) {
+            this.send({
+                dst: node.entity.invokePacket.src,
+                replyTo: node.entity.invokePacket.msgId,
+                contentType: node.entity.reply.contentType,
+                response: &quot;noResult&quot;,
                 resource: node.entity.handler.resource,
                 entity: node.entity.reply.entity
             });

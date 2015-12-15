@@ -92,8 +92,12 @@ ozpIwc.api.intents.FSM = (function (api, util) {
      * @return {ozpIwc.api.base.Node}
      */
     FSM.states.error = function (entity) {
+        var reply = entity.reply || {};
+        reply.entity = reply.entity || "Unknown Error.";
+        reply.contentType = reply.contentType || "text/plain";
+
         this.entity = this.entity || {};
-        this.entity.reply = entity.error;
+        this.entity.reply = reply;
         this.entity.state = "error";
         this.version++;
         return FSM.stateEvent(this);
