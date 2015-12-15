@@ -30,7 +30,7 @@ in **cross domain communication**.
 These applications register Intent handling functions to the IWC. Their handlers can found available in the dropdown
 of the application above once the respected application is opened. 
 <div class="app-list">
-    <a href="#"  onClick="openPopup('MKKgYJ','Simple Array Functions');return false;" >Simple Array Functions</a>
+    <a href="#"  onClick="openPopup('LGGWQj','Simple Array Functions');return false;" >Simple Array Functions</a>
 </div>
 
 <script type="text/javascript">
