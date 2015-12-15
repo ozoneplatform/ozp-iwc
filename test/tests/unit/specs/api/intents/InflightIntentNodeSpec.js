@@ -114,9 +114,15 @@ describe("Intents in Flight Value", function () {
     });
     it("transitions from choosing to error on receiving a error packet", function () {
         var node = makeNode();
-        node = ozpIwc.api.intents.FSM.transition(node, {'entity': {'state': "error", 'error': "Unknown Error"}});
+        node = ozpIwc.api.intents.FSM.transition(node, {
+            'entity': {
+                'state': "error",
+                'reply': {'entity': "Unknown Error", 'contentType': "application/vnd.custom"}
+            }
+        });
         expect(node.entity.state).toEqual("error");
-        expect(node.entity.reply).toEqual("Unknown Error");
+        expect(node.entity.reply.entity).toEqual("Unknown Error");
+        expect(node.entity.reply.contentType).toEqual("application/vnd.custom");
     });
     it("throws badState if the set lacks resource or reason", function () {
         var node = makeNode();
@@ -170,9 +176,15 @@ describe("Intents in Flight Value", function () {
         });
 
         it("transitions from delivering to error on receiving a error packet", function () {
-            node = ozpIwc.api.intents.FSM.transition(node, {'entity': {'state': "error", 'error': "Unknown Error"}});
+            node = ozpIwc.api.intents.FSM.transition(node, {
+                'entity': {
+                    'state': "error",
+                    'reply': {'entity': "Unknown Error", 'contentType': "application/vnd.custom"}
+                }
+            });
+
             expect(node.entity.state).toEqual("error");
-            expect(node.entity.reply).toEqual("Unknown Error");
+            expect(node.entity.reply.entity).toEqual("Unknown Error");
         });
 
         it("throws badState if the set lacks an address", function () {
@@ -214,11 +226,13 @@ describe("Intents in Flight Value", function () {
             node = ozpIwc.api.intents.FSM.transition(node, {
                 'entity': {
                     'state': "error",
-                    'error': "Unknown Error"
+                    reply: {
+                        'entity': "Unknown Error"
+                    }
                 }
             });
             expect(node.entity.state).toEqual("error");
-            expect(node.entity.reply).toEqual("Unknown Error");
+            expect(node.entity.reply.entity).toEqual("Unknown Error");
         });
 
         it("to complete on receiving a 'complete' packet", function () {

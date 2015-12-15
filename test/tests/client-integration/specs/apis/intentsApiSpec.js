@@ -107,4 +107,17 @@ describe("Intents Api", function () {
             });
         });
     });
+
+    pit("returns the error message to the invoker if failed to be handled.", function(){
+        var err;
+        return intentsApi.register('/foo/bar/buz', function(resp){
+            err = new Error("This.is an error.");
+            throw err;
+        }).then(function(){
+            return intentsApi.invoke("/foo/bar/buz");
+        }).catch(function(response){
+            expect(response.entity).toEqual(err.toString());
+            expect(response.response).toEqual("noResult");
+        });
+    });
 });
