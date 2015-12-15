@@ -67,8 +67,8 @@ The 3 printers may have Intents Api resource names as so:
 ```
 
 _**Note**: the /type/subtype **defines the format the registered function expects**. The IWC 
-is a flexible framework that will thrive on community defined data /type/subtypes/actions. Reference the [Community Intent Book](about:blank), 
-if the desired /type/subtype/action doesn't exit, open an [issue](http://www.github.com/ozone-development/ozp-iwc/issues)
+is a flexible framework that will thrive on community defined data /type/subtypes/actions. Reference the [Community Intent Book](https://github.com/ozone-development/ozp-iwc/wiki/Community-Intent-Book), 
+if the desired /type/subtype doesn't exit, open an [issue](http://www.github.com/ozone-development/ozp-iwc/issues)
 with the data type/subtype, proposed format, and a description._
 
 ***
