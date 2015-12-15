@@ -58,7 +58,7 @@ Intent handlers registered under the `/json/array` type/subtype expect the invoc
 
 ``` js
 var config = {
-    entity: [3,1, "b", 0]
+    entity: [3, 1, "b", 0]
 };
 
 intents.invoke("/json/array/arrayExample.numericalSort", config).then(...);
