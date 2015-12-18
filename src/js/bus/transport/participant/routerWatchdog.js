@@ -136,7 +136,7 @@ ozpIwc.transport.participant.RouterWatchdog = (function (transport, util) {
          * @property timer
          * @type window.setInterval
          */
-        this.timer = window.setInterval(heartbeat, this.heartbeatFrequency);
+        this.timer = setInterval(heartbeat, this.heartbeatFrequency);
         heartbeat();
     };
 
@@ -145,7 +145,7 @@ ozpIwc.transport.participant.RouterWatchdog = (function (transport, util) {
      * @method shutdown
      */
     RouterWatchdog.prototype.shutdown = function () {
-        window.clearInterval(this.timer);
+        clearInterval(this.timer);
     };
 
     return RouterWatchdog;

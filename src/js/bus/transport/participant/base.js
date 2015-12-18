@@ -126,6 +126,95 @@ ozpIwc.transport.participant.Base = (function (log, policyAuth, transport, util)
     };
 
     /**
+     * An AsyncAction to verify if this participant can receive the given packetContext
+     * @method verifyReceiveAs
+     * @param  {ozpIwc.packet.Transport} packetContext
+     * @return {ozpIwc.util.AsyncAction} calls success if can receive.
+     */
+    Base.prototype.verifyReceiveAs = function (packetContext) {
+        var receiveRequest = {
+            'subject': this.permissions.getAll(),
+            'resource': {'ozp:iwc:receiveAs': packetContext.packet.dst},
+            'action': {'ozp:iwc:action': 'receiveAs'},
+            'policies': this.authorization.policySets.receiveAsSet
+        };
+
+        return this.authorization.isPermitted(receiveRequest);
+    };
+
+    /**
+     * An AsyncAction to format a received packetContext's permission.
+     * @method formatRequest
+     * @param  {ozpIwc.packet.Transport} packetContext
+     * @return {ozpIwc.util.AsyncAction} calls success with the formated permissions.
+     */
+    Base.prototype.formatRequest = function(packetContext){
+        return policyAuth.points.utils.formatCategory(
+            packetContext.packet.permissions, this.authorization.pip);
+    };
+
+    /**
+     * An AsyncAction to verify if this participant can read the given packetContext
+     * @method verifyRead
+     * @param  {ozpIwc.packet.Transport} packetContext
+     * @return {ozpIwc.util.AsyncAction} calls success if can read.
+     */
+    Base.prototype.verifyRead = function (permissions) {
+        var request = {
+            'subject': this.permissions.getAll(),
+            'resource': permissions || {},
+            'action': {'ozp:iwc:action': 'read'},
+            'policies': this.authorization.policySets.readSet
+        };
+
+        return this.authorization.isPermitted(request);
+    };
+
+    /**
+     * An AsyncAction to verify if this participant can send the given packet
+     * @method verifySendAs
+     * @param  {ozpIwc.packet.Base} packet
+     * @return {ozpIwc.util.AsyncAction} calls success if can send.
+     */
+    Base.prototype.verifySendAs = function (packet) {
+        var request = {
+            'subject': this.permissions.getAll(),
+            'resource': {'ozp:iwc:sendAs': packet.src},
+            'action': {'ozp:iwc:action': 'sendAs'},
+            'policies': this.authorization.policySets.sendAsSet
+        };
+        return this.authorization.isPermitted(request);
+    };
+
+    /**
+     * Mark the given received packetContext in the metrics.
+     * @method markReceivePacket
+     * @param  {ozpIwc.packet.Transport} packetContext
+     */
+    Base.prototype.markReceivePacket = function(packetContext){
+        if (this.metrics) {
+            this.receivedPacketsMeter.mark();
+            if (packetContext.packet.time) {
+                this.latencyInTimer.mark(util.now() - packetContext.packet.time);
+            }
+        }
+    };
+
+    /**
+     * Mark the given sent packet in the metrics.
+     * @method markSendPacket
+     * @param  {ozpIwc.packet.Base} packet
+     */
+    Base.prototype.markSendPacket = function(packet){
+        if (this.metrics) {
+            this.sentPacketsMeter.mark();
+            if (packet.time) {
+                this.latencyOutTimer.mark(util.now() - packet.time);
+            }
+        }
+    };
+
+    /**
      * Processes packets sent from the router to the participant. If a packet does not pass authorization it is marked
      * forbidden.
      *
@@ -136,46 +225,23 @@ ozpIwc.transport.participant.Base = (function (log, policyAuth, transport, util)
     Base.prototype.receiveFromRouter = function (packetContext) {
         var self = this;
 
-        var request = {
-            'subject': this.permissions.getAll(),
-            'resource': {'ozp:iwc:receiveAs': packetContext.packet.dst},
-            'action': {'ozp:iwc:action': 'receiveAs'},
-            'policies': this.authorization.policySets.receiveAsSet
-        };
-
-        var onError = function (err) {
+        function onError(err) {
             if (self.metrics) {
                 self.forbiddenPacketsMeter.mark();
                 /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
                 self.metrics.counter("transport.packets.forbidden").inc();
             }
-            console.error("failure", err);
-        };
+            log.error("failure", err);
+        }
 
-        this.authorization.isPermitted(request)
-            .success(function () {
-                policyAuth.points.utils.formatCategory(packetContext.packet.permissions, self.authorization.pip)
-                    .success(function (permissions) {
-                        var request = {
-                            'subject': self.permissions.getAll(),
-                            'resource': permissions || {},
-                            'action': {'ozp:iwc:action': 'read'},
-                            'policies': self.authorization.policySets.readSet
-                        };
-
-                        self.authorization.isPermitted(request)
-                            .success(function (resolution) {
-                                if (self.metrics) {
-                                    self.receivedPacketsMeter.mark();
-                                    if (packetContext.packet.time) {
-                                        self.latencyInTimer.mark(util.now() - packetContext.packet.time);
-                                    }
-                                }
-
-                                self.receiveFromRouterImpl(packetContext);
-                            }).failure(onError);
-                    }).failure(onError);
+        this.verifyReceiveAs(packetContext).success(function canReceive () {
+            self.formatRequest(packetContext).success(function validatedFormat (permissions) {
+                self.verifyRead(permissions).success(function canRead () {
+                    self.markReceivePacket(packetContext);
+                    self.receiveFromRouterImpl(packetContext);
+                }).failure(onError);
             }).failure(onError);
+        }).failure(onError);
     };
 
     /**
@@ -231,7 +297,7 @@ ozpIwc.transport.participant.Base = (function (log, policyAuth, transport, util)
      * src, ver, msgId, and time.
      *
      * @method fixPacket
-     * @param {ozpIwc.packet.Transport} packet
+     * @param {ozpIwc.packet.Transport.packet} packet
      *
      * @return {ozpIwc.packet.Transport}
      */
@@ -253,31 +319,22 @@ ozpIwc.transport.participant.Base = (function (log, policyAuth, transport, util)
      * before doing so.
      *
      * @method send
-     * @param {ozpIwc.packet.Transport} packet
+     * @param {ozpIwc.packet.Transport.packet} packet
      *
      * @return {ozpIwc.packet.Transport}
      */
     Base.prototype.send = function (packet) {
         var self = this;
-        var request = {
-            'subject': this.permissions.getAll(),
-            'resource': {'ozp:iwc:sendAs': packet.src},
-            'action': {'ozp:iwc:action': 'sendAs'},
-            'policies': this.authorization.policySets.sendAsSet
-        };
+        function onError (e) {
+            log.error("Participant " + self.address + " failed to send a packet:", e, packet);
+        }
         packet = self.fixPacket(packet);
-        this.authorization.isPermitted(request)
-            .success(function (resolution) {
-                if (self.metrics) {
-                    self.sentPacketsMeter.mark();
-                    if (packet.time) {
-                        self.latencyOutTimer.mark(util.now() - packet.time);
-                    }
-                }
-                self.router.send(packet, self);
-            }).failure(function (e) {
-                log.error("Participant " + self.address + " failed to send a packet:", e, packet);
-            });
+
+        this.verifySendAs(packet).success(function canSend () {
+            self.markSendPacket(packet);
+            self.router.send(packet, self);
+        }).failure(onError);
+
         return packet;
     };
 

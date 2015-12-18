@@ -12,7 +12,7 @@ describe("Client", function () {
         };
 
         beforeEach(function () {
-            isStructuredClonesSupported = ozpIwc.util.structuredCloneSupport();
+            isStructuredClonesSupported = ozpIwc.util.structuredCloneSupport;
             client = new ozpIwc.Client({peerUrl: "http://" + window.location.hostname + ":13000"});
             client.on("message", receiveData);
         });

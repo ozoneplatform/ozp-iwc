@@ -102,7 +102,7 @@ ozpIwc.transport.participant.Multicast = (function (transport, util) {
         if (this.metrics) {
             this.receivedPacketsMeter.mark();
         }
-        this.members.forEach(function (m) {
+        this.members.forEach(function multicastRoute (m) {
             // as we send to each member, update the context to make it believe that it's the only recipient
             packet.dstParticipant = m;
             m.receiveFromRouter(packet);

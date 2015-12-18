@@ -18,7 +18,7 @@ ozpIwc.util = (function (util) {
      * @static
      */
     util.setImmediate = function (f) {
-        window.setImmediate(f);
+        util.globalScope.setImmediate(f);
     };
 
     /**

@@ -63,13 +63,12 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
                 'ready': listener.readyPromise
             };
 
-            listener.authorization.isPermitted(request)
-                .success(function () {
-                    port.addEventListener('message', messageHandlerGen(listener, port, config));
-                    port.start();
-                }).failure(function (err) {
-                    console.error("Failed to connect. Could not authorize:", err);
-                });
+            listener.authorization.isPermitted(request).success(function () {
+                port.addEventListener('message', messageHandlerGen(listener, port, config));
+                port.start();
+            }).failure(function (err) {
+                log.error("Failed to connect. Could not authorize:", err);
+            });
         };
     };
 
