@@ -61,6 +61,7 @@ ozpIwc.transport.PacketContext = (function (util) {
         response.replyTo = response.replyTo || this.packet.msgId;
         response.src = response.src || this.packet.dst;
         response.dst = response.dst || this.packet.src;
+        response.respondOn = response.respondOn || "none";
         return response;
     };
 
@@ -112,4 +113,3 @@ ozpIwc.transport.PacketContext = (function (util) {
 
     return PacketContext;
 }(ozpIwc.util));
-

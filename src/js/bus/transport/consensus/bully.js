@@ -118,7 +118,8 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
             'action': "election",
             'entity': {
                 'consensusId': this.consensusId
-            }
+            },
+            'respondOn': "none"
         });
     };
 
@@ -146,7 +147,8 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
             'entity': {
                 'consensusId': bully.consensusId,
                 'logs': logs
-            }
+            },
+            'respondOn': "none"
         });
     };
 
@@ -165,7 +167,8 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
             'action': "query",
             'entity': {
                 'consensusId': bully.consensusId
-            }
+            },
+            'respondOn': "none"
         });
     };
 

@@ -709,7 +709,8 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                             'dst': api.address,
                             'action': "bulkSend",
                             'resource': "/",
-                            'entity': messages
+                            'entity': messages,
+                            'respondOn': "none"
                         };
 
                         return {
