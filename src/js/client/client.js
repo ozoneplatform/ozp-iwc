@@ -20,10 +20,11 @@ ozpIwc.Client = (function (util) {
      *     or "ALL"
      * @param {Boolean} [config.autoConnect=true] - Whether to automatically find and connect to a peer
      */
-    var Client = function (config) {
-        config = config || {};
+    var Client = function (peerUrl, config) {
 
-        if (config.enhancedTimers) {
+        var formattedConfig = formatConfig(peerUrl, config);
+
+        if (formattedConfig.enhancedTimers) {
             util.enabledEnhancedTimers();
         }
         this.type = "default";
@@ -32,8 +33,8 @@ ozpIwc.Client = (function (util) {
         util.addEventListener('beforeunload', function () {
             self.disconnect();
         });
-        genPeerUrlCheck(this, config.peerUrl);
-        util.ApiPromiseMixin(this, config.autoConnect);
+        genPeerUrlCheck(this, formattedConfig.peerUrl);
+        util.ApiPromiseMixin(this, formattedConfig.autoConnect);
 
         if (util.globalScope.SharedWorker) {
             registerIntentHandlers(this);
@@ -43,6 +44,42 @@ ozpIwc.Client = (function (util) {
     //----------------------------------------------------------
     // Private Properties
     //----------------------------------------------------------
+    //
+
+    /**
+     * Takes in the various Client parameter options
+     * ([string]),([object]),(string,[object]) and formats the config.
+     * This is done to not break semver and force updated Client code.
+     * @method formatConfig
+     * @private
+     * @static
+     * @param  {[String|Object]} param1 Either the peer url to connect to ,the
+     *                                    config object, or undefined to use
+     *                                    default connection
+     * @param  {[Object]} param2  If peer url string provided in param1, param2
+     *                             is the optional config object. If param1 is the
+     *                             config object param2 is ignored
+     * @return {Object}         Formatted config object
+     */
+    var formatConfig = function(param1, param2){
+        var newConfig = {};
+        if(typeof param2 === "object"){
+            newConfig = param2;
+        }
+
+        if(typeof param1 === "object"){
+            //If the legacy style of config
+            newConfig = param1;
+            newConfig.peerUrl = newConfig.peerUrl || util.scriptDomain;
+        } else if(typeof param1 === "string") {
+            // let the config object override the string url
+            newConfig.peerUrl = newConfig.peerUrl || param1;
+        } else {
+            // default to assigning script's domain as IWC domain.
+            newConfig.peerUrl = util.scriptDomain;
+        }
+        return newConfig;
+    };
     /**
      * A utility method for handshaking the client's connection to the bus.
      * Resolves an external promise.

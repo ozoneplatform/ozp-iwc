@@ -191,5 +191,12 @@ ozpIwc.util = (function (util) {
      */
     util.clearTimeout = clearCalls("clearTimeout");
 
+    util.scriptDomain = (function(){
+        var scripts = document.getElementsByTagName('script');
+        var path = scripts[scripts.length-1].src.split('?')[0];
+        // the iframe_peer is a dir above the bus code.
+        return path.split('/').slice(0,-2).join('/');
+    }());
+
     return util;
 }(ozpIwc.util));
