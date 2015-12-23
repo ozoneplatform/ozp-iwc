@@ -73,6 +73,44 @@ describe("IWC Client", function () {
                 expect(launchData).toEqual({'channel': 1});
             });
         });
+
+        pit("defaults connection if no config object", function() {
+            var client2 = new ozpIwc.Client();
+            return client2.connect().then(function(){
+                expect(client2.peerUrl).toEqual(window.location.origin);
+            });
+        });
+
+        pit("connections to a string supplied peer url", function() {
+            var client2 = new ozpIwc.Client("http://localhost:14002");
+            return client2.connect().then(function(){
+                expect(client2.peerUrl).toEqual("http://localhost:14002");
+            });
+        });
+
+        pit("connects the config supplied peer url over string supplied.", function(){
+            var client2 = new ozpIwc.Client("http://localhost:14000", {
+                peerUrl: "http://localhost:14002"
+            });
+            return client2.connect().then(function(){
+                expect(client2.peerUrl).toEqual("http://localhost:14002");
+            });
+        });
+        pit("connects to the default url if it can't determine provided url.", function(){
+            var client2 = new ozpIwc.Client(123);
+            var client3,client4;
+            return client2.connect().then(function(){
+                expect(client2.peerUrl).toEqual("http://localhost:14000");
+                client3 = new ozpIwc.Client("http://localhost:14002","http://localhost:14000");
+                return client3.connect();
+            }).then(function(){
+                expect(client3.peerUrl).toEqual("http://localhost:14002");
+                client4 = new ozpIwc.Client(123, "http://localhost:14002");
+                return client4.connect();
+            }).then(function(){
+                expect(client4.peerUrl).toEqual("http://localhost:14000");
+            });
+        });
     });
 
     describe("launch parameters", function () {
