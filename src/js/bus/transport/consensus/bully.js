@@ -311,11 +311,11 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      */
     var restartCoordinatorTimeout = function (bully, timeout, keepState) {
         timeout = timeout || bully.coordinatorTimeoutHeartbeat;
-        window.clearTimeout(bully.coordinatorTimeout);
+        clearTimeout(bully.coordinatorTimeout);
         if (!keepState) {
             bully.changeState("member");
         }
-        bully.coordinatorTimeout = window.setTimeout(function () {
+        bully.coordinatorTimeout = setTimeout(function () {
             bully.onCoordinatorTimeout();
         }, timeout);
     };
@@ -342,12 +342,12 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      */
     Bully.prototype.onBecomeCoordinator = function () {
         var self = this;
-        window.clearTimeout(this.coordinatorTimeout);
-        window.clearInterval(this.coordinatorInterval);
+        clearTimeout(this.coordinatorTimeout);
+        clearInterval(this.coordinatorInterval);
 
         sendVictoryMessage(this);
         this.changeState("coordinator");
-        this.coordinatorInterval = window.setInterval(function () {
+        this.coordinatorInterval = setInterval(function () {
             sendVictoryMessage(self);
         }, this.coordinatorIntervalHeartbeat);
     };
@@ -372,9 +372,9 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      */
     var startElection = function (bully, timeout) {
         timeout = timeout || (bully.coordinatorTimeoutHeartbeat * 2 / 3);
-        window.clearTimeout(bully.electionTimeout);
+        clearTimeout(bully.electionTimeout);
 
-        bully.electionTimeout = window.setTimeout(function () {
+        bully.electionTimeout = setTimeout(function () {
             bully.onBecomeCoordinator();
         }, timeout);
 
@@ -390,7 +390,7 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      * @param {ozpIwc.transport.consensus.Bully} bully
      */
     var cancelElection = function (bully) {
-        window.clearTimeout(bully.electionTimeout);
+        clearTimeout(bully.electionTimeout);
     };
 
     return Bully;

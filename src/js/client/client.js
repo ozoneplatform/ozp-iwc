@@ -35,7 +35,7 @@ ozpIwc.Client = (function (util) {
         genPeerUrlCheck(this, config.peerUrl);
         util.ApiPromiseMixin(this, config.autoConnect);
 
-        if (window.SharedWorker) {
+        if (util.globalScope.SharedWorker) {
             registerIntentHandlers(this);
         }
     };
@@ -114,7 +114,7 @@ ozpIwc.Client = (function (util) {
         client.postMessageHandler = genPostMessageHandler(client, resolve, reject);
         util.addEventListener("message", client.postMessageHandler);
 
-        window.setTimeout(function () {
+        setTimeout(function () {
             client.iframe = document.createElement("iframe");
             var url = client.peerUrl + "/iframe_peer.html";
             if (client.launchParams.log) {
@@ -132,7 +132,7 @@ ozpIwc.Client = (function (util) {
             document.body.appendChild(client.iframe);
             client.peer = client.iframe.contentWindow;
 
-            if (!window.SharedWorker) {
+            if (!util.globalScope.SharedWorker) {
                 client.iframe.addEventListener("load", function () {
                     initPing(client, resolve, reject);
                 });
@@ -247,7 +247,7 @@ ozpIwc.Client = (function (util) {
         if (this.iframe) {
             this.iframe.src = "about:blank";
             var self = this;
-            window.setTimeout(function () {
+            setTimeout(function () {
                 self.iframe.remove();
                 self.iframe = null;
                 resolve();
@@ -282,12 +282,6 @@ ozpIwc.Client = (function (util) {
                 return self.createIframePeer();
             }).then(function (message) {
                 self.address = message.dst;
-
-                /**
-                 * Fired when the client receives its address.
-                 * @event #gotAddress
-                 */
-                self.events.trigger("gotAddress", self);
                 return self.afterConnected();
             });
         }

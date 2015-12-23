@@ -78,47 +78,10 @@ ozpIwc.util.Event = (function (util) {
         }
         var handlers = this.events[eventName] || [];
 
-        handlers.forEach(function (h) {
+        handlers.forEach(function handleEvent(h) {
             h.apply(this, args);
         });
         return args[0];
-    };
-
-    /**
-     * Fires an event that will be received by all handlers.
-     *
-     * @method
-     * @param {String} eventName Name of the event.
-     * @param {Object} event Event object to pass to the handers.
-     *
-     * @return {Object} The event after all handlers have processed it.
-     */
-    Event.prototype.trigger = function (eventName) {
-        //if no event data push a new cancelable event
-        var args = Array.prototype.slice.call(arguments, 1);
-        if (args.length < 1) {
-            args.push(new util.CancelableEvent());
-        }
-        var handlers = this.events[eventName] || [];
-
-        handlers.forEach(function (h) {
-            h.apply(this, args);
-        });
-        return args[0];
-    };
-
-    /**
-     * Adds an {{#crossLink "ozpIwc.util.Event/off:method"}}on(){{/crossLink}} and
-     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this
-     * object.
-     *
-     * @method mixinOnOff
-     * @param {Object} target Target to receive the on/off functions
-     */
-    Event.prototype.mixinOnOff = function (target) {
-        var self = this;
-        target.on = function () { return self.on.apply(self, arguments);};
-        target.off = function () { return self.off.apply(self, arguments);};
     };
 
     /**
@@ -137,4 +100,3 @@ ozpIwc.util.Event = (function (util) {
 
     return Event;
 }(ozpIwc.util));
-

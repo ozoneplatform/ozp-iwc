@@ -92,12 +92,10 @@ ozpIwc.policyAuth.points.PDP = (function (policyAuth, util) {
             asyncAction.resolve('failure', err);
         };
         //Format the request
-        policyAuth.points.utils.formatRequest(request, this.pip)
-            .success(function (formattedRequest) {
+        policyAuth.points.utils.formatRequest(request, this.pip).success(function onFormattedRequest (formattedRequest) {
 
                 // Get the policies from the PRP
-                self.prp.getPolicies(formattedRequest.policies)
-                    .success(function (policies) {
+                self.prp.getPolicies(formattedRequest.policies).success(function onGatheredPolicies (policies) {
 
                         var result = policyAuth.PolicyCombining[formattedRequest.combiningAlgorithm](policies, formattedRequest.category);
                         var response = {

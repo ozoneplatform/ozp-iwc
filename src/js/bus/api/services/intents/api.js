@@ -190,7 +190,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 packet.replyTo = chooser.entity.replyTo;
                 packet.entity.inFlightIntent = intentNode.toPacket();
                 packet.entity.force = (util.getInternetExplorerVersion() === 11);
-                if (util.runningInWorker()) {
+                if (util.runningInWorker) {
                     packet.entity.config = ozpConfig;
                     packet.entity.config.intentSelection = "intents.api" + node.resource;
                 }
@@ -252,7 +252,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
 
                 if (util.getInternetExplorerVersion() !== 11) {
                     log.info("launching popup chooser because: ", err);
-                    if (!util.runningInWorker()) {
+                    if (!util.runningInWorker) {
                         util.openWindow(ozpConfig.intentsChooserUri, {
                             "ozpIwc.peer": ozpConfig._busRoot,
                             "ozpIwc.intentSelection": "intents.api" + node.resource

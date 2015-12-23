@@ -96,7 +96,7 @@ debuggerModule.controller("ApiDisplayCtrl", ["$scope", "$attrs", "iwcClient", "a
         enableFiltering: true,
         onRegisterApi: function (gridApi) {
             scope.gridApi = gridApi;
-            window.setTimeout(function () {
+            setTimeout(function () {
                 scope.gridApi.core.handleWindowResize();
             }, 0);
         }

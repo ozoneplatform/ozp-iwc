@@ -210,7 +210,7 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
         }
         this.recursionDepth++;
         if (this.recursionDepth > 10) {
-            console.log("Recursing more than 10 levels deep on ", packet);
+            log.log("Recursing more than 10 levels deep on ", packet);
         }
         try {
             var packetContext = new transport.PacketContext({
@@ -369,4 +369,3 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
      * @param {ozpIwc.packet.Network} rawPacket
      */
 }(ozpIwc.config, ozpIwc.log, ozpIwc.transport, ozpIwc.util));
-
