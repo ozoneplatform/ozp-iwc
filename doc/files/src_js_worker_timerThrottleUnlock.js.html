@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -237,7 +237,7 @@ ozpIwc.worker.timerThrottleUnlock = function () {
             //Take all requested timer types and instantiate them in the worker where inactive limits do not apply.
             switch (timer.type) {
                 case &quot;setTimeout&quot;:
-                    timerRegistrations[timer.id] = self.setTimeout(function () {
+                    timerRegistrations[timer.id] = setTimeout(function () {
                         port.postMessage(timer);
                         timerRegistrations[timer.id] = null;
                     }, timer.time);
@@ -264,6 +264,7 @@ ozpIwc.worker.timerThrottleUnlock = function () {
 
     })
 };
+
     </pre>
 </div>
                     </div>

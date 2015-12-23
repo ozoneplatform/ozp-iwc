@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -388,7 +388,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 packet.replyTo = chooser.entity.replyTo;
                 packet.entity.inFlightIntent = intentNode.toPacket();
                 packet.entity.force = (util.getInternetExplorerVersion() === 11);
-                if (util.runningInWorker()) {
+                if (util.runningInWorker) {
                     packet.entity.config = ozpConfig;
                     packet.entity.config.intentSelection = &quot;intents.api&quot; + node.resource;
                 }
@@ -450,7 +450,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
 
                 if (util.getInternetExplorerVersion() !== 11) {
                     log.info(&quot;launching popup chooser because: &quot;, err);
-                    if (!util.runningInWorker()) {
+                    if (!util.runningInWorker) {
                         util.openWindow(ozpConfig.intentsChooserUri, {
                             &quot;ozpIwc.peer&quot;: ozpConfig._busRoot,
                             &quot;ozpIwc.intentSelection&quot;: &quot;intents.api&quot; + node.resource
@@ -556,6 +556,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
     return Api;
 
 }(ozpIwc.api, ozpIwc.log, ozpIwc.config, ozpIwc.util));
+
     </pre>
 </div>
                     </div>

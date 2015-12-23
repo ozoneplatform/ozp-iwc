@@ -23,7 +23,6 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
         participant.address = participant.address || "$nobody";
         participant.connect = participant.connect || function () {
                 participant.connectPromise = Promise.resolve();
-
                 return participant.connectPromise;
             };
 
@@ -37,9 +36,9 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
             participant[i] = mixins[i];
         }
 
-        participant.readLaunchParams(window.name);
-        participant.readLaunchParams(window.location.search);
-        participant.readLaunchParams(window.location.hash);
+        participant.readLaunchParams(util.globalScope.name);
+        participant.readLaunchParams(util.globalScope.location.search);
+        participant.readLaunchParams(util.globalScope.location.hash);
 
         ApiPromiseMixin.registerEvents(participant);
 
@@ -60,7 +59,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
         participant.on("disconnect", function () {
             participant.promiseCallbacks = {};
             participant.registeredCallbacks = {};
-            window.removeEventListener("message", participant.postMessageHandler, false);
+            util.globalScope.removeEventListener("message", participant.postMessageHandler, false);
             participant.connectPromise = null;
         });
     };

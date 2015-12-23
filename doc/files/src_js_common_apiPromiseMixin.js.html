@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -221,7 +221,6 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
         participant.address = participant.address || &quot;$nobody&quot;;
         participant.connect = participant.connect || function () {
                 participant.connectPromise = Promise.resolve();
-
                 return participant.connectPromise;
             };
 
@@ -235,9 +234,9 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
             participant[i] = mixins[i];
         }
 
-        participant.readLaunchParams(window.name);
-        participant.readLaunchParams(window.location.search);
-        participant.readLaunchParams(window.location.hash);
+        participant.readLaunchParams(util.globalScope.name);
+        participant.readLaunchParams(util.globalScope.location.search);
+        participant.readLaunchParams(util.globalScope.location.hash);
 
         ApiPromiseMixin.registerEvents(participant);
 
@@ -258,7 +257,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
         participant.on(&quot;disconnect&quot;, function () {
             participant.promiseCallbacks = {};
             participant.registeredCallbacks = {};
-            window.removeEventListener(&quot;message&quot;, participant.postMessageHandler, false);
+            util.globalScope.removeEventListener(&quot;message&quot;, participant.postMessageHandler, false);
             participant.connectPromise = null;
         });
     };
@@ -1158,6 +1157,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
 
     return ApiPromiseMixin;
 }(ozpIwc.apiMap, ozpIwc.log, ozpIwc.util));
+
     </pre>
 </div>
                     </div>

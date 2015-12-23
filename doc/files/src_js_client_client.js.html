@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -218,10 +218,11 @@ ozpIwc.Client = (function (util) {
      *     or &quot;ALL&quot;
      * @param {Boolean} [config.autoConnect=true] - Whether to automatically find and connect to a peer
      */
-    var Client = function (config) {
-        config = config || {};
+    var Client = function (peerUrl, config) {
 
-        if (config.enhancedTimers) {
+        var formattedConfig = formatConfig(peerUrl, config);
+
+        if (formattedConfig.enhancedTimers) {
             util.enabledEnhancedTimers();
         }
         this.type = &quot;default&quot;;
@@ -230,10 +231,10 @@ ozpIwc.Client = (function (util) {
         util.addEventListener(&#x27;beforeunload&#x27;, function () {
             self.disconnect();
         });
-        genPeerUrlCheck(this, config.peerUrl);
-        util.ApiPromiseMixin(this, config.autoConnect);
+        genPeerUrlCheck(this, formattedConfig.peerUrl);
+        util.ApiPromiseMixin(this, formattedConfig.autoConnect);
 
-        if (window.SharedWorker) {
+        if (util.globalScope.SharedWorker) {
             registerIntentHandlers(this);
         }
     };
@@ -241,6 +242,42 @@ ozpIwc.Client = (function (util) {
     //----------------------------------------------------------
     // Private Properties
     //----------------------------------------------------------
+    //
+
+    /**
+     * Takes in the various Client parameter options
+     * ([string]),([object]),(string,[object]) and formats the config.
+     * This is done to not break semver and force updated Client code.
+     * @method formatConfig
+     * @private
+     * @static
+     * @param  {[String|Object]} param1 Either the peer url to connect to ,the
+     *                                    config object, or undefined to use
+     *                                    default connection
+     * @param  {[Object]} param2  If peer url string provided in param1, param2
+     *                             is the optional config object. If param1 is the
+     *                             config object param2 is ignored
+     * @return {Object}         Formatted config object
+     */
+    var formatConfig = function(param1, param2){
+        var newConfig = {};
+        if(typeof param2 === &quot;object&quot;){
+            newConfig = param2;
+        }
+
+        if(typeof param1 === &quot;object&quot;){
+            //If the legacy style of config
+            newConfig = param1;
+            newConfig.peerUrl = newConfig.peerUrl || util.scriptDomain;
+        } else if(typeof param1 === &quot;string&quot;) {
+            // let the config object override the string url
+            newConfig.peerUrl = newConfig.peerUrl || param1;
+        } else {
+            // default to assigning script&#x27;s domain as IWC domain.
+            newConfig.peerUrl = util.scriptDomain;
+        }
+        return newConfig;
+    };
     /**
      * A utility method for handshaking the client&#x27;s connection to the bus.
      * Resolves an external promise.
@@ -312,7 +349,7 @@ ozpIwc.Client = (function (util) {
         client.postMessageHandler = genPostMessageHandler(client, resolve, reject);
         util.addEventListener(&quot;message&quot;, client.postMessageHandler);
 
-        window.setTimeout(function () {
+        setTimeout(function () {
             client.iframe = document.createElement(&quot;iframe&quot;);
             var url = client.peerUrl + &quot;/iframe_peer.html&quot;;
             if (client.launchParams.log) {
@@ -330,7 +367,7 @@ ozpIwc.Client = (function (util) {
             document.body.appendChild(client.iframe);
             client.peer = client.iframe.contentWindow;
 
-            if (!window.SharedWorker) {
+            if (!util.globalScope.SharedWorker) {
                 client.iframe.addEventListener(&quot;load&quot;, function () {
                     initPing(client, resolve, reject);
                 });
@@ -445,7 +482,7 @@ ozpIwc.Client = (function (util) {
         if (this.iframe) {
             this.iframe.src = &quot;about:blank&quot;;
             var self = this;
-            window.setTimeout(function () {
+            setTimeout(function () {
                 self.iframe.remove();
                 self.iframe = null;
                 resolve();
@@ -480,12 +517,6 @@ ozpIwc.Client = (function (util) {
                 return self.createIframePeer();
             }).then(function (message) {
                 self.address = message.dst;
-
-                /**
-                 * Fired when the client receives its address.
-                 * @event #gotAddress
-                 */
-                self.events.trigger(&quot;gotAddress&quot;, self);
                 return self.afterConnected();
             });
         }
@@ -543,6 +574,7 @@ ozpIwc.Client = (function (util) {
 
     return Client;
 }(ozpIwc.util));
+
     </pre>
 </div>
                     </div>

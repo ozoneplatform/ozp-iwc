@@ -2878,6 +2878,17 @@ var ozpIwc = ozpIwc || {};
  * @static
  */
 ozpIwc.util = (function (util) {
+
+  /**
+   * @param  {Object} globalScope
+   * @static
+   * @return {Object} reference to global scope, works in node,browser,workers.
+   */
+    util.globalScope = (function(){
+      return this;
+    })();
+
+
     /**
      * Generates a large hexidecimal string to serve as a unique ID.  Not a guid.
      *
@@ -2958,7 +2969,7 @@ ozpIwc.util = (function (util) {
             l = util.eventListeners[type] = [];
         }
         l.push(listener);
-        window.addEventListener(type, listener);
+        util.globalScope.addEventListener(type, listener);
     };
 
     /**
@@ -2971,7 +2982,7 @@ ozpIwc.util = (function (util) {
         if (l) {
             util.eventListeners[type] = l.filter(function (v) { return v !== listener;});
         }
-        window.removeEventListener(type, listener);
+        util.globalScope.removeEventListener(type, listener);
     };
 
     /**
@@ -2985,7 +2996,7 @@ ozpIwc.util = (function (util) {
     util.purgeEventListeners = function () {
         ozpIwc.util.object.eachEntry(util.eventListeners, function (type, listenerList) {
             listenerList.forEach(function (listener) {
-                window.removeEventListener(type, listener);
+                util.globalScope.removeEventListener(type, listener);
             });
         });
         util.eventListeners = {};
@@ -3016,25 +3027,26 @@ ozpIwc.util = (function (util) {
      * errors (especially attempts to send non-cloneable objects), and tries to
      * send a stringified copy of the message asa fallback.
      *
-     * @param window a window on which to invoke postMessage
+     * @param toWindow a window on which to invoke postMessage
      * @param msg the message to be sent
      * @param origin the target origin. The message will be sent only if it matches the origin of window.
      */
-    util.safePostMessage = function (window, msg, origin) {
+    util.safePostMessage = function (toWindow, msg, origin) {
         try {
             var data = msg;
-            if (!util.structuredCloneSupport() && typeof data !== 'string') {
+            if (!util.structuredCloneSupport && typeof data !== 'string') {
                 data = JSON.stringify(msg);
             }
-            window.postMessage(data, origin);
+            toWindow.postMessage(data, origin);
         } catch (e) {
             try {
-                window.postMessage(JSON.stringify(msg), origin);
+                toWindow.postMessage(JSON.stringify(msg), origin);
             } catch (e) {
-                ozpIwc.log.debug("Invalid call to window.postMessage: " + e.message);
+                ozpIwc.log.debug("Invalid call to postMessage: " + e.message);
             }
         }
     };
+
 
     /**
      * Detect browser support for structured clones. Returns quickly since it
@@ -3047,17 +3059,13 @@ ozpIwc.util = (function (util) {
      * (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126).
      *
      * @private
-     * @method structuredCloneSupport
-     * @return {Boolean} True if structured clones are supported, false otherwise.
+     * @property {Boolean} structuredCloneSupport
      */
-    util.structuredCloneSupport = function () {
-        if (util.structuredCloneSupportCache !== undefined) {
-            return util.structuredCloneSupportCache;
-        }
-        var cloneSupport = 'postMessage' in window;
+    util.structuredCloneSupport = (function () {
+        var cloneSupport = 'postMessage' in util.globalScope;
         //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
         try {
-            window.postMessage({
+            util.globalScope.postMessage({
                 toString: function () {
                     cloneSupport = false;
                 }
@@ -3067,9 +3075,8 @@ ozpIwc.util = (function (util) {
             //e.DATA_CLONE_ERR will exist only for browsers with structured clone support, which can be used as an
             // additional check if needed
         }
-        util.structuredCloneSupportCache = cloneSupport;
-        return util.structuredCloneSupportCache;
-    };
+        return cloneSupport;
+    }());
 
     /**
      * Does a deep clone of a serializable object.  Note that this will not
@@ -3099,7 +3106,7 @@ ozpIwc.util = (function (util) {
      *
      */
     util.parseQueryParams = function (query) {
-        query = query || window.location.search;
+        query = query || util.globalScope.location.search;
         var params = {};
         var regex = /\??([^&=]+)=?([^&]*)/g;
         var match;
@@ -3305,7 +3312,7 @@ ozpIwc.util = (function (util) {
      * @return {Promise}
      */
     util.prerender = function () {
-        if (util.runningInWorker()) {
+        if (util.runningInWorker) {
             return Promise.resolve();
         }
 
@@ -3324,17 +3331,14 @@ ozpIwc.util = (function (util) {
         });
     };
 
-    var runningInWorkerCache = (typeof WorkerGlobalScope !== 'undefined' && this instanceof WorkerGlobalScope);
     /**
      * A utility to determine if this code is running in a HTML5 Worker. Used to decide on browser technologies
      * to use.
-     * @method runningInWorker
+     * @property {Boolean} runningInWorker
      * @static
-     * @return {Boolean}
      */
-    util.runningInWorker = function () {
-        return runningInWorkerCache;
-    };
+    util.runningInWorker = (typeof WorkerGlobalScope !== 'undefined' &&
+            this instanceof WorkerGlobalScope);
 
     /**
      * Wraps window.open.  If the bus is running in a worker, then
@@ -3357,10 +3361,10 @@ ozpIwc.util = (function (util) {
             windowName = str;
         }
         try {
-            window.open(url, windowName, features);
+            util.globalScope.open(url, windowName, features);
         } catch (e) {
             //fallback for IE
-            window.open(url + "?" + windowName, null, features);
+            util.globalScope.open(url + "?" + windowName, null, features);
         }
     };
 
@@ -3371,18 +3375,11 @@ ozpIwc.util = (function (util) {
      */
     util.promiseDelay = function (delay) {
         return new Promise(function (res) {
-            window.setTimeout(function () { res();}, delay);
+            setTimeout(function () { res();}, delay);
         });
     };
     return util;
 }(ozpIwc.util || {}));
-
-
-
-
-
-
-
 
 var ozpIwc = ozpIwc || {};
 
@@ -3469,7 +3466,6 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
         participant.address = participant.address || "$nobody";
         participant.connect = participant.connect || function () {
                 participant.connectPromise = Promise.resolve();
-
                 return participant.connectPromise;
             };
 
@@ -3483,9 +3479,9 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
             participant[i] = mixins[i];
         }
 
-        participant.readLaunchParams(window.name);
-        participant.readLaunchParams(window.location.search);
-        participant.readLaunchParams(window.location.hash);
+        participant.readLaunchParams(util.globalScope.name);
+        participant.readLaunchParams(util.globalScope.location.search);
+        participant.readLaunchParams(util.globalScope.location.hash);
 
         ApiPromiseMixin.registerEvents(participant);
 
@@ -3506,7 +3502,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
         participant.on("disconnect", function () {
             participant.promiseCallbacks = {};
             participant.registeredCallbacks = {};
-            window.removeEventListener("message", participant.postMessageHandler, false);
+            util.globalScope.removeEventListener("message", participant.postMessageHandler, false);
             participant.connectPromise = null;
         });
     };
@@ -4406,6 +4402,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
 
     return ApiPromiseMixin;
 }(ozpIwc.apiMap, ozpIwc.log, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.util = ozpIwc.util || {};
 
@@ -4540,47 +4537,10 @@ ozpIwc.util.Event = (function (util) {
         }
         var handlers = this.events[eventName] || [];
 
-        handlers.forEach(function (h) {
+        handlers.forEach(function handleEvent(h) {
             h.apply(this, args);
         });
         return args[0];
-    };
-
-    /**
-     * Fires an event that will be received by all handlers.
-     *
-     * @method
-     * @param {String} eventName Name of the event.
-     * @param {Object} event Event object to pass to the handers.
-     *
-     * @return {Object} The event after all handlers have processed it.
-     */
-    Event.prototype.trigger = function (eventName) {
-        //if no event data push a new cancelable event
-        var args = Array.prototype.slice.call(arguments, 1);
-        if (args.length < 1) {
-            args.push(new util.CancelableEvent());
-        }
-        var handlers = this.events[eventName] || [];
-
-        handlers.forEach(function (h) {
-            h.apply(this, args);
-        });
-        return args[0];
-    };
-
-    /**
-     * Adds an {{#crossLink "ozpIwc.util.Event/off:method"}}on(){{/crossLink}} and
-     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this
-     * object.
-     *
-     * @method mixinOnOff
-     * @param {Object} target Target to receive the on/off functions
-     */
-    Event.prototype.mixinOnOff = function (target) {
-        var self = this;
-        target.on = function () { return self.on.apply(self, arguments);};
-        target.off = function () { return self.off.apply(self, arguments);};
     };
 
     /**
@@ -4599,7 +4559,6 @@ ozpIwc.util.Event = (function (util) {
 
     return Event;
 }(ozpIwc.util));
-
 
 if (!(window.console && console.log)) {
     console = {
@@ -5130,10 +5089,11 @@ ozpIwc.Client = (function (util) {
      *     or "ALL"
      * @param {Boolean} [config.autoConnect=true] - Whether to automatically find and connect to a peer
      */
-    var Client = function (config) {
-        config = config || {};
+    var Client = function (peerUrl, config) {
 
-        if (config.enhancedTimers) {
+        var formattedConfig = formatConfig(peerUrl, config);
+
+        if (formattedConfig.enhancedTimers) {
             util.enabledEnhancedTimers();
         }
         this.type = "default";
@@ -5142,10 +5102,10 @@ ozpIwc.Client = (function (util) {
         util.addEventListener('beforeunload', function () {
             self.disconnect();
         });
-        genPeerUrlCheck(this, config.peerUrl);
-        util.ApiPromiseMixin(this, config.autoConnect);
+        genPeerUrlCheck(this, formattedConfig.peerUrl);
+        util.ApiPromiseMixin(this, formattedConfig.autoConnect);
 
-        if (window.SharedWorker) {
+        if (util.globalScope.SharedWorker) {
             registerIntentHandlers(this);
         }
     };
@@ -5153,6 +5113,42 @@ ozpIwc.Client = (function (util) {
     //----------------------------------------------------------
     // Private Properties
     //----------------------------------------------------------
+    //
+
+    /**
+     * Takes in the various Client parameter options
+     * ([string]),([object]),(string,[object]) and formats the config.
+     * This is done to not break semver and force updated Client code.
+     * @method formatConfig
+     * @private
+     * @static
+     * @param  {[String|Object]} param1 Either the peer url to connect to ,the
+     *                                    config object, or undefined to use
+     *                                    default connection
+     * @param  {[Object]} param2  If peer url string provided in param1, param2
+     *                             is the optional config object. If param1 is the
+     *                             config object param2 is ignored
+     * @return {Object}         Formatted config object
+     */
+    var formatConfig = function(param1, param2){
+        var newConfig = {};
+        if(typeof param2 === "object"){
+            newConfig = param2;
+        }
+
+        if(typeof param1 === "object"){
+            //If the legacy style of config
+            newConfig = param1;
+            newConfig.peerUrl = newConfig.peerUrl || util.scriptDomain;
+        } else if(typeof param1 === "string") {
+            // let the config object override the string url
+            newConfig.peerUrl = newConfig.peerUrl || param1;
+        } else {
+            // default to assigning script's domain as IWC domain.
+            newConfig.peerUrl = util.scriptDomain;
+        }
+        return newConfig;
+    };
     /**
      * A utility method for handshaking the client's connection to the bus.
      * Resolves an external promise.
@@ -5224,7 +5220,7 @@ ozpIwc.Client = (function (util) {
         client.postMessageHandler = genPostMessageHandler(client, resolve, reject);
         util.addEventListener("message", client.postMessageHandler);
 
-        window.setTimeout(function () {
+        setTimeout(function () {
             client.iframe = document.createElement("iframe");
             var url = client.peerUrl + "/iframe_peer.html";
             if (client.launchParams.log) {
@@ -5242,7 +5238,7 @@ ozpIwc.Client = (function (util) {
             document.body.appendChild(client.iframe);
             client.peer = client.iframe.contentWindow;
 
-            if (!window.SharedWorker) {
+            if (!util.globalScope.SharedWorker) {
                 client.iframe.addEventListener("load", function () {
                     initPing(client, resolve, reject);
                 });
@@ -5357,7 +5353,7 @@ ozpIwc.Client = (function (util) {
         if (this.iframe) {
             this.iframe.src = "about:blank";
             var self = this;
-            window.setTimeout(function () {
+            setTimeout(function () {
                 self.iframe.remove();
                 self.iframe = null;
                 resolve();
@@ -5392,12 +5388,6 @@ ozpIwc.Client = (function (util) {
                 return self.createIframePeer();
             }).then(function (message) {
                 self.address = message.dst;
-
-                /**
-                 * Fired when the client receives its address.
-                 * @event #gotAddress
-                 */
-                self.events.trigger("gotAddress", self);
                 return self.afterConnected();
             });
         }
@@ -5455,6 +5445,7 @@ ozpIwc.Client = (function (util) {
 
     return Client;
 }(ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 
 /**
@@ -5617,7 +5608,7 @@ ozpIwc.util = (function (util) {
                     id: timerCallbacks[i].id
                 });
                 timerCallbacks[i].loc = "local";
-                timerCallbacks[i].locId = window.setInterval(timerCallbacks[i].callback, timerCallbacks[i].time, timerCallbacks[i].args);
+                timerCallbacks[i].locId = setInterval(timerCallbacks[i].callback, timerCallbacks[i].time, timerCallbacks[i].args);
             }
         }
     };
@@ -5626,7 +5617,7 @@ ozpIwc.util = (function (util) {
         runLoc = "sharedWorker";
         for (var i in timerCallbacks) {
             if (timerCallbacks[i].type === "setInterval" && timerCallbacks[i].time < 1000 && timerCallbacks[i].loc === "local") {
-                window.clearInterval(timerCallbacks[i].locId);
+                clearInterval(timerCallbacks[i].locId);
                 timerCallbacks[i].loc = "sharedWorker";
                 timerWorker.port.postMessage({
                     type: timerCallbacks[i].type,
@@ -5641,9 +5632,9 @@ ozpIwc.util = (function (util) {
     var clearCalls = function (type) {
         return function (id) {
             if (!enhancedTimersEnabled || !timerCallbacks[id]) {
-                return window.clearInterval(id);
+                return clearInterval(id);
             } else if (timerCallbacks[id].loc === "local") {
-                window.clearInterval(timerCallbacks[id].locId);
+                clearInterval(timerCallbacks[id].locId);
                 timerCallbacks[id] = undefined;
             } else {
                 timerWorker.port.postMessage({
@@ -5665,7 +5656,7 @@ ozpIwc.util = (function (util) {
      * @method enableEnhancedTimers
      */
     util.enabledEnhancedTimers = function () {
-        if (window.SharedWorker) {
+        if (util.globalScope.SharedWorker) {
             timerWorker = new SharedWorker('/js/ozpIwc.timer.js');
 
             timerWorker.port.addEventListener('message', function (evt) {
@@ -5673,7 +5664,7 @@ ozpIwc.util = (function (util) {
                 var timer = evt.data;
                 var registered = timerCallbacks[timer.id];
                 if (registered) {
-                    registered.callback.call(window, registered.args);
+                    registered.callback.call(util.globalScope, registered.args);
 
                     if (timer.type === "setTimeout") {
                         timerCallbacks[timer.id] = null;
@@ -5708,7 +5699,7 @@ ozpIwc.util = (function (util) {
      */
     util.setTimeout = function (cb, time) {
         if (!enhancedTimersEnabled || useLocalTimers() || time && time >= 1000) {
-            return window.setTimeout(cb, time);
+            return setTimeout(cb, time);
         }
         var timer = {
             type: "setTimeout",
@@ -5734,7 +5725,7 @@ ozpIwc.util = (function (util) {
      */
     util.setInterval = function (cb, time) {
         if (!enhancedTimersEnabled) {
-            return window.setInterval(cb, time);
+            return setInterval(cb, time);
         }
 
         var timer = {
@@ -5747,7 +5738,7 @@ ozpIwc.util = (function (util) {
 
         if (useLocalTimers() || time && time >= 1000) {
             timer.loc = "local";
-            timer.locId = window.setInterval(cb, time);
+            timer.locId = setInterval(cb, time);
             timerCallbacks[timer.id] = timer;
             return timer.locId;
         }
@@ -5775,8 +5766,16 @@ ozpIwc.util = (function (util) {
      */
     util.clearTimeout = clearCalls("clearTimeout");
 
+    util.scriptDomain = (function(){
+        var scripts = document.getElementsByTagName('script');
+        var path = scripts[scripts.length-1].src.split('?')[0];
+        // the iframe_peer is a dir above the bus code.
+        return path.split('/').slice(0,-2).join('/');
+    }());
+
     return util;
 }(ozpIwc.util));
+
 //# sourceMappingURL=ozpIwc-client.js.map
 //Return the ozpIwc object
 return ozpIwc;

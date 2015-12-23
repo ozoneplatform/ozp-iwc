@@ -39,7 +39,7 @@ ozpIwc.worker.timerThrottleUnlock = function () {
             //Take all requested timer types and instantiate them in the worker where inactive limits do not apply.
             switch (timer.type) {
                 case "setTimeout":
-                    timerRegistrations[timer.id] = self.setTimeout(function () {
+                    timerRegistrations[timer.id] = setTimeout(function () {
                         port.postMessage(timer);
                         timerRegistrations[timer.id] = null;
                     }, timer.time);
@@ -66,6 +66,7 @@ ozpIwc.worker.timerThrottleUnlock = function () {
 
     })
 };
+
 ozpIwc = ozpIwc || {};
 ozpIwc.worker = ozpIwc.worker || {};
 

@@ -2877,6 +2877,17 @@ var ozpIwc = ozpIwc || {};
  * @static
  */
 ozpIwc.util = (function (util) {
+
+  /**
+   * @param  {Object} globalScope
+   * @static
+   * @return {Object} reference to global scope, works in node,browser,workers.
+   */
+    util.globalScope = (function(){
+      return this;
+    })();
+
+
     /**
      * Generates a large hexidecimal string to serve as a unique ID.  Not a guid.
      *
@@ -2957,7 +2968,7 @@ ozpIwc.util = (function (util) {
             l = util.eventListeners[type] = [];
         }
         l.push(listener);
-        window.addEventListener(type, listener);
+        util.globalScope.addEventListener(type, listener);
     };
 
     /**
@@ -2970,7 +2981,7 @@ ozpIwc.util = (function (util) {
         if (l) {
             util.eventListeners[type] = l.filter(function (v) { return v !== listener;});
         }
-        window.removeEventListener(type, listener);
+        util.globalScope.removeEventListener(type, listener);
     };
 
     /**
@@ -2984,7 +2995,7 @@ ozpIwc.util = (function (util) {
     util.purgeEventListeners = function () {
         ozpIwc.util.object.eachEntry(util.eventListeners, function (type, listenerList) {
             listenerList.forEach(function (listener) {
-                window.removeEventListener(type, listener);
+                util.globalScope.removeEventListener(type, listener);
             });
         });
         util.eventListeners = {};
@@ -3015,25 +3026,26 @@ ozpIwc.util = (function (util) {
      * errors (especially attempts to send non-cloneable objects), and tries to
      * send a stringified copy of the message asa fallback.
      *
-     * @param window a window on which to invoke postMessage
+     * @param toWindow a window on which to invoke postMessage
      * @param msg the message to be sent
      * @param origin the target origin. The message will be sent only if it matches the origin of window.
      */
-    util.safePostMessage = function (window, msg, origin) {
+    util.safePostMessage = function (toWindow, msg, origin) {
         try {
             var data = msg;
-            if (!util.structuredCloneSupport() && typeof data !== 'string') {
+            if (!util.structuredCloneSupport && typeof data !== 'string') {
                 data = JSON.stringify(msg);
             }
-            window.postMessage(data, origin);
+            toWindow.postMessage(data, origin);
         } catch (e) {
             try {
-                window.postMessage(JSON.stringify(msg), origin);
+                toWindow.postMessage(JSON.stringify(msg), origin);
             } catch (e) {
-                ozpIwc.log.debug("Invalid call to window.postMessage: " + e.message);
+                ozpIwc.log.debug("Invalid call to postMessage: " + e.message);
             }
         }
     };
+
 
     /**
      * Detect browser support for structured clones. Returns quickly since it
@@ -3046,17 +3058,13 @@ ozpIwc.util = (function (util) {
      * (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126).
      *
      * @private
-     * @method structuredCloneSupport
-     * @return {Boolean} True if structured clones are supported, false otherwise.
+     * @property {Boolean} structuredCloneSupport
      */
-    util.structuredCloneSupport = function () {
-        if (util.structuredCloneSupportCache !== undefined) {
-            return util.structuredCloneSupportCache;
-        }
-        var cloneSupport = 'postMessage' in window;
+    util.structuredCloneSupport = (function () {
+        var cloneSupport = 'postMessage' in util.globalScope;
         //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
         try {
-            window.postMessage({
+            util.globalScope.postMessage({
                 toString: function () {
                     cloneSupport = false;
                 }
@@ -3066,9 +3074,8 @@ ozpIwc.util = (function (util) {
             //e.DATA_CLONE_ERR will exist only for browsers with structured clone support, which can be used as an
             // additional check if needed
         }
-        util.structuredCloneSupportCache = cloneSupport;
-        return util.structuredCloneSupportCache;
-    };
+        return cloneSupport;
+    }());
 
     /**
      * Does a deep clone of a serializable object.  Note that this will not
@@ -3098,7 +3105,7 @@ ozpIwc.util = (function (util) {
      *
      */
     util.parseQueryParams = function (query) {
-        query = query || window.location.search;
+        query = query || util.globalScope.location.search;
         var params = {};
         var regex = /\??([^&=]+)=?([^&]*)/g;
         var match;
@@ -3304,7 +3311,7 @@ ozpIwc.util = (function (util) {
      * @return {Promise}
      */
     util.prerender = function () {
-        if (util.runningInWorker()) {
+        if (util.runningInWorker) {
             return Promise.resolve();
         }
 
@@ -3323,17 +3330,14 @@ ozpIwc.util = (function (util) {
         });
     };
 
-    var runningInWorkerCache = (typeof WorkerGlobalScope !== 'undefined' && this instanceof WorkerGlobalScope);
     /**
      * A utility to determine if this code is running in a HTML5 Worker. Used to decide on browser technologies
      * to use.
-     * @method runningInWorker
+     * @property {Boolean} runningInWorker
      * @static
-     * @return {Boolean}
      */
-    util.runningInWorker = function () {
-        return runningInWorkerCache;
-    };
+    util.runningInWorker = (typeof WorkerGlobalScope !== 'undefined' &&
+            this instanceof WorkerGlobalScope);
 
     /**
      * Wraps window.open.  If the bus is running in a worker, then
@@ -3356,10 +3360,10 @@ ozpIwc.util = (function (util) {
             windowName = str;
         }
         try {
-            window.open(url, windowName, features);
+            util.globalScope.open(url, windowName, features);
         } catch (e) {
             //fallback for IE
-            window.open(url + "?" + windowName, null, features);
+            util.globalScope.open(url + "?" + windowName, null, features);
         }
     };
 
@@ -3370,18 +3374,11 @@ ozpIwc.util = (function (util) {
      */
     util.promiseDelay = function (delay) {
         return new Promise(function (res) {
-            window.setTimeout(function () { res();}, delay);
+            setTimeout(function () { res();}, delay);
         });
     };
     return util;
 }(ozpIwc.util || {}));
-
-
-
-
-
-
-
 
 var ozpIwc = ozpIwc || {};
 
@@ -3468,7 +3465,6 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
         participant.address = participant.address || "$nobody";
         participant.connect = participant.connect || function () {
                 participant.connectPromise = Promise.resolve();
-
                 return participant.connectPromise;
             };
 
@@ -3482,9 +3478,9 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
             participant[i] = mixins[i];
         }
 
-        participant.readLaunchParams(window.name);
-        participant.readLaunchParams(window.location.search);
-        participant.readLaunchParams(window.location.hash);
+        participant.readLaunchParams(util.globalScope.name);
+        participant.readLaunchParams(util.globalScope.location.search);
+        participant.readLaunchParams(util.globalScope.location.hash);
 
         ApiPromiseMixin.registerEvents(participant);
 
@@ -3505,7 +3501,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
         participant.on("disconnect", function () {
             participant.promiseCallbacks = {};
             participant.registeredCallbacks = {};
-            window.removeEventListener("message", participant.postMessageHandler, false);
+            util.globalScope.removeEventListener("message", participant.postMessageHandler, false);
             participant.connectPromise = null;
         });
     };
@@ -4405,6 +4401,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
 
     return ApiPromiseMixin;
 }(ozpIwc.apiMap, ozpIwc.log, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.util = ozpIwc.util || {};
 
@@ -4539,47 +4536,10 @@ ozpIwc.util.Event = (function (util) {
         }
         var handlers = this.events[eventName] || [];
 
-        handlers.forEach(function (h) {
+        handlers.forEach(function handleEvent(h) {
             h.apply(this, args);
         });
         return args[0];
-    };
-
-    /**
-     * Fires an event that will be received by all handlers.
-     *
-     * @method
-     * @param {String} eventName Name of the event.
-     * @param {Object} event Event object to pass to the handers.
-     *
-     * @return {Object} The event after all handlers have processed it.
-     */
-    Event.prototype.trigger = function (eventName) {
-        //if no event data push a new cancelable event
-        var args = Array.prototype.slice.call(arguments, 1);
-        if (args.length < 1) {
-            args.push(new util.CancelableEvent());
-        }
-        var handlers = this.events[eventName] || [];
-
-        handlers.forEach(function (h) {
-            h.apply(this, args);
-        });
-        return args[0];
-    };
-
-    /**
-     * Adds an {{#crossLink "ozpIwc.util.Event/off:method"}}on(){{/crossLink}} and
-     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this
-     * object.
-     *
-     * @method mixinOnOff
-     * @param {Object} target Target to receive the on/off functions
-     */
-    Event.prototype.mixinOnOff = function (target) {
-        var self = this;
-        target.on = function () { return self.on.apply(self, arguments);};
-        target.off = function () { return self.off.apply(self, arguments);};
     };
 
     /**
@@ -4598,7 +4558,6 @@ ozpIwc.util.Event = (function (util) {
 
     return Event;
 }(ozpIwc.util));
-
 
 if (!(window.console && console.log)) {
     console = {
@@ -7136,7 +7095,7 @@ ozpIwc.util = (function (util) {
      * @static
      */
     util.setImmediate = function (f) {
-        window.setImmediate(f);
+        util.globalScope.setImmediate(f);
     };
 
     /**
@@ -7321,6 +7280,7 @@ ozpIwc.util = (function (util) {
 
     return util;
 }(ozpIwc.util || {}));
+
 /**
  * Configs, override in iwc.conf.js and include prior to ozpIwc-bus.js.
  */
@@ -7335,7 +7295,7 @@ ozpIwc.config = ozpIwc.config || {};
 
 
 //If this is in a worker the config file needs to be loaded.
-if (ozpIwc.util.runningInWorker()) {
+if (ozpIwc.util.runningInWorker) {
     importScripts('ozpIwc.conf.js');
 }
 
@@ -7490,9 +7450,9 @@ ozpIwc.config._testMode = ozpIwc.util.ifUndef(ozpIwc.config._testMode, false);
  * @default "<Absolute root path of current browser URL>"
  */
 ozpIwc.config._busRoot = ozpIwc.util.ifUndef(ozpIwc.config._busRoot, (function () {
-    return window.location.protocol + "//" +
-        window.location.host +
-        window.location.pathname.replace(/[^\/]+$/, "");
+    return ozpIwc.util.globalScope.location.protocol + "//" +
+        ozpIwc.util.globalScope.location.host +
+        ozpIwc.util.globalScope.location.pathname.replace(/[^\/]+$/, "");
 })());
 
 
@@ -7556,6 +7516,7 @@ ozpIwc.config.ajaxPoolSize = ozpIwc.util.ifUndef(ozpIwc.config.ajaxPoolSize, 1);
  * @default {}
  */
 ozpIwc.config.templates = ozpIwc.util.ifUndef(ozpIwc.config.templates, {});
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.policyAuth = ozpIwc.policyAuth || {};
 ozpIwc.policyAuth.elements = ozpIwc.policyAuth.elements || {};
@@ -7757,12 +7718,10 @@ ozpIwc.policyAuth.points.PDP = (function (policyAuth, util) {
             asyncAction.resolve('failure', err);
         };
         //Format the request
-        policyAuth.points.utils.formatRequest(request, this.pip)
-            .success(function (formattedRequest) {
+        policyAuth.points.utils.formatRequest(request, this.pip).success(function onFormattedRequest (formattedRequest) {
 
                 // Get the policies from the PRP
-                self.prp.getPolicies(formattedRequest.policies)
-                    .success(function (policies) {
+                self.prp.getPolicies(formattedRequest.policies).success(function onGatheredPolicies (policies) {
 
                         var result = policyAuth.PolicyCombining[formattedRequest.combiningAlgorithm](policies, formattedRequest.category);
                         var response = {
@@ -8952,7 +8911,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
         if (util.getInternetExplorerVersion() >= 0) {
             // IE can keep storage events between refreshes.  If we give it a second, it'll
             // dump all of them on the floor
-            window.setTimeout(function () {
+            setTimeout(function () {
                 util.addEventListener('storage', receiveStorageEvent);
             }, 500);
         } else {
@@ -9041,8 +9000,8 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
         }
 
         // Restart the fragment drop countdown
-        window.clearTimeout(link.fragments[key].fragmentTimer);
-        link.fragments[key].fragmentTimer = window.setTimeout(link.fragments[key].timeoutFunc, link.fragmentTimeout);
+        clearTimeout(link.fragments[key].fragmentTimer);
+        link.fragments[key].fragmentTimer = setTimeout(link.fragments[key].timeoutFunc, link.fragmentTimeout);
 
         // keep a copy of properties needed for defragmenting, the last sequence & srcPeer received will be
         // reused in the defragmented packet
@@ -9139,7 +9098,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
             if (retryCount < link.maxRetries) {
                 retryCount++;
                 // Call again but back off for an exponential amount of time.
-                window.setTimeout(function () {
+                setTimeout(function () {
                     attemptSend(link, packet, retryCount);
                 }, timeOut);
             } else {
@@ -9178,7 +9137,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
         if (defragmentedPacket) {
 
             // clear the fragment timeout
-            window.clearTimeout(this.fragments[key].fragmentTimer);
+            clearTimeout(this.fragments[key].fragmentTimer);
 
             // Remove the last sequence from the known packets to reuse it for the defragmented packet
             var packetIndex = this.peer.packetsSeen[defragmentedPacket.srcPeer].indexOf(defragmentedPacket.sequence);
@@ -9285,6 +9244,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
 
     return Link;
 }(ozpIwc.log, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.network = ozpIwc.network || {};
 
@@ -9654,6 +9614,95 @@ ozpIwc.transport.participant.Base = (function (log, policyAuth, transport, util)
     };
 
     /**
+     * An AsyncAction to verify if this participant can receive the given packetContext
+     * @method verifyReceiveAs
+     * @param  {ozpIwc.packet.Transport} packetContext
+     * @return {ozpIwc.util.AsyncAction} calls success if can receive.
+     */
+    Base.prototype.verifyReceiveAs = function (packetContext) {
+        var receiveRequest = {
+            'subject': this.permissions.getAll(),
+            'resource': {'ozp:iwc:receiveAs': packetContext.packet.dst},
+            'action': {'ozp:iwc:action': 'receiveAs'},
+            'policies': this.authorization.policySets.receiveAsSet
+        };
+
+        return this.authorization.isPermitted(receiveRequest);
+    };
+
+    /**
+     * An AsyncAction to format a received packetContext's permission.
+     * @method formatRequest
+     * @param  {ozpIwc.packet.Transport} packetContext
+     * @return {ozpIwc.util.AsyncAction} calls success with the formated permissions.
+     */
+    Base.prototype.formatRequest = function(packetContext){
+        return policyAuth.points.utils.formatCategory(
+            packetContext.packet.permissions, this.authorization.pip);
+    };
+
+    /**
+     * An AsyncAction to verify if this participant can read the given packetContext
+     * @method verifyRead
+     * @param  {ozpIwc.packet.Transport} packetContext
+     * @return {ozpIwc.util.AsyncAction} calls success if can read.
+     */
+    Base.prototype.verifyRead = function (permissions) {
+        var request = {
+            'subject': this.permissions.getAll(),
+            'resource': permissions || {},
+            'action': {'ozp:iwc:action': 'read'},
+            'policies': this.authorization.policySets.readSet
+        };
+
+        return this.authorization.isPermitted(request);
+    };
+
+    /**
+     * An AsyncAction to verify if this participant can send the given packet
+     * @method verifySendAs
+     * @param  {ozpIwc.packet.Base} packet
+     * @return {ozpIwc.util.AsyncAction} calls success if can send.
+     */
+    Base.prototype.verifySendAs = function (packet) {
+        var request = {
+            'subject': this.permissions.getAll(),
+            'resource': {'ozp:iwc:sendAs': packet.src},
+            'action': {'ozp:iwc:action': 'sendAs'},
+            'policies': this.authorization.policySets.sendAsSet
+        };
+        return this.authorization.isPermitted(request);
+    };
+
+    /**
+     * Mark the given received packetContext in the metrics.
+     * @method markReceivePacket
+     * @param  {ozpIwc.packet.Transport} packetContext
+     */
+    Base.prototype.markReceivePacket = function(packetContext){
+        if (this.metrics) {
+            this.receivedPacketsMeter.mark();
+            if (packetContext.packet.time) {
+                this.latencyInTimer.mark(util.now() - packetContext.packet.time);
+            }
+        }
+    };
+
+    /**
+     * Mark the given sent packet in the metrics.
+     * @method markSendPacket
+     * @param  {ozpIwc.packet.Base} packet
+     */
+    Base.prototype.markSendPacket = function(packet){
+        if (this.metrics) {
+            this.sentPacketsMeter.mark();
+            if (packet.time) {
+                this.latencyOutTimer.mark(util.now() - packet.time);
+            }
+        }
+    };
+
+    /**
      * Processes packets sent from the router to the participant. If a packet does not pass authorization it is marked
      * forbidden.
      *
@@ -9664,46 +9713,23 @@ ozpIwc.transport.participant.Base = (function (log, policyAuth, transport, util)
     Base.prototype.receiveFromRouter = function (packetContext) {
         var self = this;
 
-        var request = {
-            'subject': this.permissions.getAll(),
-            'resource': {'ozp:iwc:receiveAs': packetContext.packet.dst},
-            'action': {'ozp:iwc:action': 'receiveAs'},
-            'policies': this.authorization.policySets.receiveAsSet
-        };
-
-        var onError = function (err) {
+        function onError(err) {
             if (self.metrics) {
                 self.forbiddenPacketsMeter.mark();
                 /** @todo do we send a "denied" message to the destination?  drop?  who knows? */
                 self.metrics.counter("transport.packets.forbidden").inc();
             }
-            console.error("failure", err);
-        };
+            log.error("failure", err);
+        }
 
-        this.authorization.isPermitted(request)
-            .success(function () {
-                policyAuth.points.utils.formatCategory(packetContext.packet.permissions, self.authorization.pip)
-                    .success(function (permissions) {
-                        var request = {
-                            'subject': self.permissions.getAll(),
-                            'resource': permissions || {},
-                            'action': {'ozp:iwc:action': 'read'},
-                            'policies': self.authorization.policySets.readSet
-                        };
-
-                        self.authorization.isPermitted(request)
-                            .success(function (resolution) {
-                                if (self.metrics) {
-                                    self.receivedPacketsMeter.mark();
-                                    if (packetContext.packet.time) {
-                                        self.latencyInTimer.mark(util.now() - packetContext.packet.time);
-                                    }
-                                }
-
-                                self.receiveFromRouterImpl(packetContext);
-                            }).failure(onError);
-                    }).failure(onError);
+        this.verifyReceiveAs(packetContext).success(function canReceive () {
+            self.formatRequest(packetContext).success(function validatedFormat (permissions) {
+                self.verifyRead(permissions).success(function canRead () {
+                    self.markReceivePacket(packetContext);
+                    self.receiveFromRouterImpl(packetContext);
+                }).failure(onError);
             }).failure(onError);
+        }).failure(onError);
     };
 
     /**
@@ -9759,7 +9785,7 @@ ozpIwc.transport.participant.Base = (function (log, policyAuth, transport, util)
      * src, ver, msgId, and time.
      *
      * @method fixPacket
-     * @param {ozpIwc.packet.Transport} packet
+     * @param {ozpIwc.packet.Transport.packet} packet
      *
      * @return {ozpIwc.packet.Transport}
      */
@@ -9781,31 +9807,22 @@ ozpIwc.transport.participant.Base = (function (log, policyAuth, transport, util)
      * before doing so.
      *
      * @method send
-     * @param {ozpIwc.packet.Transport} packet
+     * @param {ozpIwc.packet.Transport.packet} packet
      *
      * @return {ozpIwc.packet.Transport}
      */
     Base.prototype.send = function (packet) {
         var self = this;
-        var request = {
-            'subject': this.permissions.getAll(),
-            'resource': {'ozp:iwc:sendAs': packet.src},
-            'action': {'ozp:iwc:action': 'sendAs'},
-            'policies': this.authorization.policySets.sendAsSet
-        };
+        function onError (e) {
+            log.error("Participant " + self.address + " failed to send a packet:", e, packet);
+        }
         packet = self.fixPacket(packet);
-        this.authorization.isPermitted(request)
-            .success(function (resolution) {
-                if (self.metrics) {
-                    self.sentPacketsMeter.mark();
-                    if (packet.time) {
-                        self.latencyOutTimer.mark(util.now() - packet.time);
-                    }
-                }
-                self.router.send(packet, self);
-            }).failure(function (e) {
-                log.error("Participant " + self.address + " failed to send a packet:", e, packet);
-            });
+
+        this.verifySendAs(packet).success(function canSend () {
+            self.markSendPacket(packet);
+            self.router.send(packet, self);
+        }).failure(onError);
+
         return packet;
     };
 
@@ -9901,6 +9918,7 @@ ozpIwc.transport.participant.Base = (function (log, policyAuth, transport, util)
 
     return Base;
 }(ozpIwc.log, ozpIwc.policyAuth, ozpIwc.transport, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.transport = ozpIwc.transport || {};
 ozpIwc.transport.participant = ozpIwc.transport.participant || {};
@@ -10121,7 +10139,7 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
         this.heartBeatStatus.origin = this.origin;
 
         var self = this;
-        this.port.addEventListener("message", function (e) {
+        var sharedWorkerReceiveMessage = function (e) {
             var data = e.data;
             if (typeof(data) === "string") {
                 try {
@@ -10135,7 +10153,9 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
                 self.handleWindowEvent(data.windowEvent);
             }
             self.forwardFromMessageChannel(data, e);
-        }, false);
+        };
+
+        this.port.addEventListener("message", sharedWorkerReceiveMessage, false);
         util.safePostMessage(this.port, {iwcInit: true});
     });
 
@@ -10244,7 +10264,6 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
 
     return SharedWorker;
 }(ozpIwc.log, ozpIwc.transport, ozpIwc.util));
-
 
 var ozpIwc = ozpIwc || {};
 ozpIwc.transport = ozpIwc.transport || {};
@@ -10626,7 +10645,7 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
         }
         this.recursionDepth++;
         if (this.recursionDepth > 10) {
-            console.log("Recursing more than 10 levels deep on ", packet);
+            log.log("Recursing more than 10 levels deep on ", packet);
         }
         try {
             var packetContext = new transport.PacketContext({
@@ -10785,7 +10804,6 @@ ozpIwc.transport.Router = (function (ozpConfig, log, transport, util) {
      * @param {ozpIwc.packet.Network} rawPacket
      */
 }(ozpIwc.config, ozpIwc.log, ozpIwc.transport, ozpIwc.util));
-
 
 var ozpIwc = ozpIwc || {};
 ozpIwc.transport = ozpIwc.transport || {};
@@ -11050,7 +11068,8 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
             'action': "election",
             'entity': {
                 'consensusId': this.consensusId
-            }
+            },
+            'respondOn': "none"
         });
     };
 
@@ -11078,7 +11097,8 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
             'entity': {
                 'consensusId': bully.consensusId,
                 'logs': logs
-            }
+            },
+            'respondOn': "none"
         });
     };
 
@@ -11097,7 +11117,8 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
             'action': "query",
             'entity': {
                 'consensusId': bully.consensusId
-            }
+            },
+            'respondOn': "none"
         });
     };
 
@@ -11240,11 +11261,11 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      */
     var restartCoordinatorTimeout = function (bully, timeout, keepState) {
         timeout = timeout || bully.coordinatorTimeoutHeartbeat;
-        window.clearTimeout(bully.coordinatorTimeout);
+        clearTimeout(bully.coordinatorTimeout);
         if (!keepState) {
             bully.changeState("member");
         }
-        bully.coordinatorTimeout = window.setTimeout(function () {
+        bully.coordinatorTimeout = setTimeout(function () {
             bully.onCoordinatorTimeout();
         }, timeout);
     };
@@ -11271,12 +11292,12 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      */
     Bully.prototype.onBecomeCoordinator = function () {
         var self = this;
-        window.clearTimeout(this.coordinatorTimeout);
-        window.clearInterval(this.coordinatorInterval);
+        clearTimeout(this.coordinatorTimeout);
+        clearInterval(this.coordinatorInterval);
 
         sendVictoryMessage(this);
         this.changeState("coordinator");
-        this.coordinatorInterval = window.setInterval(function () {
+        this.coordinatorInterval = setInterval(function () {
             sendVictoryMessage(self);
         }, this.coordinatorIntervalHeartbeat);
     };
@@ -11301,9 +11322,9 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      */
     var startElection = function (bully, timeout) {
         timeout = timeout || (bully.coordinatorTimeoutHeartbeat * 2 / 3);
-        window.clearTimeout(bully.electionTimeout);
+        clearTimeout(bully.electionTimeout);
 
-        bully.electionTimeout = window.setTimeout(function () {
+        bully.electionTimeout = setTimeout(function () {
             bully.onBecomeCoordinator();
         }, timeout);
 
@@ -11319,7 +11340,7 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      * @param {ozpIwc.transport.consensus.Bully} bully
      */
     var cancelElection = function (bully) {
-        window.clearTimeout(bully.electionTimeout);
+        clearTimeout(bully.electionTimeout);
     };
 
     return Bully;
@@ -11431,6 +11452,7 @@ ozpIwc.transport.listener.Base = (function (log, transport, util) {
 
     return Base;
 }(ozpIwc.log, ozpIwc.transport, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.transport = ozpIwc.transport || {};
 ozpIwc.transport.listener = ozpIwc.transport.listener || {};
@@ -11465,6 +11487,80 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
      */
     PostMessage.prototype.name = "PostMessage";
 
+
+
+    /**
+     * Checkes if the postMessage received packet is a valid packet and
+     * forwards it to the local participant.
+     * @private
+     * @static
+     * @method forwardPacket
+     * @param  {ozpIwc.transport.Participant} participant [description]
+     * @param  {ozpIwc.transport.PacketContext.packet} packet      [description]
+     */
+    var forwardPacket = function (participant, packet) {
+        if (util.isIWCPacket(packet)) {
+            participant.forwardFromPostMessage(packet, event);
+        } else {
+            log.debug("Packet does not meet IWC Packet criteria, dropping.", packet);
+        }
+    };
+
+    /**
+     * Creates an IWC participant given the receiving of a message from an
+     * unknown sender (new participant).
+     * Leverages the message event to gain information about the new participant.
+     * @static
+     * @private
+     * @method genParticipant
+     * @param  {ozpIwc.transport.listener.PostMessage} listener
+     * @param  {Event} event    "message" event
+     * @param  {ozpIwc.transport.PacketContext.packet} packet
+     */
+    var genParticipant = function(listener, event, packet) {
+        var type = packet.type || "default";
+        var participant;
+        var config = {
+            'authorization': listener.authorization,
+            'origin': event.origin,
+            'source': event.source,
+            'router': listener.router,
+            'credentials': packet.entity,
+            'ready': listener.readyPromise
+        };
+        switch (type.trim().toLowerCase()) {
+            case "debugger":
+                participant = new transport.participant.PMDebugger(config);
+                break;
+            case "default":
+                participant = new transport.participant.PostMessage(config);
+                break;
+        }
+
+        listener.router.registerParticipant(participant, packet);
+        listener.participants.push(participant);
+    };
+
+    /**
+     * When receiving a "message" event from an unknown source, check against
+     * the permissions to see if a participant can be made for the sender.
+     * Returns an asyncAction that will succeed if the permissions allow.
+     * @static
+     * @private
+     * @method verifyParticipant
+     * @param  {ozpIwc.transport.listener.PostMessage} listener
+     * @param  {Event} event    [description]
+     * @return {ozpIwc.util.AsyncAction} will call success if participant is
+     * allowed to be created.
+     */
+    var verifyParticipant = function(listener, event){
+        var request = {
+            'subject': {'ozp:iwc:origin': event.origin},
+            'action': {'ozp:iwc:action': 'connect'},
+            'policies': listener.authorization.policySets.connectSet
+        };
+        return listener.authorization.isPermitted(request);
+    };
     /**
      * @method registration
      * @override
@@ -11474,7 +11570,7 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
         util.addEventListener("message", function (event) {
             var participant = listener.findParticipant(event.source);
             var packet = event.data;
-            if (event.source === window) {
+            if (event.source === util.globalScope) {
                 // the IE profiler seems to make the window receive it's own postMessages
                 // ... don't ask.  I don't know why
                 return;
@@ -11487,54 +11583,16 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
                     return;
                 }
             }
-
-            var isPacket = function (packet) {
-                if (util.isIWCPacket(packet)) {
-                    participant.forwardFromPostMessage(packet, event);
-                } else {
-                    log.debug("Packet does not meet IWC Packet criteria, dropping.", packet);
-                }
-            };
-
             // if this is a window who hasn't talked to us before, sign them up
             if (!participant) {
-                var type = packet.type || "default";
-
-                var request = {
-                    'subject': {'ozp:iwc:origin': event.origin},
-                    'action': {'ozp:iwc:action': 'connect'},
-                    'policies': listener.authorization.policySets.connectSet
-                };
-
-                var config = {
-                    'authorization': listener.authorization,
-                    'origin': event.origin,
-                    'source': event.source,
-                    'router': listener.router,
-                    'credentials': packet.entity,
-                    'ready': listener.readyPromise
-                };
-
-                listener.authorization.isPermitted(request)
-                    .success(function () {
-                        switch (type.trim().toLowerCase()) {
-                            case "debugger":
-                                participant = new transport.participant.PMDebugger(config);
-                                break;
-                            case "default":
-                                participant = new transport.participant.PostMessage(config);
-                                break;
-                        }
-
-                        listener.router.registerParticipant(participant, packet);
-                        listener.participants.push(participant);
-                        isPacket(packet);
-
-                    }).failure(function (err) {
-                        console.error("Failed to connect. Could not authorize:", err);
-                    });
+                verifyParticipant(self,event).success(function() {
+                    genParticipant(self,event,packet);
+                    forwardPacket(packet);
+                }).failure(function (err) {
+                    log.error("Failed to connect. Could not authorize:", err);
+                });
             } else {
-                isPacket(packet);
+                forwardPacket(participant, packet);
             }
 
         });
@@ -11543,6 +11601,7 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
     return PostMessage;
 
 }(ozpIwc.log, ozpIwc.transport, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.transport = ozpIwc.transport || {};
 ozpIwc.transport.listener = ozpIwc.transport.listener || {};
@@ -11608,13 +11667,12 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
                 'ready': listener.readyPromise
             };
 
-            listener.authorization.isPermitted(request)
-                .success(function () {
-                    port.addEventListener('message', messageHandlerGen(listener, port, config));
-                    port.start();
-                }).failure(function (err) {
-                    console.error("Failed to connect. Could not authorize:", err);
-                });
+            listener.authorization.isPermitted(request).success(function () {
+                port.addEventListener('message', messageHandlerGen(listener, port, config));
+                port.start();
+            }).failure(function (err) {
+                log.error("Failed to connect. Could not authorize:", err);
+            });
         };
     };
 
@@ -11652,6 +11710,7 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
 
     return SharedWorker;
 }(ozpIwc.log, ozpIwc.transport, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.transport = ozpIwc.transport || {};
 /**
@@ -11715,6 +11774,7 @@ ozpIwc.transport.PacketContext = (function (util) {
         response.replyTo = response.replyTo || this.packet.msgId;
         response.src = response.src || this.packet.dst;
         response.dst = response.dst || this.packet.src;
+        response.respondOn = response.respondOn || "none";
         return response;
     };
 
@@ -11766,7 +11826,6 @@ ozpIwc.transport.PacketContext = (function (util) {
 
     return PacketContext;
 }(ozpIwc.util));
-
 
 var ozpIwc = ozpIwc || {};
 ozpIwc.transport = ozpIwc.transport || {};
@@ -12313,7 +12372,7 @@ ozpIwc.transport.participant.Multicast = (function (transport, util) {
         if (this.metrics) {
             this.receivedPacketsMeter.mark();
         }
-        this.members.forEach(function (m) {
+        this.members.forEach(function multicastRoute (m) {
             // as we send to each member, update the context to make it believe that it's the only recipient
             packet.dstParticipant = m;
             m.receiveFromRouter(packet);
@@ -12335,6 +12394,7 @@ ozpIwc.transport.participant.Multicast = (function (transport, util) {
 
     return Multicast;
 }(ozpIwc.transport, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.transport = ozpIwc.transport || {};
 ozpIwc.transport.participant = ozpIwc.transport.participant || {};
@@ -12566,7 +12626,7 @@ ozpIwc.transport.participant.RouterWatchdog = (function (transport, util) {
          * @property timer
          * @type window.setInterval
          */
-        this.timer = window.setInterval(heartbeat, this.heartbeatFrequency);
+        this.timer = setInterval(heartbeat, this.heartbeatFrequency);
         heartbeat();
     };
 
@@ -12575,7 +12635,7 @@ ozpIwc.transport.participant.RouterWatchdog = (function (transport, util) {
      * @method shutdown
      */
     RouterWatchdog.prototype.shutdown = function () {
-        window.clearInterval(this.timer);
+        clearInterval(this.timer);
     };
 
     return RouterWatchdog;
@@ -14098,7 +14158,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         after = after || 0;
         this.isRequestQueueing = false;
         console.log("DELIVERING QUEUE:", this.name, this.requestQueue);
-        this.requestQueue.forEach(function (request) {
+        this.requestQueue.forEach(function quededHandler (request) {
             if (request.packet.time > after) {
                 receiveRequestPacket(this, request);
             }
@@ -14242,7 +14302,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
 
         apiBase.events.trigger("changed", node, entity, packetContext);
 
-        watcherList.forEach(function (watcher) {
+        watcherList.forEach(function notifyWatcher (watcher) {
             // @TODO allow watchers to changes notifications if they have permission to either the old or new, not just
             // both
             apiBase.participant.send({
@@ -14270,7 +14330,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      */
     var resolveChangedNodes = function (apiBase, packetContext) {
         apiBase.updateCollections();
-        util.object.eachEntry(apiBase.changeList, function (resource, snapshot) {
+        util.object.eachEntry(apiBase.changeList, function resolveChange (resource, snapshot) {
             resolveChangedNode(apiBase, resource, snapshot, packetContext);
         });
         apiBase.changeList = {};
@@ -14326,7 +14386,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      */
     var removeDeadWatchers = function (apiBase, address) {
         var len = address.length;
-        util.object.eachEntry(apiBase.watchers, function (resource, array) {
+        util.object.eachEntry(apiBase.watchers, function removeDead (resource, array) {
             for (var i in array) {
                 if (array[i].src.substr(-len) === address) {
                     array.splice(i, 1);
@@ -14402,6 +14462,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
 
     return Api;
 }(ozpIwc.api, ozpIwc.log, ozpIwc.transport, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.base = ozpIwc.api.base || {};
@@ -15137,7 +15198,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          */
         createResource: function (NodeType) {
             if (NodeType) {
-                return function (packet, context, pathParams, next) {
+                return function createTypedResource (packet, context, pathParams, next) {
                     if (!context.node) {
                         context.node = this.data[packet.resource] = new NodeType({
                             resource: packet.resource,
@@ -15149,7 +15210,7 @@ ozpIwc.api.filter.base = (function (api, util) {
                     return next();
                 };
             } else {
-                return function (packet, context, pathParams, next) {
+                return function createBaseResource (packet, context, pathParams, next) {
                     if (!context.node) {
                         context.node = this.createNode({
                             resource: packet.resource,
@@ -15177,7 +15238,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          */
         markAsCollector: function () {
 
-            return function (packet, context, pathParams, next) {
+            return function markAsCollector (packet, context, pathParams, next) {
                 this.addCollector(packet.resource);
                 return next();
             };
@@ -15190,7 +15251,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          * @return {ozpIwc.api.filter.Function}
          */
         requireResource: function () {
-            return function (packet, context, pathParams, next) {
+            return function requireResource (packet, context, pathParams, next) {
                 if (!context.node || context.node.deleted) {
                     throw new api.error.NoResourceError(packet);
                 }
@@ -15205,7 +15266,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          * @return {ozpIwc.api.filter.Function}
          */
         checkAuthorization: function (action) {
-            return function (packet, context, pathParams, next) {
+            return function checkAuthorization (packet, context, pathParams, next) {
                 this.checkAuthorization(context.node, context, packet, action || packet.action);
                 return next();
             };
@@ -15236,7 +15297,7 @@ ozpIwc.api.filter.base = (function (api, util) {
                 return base.nullFilter;
             }
             contentType = util.ensureArray(contentType);
-            return function (packet, context, pathParams, next) {
+            return function checkContentType (packet, context, pathParams, next) {
                 if (!contentType.some(function (t) {
                         return t === packet.contentType ||
                             (Object.prototype.toString.call(contentType) === '[object RegExp]' &&
@@ -15259,7 +15320,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          * @return {ozpIwc.api.filter.Function}
          */
         markResourceAsChanged: function () {
-            return function (packet, context, pathParams, next) {
+            return function markResourceAsChanged (packet, context, pathParams, next) {
                 this.markForChange(packet);
                 return next();
             };
@@ -15274,7 +15335,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          * @return {ozpIwc.api.filter.Function}
          */
         fixPattern: function () {
-            return function (packet, context, pathParams, next) {
+            return function fixPattern (packet, context, pathParams, next) {
                 var pattern;
                 if (context.node) {
                     pattern = context.node.pattern;
@@ -15293,7 +15354,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          * @return Function}
          */
         checkVersion: function () {
-            return function (packet, context, pathParams, next) {
+            return function checkVersion (packet, context, pathParams, next) {
                 // if there is no resource node, then let the request through
                 if (packet.ifTag && packet.ifTag !== context.node.version) {
                     throw new api.error.NoMatchError({
@@ -15308,6 +15369,7 @@ ozpIwc.api.filter.base = (function (api, util) {
 
     return base;
 }(ozpIwc.api, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.filter = ozpIwc.api.filter || {};
@@ -15486,7 +15548,7 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
         api.consensusMember.on("changedState", handleConsensusState, api);
 
         //If we're using a shared worker we won't have to elect a leader, its always the same one.
-        if (util.runningInWorker()) {
+        if (util.runningInWorker) {
             api.consensusMember.participant.connect().then(function () {
                 api.consensusMember.onBecomeCoordinator();
             });
@@ -15761,6 +15823,7 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
 
     return Api;
 }(ozpIwc.api, ozpIwc.log, ozpIwc.config, ozpIwc.transport, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.locks = ozpIwc.api.locks || {};
@@ -16450,7 +16513,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 packet.replyTo = chooser.entity.replyTo;
                 packet.entity.inFlightIntent = intentNode.toPacket();
                 packet.entity.force = (util.getInternetExplorerVersion() === 11);
-                if (util.runningInWorker()) {
+                if (util.runningInWorker) {
                     packet.entity.config = ozpConfig;
                     packet.entity.config.intentSelection = "intents.api" + node.resource;
                 }
@@ -16512,7 +16575,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
 
                 if (util.getInternetExplorerVersion() !== 11) {
                     log.info("launching popup chooser because: ", err);
-                    if (!util.runningInWorker()) {
+                    if (!util.runningInWorker) {
                         util.openWindow(ozpConfig.intentsChooserUri, {
                             "ozpIwc.peer": ozpConfig._busRoot,
                             "ozpIwc.intentSelection": "intents.api" + node.resource
@@ -16618,6 +16681,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
     return Api;
 
 }(ozpIwc.api, ozpIwc.log, ozpIwc.config, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.intents = ozpIwc.api.intents || {};
@@ -17368,7 +17432,7 @@ ozpIwc.api.names.Api = (function (api, apiMap, log, ozpConfig, util) {
      */
     Api.prototype.onStart = function () {
         var self = this;
-        window.setInterval(function () {self.checkForNonresponsives();}, ozpConfig.heartBeatFrequency);
+        setInterval(function () {self.checkForNonresponsives();}, ozpConfig.heartBeatFrequency);
     };
 
 //--------------------------------------------------
@@ -17438,6 +17502,7 @@ ozpIwc.api.names.Api = (function (api, apiMap, log, ozpConfig, util) {
 
     return Api;
 }(ozpIwc.api, ozpIwc.apiMap, ozpIwc.log, ozpIwc.config, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.names = ozpIwc.api.names || {};
@@ -17643,7 +17708,7 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
      */
     Api.prototype.onStart = function () {
         //The system API cant launch applications directly from a worker, ozpIwc.Client's register in that case.
-        if (!util.runningInWorker()) {
+        if (!util.runningInWorker) {
             log.debug("System.api registering for the launch intent");
             var registerData = {
                 'lifespan': "ephemeral",
@@ -17750,6 +17815,7 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
 
     return Api;
 }(ozpIwc.api, ozpIwc.log, ozpIwc.config, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.system = ozpIwc.api.system || {};
@@ -18145,7 +18211,7 @@ ozpIwc.api.system.Api = (function (api, SystemApi, log, ozpConfig, util) {
         };
         var resource = "/application/vnd.ozp-iwc-launch-data-v1+json/run";
 
-        if (util.runningInWorker()) {
+        if (util.runningInWorker) {
             resource += "/";
 
             //if this is launching a routed intent make the source of the intent invoke open it.
@@ -18187,6 +18253,7 @@ ozpIwc.api.system.Api = (function (api, SystemApi, log, ozpConfig, util) {
 
     return SystemApi;
 }(ozpIwc.api, ozpIwc.api.system.Api || {}, ozpIwc.log, ozpIwc.config, ozpIwc.util));
+
 /**
  * If backend support is disabled the following functionality changes:
  *
@@ -18287,7 +18354,7 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config, util) {
         });
 
         //Dont use localStorage if using a Shared Web Worker
-        if (!util.runningInWorker()) {
+        if (!util.runningInWorker) {
             wiring.link = new network.KeyBroadcastLocalStorageLink({
                 metrics: wiring.metrics,
                 peer: wiring.peer
@@ -18304,7 +18371,7 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config, util) {
         // Enable post message participants (default true)
         if (config.allowLocalClients) {
             wiring.listeners = wiring.listeners || {};
-            if (!util.runningInWorker()) {
+            if (!util.runningInWorker) {
                 wiring.listeners.postMessage = new transport.listener.PostMessage({
                     authorization: wiring.authorization,
                     router: wiring.router,

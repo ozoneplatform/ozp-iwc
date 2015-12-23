@@ -35,7 +35,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          */
         createResource: function (NodeType) {
             if (NodeType) {
-                return function (packet, context, pathParams, next) {
+                return function createTypedResource (packet, context, pathParams, next) {
                     if (!context.node) {
                         context.node = this.data[packet.resource] = new NodeType({
                             resource: packet.resource,
@@ -47,7 +47,7 @@ ozpIwc.api.filter.base = (function (api, util) {
                     return next();
                 };
             } else {
-                return function (packet, context, pathParams, next) {
+                return function createBaseResource (packet, context, pathParams, next) {
                     if (!context.node) {
                         context.node = this.createNode({
                             resource: packet.resource,
@@ -75,7 +75,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          */
         markAsCollector: function () {
 
-            return function (packet, context, pathParams, next) {
+            return function markAsCollector (packet, context, pathParams, next) {
                 this.addCollector(packet.resource);
                 return next();
             };
@@ -88,7 +88,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          * @return {ozpIwc.api.filter.Function}
          */
         requireResource: function () {
-            return function (packet, context, pathParams, next) {
+            return function requireResource (packet, context, pathParams, next) {
                 if (!context.node || context.node.deleted) {
                     throw new api.error.NoResourceError(packet);
                 }
@@ -103,7 +103,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          * @return {ozpIwc.api.filter.Function}
          */
         checkAuthorization: function (action) {
-            return function (packet, context, pathParams, next) {
+            return function checkAuthorization (packet, context, pathParams, next) {
                 this.checkAuthorization(context.node, context, packet, action || packet.action);
                 return next();
             };
@@ -134,7 +134,7 @@ ozpIwc.api.filter.base = (function (api, util) {
                 return base.nullFilter;
             }
             contentType = util.ensureArray(contentType);
-            return function (packet, context, pathParams, next) {
+            return function checkContentType (packet, context, pathParams, next) {
                 if (!contentType.some(function (t) {
                         return t === packet.contentType ||
                             (Object.prototype.toString.call(contentType) === '[object RegExp]' &&
@@ -157,7 +157,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          * @return {ozpIwc.api.filter.Function}
          */
         markResourceAsChanged: function () {
-            return function (packet, context, pathParams, next) {
+            return function markResourceAsChanged (packet, context, pathParams, next) {
                 this.markForChange(packet);
                 return next();
             };
@@ -172,7 +172,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          * @return {ozpIwc.api.filter.Function}
          */
         fixPattern: function () {
-            return function (packet, context, pathParams, next) {
+            return function fixPattern (packet, context, pathParams, next) {
                 var pattern;
                 if (context.node) {
                     pattern = context.node.pattern;
@@ -191,7 +191,7 @@ ozpIwc.api.filter.base = (function (api, util) {
          * @return Function}
          */
         checkVersion: function () {
-            return function (packet, context, pathParams, next) {
+            return function checkVersion (packet, context, pathParams, next) {
                 // if there is no resource node, then let the request through
                 if (packet.ifTag && packet.ifTag !== context.node.version) {
                     throw new api.error.NoMatchError({

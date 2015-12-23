@@ -74,7 +74,7 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
         this.heartBeatStatus.origin = this.origin;
 
         var self = this;
-        this.port.addEventListener("message", function (e) {
+        var sharedWorkerReceiveMessage = function (e) {
             var data = e.data;
             if (typeof(data) === "string") {
                 try {
@@ -88,7 +88,9 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
                 self.handleWindowEvent(data.windowEvent);
             }
             self.forwardFromMessageChannel(data, e);
-        }, false);
+        };
+
+        this.port.addEventListener("message", sharedWorkerReceiveMessage, false);
         util.safePostMessage(this.port, {iwcInit: true});
     });
 
@@ -197,4 +199,3 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
 
     return SharedWorker;
 }(ozpIwc.log, ozpIwc.transport, ozpIwc.util));
-

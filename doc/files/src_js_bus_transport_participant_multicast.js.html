@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -300,7 +300,7 @@ ozpIwc.transport.participant.Multicast = (function (transport, util) {
         if (this.metrics) {
             this.receivedPacketsMeter.mark();
         }
-        this.members.forEach(function (m) {
+        this.members.forEach(function multicastRoute (m) {
             // as we send to each member, update the context to make it believe that it&#x27;s the only recipient
             packet.dstParticipant = m;
             m.receiveFromRouter(packet);
@@ -322,6 +322,7 @@ ozpIwc.transport.participant.Multicast = (function (transport, util) {
 
     return Multicast;
 }(ozpIwc.transport, ozpIwc.util));
+
     </pre>
 </div>
                     </div>

@@ -43,7 +43,7 @@ ozpIwc.api.names.Api = (function (api, apiMap, log, ozpConfig, util) {
      */
     Api.prototype.onStart = function () {
         var self = this;
-        window.setInterval(function () {self.checkForNonresponsives();}, ozpConfig.heartBeatFrequency);
+        setInterval(function () {self.checkForNonresponsives();}, ozpConfig.heartBeatFrequency);
     };
 
 //--------------------------------------------------

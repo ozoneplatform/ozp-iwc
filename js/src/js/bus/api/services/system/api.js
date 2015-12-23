@@ -48,7 +48,7 @@ ozpIwc.api.system.Api = (function (api, log, ozpConfig, util) {
      */
     Api.prototype.onStart = function () {
         //The system API cant launch applications directly from a worker, ozpIwc.Client's register in that case.
-        if (!util.runningInWorker()) {
+        if (!util.runningInWorker) {
             log.debug("System.api registering for the launch intent");
             var registerData = {
                 'lifespan': "ephemeral",

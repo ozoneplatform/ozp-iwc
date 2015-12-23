@@ -191,7 +191,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
         if (util.getInternetExplorerVersion() >= 0) {
             // IE can keep storage events between refreshes.  If we give it a second, it'll
             // dump all of them on the floor
-            window.setTimeout(function () {
+            setTimeout(function () {
                 util.addEventListener('storage', receiveStorageEvent);
             }, 500);
         } else {
@@ -280,8 +280,8 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
         }
 
         // Restart the fragment drop countdown
-        window.clearTimeout(link.fragments[key].fragmentTimer);
-        link.fragments[key].fragmentTimer = window.setTimeout(link.fragments[key].timeoutFunc, link.fragmentTimeout);
+        clearTimeout(link.fragments[key].fragmentTimer);
+        link.fragments[key].fragmentTimer = setTimeout(link.fragments[key].timeoutFunc, link.fragmentTimeout);
 
         // keep a copy of properties needed for defragmenting, the last sequence & srcPeer received will be
         // reused in the defragmented packet
@@ -378,7 +378,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
             if (retryCount < link.maxRetries) {
                 retryCount++;
                 // Call again but back off for an exponential amount of time.
-                window.setTimeout(function () {
+                setTimeout(function () {
                     attemptSend(link, packet, retryCount);
                 }, timeOut);
             } else {
@@ -417,7 +417,7 @@ ozpIwc.network.KeyBroadcastLocalStorageLink = (function (log, util) {
         if (defragmentedPacket) {
 
             // clear the fragment timeout
-            window.clearTimeout(this.fragments[key].fragmentTimer);
+            clearTimeout(this.fragments[key].fragmentTimer);
 
             // Remove the last sequence from the known packets to reuse it for the defragmented packet
             var packetIndex = this.peer.packetsSeen[defragmentedPacket.srcPeer].indexOf(defragmentedPacket.sequence);

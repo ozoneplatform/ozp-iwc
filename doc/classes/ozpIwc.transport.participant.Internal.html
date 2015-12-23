@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -319,6 +319,10 @@
 
                             </li>
                             <li class="index-item method inherited">
+                                <a href="#method_formatRequest">formatRequest</a>
+
+                            </li>
+                            <li class="index-item method inherited">
                                 <a href="#method_generateMsgId">generateMsgId</a>
 
                             </li>
@@ -344,6 +348,14 @@
 
                             </li>
                             <li class="index-item method inherited">
+                                <a href="#method_markReceivePacket">markReceivePacket</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_markSendPacket">markSendPacket</a>
+
+                            </li>
+                            <li class="index-item method inherited">
                                 <a href="#method_receiveFromRouter">receiveFromRouter</a>
 
                             </li>
@@ -357,6 +369,18 @@
                             </li>
                             <li class="index-item method inherited">
                                 <a href="#method_send">send</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_verifyRead">verifyRead</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_verifyReceiveAs">verifyReceiveAs</a>
+
+                            </li>
+                            <li class="index-item method inherited">
+                                <a href="#method_verifySendAs">verifySendAs</a>
 
                             </li>
                     </ul>
@@ -543,7 +567,7 @@
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.transport.participant.Base.html#method_connectToRouter">ozpIwc.transport.participant.Base</a>:
-        <a href="../files/src_js_bus_transport_participant_base.js.html#l194"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:194</code></a>
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l260"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:260</code></a>
         </p>
 
 
@@ -604,7 +628,7 @@
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.transport.participant.Base.html#method_destroy">ozpIwc.transport.participant.Base</a>:
-        <a href="../files/src_js_bus_transport_participant_base.js.html#l364"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:364</code></a>
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l421"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:421</code></a>
         </p>
 
 
@@ -702,7 +726,7 @@ compare windows other than equality.</p>
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.transport.participant.Base.html#method_fixPacket">ozpIwc.transport.participant.Base</a>:
-        <a href="../files/src_js_bus_transport_participant_base.js.html#l229"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:229</code></a>
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l295"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:295</code></a>
         </p>
 
 
@@ -721,7 +745,7 @@ src, ver, msgId, and time.</p>
             <ul class="params-list">
                 <li class="param">
                         <code class="param-name">packet</code>
-                        <span class="type"><a href="../classes/ozpIwc.packet.Transport.html" class="crosslink">ozpIwc.packet.Transport</a></span>
+                        <span class="type">ozpIwc.packet.Transport.packet</span>
 
 
                     <div class="param-description">
@@ -737,6 +761,71 @@ src, ver, msgId, and time.</p>
 
             <div class="returns-description">
                         <span class="type"><a href="../classes/ozpIwc.packet.Transport.html" class="crosslink">ozpIwc.packet.Transport</a></span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_formatRequest" class="method item inherited">
+    <h3 class="name"><code>formatRequest</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>packetContext</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/ozpIwc.util.AsyncAction.html" class="crosslink">ozpIwc.util.AsyncAction</a></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.transport.participant.Base.html#method_formatRequest">ozpIwc.transport.participant.Base</a>:
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l145"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:145</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>An AsyncAction to format a received packetContext's permission.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">packetContext</code>
+                        <span class="type"><a href="../classes/ozpIwc.packet.Transport.html" class="crosslink">ozpIwc.packet.Transport</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"><a href="../classes/ozpIwc.util.AsyncAction.html" class="crosslink">ozpIwc.util.AsyncAction</a></span>:
+                    <p>calls success with the formated permissions.</p>
+
             </div>
         </div>
 
@@ -760,7 +849,7 @@ src, ver, msgId, and time.</p>
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.transport.participant.Base.html#method_generateMsgId">ozpIwc.transport.participant.Base</a>:
-        <a href="../files/src_js_bus_transport_participant_base.js.html#l284"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:284</code></a>
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l341"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:341</code></a>
         </p>
 
 
@@ -908,7 +997,7 @@ src, ver, msgId, and time.</p>
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.transport.participant.Base.html#method_heartbeat">ozpIwc.transport.participant.Base</a>:
-        <a href="../files/src_js_bus_transport_participant_base.js.html#l295"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:295</code></a>
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l352"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:352</code></a>
         </p>
 
 
@@ -942,7 +1031,7 @@ src, ver, msgId, and time.</p>
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.transport.participant.Base.html#method_joinEventChannel">ozpIwc.transport.participant.Base</a>:
-        <a href="../files/src_js_bus_transport_participant_base.js.html#l316"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:316</code></a>
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l373"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:373</code></a>
         </p>
 
 
@@ -980,7 +1069,7 @@ src, ver, msgId, and time.</p>
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.transport.participant.Base.html#method_leaveEventChannel">ozpIwc.transport.participant.Base</a>:
-        <a href="../files/src_js_bus_transport_participant_base.js.html#l339"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:339</code></a>
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l396"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:396</code></a>
         </p>
 
 
@@ -992,6 +1081,112 @@ src, ver, msgId, and time.</p>
 
     </div>
 
+
+
+
+</div>
+<div id="method_markReceivePacket" class="method item inherited">
+    <h3 class="name"><code>markReceivePacket</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>packetContext</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.transport.participant.Base.html#method_markReceivePacket">ozpIwc.transport.participant.Base</a>:
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l189"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:189</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Mark the given received packetContext in the metrics.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">packetContext</code>
+                        <span class="type"><a href="../classes/ozpIwc.packet.Transport.html" class="crosslink">ozpIwc.packet.Transport</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+
+
+</div>
+<div id="method_markSendPacket" class="method item inherited">
+    <h3 class="name"><code>markSendPacket</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>packet</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.transport.participant.Base.html#method_markSendPacket">ozpIwc.transport.participant.Base</a>:
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l203"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:203</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Mark the given sent packet in the metrics.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">packet</code>
+                        <span class="type">ozpIwc.packet.Base</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
 
 
 
@@ -1020,7 +1215,7 @@ src, ver, msgId, and time.</p>
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.transport.participant.Base.html#method_receiveFromRouter">ozpIwc.transport.participant.Base</a>:
-        <a href="../files/src_js_bus_transport_participant_base.js.html#l128"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:128</code></a>
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l217"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:217</code></a>
         </p>
 
 
@@ -1144,7 +1339,7 @@ registered to.</p>
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.transport.participant.Base.html#method_receiveFromRouterImple">ozpIwc.transport.participant.Base</a>:
-        <a href="../files/src_js_bus_transport_participant_base.js.html#l181"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:181</code></a>
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l247"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:247</code></a>
         </p>
 
 
@@ -1257,6 +1452,201 @@ registered to.</p>
 
             <div class="returns-description">
                         <span class="type"><a href="../classes/ozpIwc.packet.Transport.html" class="crosslink">ozpIwc.packet.Transport</a></span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_verifyRead" class="method item inherited">
+    <h3 class="name"><code>verifyRead</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>packetContext</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/ozpIwc.util.AsyncAction.html" class="crosslink">ozpIwc.util.AsyncAction</a></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.transport.participant.Base.html#method_verifyRead">ozpIwc.transport.participant.Base</a>:
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l156"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:156</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>An AsyncAction to verify if this participant can read the given packetContext</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">packetContext</code>
+                        <span class="type"><a href="../classes/ozpIwc.packet.Transport.html" class="crosslink">ozpIwc.packet.Transport</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"><a href="../classes/ozpIwc.util.AsyncAction.html" class="crosslink">ozpIwc.util.AsyncAction</a></span>:
+                    <p>calls success if can read.</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_verifyReceiveAs" class="method item inherited">
+    <h3 class="name"><code>verifyReceiveAs</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>packetContext</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/ozpIwc.util.AsyncAction.html" class="crosslink">ozpIwc.util.AsyncAction</a></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.transport.participant.Base.html#method_verifyReceiveAs">ozpIwc.transport.participant.Base</a>:
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l128"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:128</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>An AsyncAction to verify if this participant can receive the given packetContext</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">packetContext</code>
+                        <span class="type"><a href="../classes/ozpIwc.packet.Transport.html" class="crosslink">ozpIwc.packet.Transport</a></span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"><a href="../classes/ozpIwc.util.AsyncAction.html" class="crosslink">ozpIwc.util.AsyncAction</a></span>:
+                    <p>calls success if can receive.</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_verifySendAs" class="method item inherited">
+    <h3 class="name"><code>verifySendAs</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>packet</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/ozpIwc.util.AsyncAction.html" class="crosslink">ozpIwc.util.AsyncAction</a></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.transport.participant.Base.html#method_verifySendAs">ozpIwc.transport.participant.Base</a>:
+        <a href="../files/src_js_bus_transport_participant_base.js.html#l173"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:173</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>An AsyncAction to verify if this participant can send the given packet</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">packet</code>
+                        <span class="type">ozpIwc.packet.Base</span>
+
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"><a href="../classes/ozpIwc.util.AsyncAction.html" class="crosslink">ozpIwc.util.AsyncAction</a></span>:
+                    <p>calls success if can send.</p>
+
             </div>
         </div>
 

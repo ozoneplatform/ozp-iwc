@@ -2878,6 +2878,17 @@ var ozpIwc = ozpIwc || {};
  * @static
  */
 ozpIwc.util = (function (util) {
+
+  /**
+   * @param  {Object} globalScope
+   * @static
+   * @return {Object} reference to global scope, works in node,browser,workers.
+   */
+    util.globalScope = (function(){
+      return this;
+    })();
+
+
     /**
      * Generates a large hexidecimal string to serve as a unique ID.  Not a guid.
      *
@@ -2958,7 +2969,7 @@ ozpIwc.util = (function (util) {
             l = util.eventListeners[type] = [];
         }
         l.push(listener);
-        window.addEventListener(type, listener);
+        util.globalScope.addEventListener(type, listener);
     };
 
     /**
@@ -2971,7 +2982,7 @@ ozpIwc.util = (function (util) {
         if (l) {
             util.eventListeners[type] = l.filter(function (v) { return v !== listener;});
         }
-        window.removeEventListener(type, listener);
+        util.globalScope.removeEventListener(type, listener);
     };
 
     /**
@@ -2985,7 +2996,7 @@ ozpIwc.util = (function (util) {
     util.purgeEventListeners = function () {
         ozpIwc.util.object.eachEntry(util.eventListeners, function (type, listenerList) {
             listenerList.forEach(function (listener) {
-                window.removeEventListener(type, listener);
+                util.globalScope.removeEventListener(type, listener);
             });
         });
         util.eventListeners = {};
@@ -3016,25 +3027,26 @@ ozpIwc.util = (function (util) {
      * errors (especially attempts to send non-cloneable objects), and tries to
      * send a stringified copy of the message asa fallback.
      *
-     * @param window a window on which to invoke postMessage
+     * @param toWindow a window on which to invoke postMessage
      * @param msg the message to be sent
      * @param origin the target origin. The message will be sent only if it matches the origin of window.
      */
-    util.safePostMessage = function (window, msg, origin) {
+    util.safePostMessage = function (toWindow, msg, origin) {
         try {
             var data = msg;
-            if (!util.structuredCloneSupport() && typeof data !== 'string') {
+            if (!util.structuredCloneSupport && typeof data !== 'string') {
                 data = JSON.stringify(msg);
             }
-            window.postMessage(data, origin);
+            toWindow.postMessage(data, origin);
         } catch (e) {
             try {
-                window.postMessage(JSON.stringify(msg), origin);
+                toWindow.postMessage(JSON.stringify(msg), origin);
             } catch (e) {
-                ozpIwc.log.debug("Invalid call to window.postMessage: " + e.message);
+                ozpIwc.log.debug("Invalid call to postMessage: " + e.message);
             }
         }
     };
+
 
     /**
      * Detect browser support for structured clones. Returns quickly since it
@@ -3047,17 +3059,13 @@ ozpIwc.util = (function (util) {
      * (see https://bugzilla.mozilla.org/show_bug.cgi?id=722126).
      *
      * @private
-     * @method structuredCloneSupport
-     * @return {Boolean} True if structured clones are supported, false otherwise.
+     * @property {Boolean} structuredCloneSupport
      */
-    util.structuredCloneSupport = function () {
-        if (util.structuredCloneSupportCache !== undefined) {
-            return util.structuredCloneSupportCache;
-        }
-        var cloneSupport = 'postMessage' in window;
+    util.structuredCloneSupport = (function () {
+        var cloneSupport = 'postMessage' in util.globalScope;
         //If the browser doesn't support structured clones, it will call toString() on the object passed to postMessage.
         try {
-            window.postMessage({
+            util.globalScope.postMessage({
                 toString: function () {
                     cloneSupport = false;
                 }
@@ -3067,9 +3075,8 @@ ozpIwc.util = (function (util) {
             //e.DATA_CLONE_ERR will exist only for browsers with structured clone support, which can be used as an
             // additional check if needed
         }
-        util.structuredCloneSupportCache = cloneSupport;
-        return util.structuredCloneSupportCache;
-    };
+        return cloneSupport;
+    }());
 
     /**
      * Does a deep clone of a serializable object.  Note that this will not
@@ -3099,7 +3106,7 @@ ozpIwc.util = (function (util) {
      *
      */
     util.parseQueryParams = function (query) {
-        query = query || window.location.search;
+        query = query || util.globalScope.location.search;
         var params = {};
         var regex = /\??([^&=]+)=?([^&]*)/g;
         var match;
@@ -3305,7 +3312,7 @@ ozpIwc.util = (function (util) {
      * @return {Promise}
      */
     util.prerender = function () {
-        if (util.runningInWorker()) {
+        if (util.runningInWorker) {
             return Promise.resolve();
         }
 
@@ -3324,17 +3331,14 @@ ozpIwc.util = (function (util) {
         });
     };
 
-    var runningInWorkerCache = (typeof WorkerGlobalScope !== 'undefined' && this instanceof WorkerGlobalScope);
     /**
      * A utility to determine if this code is running in a HTML5 Worker. Used to decide on browser technologies
      * to use.
-     * @method runningInWorker
+     * @property {Boolean} runningInWorker
      * @static
-     * @return {Boolean}
      */
-    util.runningInWorker = function () {
-        return runningInWorkerCache;
-    };
+    util.runningInWorker = (typeof WorkerGlobalScope !== 'undefined' &&
+            this instanceof WorkerGlobalScope);
 
     /**
      * Wraps window.open.  If the bus is running in a worker, then
@@ -3357,10 +3361,10 @@ ozpIwc.util = (function (util) {
             windowName = str;
         }
         try {
-            window.open(url, windowName, features);
+            util.globalScope.open(url, windowName, features);
         } catch (e) {
             //fallback for IE
-            window.open(url + "?" + windowName, null, features);
+            util.globalScope.open(url + "?" + windowName, null, features);
         }
     };
 
@@ -3371,18 +3375,11 @@ ozpIwc.util = (function (util) {
      */
     util.promiseDelay = function (delay) {
         return new Promise(function (res) {
-            window.setTimeout(function () { res();}, delay);
+            setTimeout(function () { res();}, delay);
         });
     };
     return util;
 }(ozpIwc.util || {}));
-
-
-
-
-
-
-
 
 var ozpIwc = ozpIwc || {};
 
@@ -3469,7 +3466,6 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
         participant.address = participant.address || "$nobody";
         participant.connect = participant.connect || function () {
                 participant.connectPromise = Promise.resolve();
-
                 return participant.connectPromise;
             };
 
@@ -3483,9 +3479,9 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
             participant[i] = mixins[i];
         }
 
-        participant.readLaunchParams(window.name);
-        participant.readLaunchParams(window.location.search);
-        participant.readLaunchParams(window.location.hash);
+        participant.readLaunchParams(util.globalScope.name);
+        participant.readLaunchParams(util.globalScope.location.search);
+        participant.readLaunchParams(util.globalScope.location.hash);
 
         ApiPromiseMixin.registerEvents(participant);
 
@@ -3506,7 +3502,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
         participant.on("disconnect", function () {
             participant.promiseCallbacks = {};
             participant.registeredCallbacks = {};
-            window.removeEventListener("message", participant.postMessageHandler, false);
+            util.globalScope.removeEventListener("message", participant.postMessageHandler, false);
             participant.connectPromise = null;
         });
     };
@@ -4406,6 +4402,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
 
     return ApiPromiseMixin;
 }(ozpIwc.apiMap, ozpIwc.log, ozpIwc.util));
+
 var ozpIwc = ozpIwc || {};
 ozpIwc.util = ozpIwc.util || {};
 
@@ -4540,47 +4537,10 @@ ozpIwc.util.Event = (function (util) {
         }
         var handlers = this.events[eventName] || [];
 
-        handlers.forEach(function (h) {
+        handlers.forEach(function handleEvent(h) {
             h.apply(this, args);
         });
         return args[0];
-    };
-
-    /**
-     * Fires an event that will be received by all handlers.
-     *
-     * @method
-     * @param {String} eventName Name of the event.
-     * @param {Object} event Event object to pass to the handers.
-     *
-     * @return {Object} The event after all handlers have processed it.
-     */
-    Event.prototype.trigger = function (eventName) {
-        //if no event data push a new cancelable event
-        var args = Array.prototype.slice.call(arguments, 1);
-        if (args.length < 1) {
-            args.push(new util.CancelableEvent());
-        }
-        var handlers = this.events[eventName] || [];
-
-        handlers.forEach(function (h) {
-            h.apply(this, args);
-        });
-        return args[0];
-    };
-
-    /**
-     * Adds an {{#crossLink "ozpIwc.util.Event/off:method"}}on(){{/crossLink}} and
-     * {{#crossLink "ozpIwc.util.Event/off:method"}}off(){{/crossLink}} function to the target that delegate to this
-     * object.
-     *
-     * @method mixinOnOff
-     * @param {Object} target Target to receive the on/off functions
-     */
-    Event.prototype.mixinOnOff = function (target) {
-        var self = this;
-        target.on = function () { return self.on.apply(self, arguments);};
-        target.off = function () { return self.off.apply(self, arguments);};
     };
 
     /**
@@ -4599,7 +4559,6 @@ ozpIwc.util.Event = (function (util) {
 
     return Event;
 }(ozpIwc.util));
-
 
 if (!(window.console && console.log)) {
     console = {

@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -231,7 +231,7 @@ ozpIwc.util = (function (util) {
                     id: timerCallbacks[i].id
                 });
                 timerCallbacks[i].loc = &quot;local&quot;;
-                timerCallbacks[i].locId = window.setInterval(timerCallbacks[i].callback, timerCallbacks[i].time, timerCallbacks[i].args);
+                timerCallbacks[i].locId = setInterval(timerCallbacks[i].callback, timerCallbacks[i].time, timerCallbacks[i].args);
             }
         }
     };
@@ -240,7 +240,7 @@ ozpIwc.util = (function (util) {
         runLoc = &quot;sharedWorker&quot;;
         for (var i in timerCallbacks) {
             if (timerCallbacks[i].type === &quot;setInterval&quot; &amp;&amp; timerCallbacks[i].time &lt; 1000 &amp;&amp; timerCallbacks[i].loc === &quot;local&quot;) {
-                window.clearInterval(timerCallbacks[i].locId);
+                clearInterval(timerCallbacks[i].locId);
                 timerCallbacks[i].loc = &quot;sharedWorker&quot;;
                 timerWorker.port.postMessage({
                     type: timerCallbacks[i].type,
@@ -255,9 +255,9 @@ ozpIwc.util = (function (util) {
     var clearCalls = function (type) {
         return function (id) {
             if (!enhancedTimersEnabled || !timerCallbacks[id]) {
-                return window.clearInterval(id);
+                return clearInterval(id);
             } else if (timerCallbacks[id].loc === &quot;local&quot;) {
-                window.clearInterval(timerCallbacks[id].locId);
+                clearInterval(timerCallbacks[id].locId);
                 timerCallbacks[id] = undefined;
             } else {
                 timerWorker.port.postMessage({
@@ -279,7 +279,7 @@ ozpIwc.util = (function (util) {
      * @method enableEnhancedTimers
      */
     util.enabledEnhancedTimers = function () {
-        if (window.SharedWorker) {
+        if (util.globalScope.SharedWorker) {
             timerWorker = new SharedWorker(&#x27;/js/ozpIwc.timer.js&#x27;);
 
             timerWorker.port.addEventListener(&#x27;message&#x27;, function (evt) {
@@ -287,7 +287,7 @@ ozpIwc.util = (function (util) {
                 var timer = evt.data;
                 var registered = timerCallbacks[timer.id];
                 if (registered) {
-                    registered.callback.call(window, registered.args);
+                    registered.callback.call(util.globalScope, registered.args);
 
                     if (timer.type === &quot;setTimeout&quot;) {
                         timerCallbacks[timer.id] = null;
@@ -322,7 +322,7 @@ ozpIwc.util = (function (util) {
      */
     util.setTimeout = function (cb, time) {
         if (!enhancedTimersEnabled || useLocalTimers() || time &amp;&amp; time &gt;= 1000) {
-            return window.setTimeout(cb, time);
+            return setTimeout(cb, time);
         }
         var timer = {
             type: &quot;setTimeout&quot;,
@@ -348,7 +348,7 @@ ozpIwc.util = (function (util) {
      */
     util.setInterval = function (cb, time) {
         if (!enhancedTimersEnabled) {
-            return window.setInterval(cb, time);
+            return setInterval(cb, time);
         }
 
         var timer = {
@@ -361,7 +361,7 @@ ozpIwc.util = (function (util) {
 
         if (useLocalTimers() || time &amp;&amp; time &gt;= 1000) {
             timer.loc = &quot;local&quot;;
-            timer.locId = window.setInterval(cb, time);
+            timer.locId = setInterval(cb, time);
             timerCallbacks[timer.id] = timer;
             return timer.locId;
         }
@@ -389,8 +389,16 @@ ozpIwc.util = (function (util) {
      */
     util.clearTimeout = clearCalls(&quot;clearTimeout&quot;);
 
+    util.scriptDomain = (function(){
+        var scripts = document.getElementsByTagName(&#x27;script&#x27;);
+        var path = scripts[scripts.length-1].src.split(&#x27;?&#x27;)[0];
+        // the iframe_peer is a dir above the bus code.
+        return path.split(&#x27;/&#x27;).slice(0,-2).join(&#x27;/&#x27;);
+    }());
+
     return util;
 }(ozpIwc.util));
+
     </pre>
 </div>
                     </div>

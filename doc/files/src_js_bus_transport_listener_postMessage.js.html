@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -230,6 +230,80 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
      */
     PostMessage.prototype.name = &quot;PostMessage&quot;;
 
+
+
+    /**
+     * Checkes if the postMessage received packet is a valid packet and
+     * forwards it to the local participant.
+     * @private
+     * @static
+     * @method forwardPacket
+     * @param  {ozpIwc.transport.Participant} participant [description]
+     * @param  {ozpIwc.transport.PacketContext.packet} packet      [description]
+     */
+    var forwardPacket = function (participant, packet) {
+        if (util.isIWCPacket(packet)) {
+            participant.forwardFromPostMessage(packet, event);
+        } else {
+            log.debug(&quot;Packet does not meet IWC Packet criteria, dropping.&quot;, packet);
+        }
+    };
+
+    /**
+     * Creates an IWC participant given the receiving of a message from an
+     * unknown sender (new participant).
+     * Leverages the message event to gain information about the new participant.
+     * @static
+     * @private
+     * @method genParticipant
+     * @param  {ozpIwc.transport.listener.PostMessage} listener
+     * @param  {Event} event    &quot;message&quot; event
+     * @param  {ozpIwc.transport.PacketContext.packet} packet
+     */
+    var genParticipant = function(listener, event, packet) {
+        var type = packet.type || &quot;default&quot;;
+        var participant;
+        var config = {
+            &#x27;authorization&#x27;: listener.authorization,
+            &#x27;origin&#x27;: event.origin,
+            &#x27;source&#x27;: event.source,
+            &#x27;router&#x27;: listener.router,
+            &#x27;credentials&#x27;: packet.entity,
+            &#x27;ready&#x27;: listener.readyPromise
+        };
+        switch (type.trim().toLowerCase()) {
+            case &quot;debugger&quot;:
+                participant = new transport.participant.PMDebugger(config);
+                break;
+            case &quot;default&quot;:
+                participant = new transport.participant.PostMessage(config);
+                break;
+        }
+
+        listener.router.registerParticipant(participant, packet);
+        listener.participants.push(participant);
+    };
+
+    /**
+     * When receiving a &quot;message&quot; event from an unknown source, check against
+     * the permissions to see if a participant can be made for the sender.
+     * Returns an asyncAction that will succeed if the permissions allow.
+     * @static
+     * @private
+     * @method verifyParticipant
+     * @param  {ozpIwc.transport.listener.PostMessage} listener
+     * @param  {Event} event    [description]
+     * @return {ozpIwc.util.AsyncAction} will call success if participant is
+     * allowed to be created.
+     */
+    var verifyParticipant = function(listener, event){
+        var request = {
+            &#x27;subject&#x27;: {&#x27;ozp:iwc:origin&#x27;: event.origin},
+            &#x27;action&#x27;: {&#x27;ozp:iwc:action&#x27;: &#x27;connect&#x27;},
+            &#x27;policies&#x27;: listener.authorization.policySets.connectSet
+        };
+        return listener.authorization.isPermitted(request);
+    };
     /**
      * @method registration
      * @override
@@ -239,7 +313,7 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
         util.addEventListener(&quot;message&quot;, function (event) {
             var participant = listener.findParticipant(event.source);
             var packet = event.data;
-            if (event.source === window) {
+            if (event.source === util.globalScope) {
                 // the IE profiler seems to make the window receive it&#x27;s own postMessages
                 // ... don&#x27;t ask.  I don&#x27;t know why
                 return;
@@ -252,54 +326,16 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
                     return;
                 }
             }
-
-            var isPacket = function (packet) {
-                if (util.isIWCPacket(packet)) {
-                    participant.forwardFromPostMessage(packet, event);
-                } else {
-                    log.debug(&quot;Packet does not meet IWC Packet criteria, dropping.&quot;, packet);
-                }
-            };
-
             // if this is a window who hasn&#x27;t talked to us before, sign them up
             if (!participant) {
-                var type = packet.type || &quot;default&quot;;
-
-                var request = {
-                    &#x27;subject&#x27;: {&#x27;ozp:iwc:origin&#x27;: event.origin},
-                    &#x27;action&#x27;: {&#x27;ozp:iwc:action&#x27;: &#x27;connect&#x27;},
-                    &#x27;policies&#x27;: listener.authorization.policySets.connectSet
-                };
-
-                var config = {
-                    &#x27;authorization&#x27;: listener.authorization,
-                    &#x27;origin&#x27;: event.origin,
-                    &#x27;source&#x27;: event.source,
-                    &#x27;router&#x27;: listener.router,
-                    &#x27;credentials&#x27;: packet.entity,
-                    &#x27;ready&#x27;: listener.readyPromise
-                };
-
-                listener.authorization.isPermitted(request)
-                    .success(function () {
-                        switch (type.trim().toLowerCase()) {
-                            case &quot;debugger&quot;:
-                                participant = new transport.participant.PMDebugger(config);
-                                break;
-                            case &quot;default&quot;:
-                                participant = new transport.participant.PostMessage(config);
-                                break;
-                        }
-
-                        listener.router.registerParticipant(participant, packet);
-                        listener.participants.push(participant);
-                        isPacket(packet);
-
-                    }).failure(function (err) {
-                        console.error(&quot;Failed to connect. Could not authorize:&quot;, err);
-                    });
+                verifyParticipant(self,event).success(function() {
+                    genParticipant(self,event,packet);
+                    forwardPacket(packet);
+                }).failure(function (err) {
+                    log.error(&quot;Failed to connect. Could not authorize:&quot;, err);
+                });
             } else {
-                isPacket(packet);
+                forwardPacket(participant, packet);
             }
 
         });
@@ -308,6 +344,7 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
     return PostMessage;
 
 }(ozpIwc.log, ozpIwc.transport, ozpIwc.util));
+
     </pre>
 </div>
                     </div>

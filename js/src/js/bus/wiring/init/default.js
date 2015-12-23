@@ -26,7 +26,7 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config, util) {
         });
 
         //Dont use localStorage if using a Shared Web Worker
-        if (!util.runningInWorker()) {
+        if (!util.runningInWorker) {
             wiring.link = new network.KeyBroadcastLocalStorageLink({
                 metrics: wiring.metrics,
                 peer: wiring.peer
@@ -43,7 +43,7 @@ ozpIwc.wiring = (function (wiring, api, transport, network, config, util) {
         // Enable post message participants (default true)
         if (config.allowLocalClients) {
             wiring.listeners = wiring.listeners || {};
-            if (!util.runningInWorker()) {
+            if (!util.runningInWorker) {
                 wiring.listeners.postMessage = new transport.listener.PostMessage({
                     authorization: wiring.authorization,
                     router: wiring.router,

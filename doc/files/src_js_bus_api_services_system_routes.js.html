@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -281,7 +281,7 @@ ozpIwc.api.system.Api = (function (api, SystemApi, log, ozpConfig, util) {
         };
         var resource = &quot;/application/vnd.ozp-iwc-launch-data-v1+json/run&quot;;
 
-        if (util.runningInWorker()) {
+        if (util.runningInWorker) {
             resource += &quot;/&quot;;
 
             //if this is launching a routed intent make the source of the intent invoke open it.
@@ -323,6 +323,7 @@ ozpIwc.api.system.Api = (function (api, SystemApi, log, ozpConfig, util) {
 
     return SystemApi;
 }(ozpIwc.api, ozpIwc.api.system.Api || {}, ozpIwc.log, ozpIwc.config, ozpIwc.util));
+
     </pre>
 </div>
                     </div>

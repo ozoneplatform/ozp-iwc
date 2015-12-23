@@ -83,7 +83,7 @@ ozpIwc.api.system.Api = (function (api, SystemApi, log, ozpConfig, util) {
         };
         var resource = "/application/vnd.ozp-iwc-launch-data-v1+json/run";
 
-        if (util.runningInWorker()) {
+        if (util.runningInWorker) {
             resource += "/";
 
             //if this is launching a routed intent make the source of the intent invoke open it.

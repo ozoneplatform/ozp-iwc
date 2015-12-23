@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -272,7 +272,7 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
         this.heartBeatStatus.origin = this.origin;
 
         var self = this;
-        this.port.addEventListener(&quot;message&quot;, function (e) {
+        var sharedWorkerReceiveMessage = function (e) {
             var data = e.data;
             if (typeof(data) === &quot;string&quot;) {
                 try {
@@ -286,7 +286,9 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
                 self.handleWindowEvent(data.windowEvent);
             }
             self.forwardFromMessageChannel(data, e);
-        }, false);
+        };
+
+        this.port.addEventListener(&quot;message&quot;, sharedWorkerReceiveMessage, false);
         util.safePostMessage(this.port, {iwcInit: true});
     });
 
@@ -395,7 +397,6 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
 
     return SharedWorker;
 }(ozpIwc.log, ozpIwc.transport, ozpIwc.util));
-
 
     </pre>
 </div>

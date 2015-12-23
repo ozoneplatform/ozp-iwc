@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -210,7 +210,7 @@ ozpIwc.config = ozpIwc.config || {};
 
 
 //If this is in a worker the config file needs to be loaded.
-if (ozpIwc.util.runningInWorker()) {
+if (ozpIwc.util.runningInWorker) {
     importScripts(&#x27;ozpIwc.conf.js&#x27;);
 }
 
@@ -365,9 +365,9 @@ ozpIwc.config._testMode = ozpIwc.util.ifUndef(ozpIwc.config._testMode, false);
  * @default &quot;&lt;Absolute root path of current browser URL&gt;&quot;
  */
 ozpIwc.config._busRoot = ozpIwc.util.ifUndef(ozpIwc.config._busRoot, (function () {
-    return window.location.protocol + &quot;//&quot; +
-        window.location.host +
-        window.location.pathname.replace(/[^\/]+$/, &quot;&quot;);
+    return ozpIwc.util.globalScope.location.protocol + &quot;//&quot; +
+        ozpIwc.util.globalScope.location.host +
+        ozpIwc.util.globalScope.location.pathname.replace(/[^\/]+$/, &quot;&quot;);
 })());
 
 
@@ -431,6 +431,7 @@ ozpIwc.config.ajaxPoolSize = ozpIwc.util.ifUndef(ozpIwc.config.ajaxPoolSize, 1);
  * @default {}
  */
 ozpIwc.config.templates = ozpIwc.util.ifUndef(ozpIwc.config.templates, {});
+
     </pre>
 </div>
                     </div>

@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -261,13 +261,12 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
                 &#x27;ready&#x27;: listener.readyPromise
             };
 
-            listener.authorization.isPermitted(request)
-                .success(function () {
-                    port.addEventListener(&#x27;message&#x27;, messageHandlerGen(listener, port, config));
-                    port.start();
-                }).failure(function (err) {
-                    console.error(&quot;Failed to connect. Could not authorize:&quot;, err);
-                });
+            listener.authorization.isPermitted(request).success(function () {
+                port.addEventListener(&#x27;message&#x27;, messageHandlerGen(listener, port, config));
+                port.start();
+            }).failure(function (err) {
+                log.error(&quot;Failed to connect. Could not authorize:&quot;, err);
+            });
         };
     };
 
@@ -305,6 +304,7 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
 
     return SharedWorker;
 }(ozpIwc.log, ozpIwc.transport, ozpIwc.util));
+
     </pre>
 </div>
                     </div>

@@ -793,7 +793,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         after = after || 0;
         this.isRequestQueueing = false;
         console.log("DELIVERING QUEUE:", this.name, this.requestQueue);
-        this.requestQueue.forEach(function (request) {
+        this.requestQueue.forEach(function quededHandler (request) {
             if (request.packet.time > after) {
                 receiveRequestPacket(this, request);
             }
@@ -937,7 +937,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
 
         apiBase.events.trigger("changed", node, entity, packetContext);
 
-        watcherList.forEach(function (watcher) {
+        watcherList.forEach(function notifyWatcher (watcher) {
             // @TODO allow watchers to changes notifications if they have permission to either the old or new, not just
             // both
             apiBase.participant.send({
@@ -965,7 +965,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      */
     var resolveChangedNodes = function (apiBase, packetContext) {
         apiBase.updateCollections();
-        util.object.eachEntry(apiBase.changeList, function (resource, snapshot) {
+        util.object.eachEntry(apiBase.changeList, function resolveChange (resource, snapshot) {
             resolveChangedNode(apiBase, resource, snapshot, packetContext);
         });
         apiBase.changeList = {};
@@ -1021,7 +1021,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      */
     var removeDeadWatchers = function (apiBase, address) {
         var len = address.length;
-        util.object.eachEntry(apiBase.watchers, function (resource, array) {
+        util.object.eachEntry(apiBase.watchers, function removeDead (resource, array) {
             for (var i in array) {
                 if (array[i].src.substr(-len) === address) {
                     array.splice(i, 1);

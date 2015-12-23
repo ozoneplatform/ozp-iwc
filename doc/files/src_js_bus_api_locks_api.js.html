@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -287,7 +287,7 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
         api.consensusMember.on(&quot;changedState&quot;, handleConsensusState, api);
 
         //If we&#x27;re using a shared worker we won&#x27;t have to elect a leader, its always the same one.
-        if (util.runningInWorker()) {
+        if (util.runningInWorker) {
             api.consensusMember.participant.connect().then(function () {
                 api.consensusMember.onBecomeCoordinator();
             });
@@ -562,6 +562,7 @@ ozpIwc.api.locks.Api = (function (api, log, ozpConfig, transport, util) {
 
     return Api;
 }(ozpIwc.api, ozpIwc.log, ozpIwc.config, ozpIwc.transport, ozpIwc.util));
+
     </pre>
 </div>
                     </div>

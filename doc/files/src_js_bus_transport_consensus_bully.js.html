@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.17</em>
+            <em>API Docs for: 1.1.18</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -316,7 +316,8 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
             &#x27;action&#x27;: &quot;election&quot;,
             &#x27;entity&#x27;: {
                 &#x27;consensusId&#x27;: this.consensusId
-            }
+            },
+            &#x27;respondOn&#x27;: &quot;none&quot;
         });
     };
 
@@ -344,7 +345,8 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
             &#x27;entity&#x27;: {
                 &#x27;consensusId&#x27;: bully.consensusId,
                 &#x27;logs&#x27;: logs
-            }
+            },
+            &#x27;respondOn&#x27;: &quot;none&quot;
         });
     };
 
@@ -363,7 +365,8 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
             &#x27;action&#x27;: &quot;query&quot;,
             &#x27;entity&#x27;: {
                 &#x27;consensusId&#x27;: bully.consensusId
-            }
+            },
+            &#x27;respondOn&#x27;: &quot;none&quot;
         });
     };
 
@@ -506,11 +509,11 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      */
     var restartCoordinatorTimeout = function (bully, timeout, keepState) {
         timeout = timeout || bully.coordinatorTimeoutHeartbeat;
-        window.clearTimeout(bully.coordinatorTimeout);
+        clearTimeout(bully.coordinatorTimeout);
         if (!keepState) {
             bully.changeState(&quot;member&quot;);
         }
-        bully.coordinatorTimeout = window.setTimeout(function () {
+        bully.coordinatorTimeout = setTimeout(function () {
             bully.onCoordinatorTimeout();
         }, timeout);
     };
@@ -537,12 +540,12 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      */
     Bully.prototype.onBecomeCoordinator = function () {
         var self = this;
-        window.clearTimeout(this.coordinatorTimeout);
-        window.clearInterval(this.coordinatorInterval);
+        clearTimeout(this.coordinatorTimeout);
+        clearInterval(this.coordinatorInterval);
 
         sendVictoryMessage(this);
         this.changeState(&quot;coordinator&quot;);
-        this.coordinatorInterval = window.setInterval(function () {
+        this.coordinatorInterval = setInterval(function () {
             sendVictoryMessage(self);
         }, this.coordinatorIntervalHeartbeat);
     };
@@ -567,9 +570,9 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      */
     var startElection = function (bully, timeout) {
         timeout = timeout || (bully.coordinatorTimeoutHeartbeat * 2 / 3);
-        window.clearTimeout(bully.electionTimeout);
+        clearTimeout(bully.electionTimeout);
 
-        bully.electionTimeout = window.setTimeout(function () {
+        bully.electionTimeout = setTimeout(function () {
             bully.onBecomeCoordinator();
         }, timeout);
 
@@ -585,7 +588,7 @@ ozpIwc.transport.consensus.Bully = (function (consensus, ozpConfig, util) {
      * @param {ozpIwc.transport.consensus.Bully} bully
      */
     var cancelElection = function (bully) {
-        window.clearTimeout(bully.electionTimeout);
+        clearTimeout(bully.electionTimeout);
     };
 
     return Bully;

@@ -12,7 +12,7 @@ ozpIwc.config = ozpIwc.config || {};
 
 
 //If this is in a worker the config file needs to be loaded.
-if (ozpIwc.util.runningInWorker()) {
+if (ozpIwc.util.runningInWorker) {
     importScripts('ozpIwc.conf.js');
 }
 
@@ -167,9 +167,9 @@ ozpIwc.config._testMode = ozpIwc.util.ifUndef(ozpIwc.config._testMode, false);
  * @default "<Absolute root path of current browser URL>"
  */
 ozpIwc.config._busRoot = ozpIwc.util.ifUndef(ozpIwc.config._busRoot, (function () {
-    return window.location.protocol + "//" +
-        window.location.host +
-        window.location.pathname.replace(/[^\/]+$/, "");
+    return ozpIwc.util.globalScope.location.protocol + "//" +
+        ozpIwc.util.globalScope.location.host +
+        ozpIwc.util.globalScope.location.pathname.replace(/[^\/]+$/, "");
 })());
 
 

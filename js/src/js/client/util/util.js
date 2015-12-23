@@ -33,7 +33,7 @@ ozpIwc.util = (function (util) {
                     id: timerCallbacks[i].id
                 });
                 timerCallbacks[i].loc = "local";
-                timerCallbacks[i].locId = window.setInterval(timerCallbacks[i].callback, timerCallbacks[i].time, timerCallbacks[i].args);
+                timerCallbacks[i].locId = setInterval(timerCallbacks[i].callback, timerCallbacks[i].time, timerCallbacks[i].args);
             }
         }
     };
@@ -42,7 +42,7 @@ ozpIwc.util = (function (util) {
         runLoc = "sharedWorker";
         for (var i in timerCallbacks) {
             if (timerCallbacks[i].type === "setInterval" && timerCallbacks[i].time < 1000 && timerCallbacks[i].loc === "local") {
-                window.clearInterval(timerCallbacks[i].locId);
+                clearInterval(timerCallbacks[i].locId);
                 timerCallbacks[i].loc = "sharedWorker";
                 timerWorker.port.postMessage({
                     type: timerCallbacks[i].type,
@@ -57,9 +57,9 @@ ozpIwc.util = (function (util) {
     var clearCalls = function (type) {
         return function (id) {
             if (!enhancedTimersEnabled || !timerCallbacks[id]) {
-                return window.clearInterval(id);
+                return clearInterval(id);
             } else if (timerCallbacks[id].loc === "local") {
-                window.clearInterval(timerCallbacks[id].locId);
+                clearInterval(timerCallbacks[id].locId);
                 timerCallbacks[id] = undefined;
             } else {
                 timerWorker.port.postMessage({
@@ -81,7 +81,7 @@ ozpIwc.util = (function (util) {
      * @method enableEnhancedTimers
      */
     util.enabledEnhancedTimers = function () {
-        if (window.SharedWorker) {
+        if (util.globalScope.SharedWorker) {
             timerWorker = new SharedWorker('/js/ozpIwc.timer.js');
 
             timerWorker.port.addEventListener('message', function (evt) {
@@ -89,7 +89,7 @@ ozpIwc.util = (function (util) {
                 var timer = evt.data;
                 var registered = timerCallbacks[timer.id];
                 if (registered) {
-                    registered.callback.call(window, registered.args);
+                    registered.callback.call(util.globalScope, registered.args);
 
                     if (timer.type === "setTimeout") {
                         timerCallbacks[timer.id] = null;
@@ -124,7 +124,7 @@ ozpIwc.util = (function (util) {
      */
     util.setTimeout = function (cb, time) {
         if (!enhancedTimersEnabled || useLocalTimers() || time && time >= 1000) {
-            return window.setTimeout(cb, time);
+            return setTimeout(cb, time);
         }
         var timer = {
             type: "setTimeout",
@@ -150,7 +150,7 @@ ozpIwc.util = (function (util) {
      */
     util.setInterval = function (cb, time) {
         if (!enhancedTimersEnabled) {
-            return window.setInterval(cb, time);
+            return setInterval(cb, time);
         }
 
         var timer = {
@@ -163,7 +163,7 @@ ozpIwc.util = (function (util) {
 
         if (useLocalTimers() || time && time >= 1000) {
             timer.loc = "local";
-            timer.locId = window.setInterval(cb, time);
+            timer.locId = setInterval(cb, time);
             timerCallbacks[timer.id] = timer;
             return timer.locId;
         }
@@ -190,6 +190,13 @@ ozpIwc.util = (function (util) {
      * @param {Number|String} id
      */
     util.clearTimeout = clearCalls("clearTimeout");
+
+    util.scriptDomain = (function(){
+        var scripts = document.getElementsByTagName('script');
+        var path = scripts[scripts.length-1].src.split('?')[0];
+        // the iframe_peer is a dir above the bus code.
+        return path.split('/').slice(0,-2).join('/');
+    }());
 
     return util;
 }(ozpIwc.util));

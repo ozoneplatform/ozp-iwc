@@ -2,7 +2,7 @@
     "project": {
         "name": "ozpIwc",
         "description": "",
-        "version": "1.1.17",
+        "version": "1.1.18",
         "url": ""
     },
     "files": {
@@ -9079,7 +9079,7 @@
         },
         {
             "file": "src/js/bus/policyAuth/points/pdp.js",
-            "line": 118,
+            "line": 116,
             "description": "The URN of the default combining algorithm to use when basing a decision on multiple policies.",
             "itemtype": "property",
             "name": "defaultCombiningAlgorithm",
@@ -10152,7 +10152,7 @@
         },
         {
             "file": "src/js/bus/transport/consensus/bully.js",
-            "line": 133,
+            "line": 134,
             "description": "Sends a victory message to other bully modules informing them of this modules role as Coordinator.",
             "itemtype": "method",
             "name": "sendVictoryMessage",
@@ -10173,7 +10173,7 @@
         },
         {
             "file": "src/js/bus/transport/consensus/bully.js",
-            "line": 153,
+            "line": 155,
             "description": "Sends a query message to other bully modules. The Coordinator will hear this message and respond immediately with\na victory message to inform Coordinator status.",
             "itemtype": "method",
             "name": "sendQueryMessage",
@@ -10194,7 +10194,7 @@
         },
         {
             "file": "src/js/bus/transport/consensus/bully.js",
-            "line": 176,
+            "line": 179,
             "description": "Handler function for receiving election messages. If the message sender is of lower rank than this module, this\nmodule joins the election.",
             "itemtype": "method",
             "name": "onElectionMessage",
@@ -10220,7 +10220,7 @@
         },
         {
             "file": "src/js/bus/transport/consensus/bully.js",
-            "line": 207,
+            "line": 210,
             "description": "Handler function for receiving acknowledge messages. If the acknowledge message is directed at this bully\nmodule, it will cancel its election as a higher ranking module exists.",
             "itemtype": "method",
             "name": "onAckMessage",
@@ -10246,7 +10246,7 @@
         },
         {
             "file": "src/js/bus/transport/consensus/bully.js",
-            "line": 235,
+            "line": 238,
             "description": "Handler function for receiving victory messages. If the sender out ranks this module, the module will act as a\nmember of the module group and start a watchdog to start a new election if the coordinator goes silent.",
             "itemtype": "method",
             "name": "onVictoryMessage",
@@ -10272,7 +10272,7 @@
         },
         {
             "file": "src/js/bus/transport/consensus/bully.js",
-            "line": 272,
+            "line": 275,
             "description": "Handler function for receiving query messages. If this module is the coordinator it will respond with a victory\nmessage to inform sender that this module is the coordinator.",
             "itemtype": "method",
             "name": "onQueryMessage",
@@ -10298,7 +10298,7 @@
         },
         {
             "file": "src/js/bus/transport/consensus/bully.js",
-            "line": 299,
+            "line": 302,
             "description": "Restarts the watchdog for which the coordinator must respond before ending otherwise this module will start an\nelection.",
             "itemtype": "method",
             "name": "restartCoordinatorTimeout",
@@ -10325,7 +10325,7 @@
         },
         {
             "file": "src/js/bus/transport/consensus/bully.js",
-            "line": 320,
+            "line": 323,
             "description": "Handler function for when no response was made by the coordinator and its watchdog times out.",
             "itemtype": "method",
             "name": "onCoordinatorTimeout",
@@ -10342,7 +10342,7 @@
         },
         {
             "file": "src/js/bus/transport/consensus/bully.js",
-            "line": 334,
+            "line": 337,
             "description": "Handler function for when this module becomes coordinator of all active matching bully modules.",
             "override": "",
             "itemtype": "method",
@@ -10354,7 +10354,7 @@
         },
         {
             "file": "src/js/bus/transport/consensus/bully.js",
-            "line": 361,
+            "line": 364,
             "description": "Makes this bully module start an election for the coordinator role.",
             "itemtype": "method",
             "name": "startElection",
@@ -10381,7 +10381,7 @@
         },
         {
             "file": "src/js/bus/transport/consensus/bully.js",
-            "line": 381,
+            "line": 384,
             "description": "Cancels this modules participation in the current election.",
             "itemtype": "method",
             "name": "cancelElection",
@@ -10503,7 +10503,94 @@
         },
         {
             "file": "src/js/bus/transport/listener/postMessage.js",
-            "line": 35,
+            "line": 37,
+            "description": "Checkes if the postMessage received packet is a valid packet and\nforwards it to the local participant.",
+            "access": "private",
+            "tagname": "",
+            "static": 1,
+            "itemtype": "method",
+            "name": "forwardPacket",
+            "params": [
+                {
+                    "name": "participant",
+                    "description": "[description]",
+                    "type": "ozpIwc.transport.Participant"
+                },
+                {
+                    "name": "packet",
+                    "description": "[description]",
+                    "type": "ozpIwc.transport.PacketContext.packet"
+                }
+            ],
+            "class": "ozpIwc.transport.participant.PostMessage",
+            "module": "ozpIwc.transport",
+            "submodule": "ozpIwc.transport.listener",
+            "namespace": "ozpIwc.transport.participant"
+        },
+        {
+            "file": "src/js/bus/transport/listener/postMessage.js",
+            "line": 54,
+            "description": "Creates an IWC participant given the receiving of a message from an\nunknown sender (new participant).\nLeverages the message event to gain information about the new participant.",
+            "static": 1,
+            "access": "private",
+            "tagname": "",
+            "itemtype": "method",
+            "name": "genParticipant",
+            "params": [
+                {
+                    "name": "listener",
+                    "description": "",
+                    "type": "ozpIwc.transport.listener.PostMessage"
+                },
+                {
+                    "name": "event",
+                    "description": "\"message\" event",
+                    "type": "Event"
+                },
+                {
+                    "name": "packet",
+                    "description": "",
+                    "type": "ozpIwc.transport.PacketContext.packet"
+                }
+            ],
+            "class": "ozpIwc.transport.participant.PostMessage",
+            "module": "ozpIwc.transport",
+            "submodule": "ozpIwc.transport.listener",
+            "namespace": "ozpIwc.transport.participant"
+        },
+        {
+            "file": "src/js/bus/transport/listener/postMessage.js",
+            "line": 89,
+            "description": "When receiving a \"message\" event from an unknown source, check against\nthe permissions to see if a participant can be made for the sender.\nReturns an asyncAction that will succeed if the permissions allow.",
+            "static": 1,
+            "access": "private",
+            "tagname": "",
+            "itemtype": "method",
+            "name": "verifyParticipant",
+            "params": [
+                {
+                    "name": "listener",
+                    "description": "",
+                    "type": "ozpIwc.transport.listener.PostMessage"
+                },
+                {
+                    "name": "event",
+                    "description": "[description]",
+                    "type": "Event"
+                }
+            ],
+            "return": {
+                "description": "will call success if participant is\nallowed to be created.",
+                "type": "ozpIwc.util.AsyncAction"
+            },
+            "class": "ozpIwc.transport.participant.PostMessage",
+            "module": "ozpIwc.transport",
+            "submodule": "ozpIwc.transport.listener",
+            "namespace": "ozpIwc.transport.participant"
+        },
+        {
+            "file": "src/js/bus/transport/listener/postMessage.js",
+            "line": 109,
             "itemtype": "method",
             "name": "registration",
             "override": "",
@@ -10555,7 +10642,7 @@
         },
         {
             "file": "src/js/bus/transport/listener/sharedWorker.js",
-            "line": 76,
+            "line": 75,
             "description": "Generates an init message handler for the sharedWorkerListener's connection of a participant.\nHandler destroyed after first message (connect message) as the participant opens its own message handler.",
             "itemtype": "method",
             "name": "messageHandlerGen",
@@ -10722,6 +10809,130 @@
         {
             "file": "src/js/bus/transport/participant/base.js",
             "line": 128,
+            "description": "An AsyncAction to verify if this participant can receive the given packetContext",
+            "itemtype": "method",
+            "name": "verifyReceiveAs",
+            "params": [
+                {
+                    "name": "packetContext",
+                    "description": "",
+                    "type": "ozpIwc.packet.Transport"
+                }
+            ],
+            "return": {
+                "description": "calls success if can receive.",
+                "type": "ozpIwc.util.AsyncAction"
+            },
+            "class": "ozpIwc.transport.participant.Base",
+            "module": "ozpIwc.transport",
+            "submodule": "ozpIwc.transport.participant",
+            "namespace": "ozpIwc.transport.participant"
+        },
+        {
+            "file": "src/js/bus/transport/participant/base.js",
+            "line": 145,
+            "description": "An AsyncAction to format a received packetContext's permission.",
+            "itemtype": "method",
+            "name": "formatRequest",
+            "params": [
+                {
+                    "name": "packetContext",
+                    "description": "",
+                    "type": "ozpIwc.packet.Transport"
+                }
+            ],
+            "return": {
+                "description": "calls success with the formated permissions.",
+                "type": "ozpIwc.util.AsyncAction"
+            },
+            "class": "ozpIwc.transport.participant.Base",
+            "module": "ozpIwc.transport",
+            "submodule": "ozpIwc.transport.participant",
+            "namespace": "ozpIwc.transport.participant"
+        },
+        {
+            "file": "src/js/bus/transport/participant/base.js",
+            "line": 156,
+            "description": "An AsyncAction to verify if this participant can read the given packetContext",
+            "itemtype": "method",
+            "name": "verifyRead",
+            "params": [
+                {
+                    "name": "packetContext",
+                    "description": "",
+                    "type": "ozpIwc.packet.Transport"
+                }
+            ],
+            "return": {
+                "description": "calls success if can read.",
+                "type": "ozpIwc.util.AsyncAction"
+            },
+            "class": "ozpIwc.transport.participant.Base",
+            "module": "ozpIwc.transport",
+            "submodule": "ozpIwc.transport.participant",
+            "namespace": "ozpIwc.transport.participant"
+        },
+        {
+            "file": "src/js/bus/transport/participant/base.js",
+            "line": 173,
+            "description": "An AsyncAction to verify if this participant can send the given packet",
+            "itemtype": "method",
+            "name": "verifySendAs",
+            "params": [
+                {
+                    "name": "packet",
+                    "description": "",
+                    "type": "ozpIwc.packet.Base"
+                }
+            ],
+            "return": {
+                "description": "calls success if can send.",
+                "type": "ozpIwc.util.AsyncAction"
+            },
+            "class": "ozpIwc.transport.participant.Base",
+            "module": "ozpIwc.transport",
+            "submodule": "ozpIwc.transport.participant",
+            "namespace": "ozpIwc.transport.participant"
+        },
+        {
+            "file": "src/js/bus/transport/participant/base.js",
+            "line": 189,
+            "description": "Mark the given received packetContext in the metrics.",
+            "itemtype": "method",
+            "name": "markReceivePacket",
+            "params": [
+                {
+                    "name": "packetContext",
+                    "description": "",
+                    "type": "ozpIwc.packet.Transport"
+                }
+            ],
+            "class": "ozpIwc.transport.participant.Base",
+            "module": "ozpIwc.transport",
+            "submodule": "ozpIwc.transport.participant",
+            "namespace": "ozpIwc.transport.participant"
+        },
+        {
+            "file": "src/js/bus/transport/participant/base.js",
+            "line": 203,
+            "description": "Mark the given sent packet in the metrics.",
+            "itemtype": "method",
+            "name": "markSendPacket",
+            "params": [
+                {
+                    "name": "packet",
+                    "description": "",
+                    "type": "ozpIwc.packet.Base"
+                }
+            ],
+            "class": "ozpIwc.transport.participant.Base",
+            "module": "ozpIwc.transport",
+            "submodule": "ozpIwc.transport.participant",
+            "namespace": "ozpIwc.transport.participant"
+        },
+        {
+            "file": "src/js/bus/transport/participant/base.js",
+            "line": 217,
             "description": "Processes packets sent from the router to the participant. If a packet does not pass authorization it is marked\nforbidden.",
             "itemtype": "method",
             "name": "receiveFromRouter",
@@ -10743,7 +10954,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/base.js",
-            "line": 149,
+            "line": 231,
             "class": "ozpIwc.transport.participant.Base",
             "module": "ozpIwc.transport",
             "submodule": "ozpIwc.transport.participant",
@@ -10751,7 +10962,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/base.js",
-            "line": 181,
+            "line": 247,
             "description": "Overridden by inherited Participants.",
             "override": "",
             "itemtype": "method",
@@ -10773,7 +10984,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/base.js",
-            "line": 194,
+            "line": 260,
             "description": "Connects the participant to a given router.\n\nFires:\n    - {{#crossLink \"ozpIwc.transport.participant.Base/#connectedToRouter:event\"}}{{/crossLink}}",
             "itemtype": "method",
             "name": "connectToRouter",
@@ -10796,7 +11007,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/base.js",
-            "line": 229,
+            "line": 295,
             "description": "Populates fields relevant to this packet if they aren't already set:\nsrc, ver, msgId, and time.",
             "itemtype": "method",
             "name": "fixPacket",
@@ -10804,7 +11015,7 @@
                 {
                     "name": "packet",
                     "description": "",
-                    "type": "ozpIwc.packet.Transport"
+                    "type": "ozpIwc.packet.Transport.packet"
                 }
             ],
             "return": {
@@ -10818,7 +11029,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/base.js",
-            "line": 251,
+            "line": 317,
             "description": "Sends a packet to this participants router.  Calls fixPacket\nbefore doing so.",
             "itemtype": "method",
             "name": "send",
@@ -10826,7 +11037,7 @@
                 {
                     "name": "packet",
                     "description": "",
-                    "type": "ozpIwc.packet.Transport"
+                    "type": "ozpIwc.packet.Transport.packet"
                 }
             ],
             "return": {
@@ -10840,7 +11051,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/base.js",
-            "line": 284,
+            "line": 341,
             "description": "Creates a message id for a packet by iterating {{#crossLink\n\"ozpIwc.transport.participant.Base.msgId\"}}{{/crossLink}}",
             "itemtype": "method",
             "name": "generateMsgId",
@@ -10855,7 +11066,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/base.js",
-            "line": 295,
+            "line": 352,
             "description": "Sends a heartbeat packet to Participant's router.",
             "itemtype": "method",
             "name": "heartbeat",
@@ -10866,7 +11077,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/base.js",
-            "line": 316,
+            "line": 373,
             "description": "Adds this participant to the $bus.multicast multicast group.",
             "itemtype": "method",
             "name": "joinEventChannel",
@@ -10881,7 +11092,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/base.js",
-            "line": 339,
+            "line": 396,
             "description": "Remove this participant from the $bus.multicast multicast group.",
             "itemtype": "method",
             "name": "leaveEventChannel",
@@ -10892,7 +11103,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/base.js",
-            "line": 364,
+            "line": 421,
             "description": "Destroys this participant. The router will no longer reference it.",
             "itemtype": "method",
             "name": "destroy",
@@ -11948,7 +12159,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/sharedWorker.js",
-            "line": 103,
+            "line": 105,
             "description": "The participant hijacks anything addressed to \"$transport\" and serves it\ndirectly.  This isolates basic connection checking from the router, itself.",
             "itemtype": "method",
             "name": "handleTransportPacket",
@@ -11967,7 +12178,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/sharedWorker.js",
-            "line": 129,
+            "line": 131,
             "description": "Receives a packet on behalf of this participant and forwards it via SharedWorker.",
             "itemtype": "method",
             "name": "receiveFromRouterImpl",
@@ -11985,7 +12196,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/sharedWorker.js",
-            "line": 139,
+            "line": 141,
             "description": "Sends a message to the other end of our connection.  Wraps any string mangling\nnecessary by the SharedWorker implementation of the browser.",
             "itemtype": "method",
             "name": "sendToParticipant",
@@ -12007,7 +12218,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/sharedWorker.js",
-            "line": 152,
+            "line": 154,
             "description": "Sends a packet received via SharedWorker to the Participant's router.",
             "itemtype": "method",
             "name": "forwardFromPostMessage",
@@ -12033,7 +12244,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/sharedWorker.js",
-            "line": 166,
+            "line": 168,
             "class": "ozpIwc.transport.participant.SharedWorker",
             "module": "ozpIwc.transport",
             "submodule": "ozpIwc.transport.participant",
@@ -12041,7 +12252,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/sharedWorker.js",
-            "line": 183,
+            "line": 185,
             "description": "A handler for forwarded events from this participants corresponding window.",
             "todo": [
                 "Currently just the event type is passed"
@@ -12160,7 +12371,7 @@
         },
         {
             "file": "src/js/bus/transport/packetContext.js",
-            "line": 67,
+            "line": 68,
             "description": "Sends the given response to the sender of this context if the packet respondOn criteria is met.",
             "itemtype": "method",
             "name": "replyTo",
@@ -12182,7 +12393,7 @@
         },
         {
             "file": "src/js/bus/transport/packetContext.js",
-            "line": 89,
+            "line": 90,
             "description": "Returns true if this packet be replied to based on its respondOn.",
             "itemtype": "method",
             "name": "shouldReply",
@@ -13581,7 +13792,36 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 46,
+            "line": 49,
+            "description": "Takes in the various Client parameter options\n([string]),([object]),(string,[object]) and formats the config.\nThis is done to not break semver and force updated Client code.",
+            "itemtype": "method",
+            "name": "formatConfig",
+            "access": "private",
+            "tagname": "",
+            "static": 1,
+            "params": [
+                {
+                    "name": "param1",
+                    "description": "Either the peer url to connect to ,the\n                                   config object, or undefined to use\n                                   default connection",
+                    "type": "[String|Object]"
+                },
+                {
+                    "name": "param2",
+                    "description": "If peer url string provided in param1, param2\n                            is the optional config object. If param1 is the\n                            config object param2 is ignored",
+                    "type": "[Object]"
+                }
+            ],
+            "return": {
+                "description": "Formatted config object",
+                "type": "Object"
+            },
+            "class": "ozpIwc.Client",
+            "module": "ozpIwc",
+            "namespace": "ozpIwc"
+        },
+        {
+            "file": "src/js/client/client.js",
+            "line": 83,
             "description": "A utility method for handshaking the client's connection to the bus.\nResolves an external promise.",
             "itemtype": "method",
             "name": "initPing",
@@ -13611,7 +13851,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 64,
+            "line": 101,
             "description": "A handler function generator. Creates the post message event \"message\" handler for the client for its Iframe.\nRequires an external promise resolve/reject reference to call when the client's postMessage handler has connected\nto the bus.",
             "itemtype": "method",
             "name": "genPostMessageHandler",
@@ -13645,7 +13885,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 102,
+            "line": 139,
             "description": "Generates the Iframe for the client for IWC bus-domain communication.\nDue to race condition issues with Chrome, this is an asynchronous task with a slight delay to prevent\nbroken bus connections with Chrome/SharedWorker.",
             "itemtype": "method",
             "name": "createIframeShim",
@@ -13659,7 +13899,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 143,
+            "line": 180,
             "description": "Generates the Peer URL checking logic based on the data type received.",
             "itemtype": "method",
             "name": "genPeerUrlCheck",
@@ -13684,7 +13924,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 170,
+            "line": 207,
             "itemtype": "property",
             "name": "peerUrlCheck",
             "type": "String",
@@ -13694,7 +13934,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 180,
+            "line": 217,
             "description": "Meta-data for registration to function with SharedWorkers.",
             "access": "private",
             "tagname": "",
@@ -13708,7 +13948,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 193,
+            "line": 230,
             "description": "A utility method for Clients to register to handle application & intent-chooser launching.",
             "itemtype": "method",
             "name": "registerIntentHandlers",
@@ -13728,7 +13968,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 236,
+            "line": 273,
             "description": "Disconnects the client from the IWC bus.",
             "itemtype": "method",
             "name": "disconnect",
@@ -13738,7 +13978,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 262,
+            "line": 299,
             "description": "Connects the client from the IWC bus.\nFires: {{#crossLink \"ozpIwc.Client/connected:event\"}}{{/crossLink}}",
             "itemtype": "method",
             "name": "connect",
@@ -13748,7 +13988,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 272,
+            "line": 309,
             "description": "Promise to chain off of for client connection asynchronous actions.",
             "itemtype": "property",
             "name": "connectPromise",
@@ -13759,17 +13999,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 286,
-            "description": "Fired when the client receives its address.",
-            "itemtype": "event",
-            "name": "#gotAddress",
-            "class": "ozpIwc.Client",
-            "module": "ozpIwc",
-            "namespace": "ozpIwc"
-        },
-        {
-            "file": "src/js/client/client.js",
-            "line": 297,
+            "line": 328,
             "description": "Creates an invisible iFrame Peer for IWC bus communication. Resolves when iFrame communication has been\ninitialized.",
             "itemtype": "method",
             "name": "createIframePeer",
@@ -13783,7 +14013,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 320,
+            "line": 351,
             "description": "Client to Bus sending implementation. Not to be used directly.",
             "access": "private",
             "tagname": "",
@@ -13802,7 +14032,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 330,
+            "line": 361,
             "description": "Gathers the launch data passed to the opened application. Launch data can be passed as a query parameter, inside\nwindow.name, or inside window.hash as long as it's key is \"launchData\".\n\nPromise resolve with the launchData object.",
             "itemtype": "method",
             "name": "getLaunchData",
@@ -14041,51 +14271,6 @@
         {
             "file": "src/js/common/events/event.js",
             "line": 87,
-            "description": "Fires an event that will be received by all handlers.",
-            "itemtype": "method",
-            "name": "",
-            "params": [
-                {
-                    "name": "eventName",
-                    "description": "Name of the event.",
-                    "type": "String"
-                },
-                {
-                    "name": "event",
-                    "description": "Event object to pass to the handers.",
-                    "type": "Object"
-                }
-            ],
-            "return": {
-                "description": "The event after all handlers have processed it.",
-                "type": "Object"
-            },
-            "class": "ozpIwc.util.Event",
-            "module": "ozpIwc",
-            "submodule": "ozpIwc.util",
-            "namespace": "ozpIwc.util"
-        },
-        {
-            "file": "src/js/common/events/event.js",
-            "line": 110,
-            "description": "Adds an {{#crossLink \"ozpIwc.util.Event/off:method\"}}on(){{/crossLink}} and\n{{#crossLink \"ozpIwc.util.Event/off:method\"}}off(){{/crossLink}} function to the target that delegate to this\nobject.",
-            "itemtype": "method",
-            "name": "mixinOnOff",
-            "params": [
-                {
-                    "name": "target",
-                    "description": "Target to receive the on/off functions",
-                    "type": "Object"
-                }
-            ],
-            "class": "ozpIwc.util.Event",
-            "module": "ozpIwc",
-            "submodule": "ozpIwc.util",
-            "namespace": "ozpIwc.util"
-        },
-        {
-            "file": "src/js/common/events/event.js",
-            "line": 124,
             "description": "Adds an {{#crossLink \"ozpIwc.util.Event/off:method\"}}on(){{/crossLink}} and\n{{#crossLink \"ozpIwc.util.Event/off:method\"}}off(){{/crossLink}} function to the target that delegate to this\nobject.",
             "itemtype": "method",
             "name": "mixinOnOff",
@@ -14153,7 +14338,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 53,
+            "line": 52,
             "description": "Registers event listeners for the participant.  Listens for the following events: disconnect.",
             "itemtype": "method",
             "name": "registerEvents",
@@ -14172,7 +14357,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 68,
+            "line": 67,
             "description": "A factory for the apiPromise functionality.",
             "itemtype": "method",
             "name": "getCore",
@@ -14188,7 +14373,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 78,
+            "line": 77,
             "itemtype": "property",
             "name": "promiseCallbacks",
             "type": "Object",
@@ -14200,7 +14385,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 85,
+            "line": 84,
             "itemtype": "property",
             "name": "msgIdSequence",
             "type": "Number",
@@ -14212,7 +14397,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 92,
+            "line": 91,
             "itemtype": "property",
             "name": "receivedPackets",
             "type": "Number",
@@ -14224,7 +14409,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 99,
+            "line": 98,
             "itemtype": "property",
             "name": "receivedBytes",
             "type": "Number",
@@ -14236,7 +14421,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 106,
+            "line": 105,
             "itemtype": "property",
             "name": "sentPackets",
             "type": "Number",
@@ -14248,7 +14433,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 113,
+            "line": 112,
             "itemtype": "property",
             "name": "sentBytes",
             "type": "Number",
@@ -14260,7 +14445,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 120,
+            "line": 119,
             "description": "The epoch time the Client was instantiated.",
             "itemtype": "property",
             "name": "startTime",
@@ -14272,7 +14457,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 127,
+            "line": 126,
             "description": "A map of available apis and their actions.",
             "itemtype": "property",
             "name": "apiMap",
@@ -14284,7 +14469,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 134,
+            "line": 133,
             "itemtype": "property",
             "name": "wrapperMap",
             "type": "Object",
@@ -14296,7 +14481,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 141,
+            "line": 140,
             "itemtype": "property",
             "name": "preconnectionQueue",
             "type": "Array",
@@ -14308,7 +14493,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 148,
+            "line": 147,
             "itemtype": "property",
             "name": "launchParams",
             "type": "Object",
@@ -14320,7 +14505,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 155,
+            "line": 154,
             "itemtype": "property",
             "name": "watchMsgMap",
             "type": "Object",
@@ -14332,7 +14517,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 162,
+            "line": 161,
             "itemtype": "property",
             "name": "registeredCallbacks",
             "type": "Object",
@@ -14344,7 +14529,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 169,
+            "line": 168,
             "itemtype": "property",
             "name": "launchedIntents",
             "type": "Array",
@@ -14356,7 +14541,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 176,
+            "line": 175,
             "description": "Returns whether or not the participant is connected to the IWC bus.",
             "itemtype": "method",
             "name": "isConnected",
@@ -14371,7 +14556,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 186,
+            "line": 185,
             "description": "Parses launch parameters based on the raw string input it receives.",
             "itemtype": "method",
             "name": "readLaunchParams",
@@ -14389,7 +14574,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 209,
+            "line": 208,
             "description": "Receive a packet from the connected peer.  If the packet is a reply, then\nthe callback for that reply is invoked.  Otherwise, it fires a receive event\n\nFires:\n    - {{#crossLink \"ozpIwc.Client/receive:event}}{{/crossLink}}",
             "itemtype": "method",
             "name": "receive",
@@ -14409,7 +14594,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 275,
+            "line": 274,
             "description": "Builds the client api calls from the values in client.apiMap",
             "itemtype": "method",
             "name": "constructApiFunctions",
@@ -14420,7 +14605,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 303,
+            "line": 302,
             "description": "Calls the names.api to gather the /api/* resources to gain knowledge of available api actions of the\ncurrent bus.",
             "itemtype": "method",
             "name": "gatherApiInformation",
@@ -14435,7 +14620,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 346,
+            "line": 345,
             "description": "Cancel a reply callback registration.",
             "itemtype": "method",
             "name": "cancelPromiseCallback",
@@ -14456,7 +14641,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 362,
+            "line": 361,
             "description": "Cancel a watch callback registration.",
             "itemtype": "method",
             "name": "cancelRegisteredCallback",
@@ -14477,7 +14662,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 380,
+            "line": 379,
             "description": "Registers callbacks",
             "itemtype": "method",
             "name": "on",
@@ -14500,7 +14685,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 396,
+            "line": 395,
             "description": "De-registers callbacks",
             "itemtype": "method",
             "name": "off",
@@ -14523,7 +14708,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 408,
+            "line": 407,
             "description": "Handles intent invocation packets. Communicates back with the intents.api to operate the in flight\nintent\nstate machine.",
             "itemtype": "method",
             "name": "intentInvocationHandling",
@@ -14555,7 +14740,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 503,
+            "line": 502,
             "description": "Calls the specific api wrapper given an api name specified.\nIf the wrapper does not exist it is created.",
             "itemtype": "method",
             "name": "api",
@@ -14577,7 +14762,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 514,
+            "line": 513,
             "description": "Updates the wrapper map for api use. Whenever functionality is added or removed from the apiMap the\nupdateApi must be called to reflect said changes on the wrapper map.",
             "itemtype": "method",
             "name": "updateApi",
@@ -14599,7 +14784,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 524,
+            "line": 523,
             "description": "Augmentation for Intents Api register. Automatically invokes a registration if the invoke was passed\ninto the application opening.",
             "itemtype": "method",
             "name": "intentRegisterAugment",
@@ -14623,7 +14808,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 543,
+            "line": 542,
             "description": "Augmentation for Intents Api invoke. Wraps callback to remove the callback when reaching\nerror/complete state.",
             "itemtype": "method",
             "name": "intentRegisterAugment",
@@ -14647,7 +14832,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 567,
+            "line": 566,
             "description": "Augmentation for Intents Api broadcast. Compiles the results of all intent handlers and then,\nreturns the responfixese in the promise resolution. Callback acts like invoke callback.",
             "itemtype": "method",
             "name": "intentRegisterAugment",
@@ -14671,7 +14856,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 613,
+            "line": 612,
             "description": "Augmenters for Intent Api specific actions.",
             "itemtype": "method",
             "name": "intentAugment",
@@ -14696,7 +14881,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 636,
+            "line": 635,
             "description": "Function generator. Generates API functions given a messageBuilder function.",
             "itemtype": "method",
             "name": "augment",
@@ -14721,7 +14906,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 655,
+            "line": 654,
             "description": "Function generator. Generates API message formatting functions for a client-destination-action\npairing. These are generated for bulk sending capabilities, since the message needs to be formatted\nbut not transmitted until desired.",
             "itemtype": "method",
             "name": "messageBuilderAugment",
@@ -14750,7 +14935,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 701,
+            "line": 700,
             "description": "All message formatting calls sits inside the API wrapper's messageBuilder object. These\ncalls will return a formatted message ready to be sent.\n(e.g: data().messageBuilder.set)",
             "class": "ozpIwc.util.ApiPromiseMixin",
             "module": "ozpIwc",
@@ -14759,7 +14944,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 721,
+            "line": 720,
             "description": "All function calls are on the root level of the API wrapper. These calls will format messages and\nthen send them to the router.\n(e.g: data().set)",
             "class": "ozpIwc.util.ApiPromiseMixin",
             "module": "ozpIwc",
@@ -14768,7 +14953,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 733,
+            "line": 732,
             "description": "Iterate over all mapped function calls and augment their message formatter and function call.",
             "class": "ozpIwc.util.ApiPromiseMixin",
             "module": "ozpIwc",
@@ -14777,7 +14962,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 748,
+            "line": 747,
             "description": "Applies necessary properties to the packet to be transmitted through the router.",
             "itemtype": "method",
             "name": "fixPacket",
@@ -14799,7 +14984,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 774,
+            "line": 773,
             "description": "Registers callbacks for API request callbacks and promises.",
             "itemtype": "property",
             "name": "packet",
@@ -14828,7 +15013,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 842,
+            "line": 841,
             "description": "Sends a packet through the IWC.\nWill call the participants sendImpl function.",
             "itemtype": "method",
             "name": "send",
@@ -14861,7 +15046,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 888,
+            "line": 887,
             "description": "Generic handler for a bus connection to handle any queued messages & launch data after its connected.",
             "itemtype": "method",
             "name": "afterConnected",
@@ -14876,7 +15061,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 939,
+            "line": 938,
             "description": "Handles packets received with a destination of \"$bus.multicast\".\nIf the packet action isn't handled, the function will return falsy.",
             "itemtype": "method",
             "name": "handleBusPacket",
@@ -15361,7 +15546,26 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 13,
+            "line": 14,
+            "params": [
+                {
+                    "name": "globalScope",
+                    "description": "",
+                    "type": "Object"
+                }
+            ],
+            "static": 1,
+            "return": {
+                "description": "reference to global scope, works in node,browser,workers.",
+                "type": "Object"
+            },
+            "class": "ozpIwc.util",
+            "module": "ozpIwc",
+            "namespace": "ozpIwc"
+        },
+        {
+            "file": "src/js/common/util.js",
+            "line": 24,
             "description": "Generates a large hexidecimal string to serve as a unique ID.  Not a guid.",
             "itemtype": "method",
             "name": "generateId",
@@ -15376,7 +15580,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 24,
+            "line": 35,
             "description": "Used to get the current epoch time.  Tests overrides this\nto allow a fast-forward on time-based actions.",
             "itemtype": "method",
             "name": "now",
@@ -15390,7 +15594,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 35,
+            "line": 46,
             "description": "Applies the template using the supplied object for values",
             "itemtype": "method",
             "name": "resolveUriTemplate",
@@ -15421,7 +15625,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 71,
+            "line": 82,
             "description": "A record of event listeners used in the given IWC context. Grouped by type.",
             "itemtype": "property",
             "name": "eventListeners",
@@ -15433,7 +15637,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 80,
+            "line": 91,
             "description": "Adds an event listener to the window and stores its listener in ozpIwc.util.eventListeners.",
             "itemtype": "method",
             "name": "addEventListener",
@@ -15455,7 +15659,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 96,
+            "line": 107,
             "description": "Removes an event listener from the window and from ozpIwc.util.eventListeners",
             "params": [
                 {
@@ -15475,7 +15679,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 109,
+            "line": 120,
             "description": "Removes all event listeners registered in ozpIwc.util.eventListeners",
             "params": [
                 {
@@ -15501,7 +15705,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 126,
+            "line": 137,
             "description": "Create a class with the given parent in it's prototype chain.",
             "itemtype": "method",
             "name": "extend",
@@ -15527,11 +15731,11 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 145,
+            "line": 156,
             "description": "Invoke postMessage on a given window in a safe manner. Test whether the browser\nsupports structured clones, and stringifies the message if not. Catches\nerrors (especially attempts to send non-cloneable objects), and tries to\nsend a stringified copy of the message asa fallback.",
             "params": [
                 {
-                    "name": "window",
+                    "name": "toWindow",
                     "description": "a window on which to invoke postMessage"
                 },
                 {
@@ -15549,23 +15753,20 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 171,
+            "line": 183,
             "description": "Detect browser support for structured clones. Returns quickly since it\ncaches the result. This method only determines browser support for structured\nclones. Clients are responsible, when accessing capabilities that rely on structured\ncloning, to ensure that objects to be cloned meet the criteria of the structured clone\nalgorithm. (See ozpIwc.util.safePostMessage for a method which handles attempts to\nclone an invalid object.). NB: a bug in FF will cause file objects to be treated as\nnon-cloneable, even in FF versions that support structured clones.\n(see https://bugzilla.mozilla.org/show_bug.cgi?id=722126).",
             "access": "private",
             "tagname": "",
-            "itemtype": "method",
+            "itemtype": "property",
             "name": "structuredCloneSupport",
-            "return": {
-                "description": "True if structured clones are supported, false otherwise.",
-                "type": "Boolean"
-            },
+            "type": "Boolean",
             "class": "ozpIwc.util",
             "module": "ozpIwc",
             "namespace": "ozpIwc"
         },
         {
             "file": "src/js/common/util.js",
-            "line": 206,
+            "line": 213,
             "description": "Does a deep clone of a serializable object.  Note that this will not\nclone unserializable objects like DOM elements, Date, RegExp, etc.",
             "itemtype": "method",
             "name": "clone",
@@ -15586,7 +15787,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 226,
+            "line": 233,
             "description": "A regex method to parse query parameters.",
             "itemtype": "method",
             "name": "parseQueryParams",
@@ -15603,7 +15804,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 244,
+            "line": 251,
             "description": "Adds params to the query string of the given url. Accepts objects, preformed query strings, and arrays of query\nparams.",
             "itemtype": "method",
             "name": "addQueryParams",
@@ -15629,7 +15830,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 323,
+            "line": 330,
             "description": "A mapping for common protocols and their ports.",
             "itemtype": "property",
             "name": "protocolPorts",
@@ -15640,7 +15841,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 335,
+            "line": 342,
             "description": "Determines the origin of a given url.",
             "itemtype": "method",
             "name": "determineOrigin",
@@ -15660,7 +15861,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 361,
+            "line": 368,
             "description": "Escapes regular expression characters in a string.",
             "itemtype": "method",
             "name": "escapeRegex",
@@ -15681,7 +15882,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 371,
+            "line": 378,
             "itemtype": "method",
             "name": "parseOzpUrl",
             "params": [
@@ -15701,7 +15902,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 393,
+            "line": 400,
             "description": "Returns true if the specified packet meets the criteria of an IWC Packet.",
             "itemtype": "method",
             "name": "isIwcPacket",
@@ -15723,7 +15924,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 409,
+            "line": 416,
             "description": "Returns the version of Internet Explorer or a -1\n(indicating the use of another browser).",
             "return": {
                 "description": "",
@@ -15735,7 +15936,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 433,
+            "line": 440,
             "description": "A promise that resolves when the document is past its prerender state.",
             "itemtype": "method",
             "name": "prerender",
@@ -15750,22 +15951,19 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 460,
+            "line": 466,
             "description": "A utility to determine if this code is running in a HTML5 Worker. Used to decide on browser technologies\nto use.",
-            "itemtype": "method",
+            "itemtype": "property",
             "name": "runningInWorker",
+            "type": "Boolean",
             "static": 1,
-            "return": {
-                "description": "",
-                "type": "Boolean"
-            },
             "class": "ozpIwc.util",
             "module": "ozpIwc",
             "namespace": "ozpIwc"
         },
         {
             "file": "src/js/common/util.js",
-            "line": 471,
+            "line": 475,
             "description": "Wraps window.open.  If the bus is running in a worker, then\nit doesn't have access to the window object and needs help from\na participant.",
             "see": [
                 "window.open documentation for what the parameters actually do"
@@ -15797,7 +15995,7 @@
         },
         {
             "file": "src/js/common/util.js",
-            "line": 499,
+            "line": 503,
             "description": "Returns a promise that will resolve after the given delay with any additional arguments passed",
             "params": [
                 {
@@ -16919,11 +17117,11 @@
         },
         {
             "message": "unknown tag: override",
-            "line": " src/js/bus/transport/consensus/bully.js:334"
+            "line": " src/js/bus/transport/consensus/bully.js:337"
         },
         {
             "message": "unknown tag: override",
-            "line": " src/js/bus/transport/listener/postMessage.js:35"
+            "line": " src/js/bus/transport/listener/postMessage.js:109"
         },
         {
             "message": "unknown tag: override",
@@ -16931,7 +17129,7 @@
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/bus/transport/listener/sharedWorker.js:76"
+            "line": " src/js/bus/transport/listener/sharedWorker.js:75"
         },
         {
             "message": "unknown tag: mixes",
@@ -16939,7 +17137,7 @@
         },
         {
             "message": "unknown tag: override",
-            "line": " src/js/bus/transport/participant/base.js:181"
+            "line": " src/js/bus/transport/participant/base.js:247"
         },
         {
             "message": "unknown tag: abstract",
@@ -16987,19 +17185,19 @@
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/client/client.js:64"
+            "line": " src/js/client/client.js:101"
         },
         {
             "message": "unknown tag: properties",
-            "line": " src/js/client/client.js:102"
+            "line": " src/js/client/client.js:139"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/client/client.js:297"
+            "line": " src/js/client/client.js:328"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/client/client.js:330"
+            "line": " src/js/client/client.js:361"
         },
         {
             "message": "replacing incorrect tag: returns with return",
@@ -17023,7 +17221,7 @@
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/common/util.js:499"
+            "line": " src/js/common/util.js:503"
         },
         {
             "message": "unknown tag: callback",
@@ -17079,7 +17277,7 @@
         },
         {
             "message": "Missing item type",
-            "line": " src/js/bus/transport/participant/base.js:149"
+            "line": " src/js/bus/transport/participant/base.js:231"
         },
         {
             "message": "Missing item type",
@@ -17087,7 +17285,7 @@
         },
         {
             "message": "Missing item type",
-            "line": " src/js/bus/transport/participant/sharedWorker.js:166"
+            "line": " src/js/bus/transport/participant/sharedWorker.js:168"
         },
         {
             "message": "Missing item type\nReceive a packet from the peer.\n\n**Emits**: {{#crossLink \"ozpIwc.transport.Router/prePeerReceive:event\"}}{{/crossLink}}",
@@ -17111,15 +17309,15 @@
         },
         {
             "message": "Missing item type\nAll message formatting calls sits inside the API wrapper's messageBuilder object. These\ncalls will return a formatted message ready to be sent.\n(e.g: data().messageBuilder.set)",
-            "line": " src/js/common/apiPromiseMixin.js:701"
+            "line": " src/js/common/apiPromiseMixin.js:700"
         },
         {
             "message": "Missing item type\nAll function calls are on the root level of the API wrapper. These calls will format messages and\nthen send them to the router.\n(e.g: data().set)",
-            "line": " src/js/common/apiPromiseMixin.js:721"
+            "line": " src/js/common/apiPromiseMixin.js:720"
         },
         {
             "message": "Missing item type\nIterate over all mapped function calls and augment their message formatter and function call.",
-            "line": " src/js/common/apiPromiseMixin.js:733"
+            "line": " src/js/common/apiPromiseMixin.js:732"
         },
         {
             "message": "Missing item type\nThe default scope of the router.",
@@ -17130,24 +17328,28 @@
             "line": " src/js/common/packetRouter.js:214"
         },
         {
+            "message": "Missing item type",
+            "line": " src/js/common/util.js:14"
+        },
+        {
             "message": "Missing item type\nRemoves an event listener from the window and from ozpIwc.util.eventListeners",
-            "line": " src/js/common/util.js:96"
+            "line": " src/js/common/util.js:107"
         },
         {
             "message": "Missing item type\nRemoves all event listeners registered in ozpIwc.util.eventListeners",
-            "line": " src/js/common/util.js:109"
+            "line": " src/js/common/util.js:120"
         },
         {
             "message": "Missing item type\nInvoke postMessage on a given window in a safe manner. Test whether the browser\nsupports structured clones, and stringifies the message if not. Catches\nerrors (especially attempts to send non-cloneable objects), and tries to\nsend a stringified copy of the message asa fallback.",
-            "line": " src/js/common/util.js:145"
+            "line": " src/js/common/util.js:156"
         },
         {
             "message": "Missing item type\nReturns the version of Internet Explorer or a -1\n(indicating the use of another browser).",
-            "line": " src/js/common/util.js:409"
+            "line": " src/js/common/util.js:416"
         },
         {
             "message": "Missing item type\nReturns a promise that will resolve after the given delay with any additional arguments passed",
-            "line": " src/js/common/util.js:499"
+            "line": " src/js/common/util.js:503"
         },
         {
             "message": "Missing item type\nReturn the rate per second",
