@@ -13,14 +13,14 @@ describe("System Api", function () {
 
     describe("general", function () {
 
-        pit("has pretty name and email in /user", function () {
+        xit("has pretty name and email in /user", function () {
             return systemApi.get("/user").then(function (reply) {
                 expect(reply.response).toEqual("ok");
                 expect(reply.entity).toBeDefined();
             });
         });
 
-        pit("has system version in /system", function () {
+        xit("has system version in /system", function () {
             return systemApi.get("/system")
                 .then(function (reply) {
                     expect(reply.response).toEqual("ok");
