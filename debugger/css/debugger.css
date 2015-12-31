@@ -9059,5 +9059,8 @@ span.address {
     color: #EEEEEF;
     font-size: 32px;
 }
+.padIcon {
+    padding-right: 5px;
+}
 
 /*# sourceMappingURL=debugger.css.map */

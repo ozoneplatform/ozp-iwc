@@ -14034,7 +14034,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         var watchList = this.watchers[resource];
         if (watchList) {
             this.watchers[resource] = watchList.filter(function (watch) {
-                return watch.src === watcher.src && watch.replyTo === watcher.msgId;
+                return !(watch.src === watcher.src && watch.replyTo === watcher.msgId);
             });
         }
     };
