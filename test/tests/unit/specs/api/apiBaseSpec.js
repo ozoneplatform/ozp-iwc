@@ -554,7 +554,9 @@ describe("Base Api request handling", function () {
         it("removes an existant watch", function () {
             var context = testPacket({
                 resource: "/foo",
-                action: "unwatch"
+                action: "unwatch",
+                msgId: watchContext.packet.msgId,
+                src: watchContext.packet.src
             });
             apiBase.receivePacketContext(watchContext);
             apiBase.receivePacketContext(context);
