@@ -21,6 +21,22 @@ ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport
          *
          */
         var Debugger = util.extend(Base, function (config) {
+            var localOrigin = util.getOrigin();
+            if(config.origin !== localOrigin){
+                var error = "Debugger participants are only permitted on" +
+                " Bus-domain applications. Debugger creation attempted from " +
+                "Application-domain: [" + config.origin  +
+                "] while Bus-domain is: [" + localOrigin + "]";
+                log.error(error);
+
+                this.invalid = true;
+                util.safePostMessage(config.port, {
+                    iwcInit: true,
+                    error: error
+                });
+                return;
+            }
+
             Base.apply(this, arguments);
             this.name = "DebuggerParticipant";
             this.router = config.router;

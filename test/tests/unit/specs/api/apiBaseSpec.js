@@ -408,7 +408,6 @@ describe("Base Api request handling", function () {
                 action: "set",
                 msgId: "i:50"
             });
-            apiBase.receivePacketContext(watchContext);
             apiBase.receivePacketContext(context);
             expect(apiBase.participant).toHaveSent({
                 resource: "/does-not-exist",

@@ -164,7 +164,7 @@
     }
     var loc = ozpIwc.util.parseOzpUrl(m[1]);
     loc.action = "watch";
-    var client = new ozpIwc.Client({peerUrl: window.location.origin});
+    var client = new ozpIwc.Client();
 
 
     client.send(loc, onHandlerChange).then(function (reply) {

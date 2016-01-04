@@ -21,7 +21,7 @@
     "grunt-contrib-concat": "*",
     "grunt-contrib-connect": "git+https://github.com/gruntjs/grunt-contrib-connect",
     "grunt-contrib-copy": "*",
-    "grunt-contrib-jshint": "*",
+    "grunt-contrib-jshint": "~0.11",
     "grunt-contrib-uglify": "*",
     "grunt-contrib-watch": "*",
     "grunt-contrib-yuidoc": "^0.10.0",

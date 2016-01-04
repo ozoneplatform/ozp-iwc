@@ -138,7 +138,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         });
 
         this.data[inflightNode.resource] = inflightNode;
-        this.addCollector(inflightNode.resource);
+        this.addCollector(inflightNode);
         updateInvoker(this, inflightNode);
         this.data[inflightNode.resource] = api.intents.FSM.transition(inflightNode);
         return this.handleInflightIntentState(inflightNode);
@@ -180,6 +180,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
      * @return {Promise} Resolves when either a preference is gathered or the intent chooser is opened.
      */
     Api.prototype.handleChoosing = function (node) {
+        var self = this;
 
         var useRegisteredChooser = function (intentNode) {
 
@@ -267,7 +268,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 return node;
             });
         };
-        var self = this;
+        
         updateInvoker(this, node);
         return this.getPreference(node.entity.intent.type + "/" + node.entity.intent.action).then(function (handlerResource) {
             if (handlerResource in self.data) {

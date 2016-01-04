@@ -1,5 +1,5 @@
 /* global debuggerModule */
-debuggerModule.controller("metricsController", ['$scope', '$interval', '$filter', 'iwcClient', function (scope, $interval, $filter, client) {
+debuggerModule.controller("metricsController", ['$scope', '$interval', '$filter', 'iwcClient', "$log", function (scope, $interval, $filter, client, log) {
     var filter = $filter('filter');
     scope.updateFrequency = 1000;
     scope.metricWindow = 60000;
@@ -66,6 +66,8 @@ debuggerModule.controller("metricsController", ['$scope', '$interval', '$filter'
 
     client.connect().then(function () {
         scope.refresh();
+    }).catch(function(err) {
+        log.error(err);
     });
 
     var timer = null;

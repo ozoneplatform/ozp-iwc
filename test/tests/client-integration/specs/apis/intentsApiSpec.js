@@ -120,4 +120,51 @@ describe("Intents Api", function () {
             expect(response.response).toEqual("noResult");
         });
     });
+
+    describe("References",function(){
+        var intentRef;
+        var intentFn;
+        var input;
+
+        beforeEach(function(){
+            intentRef = new intentsApi.Reference("/foo/bar/buz");
+            input = "HELLO WORLD";
+        });
+
+        it("References can register", function(done){
+            intentFn = function(val){
+                expect(val).toEqual(input);
+                done();
+            };
+
+            intentRef.register(intentFn)
+                     .then(function(){
+                         intentsApi.invoke("/foo/bar/buz",{entity: input});
+                     });
+        });
+
+        it("can invoke", function(done){
+            intentFn = function(val){
+                expect(val.entity).toEqual(input);
+                done();
+            };
+
+            intentsApi.register("/foo/bar/buz",intentFn)
+                     .then(function(){
+                         intentRef.invoke(input);
+                     });
+        });
+
+        it("can register and invoke", function(done){
+            intentFn = function(val){
+                expect(val).toEqual(input);
+                done();
+            };
+
+            intentRef.register(intentFn)
+                     .then(function(val){
+                         return intentRef.invoke(input);
+                     });
+        });
+    });
 });

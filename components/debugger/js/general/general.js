@@ -1,5 +1,5 @@
 /* global debuggerModule */
-debuggerModule.controller('GeneralCtrl', ['$scope', '$state', 'iwcClient', function (scope, state, client) {
+debuggerModule.controller('GeneralCtrl', ['$scope', '$state', 'iwcClient', "$log", function (scope, state, client, log) {
     scope.ozpIwc = ozpIwc;
 
     scope.endpointClicked = function (endpoint) {
@@ -29,6 +29,8 @@ debuggerModule.controller('GeneralCtrl', ['$scope', '$state', 'iwcClient', funct
                 scope.systemBuild = data.entity;
             });
         });
+    }).catch(function(err) {
+        log.error(err);
     });
 }]);
 

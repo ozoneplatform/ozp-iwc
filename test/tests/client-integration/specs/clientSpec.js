@@ -57,7 +57,6 @@ describe("IWC Client", function () {
             }).then(function (reply) {
                 expect(reply.dst).toEqual(client2.address);
                 expect(reply.entity).toEqual("cow");
-                return client2.disconnect();
             });
         });
 
@@ -350,5 +349,15 @@ describe("IWC Client", function () {
             });
         });
 
+    });
+
+    describe("Debugger", function() {
+        pit("Denies different origins from creating a debugger.", function(){
+            client2 = new ozpIwc.Debugger(BUS_URL);
+
+            return client2.connect().catch(function(err){
+                expect(err).toBeDefined();
+            });
+        });
     });
 });

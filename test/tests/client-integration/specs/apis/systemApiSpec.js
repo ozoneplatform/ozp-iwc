@@ -110,4 +110,14 @@ describe("System Api", function () {
             });
         });
     });
+
+    describe("References",function(){
+
+        xit("can launch", function(){
+            var appRef = new client.system.Reference("/application/23456");
+            appRef.launch().then(function(){
+                //no error means launched.
+            });
+        });
+    });
 });

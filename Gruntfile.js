@@ -353,6 +353,17 @@ module.exports = function(grunt) {
                     }
                 ]
             },
+            ghPagesVersioned: {
+                files: [
+                    {
+                        src: ['**/*', "!js/ozpIwc.conf.js"],
+                        dest: 'gh-pages/<%= pkg.version %>/',
+                        cwd: 'dist/',
+                        expand: true,
+                        nonull:true
+                    }
+                ]
+            },
             // concat_sourcemap on the boostrap.css wants to see the less files
             // munge the source a bit to give it what it wants
             hackBootstrap: {
@@ -562,7 +573,7 @@ module.exports = function(grunt) {
         },
         gitbook: {
             development: {
-                output: "gh-pages/gitbook",
+                output: "gh-pages/<%= pkg.version %>/gitbook",
                 input: "./docs/iwc_guide",
                 title: "Inter-Widget Communication (IWC)",
                 github: "ozone-development/ozp-iwc"
