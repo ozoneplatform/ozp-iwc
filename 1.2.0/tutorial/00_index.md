@@ -11,14 +11,16 @@ tag: 1.2.0
 In this tutorial, we will create a javascript application that will do the following:
 
   1. Gather required library.
-  2. Connects to the IWC bus hosted on github.
-  3. Store and retrieve data using the Data API.
-  4. Implement the publish/subscribe pattern to create a clock.
+  2. A quick technology explanation.
+  3. Define the keyterms of the IWC.
+  4. Connects to the IWC bus hosted on this website.
+  5. Store and retrieve data using the Data API.
+  6. Implement the publish/subscribe pattern to create a clock.
 
 ***
 
-## Gathering the IWC
-To use the IWC in a javascript application, the IWC client library is needed.
+# Gathering the IWC
+To use the IWC in a Javascript application, the IWC client library is needed.
 The library can be gathered in the following ways.
 
 ### Bower
@@ -39,10 +41,87 @@ Distributions of the IWC can be downloaded as a zip/tar.gz from the [github rele
 In the unarchived directory, the library is located  at `/dist/js/ozpIwc-client.min.js`.
 
 ### Remotely
-The latest release of the IWC library is available here on github at `http://ozone-development.github.io/ozp-iwc/js/ozpIwc-client.js`.
+The 1.2.0 release of the IWC client library is available here on github at `http://ozone-development.github.io/ozp-iwc/1.2.0/js/ozpIwc-client.js`.
+The latest release is also regularly updated here on github at `http://ozone-development.github.io/ozp-iwc/js/ozpIwc-client.js`.
 
 ***
 
+
+# Technology overview
+The IWC functions by having the **IWC client**, the script gathered using methods above,
+open a hidden iFrame to connection to an **IWC bus**, demonstrated in the following
+seciton, which will utilize the **domain** of the IWC bus for CORS
+(cross-origin resource sharing) purposes injuncture with HTML5 browser technology
+(SharedWorker/localStorage) to let applications **act like they are sharing data
+through a server, but, there is no server and the data is just passed internal to
+the user's browser**.
+
+
+***
+
+# Terminology Breakdown
+To develop application that use the IWC the following terms are important to know:
+**IWC Client, IWC Bus, APIs, Resources, and References.**
+## IWC Client
+An IWC Client is an instantiation of the IWC client library within an application.
+Creating a connection is covered below, but a single client is needed for an
+application to utilize the IWC. Whenever a `new ozpIwc.Client(...)` is used
+in code, a new client is created.
+
+The Client allows the application to make requests and receive responses/events
+from the **IWC Bus**.
+
+## IWC Bus
+The IWC Bus is the Javascript that marshals around and contains the state of
+all the shared data and functionality of the IWC Clients.
+
+The IWC Bus is created when the user's first **IWC Client** is instantiated. In
+other terms, when the first application that connects to a given IWC Bus is opened,
+the Bus is created. The Bus is created by IWC internals of the IWC Client and does not need to be
+handled by the application developer.
+
+When all applications accessing a given IWC Bus are closed, the Bus is destroyed.
+
+## APIs
+An API in the scope of the IWC is a subsection of the **IWC Bus** that governs
+and maintains information for various uses of the application. A piece of information
+an API maintains is called a **Resource**.
+
+#### Data API
+The Data API is the API of the IWC that manages **shared data among applications**.
+
+#### Intents API
+The Intents API is the API of the IWC that manages **shared functions among applications***.
+
+## Resources
+**Resources** are objects internal to the **IWC Bus** that applications request
+to interact with. These objects may contain a shared current value (Data API),
+or routing information for a shared function to be called (Intents API)
+
+For example, stating "The bouncing ball application's **client** updates the shared
+data **resource** '/foo'" means that the given applications **IWC Client** makes a
+request to the **Data Api** to set the value stored in the **Resource** named "/foo".
+The naming convension for resources follows the **relative pathing** style of URLs
+for advanced IWC concepts covered later in these tutorials.
+
+With an understanding of **resources** comes the last important term of the IWC,
+**references**.
+
+## References
+A **Reference** is a instantiated class that simplifies the work of an
+application developer when using an **IWC Client** to request a **Resource** of
+an **API**.
+
+Since resources are internal to the IWC, an application wanting to access them
+does not have the visibility of the resources within their scope. In fact the
+resources aren't stored within the same HTML window.
+
+In order for an application to interact with a resource it must create a
+**reference** to it. **A reference object holds a set of functions to let the
+application interact with the resource it reffers to.**
+
+
+***
 ## Creating an IWC Connection
 The IWC library uses the `ozpIwc` namespace. To create a connection, a  **Client** must be made. When creating a client,
 the IWC **Bus** (common domain) must be specified in the `peerUrl` property.
@@ -53,15 +132,25 @@ the IWC **Bus** (common domain) must be specified in the `peerUrl` property.
 
 An IWC bus is a location where all of the IWC distributables can be gathered,
 `http://ozone-development.github.io/ozp-iwc`, for example. The bus does not run any functionality on a server, rather
-provides the files necessary for in-browser communication over the given domain. This means, for all applications open
-with a given browser on a user's computer (different tabs, different windows, embedded in pages, ect.). If all of the
+provides the files necessary for in-browser communication over the given domain.
+
+This means, for all applications open with a given browser on a user's computer
+(different tabs, different windows, embedded in pages, ect.). If all of the
 applications connect to the same IWC bus, then they can all communicate locally.
+
 
 Eventually the IWC bus will be accessible publicly on a high performance domain (through a CDN), for now the common
 domain is hosted here on github.
 
+The use of "http://ozone-development.github.io/ozp-iwc" instead of
+"http://ozone-development.github.io/ozp-iwc/1.2.0" for connecting is because all
+releases of IWC 1 (`1.x.y`) can communicate with backwards compatibility. Using
+a specific release of the *client library 1.2.0* guarentees the developer can
+develop against the IWC 1.2.0 client API. Connecting to the latest bus version
+links all applications to the latest available IWC internals.
+
 For companies/organizations desiring their own domain (customized application communication, account based access,
-persistent data, ect), the IWC bus can easily be hosted. See our gitbook for [hosting documentation]({{site.baseurl}}/gitbook/bus/overview.html), tutorials will
+persistent data, specific IWC bus versions, ect), the IWC bus can easily be hosted. See our gitbook for [hosting documentation]({{site.baseurl}}/gitbook/bus/overview.html), tutorials will
 be produced on this matter at a later date as well.
 
 ### Testing connection
