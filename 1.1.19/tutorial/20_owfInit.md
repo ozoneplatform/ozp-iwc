@@ -1,15 +1,16 @@
 ---
-layout: tutorial
+layout: old_tutorial
 title: Application Setup
 category: owf
+tag: 1.1.19
 ---
-# Migration from OWF to IWC 
+# Migration from OWF to IWC
 This tutorial is for developers who are migrating applications previously developed for the Ozone Widget Framework (OWF)
 to use IWC. This tutorial has the following prerequisites:
 
   1. [Quick Start](index.html)
   2. [Basic Data Sharing](01_dataApi.html)
-  
+
 
 ## Overview
 This tutorial covers:
@@ -26,7 +27,7 @@ In OWF, it was required that applications had to:
   1. Include the `owf-widget-min.js` JavaScript library.
   2. Place the `rpc_relay.uncompressed.html` file in the application's directory & give reference to it with:
   ` OWF.relayFile = '<DIR_PATH>/rpc_relay.uncompressed.html';`
-  
+
 ``` html
 <html>
    <head>
@@ -45,7 +46,7 @@ In IWC, the two requirements above unfold as so:
 
   1. Include the 'ozpIwc-client.min.js` JavaScript library.
   2. No longer necessary
-  
+
 ``` html
 <html>
    <head>
@@ -63,7 +64,7 @@ In OWF, it was required to wrap application logic in a callback to `OWF.ready`. 
 the application logic would run.
 
 ``` js
-function initPage() { 
+function initPage() {
   updateClock();
   msg = 'Running in OWF: ' + (OWF.Util.isRunningInOWF()?"Yes":"No");
   document.getElementById("message-panel").innerHTML = msg;
@@ -76,7 +77,7 @@ owfdojo.addOnLoad(function() {
 ```
 
 #### IWC
-In IWC, the application does not need to wait for IWC to be ready to begin operation. All IWC operations will be 
+In IWC, the application does not need to wait for IWC to be ready to begin operation. All IWC operations will be
 queued if the IWC is not ready for the application. This means applications no longer have the `Loading..` splash-screen
 of OWF.
 
@@ -92,13 +93,13 @@ var client = new ozpIwc.Client({peerUrl: "http://localhost:13000"});
 
 #### Knowing when the IWC Client Connects
 While the client auto connects and will process any requests queued, the `connect` promise will resolve when the client
-is connected. This promise can be called ass often as desired, the client will not reconnect by calling it, rather it 
+is connected. This promise can be called ass often as desired, the client will not reconnect by calling it, rather it
 will reference the connection to resolve and move on to any chained functions.
 
 ``` js
 var client = new ozpIwc.Client({peerUrl: "http://localhost:13000"});
 client.connect().then(function(){
-   // This asynchronous function runs once the client is connected. 
+   // This asynchronous function runs once the client is connected.
 });
 ```
 

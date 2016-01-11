@@ -1,20 +1,21 @@
 ---
-layout: tutorial
+layout: old_tutorial
 title: Intent Invocation Error Handling
 category: intents
+tag: 1.1.19
 ---
 
 # Handling Errors when Invoking Intents
-Up to this point registering functionality and invoking functionality has been explained. As with any remote 
+Up to this point registering functionality and invoking functionality has been explained. As with any remote
 communication, adhering to formatting requirments is crucial with the IWC Intents. When a developer registers a
 function as and intent handler, it is their responsibility to release documentation on what that intent handler
 expects (specifically what the invocation's entity should contain).
 
-In the event that an intent invoker supplies non-valid data for a handler, unexpected behavior will occur. To 
+In the event that an intent invoker supplies non-valid data for a handler, unexpected behavior will occur. To
 make integration efforts easier, intent handlers should perform checks on the data received before operating on it.
 **If the format of the received data will result in the handler failing to produce an expected result an error should
-be thrown.** The IWC will forward said error to the invoker to signify what went wrong. This is a good point to utilize 
-both application specific error codes and human readable error messages. Below is an example of an intent handler 
+be thrown.** The IWC will forward said error to the invoker to signify what went wrong. This is a good point to utilize
+both application specific error codes and human readable error messages. Below is an example of an intent handler
 throwing an error based on received input, followed by an invoker catching the error forwarded.
 
 ***
@@ -31,7 +32,7 @@ var handler = function(invocation) {
   return someFunctionCall(invocation.entity);
 };
 
-intents.register("/json/array/randomize", handler); 
+intents.register("/json/array/randomize", handler);
 ```
 
 ### Handling Errors on the Invoker

@@ -1,8 +1,9 @@
 ---
-layout: examples
+layout: old_examples
 title: Shared Control
-permalink: "examples/index.html"
+permalink: "1.1.19/examples/index.html"
 category: basic
+tag: 1.1.19
 ---
 
 # Shared Control
@@ -43,22 +44,22 @@ These applications set resources to the IWC to create & modify balls on the Ball
 
 ***
 
-## IWC Resources Used by Ball Viewer 
+## IWC Resources Used by Ball Viewer
 | API | Resource | Action | Reason| Resource Entity Sample |
 |-----|----------|------------|---|----------------------|
-| Data| /github/example/balls| Watch | Listen for ball collection|  n/a | 
-| Data| /github/example/balls/{ballId}| Watch | Listen for individual ball updates|  ``` { x: 50, y: 50, radius: 20, color: "#FF0000" } ``` | 
+| Data| /github/example/balls| Watch | Listen for ball collection|  n/a |
+| Data| /github/example/balls/{ballId}| Watch | Listen for individual ball updates|  ``` { x: 50, y: 50, radius: 20, color: "#FF0000" } ``` |
 
 ### Data Api: /github/example/balls
-A resource for applications to watch for addition/deletion of ball resources. This information is in the resources 
-[collection](../tutorial/04_collections.html). 
+A resource for applications to watch for addition/deletion of ball resources. This information is in the resources
+[collection](../tutorial/04_collections.html).
 
 
 ### Data Api: /github/examples/balls/{ballId}
 Shared data on a ball drawn to the example below. Any IWC application can manipulate the state of the ball and update
 its position on the screen.  The format of the **entity** of the ball is as so:
 
-``` js 
+``` js
 {
    x: 12, // Number between 0-100
    y: 50, // Number between 0-100

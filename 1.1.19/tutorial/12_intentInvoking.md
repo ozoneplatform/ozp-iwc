@@ -1,7 +1,8 @@
 ---
-layout: tutorial
+layout: old_tutorial
 title: Invoking an Intent
 category: intents
+tag: 1.1.19
 ---
 
 # Invoking an Intent on the Intents Api
@@ -12,18 +13,18 @@ the Intents Api, calling the intent functions.
 ## Invoking any handler
 When invoking an intent on the IWC, the default behavior is to invoke an **intent action** and allow the IWC to process
  which registered handler to use. The choosing falls into 3 cases:
- 
+
  1. There is only one handler matching that action: simply, the only handler is chosen.
  2. There are multiple handlers and the user has no stored preference: A pop-up window opens to prompt the user which
  application to use to handle the invocation. The user has the option there to store their preference (for as long
- as that handling application is open) to have it always handle the request. This has not been implemented yet as of 
+ as that handling application is open) to have it always handle the request. This has not been implemented yet as of
  version 1.1.14 and is a planned feature.
  3. There are multiple handlers and the user has stored preference: The preferred handler is sent the invocation.
- 
 
-**To invoke an action and let the IWC handle where it is run:** call the intent's `invoke` action with the 
+
+**To invoke an action and let the IWC handle where it is run:** call the intent's `invoke` action with the
 `/{Type}/{Sub-type}/{Action}` path. The invoke function signature has **3 parameters**:
- 
+
 ####Parameters
 
 | parameter | type   | description                                                                                                                                                            |
@@ -36,7 +37,7 @@ When invoking an intent on the IWC, the default behavior is to invoke an **inten
 A promise that resolves with a response object upon the remote function handling of the request. It matches the format
 of the other IWC action promise resolutions, the properties noted below are siginificant changes with the values of
 the properties in an invoke action resolution.
- 
+
 | property | type   | description                                                                                 |
 |----------|--------|---------------------------------------------------------------------------------------------|
 | src      | String | The address of of the response sender. "intents.api" is the source as the response message is received and formatted there. |
@@ -46,13 +47,13 @@ the properties in an invoke action resolution.
 
 ####Callback
 The callback of the invoke action is for applications that wish to receive status updates pertaining to the handling
-of an invocation. If the desire is to simply have someone handle some data and optionally return a response, simply 
+of an invocation. If the desire is to simply have someone handle some data and optionally return a response, simply
 utilizing the promise response should suffice.
 
 
 The callback receives 2 parameters:
- 1. `reply`: contains various information about an intent. For the introductory purposes of intent registrations, only 
- `reply.entity` is covered here, other properties will be covered for more advanced intents in a later tutorial. 
+ 1. `reply`: contains various information about an intent. For the introductory purposes of intent registrations, only
+ `reply.entity` is covered here, other properties will be covered for more advanced intents in a later tutorial.
  2. `done`: A function to call to stop handling intent requests. Useful for conditionally stopping intent handling.
 
 | property | type   | description                                |
@@ -93,7 +94,7 @@ the `{HandlerId}` will be runtime generated and can not be statically referenced
 
 ##Broadcast: Invoking all handlers
 The `broadcast` follows the same signature & functionality as `invoke` with one key difference. It **invokes on all
-handlers matching the supplied action**. 
+handlers matching the supplied action**.
 
 There are three differences between broadcasting and invoking:
 

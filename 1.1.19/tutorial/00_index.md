@@ -1,8 +1,9 @@
 ---
-layout: tutorial
+layout: old_tutorial
 title: Quick Start
-permalink: "tutorial/index.html"
+permalink: "1.1.19/tutorial/index.html"
 category: data
+tag: 1.1.19
 ---
 
 # Quick Start

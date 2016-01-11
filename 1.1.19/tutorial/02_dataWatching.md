@@ -1,7 +1,8 @@
 ---
-layout: tutorial
-title: Resource Watching 
+layout: old_tutorial
+title: Resource Watching
 category: data
+tag: 1.1.19
 ---
 # Leveraging the Watch Action
 As explained in the [Basic Data Sharing](01_dataApi.html) tutorial, the `watch` action will notify IWC client's when
@@ -28,7 +29,7 @@ As noted, the `options` parameter is optional, providing only the resource and c
 ###Returns
 A promise that resolves on the acknowledgement of the request. The watch promise matches the promise response structure of the `get`
 action as explained in the [Basic Data Sharing](01_dataApi.html) tutorial. This promise function is **not called
-on resource value change**. The callback parameter is called on resource change. The purpose for the `get` action 
+on resource value change**. The callback parameter is called on resource change. The purpose for the `get` action
 response is to allow a watcher to obtain immediate state of a resource when watching without an additional request.
 
 ***
@@ -44,11 +45,11 @@ client.data().watch("/tutorial/count",onChange);
 ```
 
 Whenever the value of a resource is changed, any registered `watch` requests for the given resource receive notification
-to their `callback` function that was provided in the request parameters. 
+to their `callback` function that was provided in the request parameters.
 
 #### Response
 For this tutorial we will focus on the `entity` property of the callback. It provides the change in value to the resource
-as well as notification if the resource has been deleted. The remaining `entity` properties, oldCollection and 
+as well as notification if the resource has been deleted. The remaining `entity` properties, oldCollection and
 newCollection, pertain to resource filtering and will be covered in a later tutorial.
 
 | Response entity properties | type     | description                                                                  |
@@ -60,7 +61,7 @@ newCollection, pertain to resource filtering and will be covered in a later tuto
 | oldCollection| Array | Previous array of resources in this resources collection.|
 
 #### "done"
-The done argument is a function passed into the callback for user's to call when they wish to not watch the resource 
+The done argument is a function passed into the callback for user's to call when they wish to not watch the resource
 any further.
 
 The purpose of this `done` call is to to stop watching given some resource value condition. For example, stopping
@@ -82,13 +83,13 @@ client.data().watch("/tutorial/count",onChange);
 Below is a simple watch example where the callback's response and the promise resolution's response are written to the screen.
 
 Take note that the `count` value written out above the increment/decrement buttons is done in response to the
-data acquired from the callback/promise resolution response and is never written locally except for declaring the 
+data acquired from the callback/promise resolution response and is never written locally except for declaring the
 count to 0 if it is undefined.
 <p data-height="450" data-theme-id="0" data-slug-hash="zvQWqL" data-default-tab="result" data-user="Kevin-K" class='codepen'>
 
 ***
 
 ### Advanced Watch information
-While more tutorials will be added,check out the 
+While more tutorials will be added,check out the
 [watch action documentation in our gitbook]({{site.baseurl}}/gitbook/client/apis/common/watch.html). Watching for
 addition/removal of a collection of resources is covered in the [Resource Collections](04_collections.html) tutorial.

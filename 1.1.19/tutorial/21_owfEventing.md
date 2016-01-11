@@ -1,7 +1,8 @@
 ---
-layout: tutorial
-title: Eventing API 
+layout: old_tutorial
+title: Eventing API
 category: owf
+tag: 1.1.19
 ---
 # Migration from OWF Eventing to IWC Data API
 This tutorial is for developers who are migrating applications previously developed for the Ozone Widget Framework (OWF)
@@ -10,7 +11,7 @@ to use IWC. This tutorial has the following prerequisites:
   1. [Quick Start](index.html)
   2. [Basic Data Sharing](01_dataApi.html)
   3. [(OWF) Application Setup](10_owfInit.html)
-  
+
 ***
 
 ## Overview
@@ -50,7 +51,7 @@ The set functionality **modifies the state of the resource** rather than just br
 ***
 
 ## Subscribe
-In OWF, listening to published data on a channel used the `subscribe` action. It took a **channel** and some 
+In OWF, listening to published data on a channel used the `subscribe` action. It took a **channel** and some
 **callback** function.
 
 
@@ -77,7 +78,7 @@ client.data().watch("ClockChannel",callback);
 
 ### Response Format differences
 Unlike the OWF callback, which receives the **sender** and **message**, the IWC callback receives the entire **response**
-object sent to the client. 
+object sent to the client.
 
 * **response.src**: The sender of the message,(will not be the client that called `set` rather `"data.api"` in this example)
 * **response.entity**: The message payload, structured for a watch
@@ -111,11 +112,10 @@ client.data().watch("ClockChannel",callback).then(onResolved);
 
 ## Recreating Announcing Clock and Second Tracker
 This is a rewrite of the example widgets in the [OWF7 Developer Guides](https://github.com/ozoneplatform/owf-framework/wiki/OWF-7-Developer-Adding-Eventing-API-to-Widget).
-Some of the code has been simplified to better showcase the IWC changes (clock string generation). Note, the `Connection Uptime` 
+Some of the code has been simplified to better showcase the IWC changes (clock string generation). Note, the `Connection Uptime`
 in the Second Tracker is actually a receive count.
 ### Second Tracker
 <p data-height="400" data-theme-id="0" data-slug-hash="aveGPb" data-default-tab="js" data-user="Kevin-K" class='codepen'></p>
 
 ### Announcing Clock
 <p data-height="400" data-theme-id="0" data-slug-hash="dYxKbO" data-default-tab="js" data-user="Kevin-K" class='codepen'></p>
-

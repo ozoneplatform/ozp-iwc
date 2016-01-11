@@ -1,0 +1,71 @@
+---
+layout: old_default
+---
+
+<div class="header-container">
+    <header class="wrapper clearfix">
+        <h1 class="title">
+            <img src="{{site.baseurl}}/style/img/logo_o.png" />
+            <span>v{{page.tag}}</span>
+        </h1>
+        <nav>
+            <ul>
+                <li><a href="{{site.baseurl}}/{{page.tag}}/examples">Examples</a></li>
+                <li><a href="{{site.baseurl}}/{{page.tag}}/tutorial" class="live one">Tutorial</a></li>
+                <li><a href="{{site.baseurl}}/{{page.tag}}">Overview</a></li>
+            </ul>
+        </nav>
+    </header>
+</div>
+
+<div class="main-container">
+    <div class="main wrapper clearfix no-bullet">
+        <aside>
+            <h3>General</h3>
+            <ul>
+                {% for p in site.pages %}
+                {% if p.layout == 'old_tutorial' %}
+                {% if p.category == 'data' %}
+                {% if p.url == page.url %}
+                <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% else %}
+                <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% endif %}
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            </ul>
+            <h3>Advanced</h3>
+            <ul>
+                {% for p in site.pages %}
+                {% if p.layout == 'old_tutorial' %}
+                {% if p.category == 'intents' %}
+                {% if p.url == page.url %}
+                <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% else %}
+                <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% endif %}
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            </ul>
+            <h3>OWF Migration</h3>
+            <ul>
+                {% for p in site.pages %}
+                {% if p.layout == 'old_tutorial' %}
+                {% if p.category == 'owf' %}
+                {% if p.url == page.url %}
+                <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% else %}
+                <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% endif %}
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </aside>
+        <article>
+            {{ content }}
+        </article>
+    </div>
+</div>

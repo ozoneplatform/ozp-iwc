@@ -1,0 +1,128 @@
+---
+
+redirect_from: "/"
+layout: default
+tag: 1.2.0
+releases:
+    - 1.1.19
+---
+
+<!--[if lt IE 7]>
+    <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+<![endif]-->
+
+<div class="header-container">
+    <header class="wrapper clearfix">
+        <h1 class="title">
+            <img src="{{site.baseurl}}/style/img/logo_o.png" />
+            <span>v{{page.tag}}</span>
+        </h1>
+        <nav>
+            <ul>
+                <li><a href="{{site.baseurl}}/{{page.tag}}/examples">Examples</a></li>
+                <li><a href="{{site.baseurl}}/{{page.tag}}/tutorial">Tutorial</a></li>
+                <li><a href="{{site.baseurl}}/{{page.tag}}/" class="live one">Overview</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="section-container one">
+        <div class="wrapper clearfix">
+            <h1>IWC</h1>
+            <h3><b>( Inter-Widget Communication )</b><br />A javascript library for cross-domain & cross-tab communication</h3>
+            <a class="button" href="{{site.baseurl}}/{{page.tag}}/tutorial">Begin the tutorial</a>
+        </div>
+    </div>
+</div>
+
+<div class="section-container">
+    <div class="main wrapper clearfix">
+        <div class="col3">
+            <h2>Start</h2>
+            <p><b>Try it out.</b> Integration is simple, a demo IWC service bus is provided straight from our github and the application library is readily available through bower. Our sample applications are publicly accessible.</p>
+            <a href="http://ozone-development.github.io/ozp-demo" target="_blank" class="button">
+                <span class="icon-monitor"></span> See Demo
+            </a>
+        </div>
+        <div class="col3">
+            <h2>Join</h2>
+            <p><b>Share your applications.</b> Open an issue on our <a href="https://github.com/ozone-development/ozp-demo/wiki/Community-IWC-Application-Sharing">demo repository</a> to get your application added to the ecosystem. IWC requests and bugs should be shared through <a href="https://github.com/ozone-development/ozp-iwc/issues">github issues</a> and contributions shared through <a href="https://github.com/ozone-development/ozp-iwc/pulls">pull requests.</a> </p>
+            <a href="http://www.github.com/ozone-development/ozp-iwc" target="_blank" class="button">
+                <span class="icon-cloud"></span> View on Github
+            </a>
+        </div>
+        <div class="col3">
+            <h2>Create</h2>
+            <p><b>Build your own IWC service bus.</b> The IWC comes with a sample configurable NodeJS backend. If developing a custom backend, our documentation covers the needed data for an IWC application to utilize your backend.</p>
+            <a href="{{site.baseurl}}/{{tag}}/gitbook/index.html" target="_blank" class="button">
+                <span class="icon-book"></span> Read Docs
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="main-container">
+    <div class="main wrapper clearfix">
+        <h1>Synchronized data across all windows without a backend</h1>
+        <p>While other service bus implementations utilize servers to marshal data between applications, the IWC does all of the marshalling local to the browser. The IWC does have backend integration capabilities to persist resources and load application metadata to give the IWC bus awareness of the applications using it.</p>
+
+        <div class="browser-mockup">
+            <iframe src="http://ozone-development.github.io/ozp-demo/bouncingBalls/index.html?color=blue&fps=20" height="250"></iframe>
+        </div>
+        <div class="browser-mockup">
+            <iframe src="http://ozone-development.github.io/ozp-demo/bouncingBalls/index.html?color=green&fps=20" height="250"></iframe>
+        </div>
+        <div class="browser-mockup">
+            <iframe src="http://ozone-development.github.io/ozp-demo/bouncingBalls/index.html?color=black&fps=20" height="250"></iframe>
+        </div>
+    </div>
+    <div class="main wrapper clearfix">
+        <h1>Reduce code replication</h1>
+        <p>IWC allows for applications of same and different origins to communicate and share resources without tightly coupling functionality. Leveraging applications that use IWC means less development time, write your application's unique functionality and utilize other applications to handle the common tasks.</p>
+
+        <div class="browser-mockup">
+            <iframe src="http://ozone-development.github.io/ozp-demo/locationLister/index.html" height="370"></iframe>
+        </div>
+        <div class="browser-mockup">
+            <iframe src="http://ozone-development.github.io/ozp-demo/locationViewer/index.html" height="250"></iframe>
+        </div>
+        <div class="browser-mockup">
+            <iframe src="http://ozone-development.github.io/ozp-demo/locationAnalyzer/index.html"  height="370"></iframe>
+        </div>
+    </div>
+    <div class="main wrapper clearfix">
+        <h1>Browser Support</h1>
+        <p>IWC does not use any browser plugins or extensions. It leverages modern browser technologies (localStorage and optionally SharedWorkers) and is supported for Firefox 24+, Chrome 37+, and limited support of Internet Explorer 11.</p>
+    </div>
+
+    <div class="main wrapper clearfix">
+        <h1>Looking for Previous Release Documentation?</h1>
+        <p>The IWC is an evergrowing effort, and with that documentation, tutorials, and examples must grow as well. The content hosted on this website pertains to <b> the latest release
+        of the IWC </b>. If working with a previous version, refer to the documentation below:</p>
+        {% for releases in page.releases %}
+        <div class="col3 no-bullet" style="border:0px">
+            <h3> <a href = "{{site.baseurl}}/{{tag}}">{{tag}}</a> </h3>
+            <ul>
+                <li><a href = "{{site.baseurl}}/{{releases}}/tutorial/">Tutorials</a></li>
+                <li><a href = "{{site.baseurl}}/{{releases}}/examples/">Examples</a></li>
+                <li><a href = "{{site.baseurl}}/{{releases}}/gitbook/">Gitbook</a></li>
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="main-container">
+    <div class="main wrapper clearfix">
+    </div>
+</div>
+
+<div class="footer-container">
+    <footer class="wrapper clearfix">
+        <p>Free and open source. Released under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License v2.0</a>.</p>
+    </footer>
+</div>
+
+<!-- IWC inits for the sample app-->
+<script src="js/ozpIwc-client.min.js"></script>
+<script src="app.js"></script>

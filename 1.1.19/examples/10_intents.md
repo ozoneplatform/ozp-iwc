@@ -1,11 +1,12 @@
 ---
-layout: examples
+layout: old_examples
 title: Intents - Remote Functionality
 category: basic
+tag: 1.1.19
 ---
 
 # Intents: Remote Functionality
-Below is an application that takes in raw JSON as an input. And given the selected intent action chosen from the 
+Below is an application that takes in raw JSON as an input. And given the selected intent action chosen from the
 dropdown menu, sends the input off to the remote application to be processed. If the remote application returns a
 value, it is written to the "output" section of the application.
 
@@ -13,7 +14,7 @@ Without any intent applications opened, there are no intent actions to be called
 from the list below the application.
 
 
-Each intent handling application includes documentation in its GUI regarding the format of data it expects when handling 
+Each intent handling application includes documentation in its GUI regarding the format of data it expects when handling
 an intent invocation (the "input" section of the IWC Intent Tester below).
 
 **Note:** While these examples are running on the same domain (codepen), they are not domain bound. You can have a
@@ -28,7 +29,7 @@ in **cross domain communication**.
 
 ## Intent Handling Apps (opens in new window)
 These applications register Intent handling functions to the IWC. Their handlers can found available in the dropdown
-of the application above once the respected application is opened. 
+of the application above once the respected application is opened.
 <div class="app-list">
     <a href="#"  onClick="openPopup('LGGWQj','Simple Array Functions');return false;" >Simple Array Functions</a>
 </div>
@@ -52,7 +53,7 @@ of the application above once the respected application is opened.
 | API| /Type/Subtype| Expected invoke entity format|
 |-----|----------|------------|---|----------------------|
 | Intents | /json/array| Array of valid JSON. |
- 
+
 ### Intents API: /json/array
 Intent handlers registered under the `/json/array` type/subtype expect the invocation to send an array as it's entity:
 
