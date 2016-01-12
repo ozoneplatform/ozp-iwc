@@ -1,7 +1,7 @@
 ---
 layout: tutorial
-title: Invoking an Intent
-category: intents
+title: Invoking an Intent (Shared Function)
+category: intermediate
 tag: 1.2.0
 ---
 

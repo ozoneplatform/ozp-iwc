@@ -3,7 +3,7 @@ layout: tutorial
 title: Setup and Key Terms
 permalink: "/1.2.0/tutorial/index.html"
 redirect_from: "/tutorial/"
-category: data
+category: basic
 tag: 1.2.0
 ---
 

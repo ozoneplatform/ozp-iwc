@@ -1,137 +1,115 @@
 ---
 layout: tutorial
-title: Resource Collections
-category: data
+title:  Collections (Resource Groupings)
+category: intermediate
 tag: 1.2.0
 ---
 
 # Collections of Resources
-In the last tutorial, [Resource Structure](03_structure.html), the concept of abstracting resource data  and its benefits
-were conveyed. The IWC read Actions utilize the naming structure of IWC resources to open up multi-resource based
-actions.
+In the last tutorial, [Resource Structure](04_structure.html), the concept of
+abstracting resource data  and its benefits were conveyed. The IWC collection
+actions utilize the naming structure of IWC resources to open up multi-resource
+based actions.
 
-## The "pattern" property
-When specifying a read-based action, the tutorials up to this point have not included any **config** objects in
-demonstration. While there are numerous configuration properties that can be called, documented [here](TODO), this
-tutorial will focus on the `pattern` property.
+A **Collection** in the IWC is a group of resources that relate to some parent
+resource. Resources are related to the parent **if they are pathed below the
+parent**.
 
-The `pattern` property is a string used to do **prefix matching** against resources in the API. This is not a regular
-expression, future development may be done to add regular expression matching if requested.
-
-***
-
-### Example
-A running IWC bus has the following resources in it's Data API:
+As an example, the following resources exist in a hypothetical IWC Bus's Data API:
 
 ```
 /shoppingCart
-/shoppingCart/amazon
 /shoppingCart/bestBuy
-/shoppingCart/amazon/031719199112
-/shoppingCart/bestBuy/043396281288
-```
-
-The following are examples of patterns using prefix matching to determine if a resource is a match.
-
-***
-
-#### /shoppingCart
-```
-/shoppingCart
+/shoppingCart/bestBuy/123456789
+/shoppingCart/bestBuy/685814652
 /shoppingCart/amazon
+/shoppingCart/amazon/6546548885
+```
+
+The collection that relates to `/shoppingCart` is:
+
+```
 /shoppingCart/bestBuy
-/shoppingCart/amazon/031719199112
-/shoppingCart/bestBuy/043396281288
-```
-
-#### /shoppingCart/
-```
+/shoppingCart/bestBuy/123456789
+/shoppingCart/bestBuy/685814652
 /shoppingCart/amazon
-/shoppingCart/bestBuy
-/shoppingCart/amazon/031719199112
-/shoppingCart/bestBuy/043396281288
+/shoppingCart/amazon/6546548885
 ```
 
-#### /shoppingCart/amazon
-```
-/shoppingCart/amazon
-/shoppingCart/amazon/031719199112
-```
+The collection that relates to `/shoppingCart/bestBuy` is:
 
-#### /shoppingCart/amazon/
 ```
-/shoppingCart/amazon/031719199112
+/shoppingCart/bestBuy/123456789
+/shoppingCart/bestBuy/685814652
 ```
 
 ***
 
-A pattern with a trailing `/` states, "find all resources pathed **under** the given resource", while without a trailing
-`/` states, "find all resources **under and including** the given resource".
+## Collection Actions
+The IWC has one main collection-based action, **list**. Additionally the
+**watch** action demonstrated earlier in these tutorials has advanced
+capabilities to watch for changes in collection.
 
 ***
-
-# Actions utilizing Patterns
 
 ## List
-The `list` action, not previously introduced, is an action unique in format. It takes one parameter, **pattern**, and
-returns an array of resources that match the pattern.
+Calling the list action of a **reference** gathers a list of all the resources
+that pertain to a resource. The gathered list is **an array of the resource
+paths, not their values**. In order to promote reference-linking, the resource
+paths that are retrieved can be used to generate references.
 
-This varies from the traditional IWC action where the first parameter is a **resource**, now it is a pattern.
+#### Parameters
+The list action takes no parameters.
 
-``` js
-client.data().list("/").then(function(response){
- //an array of all resources in Data Api
- var resources = response.entity;
-});
-```
+#### Returns
+A promise that **resolves** with the **an array of the resource
+paths that make up the resource's collection** , or
+**rejects** with the reason (string) for failure.
 
-<p data-height="450" data-theme-id="0" data-slug-hash="dYxgyO" data-default-tab="result" data-user="Kevin-K" class='codepen'>
+ <p data-height="300" data-theme-id="0" data-slug-hash="TODO" data-default-tab="js" data-user="Kevin-K" class='codepen'>
+
 ***
 
-## Watch
-A `watch` action takes 3 parameters, a resource, a (optional) config, and callback.
+## Watch (with a configured reference)
+If a reference is configured to enable collecting, its watch
+callbacks can receive notification for its resource if a resource was added to
+(generated) or removed from (deleted) its collection.
 
-A watch can be configured to be triggered **when new resources match its pattern and when resources that did match were
-deleted**. In order to immediately notify new watcher's of the state of a watch, the resources matching the pattern are
-stored in the given resources **collection** property. This means when a new watch action is performed on a resource,
-its stored collection of resources can be obtained immediately in the promise resolution.
+## Reference Configuration
+The tutorials up until now have been using non-configured references, in
+most use-cases references will not have to be configured. A **reference
+configuration** is a setting applied to the reference that alters its behavior.
+This concept is covered in more detail in the [Reference Configuration](about:blank) section
+of the advanced tutorials.
 
-The `pattern` for the watch goes in the **config** object of the action, it specifies that any resource who prefix-matches
-this string should be tracked in the collection. In order for the IWC to accept the `pattern` in the watch request
-(this is normally a `set` action's responsibility to alter the resource), the `collect: true` property must be added
-to the configuration as well:
+## Reference Configuration for Watched Collections
+In order to receive change notifications about a resource's collection, a
+reference must be configured, this is done in one of two ways:
 
-``` js
-// First configure the resource's pattern
-var config = {
-  pattern: "/shoppingCart/",
-  collect: true
-};
-
-
-// Then register the watch, react on the collection data.
-var onChange = function(response, done) {
-  var newCollection = response.entity.newCollection;
-  var oldCollection = response.entity.oldCollection;
-};
-
-var onResolve = function(response, done) {
-  //the collection of resources pertaining to the pattern
-  var collection = response.collection;
-};
-
-client.data().watch("/myCollection", config, onChange).then(onResolve);
+### 1) Configuring the Reference on Creation
+```js
+var fooRef = new iwc.data.Reference("/shoppingCart",{collect:true});
 ```
 
-<p data-height="450" data-theme-id="0" data-slug-hash="yYmRbm" data-default-tab="result" data-user="Kevin-K" class='codepen'>
-
-
-### Changing the watched pattern
-To change the pattern of collection on a watch action, simply change the `pattern` property with a `set` action:
-
-``` js
-
-client.data().set("/myCollection", { pattern: "/trashCan/"});
+### 2) Updating the Reference Settings
+```js
+fooRef.updateDefaults({collect: true});
 ```
 
-This will update the collection to match the new pattern and notify all who are watching `/myCollection`.
+In both approaches, the `collect` flag of the reference is updated to true. This
+has to be done functionally to update the reference internal functionality.
+
+### If a Mixture of both Watch Behaviors is Desired in a Given Application for a Resource
+
+Simply create two separate references:
+
+```js
+var fooRef = new iwc.data.Reference("/shoppingCart");
+var fooCollectRef = iwc.data.Reference("/shoppingCart",{collect:true});
+
+// Not notified of collection changes
+fooRef.watch(onChange);
+
+// Notified of collection changes
+fooCollectRef.watch(diferentOnChange);
+```

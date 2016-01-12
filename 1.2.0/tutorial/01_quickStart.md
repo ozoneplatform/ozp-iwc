@@ -1,7 +1,7 @@
 ---
 layout: tutorial
 title: Using References
-category: data
+category: basic
 tag: 1.2.0
 ---
 
@@ -39,7 +39,7 @@ applications will work when transitioned.
 group of applications, the IWC is still viable, a privatized bus will be needed.
 A privatized bus is configurable for more advanced features including account
 based permissions and user data persistence. See our gitbook for
-[hosting documentation]({{site.baseurl}}/gitbook/bus/overview.html), tutorials will
+[hosting documentation]({{site.baseurl}}/{{page.tag}}/gitbook/bus/overview.html), tutorials will
 be produced on this matter at a later date as well.
 
 The use of http://ozone-development.github.io/ozp-iwc instead of

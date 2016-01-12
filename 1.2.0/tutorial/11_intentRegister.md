@@ -1,7 +1,7 @@
 ---
 layout: tutorial
-title: Registering an Intent Handler
-category: intents
+title: Registering an Intent (Shared Function)
+category: intermediate
 tag: 1.2.0
 ---
 

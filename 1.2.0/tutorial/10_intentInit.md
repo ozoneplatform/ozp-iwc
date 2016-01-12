@@ -1,7 +1,7 @@
 ---
 layout: tutorial
-title: Intents Explained
-category: intents
+title: Shared Functionality Overview
+category: intermediate
 tag: 1.2.0
 ---
 

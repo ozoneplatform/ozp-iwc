@@ -1,11 +1,11 @@
 ---
 layout: tutorial
 title: Basic Data Sharing
-category: data
+category: basic
 tag: 1.2.0
 ---
 
-# Sharing Data with the Data Api
+# Sharing Data with the Data API
 The most common use of the IWC in applications is sharing data resources among applications. The IWC varies from
 the various publish/subscribe libraries available in javascript because of the following 3 key components:
 
@@ -19,21 +19,24 @@ the various publish/subscribe libraries available in javascript because of the f
 
 ***
 
-## Accessing the Data Api
-Covered in the [Quick Start](index.html) tutorial, an IWC client is needed to access the Data Api.
+## Accessing the Data API Resources
+Covered in the [Using References](01_quickStart.html) tutorial, an IWC client is needed
+to access the Data API, and to access a resource of the Data API a reference is
+used.
 
 ``` js
- var client = new ozpIwc.Client({ peerUrl: "http://ozone-development.github.io/ozp-iwc"});
- var iwcData = client.data();
+ var iwc = new ozpIwc.Client("http://ozone-development.github.io/ozp-iwc");
+ var fooRef = new client.data.Reference("/foo");
 ```
 
-The `data` method used to create the `iwcData` object is a formatting method that returns reference to the Data Api
-specific functionality. Creating an `iwcData` object whenever accessing the Data Api is not necessary, directly calling
-the methods off of `client.data()` is acceptable as well. The purpose of the `iwcData` object is for more concise code.
+***
 
-## Data Api Functionality (actions)
-The Data Api can perform the following tasks for a given value. In IWC terminology, each task is considered an **action**,
-as it is some behavior that can modify the state of an application.
+## Data API Reference Functionality (actions)
+References of Data API resources have a set of functions that are linked to
+the resource. In IWC terminology, these functions are called **actions**,
+as it is some behavior that can modify the state of an application. These
+actions were covered in the previous reference tutorial, but the actions
+are defined below.
 
 
 | action | description                                                         |
@@ -53,69 +56,49 @@ various
 
 ***
 
-### Set: storing data
+## Set: storing data
 
-####Parameters
+To store a value in a resource, the set action of the reference is used.
+
+#### Parameters
 
 | parameter | type   | description                                                                                                                                                            |
-|-----------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| resource  | String | A string path-name used as a key for the value. We utilize `/`,in pathing for filtering resources (covered in a later tutorial).                                       |
-| options   | Object | An object of options for the action. More options are covered in later tutorials, for now we will focus on the`config.entity` option, which is the value to be stored. |
+|-----------|--------|------------------------------------------|
+| value  | Primative or Array | The value to store in the resource.|
 
+#### Returns
+A promise that **resolves** with the value of the resource set, or
+**rejects** with the reason (string) for failure.
 
-
-####Returns
-A promise that resolves with a response object upon handling of the request:
-
-| property | type   | description                                                                                 |
-|----------|--------|---------------------------------------------------------------------------------------------|
-| ver      | Number | The version of the response. Not applicable to set requests, pertains to watch requests.    |
-| src      | String | The address of of the response sender. "data.api" is the internal address for the Data Api. |
-| msgId    | String | The ID of the message being received. The "P" denotes the message for internal purposes.    |
-| time     | Number | Epoch time of the response **being created and sent**.                                      |
-| response | String | The status of the message. "ok" means the request was successfully handled.                 |
-| replyTo  | String | The ID of the request this response pertains to.                                            |
-| dst      | String | The address of the recipient of this message.                                               |
-
- <p data-height="245" data-theme-id="0" data-slug-hash="jborgp" data-default-tab="js" data-user="Kevin-K" class='codepen'>
-
+ <p data-height="300" data-theme-id="0" data-slug-hash="mVMbXd" data-default-tab="js" data-user="Kevin-K" class='codepen'>
 
 ***
 
-### Get: retrieving data
+## Get: retrieving data
 
-To retrieve a resource, regardless of the origin it was `set` in, only a resource name needs to be supplied
+To retrieve a resource, regardless of the origin it was `set` in, the `get`
+action is used on the reference.
 
 ####Parameters
-
-| parameter | type   | description                                                                                                                                                            |
-|-----------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| resource  | String | A string path-name used as a key for the value. We utilize `/`,in pathing for filtering resources (covered in a later tutorial).                                       |
-
+The get action takes no parameters.
 
 
 ####Returns
-A promise that resolves with a response object upon handling of the request, all of the properties returned in
-the `set` response are returned in the `get` response, with addition of the `entity` property.
+A promise that **resolves** with the value of the resource upon retrieval. Or
+**rejects** with the reason (string) for failure.
 
-Additional properties are returned that pertain to advanced functionality (server persistence, resource lifespan, filtering),
-and internal markings necessary in the message passing.
-
-| property    | type   | description                                                                                 |
-|-------------|--------|---------------------------------------------------------------------------------------------|
-| entity      | *      | The value of the resource stored.                                                           |
-| resource    | String | The name of the resource.                                                                   |
-| collection  | Array  | A list of resource names mapped to this resource's pattern property (advanced filtering).   |
-| lifespan    | Object | Information pertaining to the lifespan of a resource.                                       |
-| contentType | String | The content-type of the resource (used in server persistence).                              |
-| eTag        | Number | The version of **the resource** in the IWC, used to determine value changes internally.     |
-
- <p data-height="245" data-theme-id="0" data-slug-hash="vNwXJJ" data-default-tab="js" data-user="Kevin-K" class='codepen'>
+<p data-height="300" data-theme-id="0" data-slug-hash="NxvKEp" data-default-tab="js" data-user="Kevin-K" class='codepen'>
 
 ***
 
 ### Delete: removing data
 
-A delete action matches the parameter signature of a `get` action, but as no resource will exist after deletion, the
-promise will resolve as the `set` promise resolves.
- <p data-height="245" data-theme-id="0" data-slug-hash="bVywKO" data-default-tab="js" data-user="Kevin-K" class='codepen'>
+####Parameters
+The delete action takes no parameters.
+
+
+####Returns
+A promise that **resolves**  with no value when successful, or
+**rejects** with the reason (string) for failure.
+
+ <p data-height="300" data-theme-id="0" data-slug-hash="mVMbZV" data-default-tab="js" data-user="Kevin-K" class='codepen'>

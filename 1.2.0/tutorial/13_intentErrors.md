@@ -1,7 +1,7 @@
 ---
 layout: tutorial
-title: Intent Invocation Error Handling
-category: intents
+title: Intent Error Handling
+category: intermediate
 tag: 1.2.0
 ---
 

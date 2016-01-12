@@ -21,11 +21,25 @@ layout: default
 <div class="main-container">
     <div class="main wrapper clearfix no-bullet">
         <aside>
-            <h3>General</h3>
+            <h3>Basic</h3>
             <ul>
                 {% for p in site.pages %}
                 {% if p.layout == 'tutorial' %}
-                {% if p.category == 'data' %}
+                {% if p.category == 'basic' %}
+                {% if p.url == page.url %}
+                <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% else %}
+                <li><a href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
+                {% endif %}
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            </ul>
+            <h3>Intermediate</h3>
+            <ul>
+                {% for p in site.pages %}
+                {% if p.layout == 'tutorial' %}
+                {% if p.category == 'intermediate' %}
                 {% if p.url == page.url %}
                 <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
                 {% else %}
@@ -39,7 +53,7 @@ layout: default
             <ul>
                 {% for p in site.pages %}
                 {% if p.layout == 'tutorial' %}
-                {% if p.category == 'intents' %}
+                {% if p.category == 'advanced' %}
                 {% if p.url == page.url %}
                 <li><a class="selected" href="{{site.baseurl}}{{ p.url }}">{{ p.title }}</a></li>
                 {% else %}
