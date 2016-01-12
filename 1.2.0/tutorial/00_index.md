@@ -1,6 +1,6 @@
 ---
 layout: tutorial
-title: Quick Start
+title: Setup and Key Terms
 permalink: "/1.2.0/tutorial/index.html"
 redirect_from: "/tutorial/"
 category: data
@@ -8,15 +8,14 @@ tag: 1.2.0
 ---
 
 # Quick Start
-In this tutorial, we will create a javascript application that will do the following:
+In this tutorial, we will cover:
 
   1. Gather required library.
   2. A quick technology explanation.
   3. Define the keyterms of the IWC.
-  4. Connects to the IWC bus hosted on this website.
-  5. Store and retrieve data using the Data API.
-  6. Implement the publish/subscribe pattern to create a clock.
 
+Following this tutorial is a brief application example using the basic
+capabilities of data sharing in the IWC.
 ***
 
 # Gathering the IWC
@@ -82,6 +81,8 @@ handled by the application developer.
 
 When all applications accessing a given IWC Bus are closed, the Bus is destroyed.
 
+***
+
 ## APIs
 An API in the scope of the IWC is a subsection of the **IWC Bus** that governs
 and maintains information for various uses of the application. A piece of information
@@ -92,6 +93,8 @@ The Data API is the API of the IWC that manages **shared data among applications
 
 #### Intents API
 The Intents API is the API of the IWC that manages **shared functions among applications***.
+
+***
 
 ## Resources
 **Resources** are objects internal to the **IWC Bus** that applications request
@@ -108,116 +111,13 @@ With an understanding of **resources** comes the last important term of the IWC,
 **references**.
 
 ## References
-A **Reference** is a instantiated class that simplifies the work of an
-application developer when using an **IWC Client** to request a **Resource** of
-an **API**.
+A **Reference** is a instantiated class that links an application to a **resource**
+of an **IWC API**.
 
 Since resources are internal to the IWC, an application wanting to access them
 does not have the visibility of the resources within their scope. In fact the
 resources aren't stored within the same HTML window.
 
 In order for an application to interact with a resource it must create a
-**reference** to it. **A reference object holds a set of functions to let the
+**reference** to it. **A reference instantiation holds a set of functions to let the
 application interact with the resource it reffers to.**
-
-
-***
-## Creating an IWC Connection
-The IWC library uses the `ozpIwc` namespace. To create a connection, a  **Client** must be made. When creating a client,
-the IWC **Bus** (common domain) must be specified in the `peerUrl` property.
-
-``` js
- var client = new ozpIwc.Client({ peerUrl: "http://ozone-development.github.io/ozp-iwc"});
-```
-
-An IWC bus is a location where all of the IWC distributables can be gathered,
-`http://ozone-development.github.io/ozp-iwc`, for example. The bus does not run any functionality on a server, rather
-provides the files necessary for in-browser communication over the given domain.
-
-This means, for all applications open with a given browser on a user's computer
-(different tabs, different windows, embedded in pages, ect.). If all of the
-applications connect to the same IWC bus, then they can all communicate locally.
-
-
-Eventually the IWC bus will be accessible publicly on a high performance domain (through a CDN), for now the common
-domain is hosted here on github.
-
-The use of "http://ozone-development.github.io/ozp-iwc" instead of
-"http://ozone-development.github.io/ozp-iwc/1.2.0" for connecting is because all
-releases of IWC 1 (`1.x.y`) can communicate with backwards compatibility. Using
-a specific release of the *client library 1.2.0* guarentees the developer can
-develop against the IWC 1.2.0 client API. Connecting to the latest bus version
-links all applications to the latest available IWC internals.
-
-For companies/organizations desiring their own domain (customized application communication, account based access,
-persistent data, specific IWC bus versions, ect), the IWC bus can easily be hosted. See our gitbook for [hosting documentation]({{site.baseurl}}/gitbook/bus/overview.html), tutorials will
-be produced on this matter at a later date as well.
-
-### Testing connection
-To verify the client has connected, the `connect` promise can be used to run some functionality once connected.
-
-<p data-height="170" data-theme-id="0" data-slug-hash="yYrJOj" data-default-tab="js" data-user="Kevin-K" class='codepen'></p>
-
-
-It is not required to call `client.connect()` as the client by default automatically connects, rather if automatic
-connection was disabled then calling connect would be necessary.
-
-Waiting for the client to connect to call IWC functions is also not necessary, as the client will queue up messages
-while it connects.
-
-***
-
-## Sharing/storing data
-
-The most commonly used part of the IWC is the **Data Api**. It handles all key/value storage, publish/subscribe
-functionality, as well as resource grouping.
-
-``` js
-client.data().set("/foo",{entity: "Hello world!"});
-```
-
-To **put** a value in the Data Api for other (local) applications to access, the `set` action is used. It expects a
-string name of the resource (we like rest-like naming), as well as a config object. To set data, the payload must be set
-to the `entity` property. There are other properties that can be set on a node, but that will be covered in a later
-tutorial.
-
-``` js
-client.data().get("/foo").then(function(result){
-    document.getElementById("output").innerHTML = result.entity;
-});
-```
-
-To **get** a value from the Data Api, the `get` action is used. It expects a string name of the resource (like in `set`),
-and will return a **promise** that will resolve with the value matching that format of the config object parameter of
-`set`. Thus, the payload is available in the `entity` property of the result.
-
-
-**All IWC actions return promises.** Each promise resolves when the request is handled.
-
-<p data-height="190" data-theme-id="0" data-slug-hash="wKZoPK" data-default-tab="js" data-user="Kevin-K" class='codepen'>
-
-
-## Publish Subscribe pattern
-While the IWC doesn't have defined `publish` and `subscribe` methods, it's `set` action is a direct mapping to publish,
-and it's **`watch`** action is an enhanced subscribe.
-
-The watch action will trigger a callback function on change of state of a value. This means the watcher gets notification
-of the past state (oldValue) and new state (newValue).
-
-<p data-height="255" data-theme-id="0" data-slug-hash="vNMyoE" data-default-tab="js" data-user="Kevin-K" class='codepen'>
-
-***
-
-## Cross-Domain example
-Up to this point our tutorial has all ran within the same application within the same domain,
-[codepen](http://codepen.io/). This isn't leveraging the IWC use case so lets throw another domain in the mix.
-
-Building from the publish/subscribe example above, lets create a similar application on
-[jsfiddle](https://jsfiddle.net/). There's no point in re-inventing the time generation logic since we are running the
-generation in the above example. In this case we only need to use the `watch` action.
-
-**Make sure after checking the results to click "Edit in JSFiddle" and see it running in a separate tab!**
-<iframe
-  style="width: 100%; height: 175px"
-  src="http://jsfiddle.net/kjkelly/rg4z5kms/embedded/js,result/">
-</iframe>
