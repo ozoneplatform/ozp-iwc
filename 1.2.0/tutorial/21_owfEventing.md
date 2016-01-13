@@ -49,7 +49,7 @@ clockRef.set(currentTimeString);
 ```
 
 **Note:** The `set` functionality causes the last payload set to a resource
-(channel) to be stored in the Data API.cThe set functionality **modifies the
+(channel) to be stored in the Data API. The set functionality **modifies the
 state of the resource** rather than just broadcasting on a channel.
 
 ***

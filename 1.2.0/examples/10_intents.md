@@ -1,6 +1,6 @@
 ---
 layout: examples
-title: Intents - Remote Functionality
+title: Shared Functionality
 category: basic
 tag: 1.2.0
 ---
@@ -22,7 +22,7 @@ codepen snippet talk to a jsfiddle, plunkr, jsbin, ect. The benefit of the IWC h
 in **cross domain communication**.
 
 ## IWC Intent Tester
-<p data-height="500" data-theme-id="0" data-slug-hash="ZQbGZq" data-default-tab="Result" data-user="Kevin-K" class='codepen'>
+<p data-height="500" data-theme-id="0" data-slug-hash="OMjzEr" data-default-tab="Result" data-user="Kevin-K" class='codepen'>
 
 
 ***
@@ -31,7 +31,7 @@ in **cross domain communication**.
 These applications register Intent handling functions to the IWC. Their handlers can found available in the dropdown
 of the application above once the respected application is opened.
 <div class="app-list">
-    <a href="#"  onClick="openPopup('LGGWQj','Simple Array Functions');return false;" >Simple Array Functions</a>
+    <a href="#"  onClick="openPopup('JGyMey','Simple Array Functions');return false;" >Simple Array Functions</a>
 </div>
 
 <script type="text/javascript">
@@ -50,7 +50,7 @@ of the application above once the respected application is opened.
 ***
 
 ## IWC Intent Type formats
-| API| /Type/Subtype| Expected invoke entity format|
+| API| /Type/Subtype| Expected invoke value format|
 |-----|----------|------------|---|----------------------|
 | Intents | /json/array| Array of valid JSON. |
 
@@ -58,9 +58,8 @@ of the application above once the respected application is opened.
 Intent handlers registered under the `/json/array` type/subtype expect the invocation to send an array as it's entity:
 
 ``` js
-var config = {
-    entity: [3, 1, "b", 0]
-};
+var value = [3, 1, "b", 0];
+var arrRef = new iwc.intents.Reference("/json/array/sort");
 
-intents.invoke("/json/array/arrayExample.numericalSort", config).then(...);
+arrRef.invoke(value).then(...);
 ```
