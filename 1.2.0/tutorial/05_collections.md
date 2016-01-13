@@ -107,9 +107,9 @@ Simply create two separate references:
 var fooRef = new iwc.data.Reference("/shoppingCart");
 var fooCollectRef = iwc.data.Reference("/shoppingCart",{collect:true});
 
-// Not notified of collection changes
+// Notified of value changes of /shoppingCart
 fooRef.watch(onChange);
 
-// Notified of collection changes
+// Notified of collection and value changes of /shoppingCart
 fooCollectRef.watch(diferentOnChange);
 ```

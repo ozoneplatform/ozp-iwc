@@ -5,11 +5,13 @@ category: owf
 tag: 1.2.0
 ---
 # Migration from OWF to IWC
-This tutorial is for developers who are migrating applications previously developed for the Ozone Widget Framework (OWF)
-to use IWC. This tutorial has the following prerequisites:
+This tutorial is for developers who are migrating applications previously
+developed for the Ozone Widget Framework (OWF) to use IWC. This tutorial has the
+following prerequisites:
 
-  1. [Quick Start](index.html)
-  2. [Basic Data Sharing](01_dataApi.html)
+  1. [Setup and Key Terms](index.html)
+  2. [Using References](01_quickStart.html)
+  3. [Basic Data Sharing](02_dataApi.html)
 
 
 ## Overview
@@ -77,33 +79,40 @@ owfdojo.addOnLoad(function() {
 ```
 
 #### IWC
-In IWC, the application does not need to wait for IWC to be ready to begin operation. All IWC operations will be
-queued if the IWC is not ready for the application. This means applications no longer have the `Loading..` splash-screen
+In IWC, the application does not need to wait for IWC to be ready to begin
+operation. All IWC operations will be queued if the IWC is not ready for the
+application. This means applications no longer have the `Loading..` splash-screen
 of OWF.
 
-A difference in IWC from OWF, the IWC isn't simply running by including the library, a connection to the IWC domain
-must be established (covered in the [Quick Start tutorial](index.html)). Syntactically this should not be alarming to
-developers as they need to reference an instance of `ozpIwc.Client` to use the IWC, and said reference prepares the IWC
-for use.
+A difference in IWC from OWF, the IWC isn't simply running by including the
+library, a connection to the IWC domain must be established (covered in the
+[Setup and Key Terms tutorial](index.html)). Syntactically this should not be
+alarming to developers as they need to reference an instance of `ozpIwc.Client`
+to use the IWC, and said reference prepares the IWC for use.
 
 ``` js
-var client = new ozpIwc.Client({peerUrl: "http://localhost:13000"});
-// all client requests will be queued until IWC is ready.
+var iwc = new ozpIwc.Client({peerUrl: "http://localhost:13000"});
+// all iwc requests will be queued until IWC is ready.
 ```
 
 #### Knowing when the IWC Client Connects
-While the client auto connects and will process any requests queued, the `connect` promise will resolve when the client
-is connected. This promise can be called ass often as desired, the client will not reconnect by calling it, rather it
-will reference the connection to resolve and move on to any chained functions.
+While the client auto connects and will process any requests queued, the
+`connect` promise will resolve when the client is connected. This promise can be
+called as often as desired, the client will not reconnect by calling it, rather
+it will reference the connection to resolve and move on to any chained functions.
+
+Chaining asynchronous code off the **IWC Client** connection is only necessary
+if specific information pertaining to the generated client is needed (client's
+address).
 
 ``` js
-var client = new ozpIwc.Client({peerUrl: "http://localhost:13000"});
-client.connect().then(function(){
+var iwc = new ozpIwc.Client({peerUrl: "http://localhost:13000"});
+iwc.connect().then(function(){
    // This asynchronous function runs once the client is connected.
 });
 ```
 
-The below code snippet demonstrates the use of the `connect` promise to write the client's unique address to the
-application once connected.
+The below code snippet demonstrates the use of the `connect` promise to write
+the client's unique address to the application once connected.
 
-<p data-height="170" data-theme-id="0" data-slug-hash="yYrJOj" data-default-tab="js" data-user="Kevin-K" class='codepen'></p>
+<p data-height="250" data-theme-id="0" data-slug-hash="zrdzLg" data-default-tab="js" data-user="Kevin-K" class='codepen'></p>
