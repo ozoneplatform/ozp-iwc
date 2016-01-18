@@ -1,4 +1,4 @@
-var client = new ozpIwc.Client({peerUrl: "http://ozone-development.github.io/ozp-iwc/"});
+var client = new ozpIwc.Client({peerUrl: "http://ozone-development.github.io/ozp-iwc"});
 
 var listings = {
     '/locationLister/listings/chicago': {
@@ -29,7 +29,7 @@ var listings = {
 
 // ensure that when watching /locationLister/listings in any application connected to the bus, the watcher gets
 // notifications of additions to the /locationLister/listings/ path.
-client.data().set("/locationLister/listings", {pattern: "/locationLister/listings/"});
+client.data().set("/locationLister/listings", {collect:true});
 for(var i in listings){
     client.data().set(i,{entity: listings[i]});
 }
