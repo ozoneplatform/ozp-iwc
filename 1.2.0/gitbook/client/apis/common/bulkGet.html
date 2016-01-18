@@ -1,0 +1,1160 @@
+<!DOCTYPE HTML>
+<html lang="en-US" >
+    
+    <head>
+        
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
+        <title>Bulk Get Action | Inter-Widget Communication (IWC)</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 1.5.0">
+        <meta name="HandheldFriendly" content="true"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../../gitbook/images/apple-touch-icon-precomposed-152.png">
+        <link rel="shortcut icon" href="../../../gitbook/images/favicon.ico" type="image/x-icon">
+        
+        
+    
+    
+    <link rel="next" href="../../../client/apis/common/list.html" />
+    
+    
+    <link rel="prev" href="../../../client/apis/common/get.html" />
+    
+
+        
+    </head>
+    <body>
+        
+        
+<link rel="stylesheet" href="../../../gitbook/style.css">
+
+
+        
+    <div class="book" data-level="1.4.2" data-basepath="../../.." data-revision="1453143330408">
+    
+
+<div class="book-summary">
+    <div class="book-search">
+        <input type="text" placeholder="Type to search" class="form-control" />
+    </div>
+    <ul class="summary">
+        
+    	
+    	
+    	
+
+        
+
+        
+    
+        
+        <li class="chapter " data-level="0" data-path="index.html">
+            
+                
+                    <a href="../../../index.html">
+                        <i class="fa fa-check"></i>
+                        
+                         Introduction
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="0.1" data-path="introduction/overview.html">
+            
+                
+                    <a href="../../../introduction/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>0.1.</b>
+                        
+                         How it Works
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="0.2" data-path="introduction/quickStart.html">
+            
+                
+                    <a href="../../../introduction/quickStart.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>0.2.</b>
+                        
+                         Quick Start
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="0.3" data-path="introduction/technologies.html">
+            
+                
+                    <a href="../../../introduction/technologies.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>0.3.</b>
+                        
+                         Technology Stack
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1" data-path="client/overview.html">
+            
+                
+                    <a href="../../../client/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.</b>
+                        
+                         Client (Application Developers)
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="1.1" data-path="client/connecting.html">
+            
+                
+                    <a href="../../../client/connecting.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.1.</b>
+                        
+                         Connecting to the Bus
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.2" data-path="client/resources.html">
+            
+                
+                    <a href="../../../client/resources.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.2.</b>
+                        
+                         Terminology Breakdown
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.3" data-path="client/referenceConfig.html">
+            
+                
+                    <a href="../../../client/referenceConfig.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.3.</b>
+                        
+                         Reference Configuration
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.4" data-path="client/apis/data/overview.html">
+            
+                
+                    <a href="../../../client/apis/data/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.4.</b>
+                        
+                         Using the Data API
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="1.4.1" data-path="client/apis/common/get.html">
+            
+                
+                    <a href="../../../client/apis/common/get.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.4.1.</b>
+                        
+                         Get Action
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter active" data-level="1.4.2" data-path="client/apis/common/bulkGet.html">
+            
+                
+                    <a href="../../../client/apis/common/bulkGet.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.4.2.</b>
+                        
+                         Bulk Get Action
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.4.3" data-path="client/apis/common/list.html">
+            
+                
+                    <a href="../../../client/apis/common/list.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.4.3.</b>
+                        
+                         List Action
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.4.4" data-path="client/apis/common/set.html">
+            
+                
+                    <a href="../../../client/apis/common/set.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.4.4.</b>
+                        
+                         Set Action
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.4.5" data-path="client/apis/common/delete.html">
+            
+                
+                    <a href="../../../client/apis/common/delete.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.4.5.</b>
+                        
+                         Delete Action
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.4.6" data-path="client/apis/common/watch.html">
+            
+                
+                    <a href="../../../client/apis/common/watch.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.4.6.</b>
+                        
+                         Watch Action
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.4.7" data-path="client/apis/common/unwatch.html">
+            
+                
+                    <a href="../../../client/apis/common/unwatch.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.4.7.</b>
+                        
+                         Unwatch Action
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.4.8" data-path="client/apis/data/addChild.html">
+            
+                
+                    <a href="../../../client/apis/data/addChild.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.4.8.</b>
+                        
+                         Add Child Action
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.5" data-path="client/apis/intents/overview.html">
+            
+                
+                    <a href="../../../client/apis/intents/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.5.</b>
+                        
+                         Using the Intents API
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="1.5.1" data-path="client/apis/intents/register.html">
+            
+                
+                    <a href="../../../client/apis/intents/register.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.5.1.</b>
+                        
+                         Register Action
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.5.2" data-path="client/apis/intents/invoke.html">
+            
+                
+                    <a href="../../../client/apis/intents/invoke.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.5.2.</b>
+                        
+                         Invoke Action
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.5.3" data-path="client/apis/intents/broadcast.html">
+            
+                
+                    <a href="../../../client/apis/intents/broadcast.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.5.3.</b>
+                        
+                         Broadcast Action
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.6" data-path="client/apis/system/overview.html">
+            
+                
+                    <a href="../../../client/apis/system/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.6.</b>
+                        
+                         Using the System API
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="1.6.1" data-path="client/apis/system/launch.html">
+            
+                
+                    <a href="../../../client/apis/system/launch.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.6.1.</b>
+                        
+                         Launch Action
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.7" data-path="client/apis/names/overview.html">
+            
+                
+                    <a href="../../../client/apis/names/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.7.</b>
+                        
+                         Using the Names API
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.8" data-path="client/api_commonalities/overview.html">
+            
+                
+                    <a href="../../../client/api_commonalities/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.8.</b>
+                        
+                         Api Commonalities
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="1.8.1" data-path="client/api_commonalities/api_requests.html">
+            
+                
+                    <a href="../../../client/api_commonalities/api_requests.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.8.1.</b>
+                        
+                         Requests
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.8.2" data-path="client/api_commonalities/api_responses.html">
+            
+                
+                    <a href="../../../client/api_commonalities/api_responses.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.8.2.</b>
+                        
+                         Responses
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.8.3" data-path="client/api_commonalities/api_errors.html">
+            
+                
+                    <a href="../../../client/api_commonalities/api_errors.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.8.3.</b>
+                        
+                         Errors
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.9" data-path="client/migration/overview.html">
+            
+                
+                    <a href="../../../client/migration/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.9.</b>
+                        
+                         Migration from OWF7
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="1.9.1" data-path="client/migration/pubsub_to_setwatch.html">
+            
+                
+                    <a href="../../../client/migration/pubsub_to_setwatch.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.9.1.</b>
+                        
+                         Publish/Subscribe to Set/Watch
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.10" data-path="client/debugger/overview.html">
+            
+                
+                    <a href="../../../client/debugger/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.10.</b>
+                        
+                         Debugging
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="1.10.1" data-path="client/debugger/general.html">
+            
+                
+                    <a href="../../../client/debugger/general.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.10.1.</b>
+                        
+                         General
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.10.2" data-path="client/debugger/traffic.html">
+            
+                
+                    <a href="../../../client/debugger/traffic.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.10.2.</b>
+                        
+                         Traffic Snooper
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.10.3" data-path="client/debugger/metrics.html">
+            
+                
+                    <a href="../../../client/debugger/metrics.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.10.3.</b>
+                        
+                         Metrics
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.10.4" data-path="client/debugger/elections.html">
+            
+                
+                    <a href="../../../client/debugger/elections.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.10.4.</b>
+                        
+                         Elections
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.10.5" data-path="client/debugger/api/view.html">
+            
+                
+                    <a href="../../../client/debugger/api/view.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.10.5.</b>
+                        
+                         API Node Viewing
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="1.10.5.1" data-path="client/debugger/api/msg.html">
+            
+                
+                    <a href="../../../client/debugger/api/msg.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.10.5.1.</b>
+                        
+                         API Messaging
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.10.5.2" data-path="client/debugger/api/my_apps.html">
+            
+                
+                    <a href="../../../client/debugger/api/my_apps.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.10.5.2.</b>
+                        
+                         Registered Applications
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="1.10.6" data-path="client/debugger/hal.html">
+            
+                
+                    <a href="../../../client/debugger/hal.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.10.6.</b>
+                        
+                         HAL Browser
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2" data-path="bus/overview.html">
+            
+                
+                    <a href="../../../bus/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.</b>
+                        
+                         Bus (Platform Hosts)
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="2.1" data-path="bus/serverComms.html">
+            
+                
+                    <a href="../../../bus/serverComms.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.1.</b>
+                        
+                         Server Communication
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.2" data-path="bus/hostingReqs.html">
+            
+                
+                    <a href="../../../bus/hostingReqs.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.2.</b>
+                        
+                         Hosting Requirements
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.3" data-path="bus/busConfiguration.html">
+            
+                
+                    <a href="../../../bus/busConfiguration.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.3.</b>
+                        
+                         Bus Configuration
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.4" data-path="bus/endpoints/overview.html">
+            
+                
+                    <a href="../../../bus/endpoints/overview.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.4.</b>
+                        
+                         Backend API Endpoint Requirements
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.5" data-path="bus/endpoints/hal.html">
+            
+                
+                    <a href="../../../bus/endpoints/hal.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.</b>
+                        
+                         HAL Schemas
+                    </a>
+                
+            
+            
+            <ul class="articles">
+                
+    
+        
+        <li class="chapter " data-level="2.5.1" data-path="bus/endpoints/data.html">
+            
+                
+                    <a href="../../../bus/endpoints/data.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.1.</b>
+                        
+                         Data API Schemas
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.5.2" data-path="bus/endpoints/application.html">
+            
+                
+                    <a href="../../../bus/endpoints/application.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.2.</b>
+                        
+                         System API Application Nodes
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.5.3" data-path="bus/endpoints/user.html">
+            
+                
+                    <a href="../../../bus/endpoints/user.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.3.</b>
+                        
+                         System API User Nodes
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.5.4" data-path="bus/endpoints/system.html">
+            
+                
+                    <a href="../../../bus/endpoints/system.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.4.</b>
+                        
+                         System API System Nodes
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="2.5.5" data-path="bus/endpoints/intents.html">
+            
+                
+                    <a href="../../../bus/endpoints/intents.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>2.5.5.</b>
+                        
+                         Intents API Handler Definition Nodes
+                    </a>
+                
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="3" data-path="FAQ.html">
+            
+                
+                    <a href="../../../FAQ.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.</b>
+                        
+                         FAQs
+                    </a>
+                
+            
+            
+        </li>
+    
+        
+        <li class="chapter " data-level="4" data-path="performance/sharedWorkerMetrics.html">
+            
+                
+                    <a href="../../../performance/sharedWorkerMetrics.html">
+                        <i class="fa fa-check"></i>
+                        
+                            <b>4.</b>
+                        
+                         Performance Findings
+                    </a>
+                
+            
+            
+        </li>
+    
+
+
+        
+        <li class="divider"></li>
+        <li>
+            <a href="http://www.gitbook.io/" target="blank" class="gitbook-link">Published using GitBook</a>
+        </li>
+        
+    </ul>
+</div>
+
+    <div class="book-body">
+        <div class="body-inner">
+            <div class="book-header">
+    <!-- Actions Left -->
+    <a href="#" class="btn pull-left toggle-summary" aria-label="Toggle summary"><i class="fa fa-align-justify"></i></a>
+    <a href="#" class="btn pull-left toggle-search" aria-label="Toggle search"><i class="fa fa-search"></i></a>
+    
+    <div id="font-settings-wrapper" class="dropdown pull-left">
+        <a href="#" class="btn toggle-dropdown" aria-label="Toggle font settings"><i class="fa fa-font"></i>
+        </a>
+        <div class="dropdown-menu font-settings">
+    <div class="dropdown-caret">
+        <span class="caret-outer"></span>
+        <span class="caret-inner"></span>
+    </div>
+
+    <div class="buttons">
+        <button type="button" id="reduce-font-size" class="button size-2">A</button>
+        <button type="button" id="enlarge-font-size" class="button size-2">A</button>
+    </div>
+
+    <div class="buttons font-family-list">
+        <button type="button" data-font="0" class="button">Serif</button>
+        <button type="button" data-font="1" class="button">Sans</button>
+    </div>
+
+    <div class="buttons color-theme-list">
+        <button type="button" id="color-theme-preview-0" class="button size-3" data-theme="0">White</button>
+        <button type="button" id="color-theme-preview-1" class="button size-3" data-theme="1">Sepia</button>
+        <button type="button" id="color-theme-preview-2" class="button size-3" data-theme="2">Night</button>
+    </div>
+</div>
+
+    </div>
+
+    <!-- Actions Right -->
+    
+    <div class="dropdown pull-right">
+        <a href="#" class="btn toggle-dropdown" aria-label="Toggle share dropdown"><i class="fa fa-share-alt"></i>
+        </a>
+        <div class="dropdown-menu font-settings dropdown-left">
+            <div class="dropdown-caret">
+                <span class="caret-outer"></span>
+                <span class="caret-inner"></span>
+            </div>
+            <div class="buttons">
+                <button type="button" data-sharing="twitter" class="button">Twitter</button>
+                <button type="button" data-sharing="google-plus" class="button">Google</button>
+                <button type="button" data-sharing="facebook" class="button">Facebook</button>
+                <button type="button" data-sharing="weibo" class="button">Weibo</button>
+                <button type="button" data-sharing="instapaper" class="button">Instapaper</button>
+            </div>
+        </div>
+    </div>
+    
+
+    
+    
+    
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../../../" >Inter-Widget Communication (IWC)</a>
+    </h1>
+</div>
+
+            <div class="page-wrapper" tabindex="-1">
+                <div class="page-inner">
+                
+                
+                    <section class="normal" id="section-gitbook_35">
+                    
+                        <h2 id="common-api-action-bulkget">Common API Action: bulkGet()</h2>
+<h3 id="applies-to-all-iwc-apis">Applies to All IWC APIs</h3>
+<h3 id="retrieves-a-collection-of-nodes">Retrieves a collection of nodes</h3>
+<p>In some cases, gathering multiple resources at once is desired. The <code>bulkGet</code>
+action takes a reference to a partial node path, and returns the values for all
+of the API&#39;s nodes that match.</p>
+<p>For example, the Names API has a collection of resources on the various APIs
+connected to the IWC. These resources are labeled as <code>/api/{address}</code>
+(/api/data.api, /api/names.api, ...). Referencing the partial path <code>/api/</code> means
+that when calling <code>bulkGet</code>, all resource pathed under <code>/api/</code> will be returned.</p>
+<pre><code>var apiRef = new client.names.Reference(&quot;/api&quot;);
+var apiMap = {}
+
+apiRef.bulkGet().then(function(values){
+    for(var i in values){
+        var resource = values[i].resource;
+        var apiEntity = values[i].entity;
+
+        apiMap[resource] = apiEntity;
+    }
+});
+</code></pre><h4 id="differance-in-promise-response-to-other-actions">Differance in promise response to other actions</h4>
+<p>Since this action is doing a lookup with a partial resource path, values of multiple
+node resources may be returned. In order distinguish which node provided which
+value, a more detailed response is used when calling <code>bulkGet</code>. Similar to the
+format of responses in the <a href="">Comprehensive IWC Requests</a>, bulk get returns
+<strong>an array of full-detail response messages</strong>.</p>
+<p>While most of the properties in the response packet aren&#39;t utilized in general
+IWC use, two properties of the response are important:</p>
+<ol>
+<li><code>entity</code> - the value of the node.</li>
+<li><code>resource</code> - the path of the node.<pre><code>[
+ {
+     &quot;entity&quot;: {
+         &quot;actions&quot;: [
+             &quot;get&quot;,
+             &quot;set&quot;,
+             &quot;delete&quot;,
+             &quot;watch&quot;,
+             &quot;unwatch&quot;,
+             &quot;list&quot;,
+             &quot;bulkGet&quot;,
+             &quot;addChild&quot;,
+             &quot;removeChild&quot;
+         ]
+     },
+     &quot;lifespan&quot;: {
+         &quot;type&quot;: &quot;Ephemeral&quot;
+     },
+     &quot;contentType&quot;: &quot;application/vnd.ozp-iwc-api-v1+json&quot;,
+     &quot;permissions&quot;: {},
+     &quot;eTag&quot;: 1,
+     &quot;resource&quot;: &quot;/api/data.api&quot;,
+     &quot;collection&quot;: []
+ },
+ {
+     &quot;entity&quot;: {
+         &quot;actions&quot;: [
+             &quot;get&quot;,
+             &quot;set&quot;,
+             &quot;delete&quot;,
+             &quot;watch&quot;,
+             &quot;unwatch&quot;,
+             &quot;list&quot;,
+             &quot;bulkGet&quot;
+         ]
+     },
+     &quot;lifespan&quot;: {
+         &quot;type&quot;: &quot;Ephemeral&quot;
+     },
+     &quot;contentType&quot;: &quot;application/vnd.ozp-iwc-api-v1+json&quot;,
+     &quot;permissions&quot;: {},
+     &quot;eTag&quot;: 1,
+     &quot;resource&quot;: &quot;/api/names.api&quot;,
+     &quot;collection&quot;: []
+ },
+ // Omitted additional entries due to size...
+];
+</code></pre></li>
+</ol>
+<h2 id="requesting-a-bulk-get-that-finds-no-matching-nodes">Requesting a Bulk Get that Finds no Matching Nodes</h2>
+<p>While a <code>get</code> request for a node that does not exist returns a <code>noResource</code> error,
+a <code>bulkGet</code> with a partial key reference that matches no node is a valid action
+because the IWC checks its nodes without failure. The response would be an
+empty array:</p>
+<pre><code>[]
+</code></pre>
+                    
+                    </section>
+                
+                
+                </div>
+            </div>
+        </div>
+
+        
+        <a href="../../../client/apis/common/get.html" class="navigation navigation-prev " aria-label="Previous page: Get Action"><i class="fa fa-angle-left"></i></a>
+        
+        
+        <a href="../../../client/apis/common/list.html" class="navigation navigation-next " aria-label="Next page: List Action"><i class="fa fa-angle-right"></i></a>
+        
+    </div>
+</div>
+
+        
+<script src="../../../gitbook/app.js"></script>
+
+    
+    <script src="https://cdn.mathjax.org/mathjax/2.4-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+    
+    <script src="../../../gitbook/plugins/gitbook-plugin-mathjax/plugin.js"></script>
+    
+
+<script>
+require(["gitbook"], function(gitbook) {
+    var config = {"fontSettings":{"theme":null,"family":"sans","size":2}};
+    gitbook.start(config);
+});
+</script>
+
+        
+    </body>
+    
+</html>

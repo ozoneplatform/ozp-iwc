@@ -268,6 +268,8 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
     Api.prototype.shutdown = function () {
         if (this.leaderState === "leader") {
             this.broadcastDeathScream(this.createDeathScream());
+        } else if (this.leaderState === "member" && this.deathScream) {
+            this.broadcastDeathScream(this.deathScream);
         }
 
         //@TODO: The api deathscream would be included with the unlock but race conditions caused this to not be
@@ -473,6 +475,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         }
         log.debug(this.logPrefix + "transitioning to leader");
 
+        this.deathScream = undefined;
         this.leaderState = "leader";
         this.broadcastLeaderReady();
         this.deliverRequestQueue();
@@ -522,7 +525,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         if (this.leaderState !== "member") {
             return;
         }
-        this.deathScream = null;
+        this.deathScream = undefined;
         this.flushRequestQueue();
         return Promise.resolve();
     };
@@ -589,23 +592,28 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
     };
 
     /**
-     * Gathers the collection data for a node given its pattern only if it has a pattern.
-     * @method getCollection
-     * @param {String} pattern
+     * Gathers the collection resource data for a node given its pattern only
+     * if it is in the collectors list
+     * @method getCollectionResources
+     * @param {Object} node
      * @return {Array}
      */
-    Api.prototype.getCollection = function (pattern) {
-        if (pattern) {
-            return this.matchingNodes(pattern).filter(function (node) {
-                return !node.deleted;
-            }).map(function (node) {
-                return node.resource;
+    Api.prototype.getCollectionResources = function (node) {
+        return this.getCollectionData(node).map(function (matchedNode) {
+            return matchedNode.resource;
+        });
+    };
+
+    Api.prototype.getCollectionData = function (node) {
+        if (this.collectors.indexOf(node.resource) > -1) {
+            return this.matchingNodes(node.pattern).filter(function (matchedNode) {
+                // ignore deleted nodes
+                return !matchedNode.deleted;
             });
         } else {
             return [];
         }
     };
-
 //--------------------------------------------------
 // Watch Functionality
 //--------------------------------------------------
@@ -680,16 +688,13 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      * @method addCollector
      * @param {Object} node
      */
-    Api.prototype.addCollector = function (resource) {
-        var index = this.collectors.indexOf(resource);
+    Api.prototype.addCollector = function (node) {
+        var index = this.collectors.indexOf(node.resource);
         if (index < 0) {
-            this.collectors.push(resource);
+            this.collectors.push(node.resource);
         }
-        var node = this.data[resource];
-        if (node) {
-            updateCollectionNode(this, node);
-        }
-    };
+        updateCollectionNode(this, node);
+   };
 
 
     /**

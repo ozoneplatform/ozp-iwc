@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.19</em>
+            <em>API Docs for: 1.2.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -127,6 +127,7 @@
                                 <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
+                                <li><a href="../classes/ozpIwc.util.Reference.html">ozpIwc.util.Reference</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
                             </ul>
                 
@@ -232,6 +233,10 @@
 
                             </li>
                             <li class="index-item method">
+                                <a href="#method_checkCollect">checkCollect</a>
+
+                            </li>
+                            <li class="index-item method">
                                 <a href="#method_checkContentType">checkContentType</a>
 
                             </li>
@@ -245,10 +250,6 @@
                             </li>
                             <li class="index-item method">
                                 <a href="#method_fixPattern">fixPattern</a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_markAsCollector">markAsCollector</a>
 
                             </li>
                             <li class="index-item method">
@@ -291,7 +292,7 @@
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_bus_api_filter_base.js.html#l99"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:99</code></a>
+        <a href="../files/src_js_bus_api_filter_base.js.html#l146"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:146</code></a>
         </p>
 
 
@@ -301,6 +302,48 @@
     <div class="description">
         <p>Returns a filter function with the following features:
 Checks that the subject within the context is authorized for the action on the resource node.</p>
+
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"><a href="../classes/ozpIwc.api.filter.Function.html" class="crosslink">ozpIwc.api.filter.Function</a></span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_checkCollect" class="method item">
+    <h3 class="name"><code>checkCollect</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/ozpIwc.api.filter.Function.html" class="crosslink">ozpIwc.api.filter.Function</a></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_js_bus_api_filter_base.js.html#l77"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:77</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Returns a filter function with the following features:
+Adds the resource as a collector to the API, it will now get updates based on its pattern property.</p>
 
     </div>
 
@@ -333,7 +376,7 @@ Checks that the subject within the context is authorized for the action on the r
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_bus_api_filter_base.js.html#l126"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:126</code></a>
+        <a href="../files/src_js_bus_api_filter_base.js.html#l173"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:173</code></a>
         </p>
 
 
@@ -375,7 +418,7 @@ Checks that the content type is one that is authorized for the api resource.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_bus_api_filter_base.js.html#l187"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:187</code></a>
+        <a href="../files/src_js_bus_api_filter_base.js.html#l234"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:234</code></a>
         </p>
 
 
@@ -460,7 +503,7 @@ Stores the resource in context.node, creating it via the api's</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_bus_api_filter_base.js.html#l166"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:166</code></a>
+        <a href="../files/src_js_bus_api_filter_base.js.html#l213"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:213</code></a>
         </p>
 
 
@@ -472,48 +515,6 @@ Stores the resource in context.node, creating it via the api's</p>
 If the packet does not contain a pattern property create one from the packet resource + &quot;/&quot;. This filter is
 to be used only in node creation as it can overwrite the nodes pattern property if different than resource +
 &quot;/&quot;.</p>
-
-    </div>
-
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type"><a href="../classes/ozpIwc.api.filter.Function.html" class="crosslink">ozpIwc.api.filter.Function</a></span>:
-            </div>
-        </div>
-
-
-</div>
-<div id="method_markAsCollector" class="method item">
-    <h3 class="name"><code>markAsCollector</code></h3>
-
-        <span class="paren">()</span>
-
-        <span class="returns-inline">
-            <span class="type"><a href="../classes/ozpIwc.api.filter.Function.html" class="crosslink">ozpIwc.api.filter.Function</a></span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_js_bus_api_filter_base.js.html#l70"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:70</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Returns a filter function with the following features:
-Adds the resource as a collector to the API, it will now get updates based on its pattern property.</p>
 
     </div>
 
@@ -546,7 +547,7 @@ Adds the resource as a collector to the API, it will now get updates based on it
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_bus_api_filter_base.js.html#l153"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:153</code></a>
+        <a href="../files/src_js_bus_api_filter_base.js.html#l200"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:200</code></a>
         </p>
 
 
@@ -603,7 +604,7 @@ Marks the resource as changed.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_bus_api_filter_base.js.html#l112"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:112</code></a>
+        <a href="../files/src_js_bus_api_filter_base.js.html#l159"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:159</code></a>
         </p>
 
 
@@ -692,7 +693,7 @@ Marks the resource as changed.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_bus_api_filter_base.js.html#l84"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:84</code></a>
+        <a href="../files/src_js_bus_api_filter_base.js.html#l131"><code>src&#x2F;js&#x2F;bus&#x2F;api&#x2F;filter&#x2F;base.js:131</code></a>
         </p>
 
 

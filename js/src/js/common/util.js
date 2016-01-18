@@ -510,5 +510,33 @@ ozpIwc.util = (function (util) {
             setTimeout(function () { res();}, delay);
         });
     };
+
+    /**
+     * Returns the specified default value if the given value is undefined. safer than "x = x || 500" because it checks
+     * for being defined, rather than its truly/falsey value.
+
+     * @method ifUndef
+     * @static
+     * @param {*} value
+     * @param {*} defaultVal
+     * @return {*}
+     */
+    util.ifUndef = function (value, defaultVal) {
+        return (typeof value === 'undefined') ? defaultVal : value;
+    };
+
+    /**
+     * IE 10 does not play well gathering location.origin.
+     * 
+     * @method getOrigin
+     * @static
+     * @return {String} The origin this script is running in
+     */
+    util.getOrigin = function() {
+        if (!location.origin) {
+          return location.protocol + "//" + location.hostname + (location.port ? ':' + location.port: '');
+        }
+        return location.origin;
+    };
     return util;
 }(ozpIwc.util || {}));

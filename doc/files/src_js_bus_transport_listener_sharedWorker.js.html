@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.19</em>
+            <em>API Docs for: 1.2.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -127,6 +127,7 @@
                                 <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
+                                <li><a href="../classes/ozpIwc.util.Reference.html">ozpIwc.util.Reference</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
                             </ul>
                 
@@ -247,26 +248,15 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
         return function (event) {
             var port = event.ports[0];
 
-            var request = {
-                &#x27;subject&#x27;: {&#x27;ozp:iwc:origin&#x27;: event.origin},
-                &#x27;action&#x27;: {&#x27;ozp:iwc:action&#x27;: &#x27;connect&#x27;},
-                &#x27;policies&#x27;: listener.authorization.policySets.connectSet
-            };
-
             var config = {
                 &#x27;authorization&#x27;: listener.authorization,
-                &#x27;origin&#x27;: event.origin,
                 &#x27;router&#x27;: listener.router,
                 &#x27;port&#x27;: port,
                 &#x27;ready&#x27;: listener.readyPromise
             };
 
-            listener.authorization.isPermitted(request).success(function () {
-                port.addEventListener(&#x27;message&#x27;, messageHandlerGen(listener, port, config));
-                port.start();
-            }).failure(function (err) {
-                log.error(&quot;Failed to connect. Could not authorize:&quot;, err);
-            });
+            port.addEventListener(&#x27;message&#x27;, messageHandlerGen(listener, port, config));
+            port.start();
         };
     };
 
@@ -281,9 +271,13 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
      */
     var messageHandlerGen = function (listener, port, config) {
         return function initMsg(evt) {
+
             // If the first message received is not noting the type of participant to create, kill the connection
+            // The first message notifies (1) the type of participant and (2)
+            // the origin that opened the IWC connection.
             if (evt.data &amp;&amp; typeof(evt.data.type) === &quot;string&quot;) {
                 var type = evt.data.type.trim();
+                config.origin = evt.data.proxyAs.origin.trim();
                 var participant;
                 switch (type.toLowerCase()) {
                     case &quot;debugger&quot;:
@@ -293,7 +287,7 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
                         participant = new transport.participant.SharedWorker(config);
                         break;
                 }
-                if (participant) {
+                if (participant &amp;&amp; !participant.invalid) {
                     listener.router.registerParticipant(participant);
                     listener.participants.push(participant);
                 }

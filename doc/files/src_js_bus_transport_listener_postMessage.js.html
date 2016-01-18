@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.19</em>
+            <em>API Docs for: 1.2.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -127,6 +127,7 @@
                                 <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
+                                <li><a href="../classes/ozpIwc.util.Reference.html">ozpIwc.util.Reference</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
                             </ul>
                 
@@ -241,7 +242,7 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
      * @param  {ozpIwc.transport.Participant} participant [description]
      * @param  {ozpIwc.transport.PacketContext.packet} packet      [description]
      */
-    var forwardPacket = function (participant, packet) {
+    var forwardPacket = function (participant, packet, event) {
         if (util.isIWCPacket(packet)) {
             participant.forwardFromPostMessage(packet, event);
         } else {
@@ -280,8 +281,11 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
                 break;
         }
 
-        listener.router.registerParticipant(participant, packet);
-        listener.participants.push(participant);
+        if (participant &amp;&amp; !participant.invalid) {
+            listener.router.registerParticipant(participant, packet);
+            listener.participants.push(participant);
+            return participant;
+        }
     };
 
     /**
@@ -328,14 +332,16 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
             }
             // if this is a window who hasn&#x27;t talked to us before, sign them up
             if (!participant) {
-                verifyParticipant(self,event).success(function() {
-                    genParticipant(self,event,packet);
-                    forwardPacket(packet);
+                verifyParticipant(listener, event).success(function() {
+                    participant = genParticipant(listener, event, packet);
+                    if(participant){
+                        forwardPacket(participant, packet, event);
+                    }
                 }).failure(function (err) {
                     log.error(&quot;Failed to connect. Could not authorize:&quot;, err);
                 });
             } else {
-                forwardPacket(participant, packet);
+                forwardPacket(participant, packet, event);
             }
 
         });

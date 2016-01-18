@@ -21,22 +21,33 @@ ozpIwc.api.base.Api = (function (Api) {
     Api.defaultHandler = {
         "get": function (packet, context, pathParams) {
             var p = context.node.toPacket();
-            p.collection = this.getCollection(p.pattern);
+            p.collection = this.getCollectionResources(p);
             return p;
         },
         "set": function (packet, context, pathParams) {
             context.node.set(packet);
-            return {response: "ok"};
+            return {
+                response: "ok",
+                entity: context.node.entity
+            };
         },
         "delete": function (packet, context, pathParams) {
             if (context.node) {
                 context.node.markAsDeleted(packet);
+                this.removeCollector(context.node);
             }
 
             return {response: "ok"};
         },
         "list": function (packet, context, pathParams) {
-            var entity = this.matchingNodes(packet.resource).filter(function (node) {
+            var pattern = packet.pattern || packet.resource;
+
+            // If listing on a node, list its children
+            if(context.node){
+                pattern = context.node.pattern;
+            }
+
+            var entity = this.matchingNodes(pattern).filter(function (node) {
                 return !node.deleted;
             }).map(function (node) {
                 return node.resource;
@@ -50,7 +61,7 @@ ozpIwc.api.base.Api = (function (Api) {
             var self = this;
             var entity = this.matchingNodes(packet.resource).map(function (node) {
                 var p = node.toPacket();
-                p.collection = self.getCollection(p.pattern);
+                p.collection = self.getCollectionResources(p);
                 return p;
             });
             // TODO: roll up the permissions of the nodes, as well
@@ -59,32 +70,21 @@ ozpIwc.api.base.Api = (function (Api) {
                 "entity": entity
             };
         },
+        "collect": function (packet, context, pathParams) {
+            this.addCollector(context.node);
+            var p = context.node.toPacket();
+            // collect gathers the children elements rather than its own
+            p.entity = this.getCollectionData(context.node);
+            return p;
+        },
         "watch": function (packet, context, pathParams) {
-            // If a watch with a collect flag comes in for a non-existent resource, create the resource and start
-            // the watch & collection. If a collect flag comes in for an existent resource, start collecting
-            // based on the resources pattern property or the pattern supplied.
-            if(!context.node && packet.collect){
-                context.node = this.createNode({
-                    resource: packet.resource,
-                    pattern: packet.pattern ?
-                            packet.pattern : (packet.resource === "/") ? "/" : packet.resource + "/"
-                });
-            } else if (context.node && packet.collect) {
-                context.node.set({
-                    pattern: packet.pattern ?
-                            packet.pattern : (packet.resource === "/") ? "/" : packet.resource + "/"
-                });
-            }
 
             this.addWatcher(packet.resource, {
                 src: packet.src,
                 replyTo: packet.msgId
             });
 
-            // addCollector will only succeed if the resource has a pattern set to it.
-            this.addCollector(packet.resource);
-
-            if(!context.node){
+            if (!context.node) {
                 return {response: "ok"};
             } else {
                 return context.node.toPacket();

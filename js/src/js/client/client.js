@@ -27,7 +27,7 @@ ozpIwc.Client = (function (util) {
         if (formattedConfig.enhancedTimers) {
             util.enabledEnhancedTimers();
         }
-        this.type = "default";
+        this.type = formattedConfig.type || "default";
 
         var self = this;
         util.addEventListener('beforeunload', function () {
@@ -124,7 +124,11 @@ ozpIwc.Client = (function (util) {
                 }
                 // Calls APIPromiseMixin receive handler
                 if (message.iwcInit && client.address === "$nobody") {
-                    initPing(client, resolve, reject);
+                    if(message.error) {
+                        reject(message.error);
+                    } else {
+                        initPing(client, resolve, reject);
+                    }
                 } else {
                     client.receiveFromRouterImpl(message);
                     client.receivedBytes += (event.data.length * 2);
@@ -169,11 +173,9 @@ ozpIwc.Client = (function (util) {
             document.body.appendChild(client.iframe);
             client.peer = client.iframe.contentWindow;
 
-            if (!util.globalScope.SharedWorker) {
-                client.iframe.addEventListener("load", function () {
-                    initPing(client, resolve, reject);
-                });
-            }
+            client.iframe.addEventListener("load", function () {
+                initPing(client, resolve, reject);
+            });
         }, 200);
     };
 
@@ -263,6 +265,9 @@ ozpIwc.Client = (function (util) {
             var launcherResource = '/application/vnd.ozp-iwc-launch-data-v1+json/run/' + client.address;
             client.intents().register(launcherResource, sharedWorkerRegistrationData, sharedWorkerLauncher);
 
+        }).catch(function(err) {
+            // Supress the error here, the application will get it from its
+            // connect() call.
         });
     };
 
@@ -285,7 +290,9 @@ ozpIwc.Client = (function (util) {
             this.iframe.src = "about:blank";
             var self = this;
             setTimeout(function () {
-                self.iframe.remove();
+                if(self.iframe.remove){
+                    self.iframe.remove();
+                }
                 self.iframe = null;
                 resolve();
             }, 0);

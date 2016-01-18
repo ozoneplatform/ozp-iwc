@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.19</em>
+            <em>API Docs for: 1.2.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -127,6 +127,7 @@
                                 <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
+                                <li><a href="../classes/ozpIwc.util.Reference.html">ozpIwc.util.Reference</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
                             </ul>
                 
@@ -234,15 +235,7 @@
 
                     <ul class="index-list methods">
                             <li class="index-item method">
-                                <a href="#method_afterConnected">afterConnected</a>
-
-                            </li>
-                            <li class="index-item method">
                                 <a href="#method_api">api</a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_augment">augment</a>
 
                             </li>
                             <li class="index-item method">
@@ -258,10 +251,6 @@
 
                             </li>
                             <li class="index-item method">
-                                <a href="#method_fixPacket">fixPacket</a>
-
-                            </li>
-                            <li class="index-item method">
                                 <a href="#method_gatherApiInformation">gatherApiInformation</a>
 
                             </li>
@@ -270,45 +259,20 @@
 
                                     <span class="flag static">static</span>
                             </li>
-                            <li class="index-item method private">
-                                <a href="#method_handleBusPacket">handleBusPacket</a>
-
-                                    <span class="flag static">static</span>
-                            </li>
-                            <li class="index-item method private">
-                                <a href="#method_intentAugment">intentAugment</a>
-
-                                    <span class="flag static">static</span>
-                            </li>
                             <li class="index-item method">
                                 <a href="#method_intentInvocationHandling">intentInvocationHandling</a>
 
-                            </li>
-                            <li class="index-item method private">
-                                <a href="#method_intentRegisterAugment">intentRegisterAugment</a>
-
-                                    <span class="flag static">static</span>
-                            </li>
-                            <li class="index-item method private">
-                                <a href="#method_intentRegisterAugment">intentRegisterAugment</a>
-
-                                    <span class="flag static">static</span>
-                            </li>
-                            <li class="index-item method private">
-                                <a href="#method_intentRegisterAugment">intentRegisterAugment</a>
-
-                                    <span class="flag static">static</span>
                             </li>
                             <li class="index-item method">
                                 <a href="#method_isConnected">isConnected</a>
 
                             </li>
-                            <li class="index-item method">
-                                <a href="#method_messageBuilderAugment">messageBuilderAugment</a>
+                            <li class="index-item method inherited">
+                                <a href="#method_mixinOnOff">mixinOnOff</a>
 
                             </li>
                             <li class="index-item method inherited">
-                                <a href="#method_mixinOnOff">mixinOnOff</a>
+                                <a href="#method_"></a>
 
                             </li>
                             <li class="index-item method inherited">
@@ -331,14 +295,6 @@
                                 <a href="#method_registerEvents">registerEvents</a>
 
                                     <span class="flag static">static</span>
-                            </li>
-                            <li class="index-item method inherited">
-                                <a href="#method_"></a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_send">send</a>
-
                             </li>
                             <li class="index-item method">
                                 <a href="#method_updateApi">updateApi</a>
@@ -369,10 +325,6 @@
                             </li>
                             <li class="index-item property">
                                 <a href="#property_msgIdSequence">msgIdSequence</a>
-
-                            </li>
-                            <li class="index-item property">
-                                <a href="#property_packet">packet</a>
 
                             </li>
                             <li class="index-item property">
@@ -424,47 +376,6 @@
             <div id="methods" class="api-class-tabpanel">
                 <h2 class="off-left">Methods</h2>
 
-<div id="method_afterConnected" class="method item">
-    <h3 class="name"><code>afterConnected</code></h3>
-
-        <span class="paren">()</span>
-
-        <span class="returns-inline">
-            <span class="type">Promise</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l887"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:887</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Generic handler for a bus connection to handle any queued messages &amp; launch data after its connected.</p>
-
-    </div>
-
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Promise</span>:
-            </div>
-        </div>
-
-
-</div>
 <div id="method_api" class="method item">
     <h3 class="name"><code>api</code></h3>
 
@@ -527,82 +438,6 @@ If the wrapper does not exist it is created.</p>
                         <span class="type">Function</span>:
                     <p>returns the wrapper call for the given api.</p>
 
-            </div>
-        </div>
-
-
-</div>
-<div id="method_augment" class="method item">
-    <h3 class="name"><code>augment</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>messageBuilder</code>
-                </li>
-                <li class="arg">
-                        <code>client</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type">Function</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l635"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:635</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Function generator. Generates API functions given a messageBuilder function.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">messageBuilder</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">client</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Function</span>:
             </div>
         </div>
 
@@ -755,7 +590,7 @@ If the wrapper does not exist it is created.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l274"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:274</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l277"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:277</code></a>
         </p>
 
 
@@ -768,69 +603,6 @@ If the wrapper does not exist it is created.</p>
     </div>
 
 
-
-
-</div>
-<div id="method_fixPacket" class="method item">
-    <h3 class="name"><code>fixPacket</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>fields</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type">Object</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l747"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:747</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Applies necessary properties to the packet to be transmitted through the router.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">fields</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Object</span>:
-            </div>
-        </div>
 
 
 </div>
@@ -895,7 +667,7 @@ current bus.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l67"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:67</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l70"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:70</code></a>
         </p>
 
 
@@ -915,153 +687,6 @@ current bus.</p>
                         <span class="type">Object</span>:
             </div>
         </div>
-
-
-</div>
-<div id="method_handleBusPacket" class="method item private">
-    <h3 class="name"><code>handleBusPacket</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>apiBase</code>
-                </li>
-                <li class="arg">
-                        <code>packetContext</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type"></span>
-        </span>
-
-
-        <span class="flag private">private</span>
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l938"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:938</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Handles packets received with a destination of &quot;$bus.multicast&quot;.
-If the packet action isn't handled, the function will return falsy.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">apiBase</code>
-                        <span class="type"><a href="../classes/ozpIwc.api.base.Api.html" class="crosslink">ozpIwc.api.base.Api</a></span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">packetContext</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type"></span>:
-            </div>
-        </div>
-
-
-</div>
-<div id="method_intentAugment" class="method item private">
-    <h3 class="name"><code>intentAugment</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>client</code>
-                </li>
-                <li class="arg">
-                        <code>message</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-        <span class="flag private">private</span>
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l612"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:612</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Augmenters for Intent Api specific actions.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">client</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">message</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
 
 
 </div>
@@ -1160,213 +785,6 @@ state machine</p>
 
 
 </div>
-<div id="method_intentRegisterAugment" class="method item private">
-    <h3 class="name"><code>intentRegisterAugment</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>client</code>
-                </li>
-                <li class="arg">
-                        <code>message</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-        <span class="flag private">private</span>
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l523"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:523</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Augmentation for Intents Api register. Automatically invokes a registration if the invoke was passed
-into the application opening.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">client</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">message</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-</div>
-<div id="method_intentRegisterAugment" class="method item private">
-    <h3 class="name"><code>intentRegisterAugment</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>client</code>
-                </li>
-                <li class="arg">
-                        <code>message</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-        <span class="flag private">private</span>
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l542"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:542</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Augmentation for Intents Api invoke. Wraps callback to remove the callback when reaching
-error/complete state.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">client</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">message</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-</div>
-<div id="method_intentRegisterAugment" class="method item private">
-    <h3 class="name"><code>intentRegisterAugment</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>client</code>
-                </li>
-                <li class="arg">
-                        <code>message</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-        <span class="flag private">private</span>
-
-
-        <span class="flag static">static</span>
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l566"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:566</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Augmentation for Intents Api broadcast. Compiles the results of all intent handlers and then,
-returns the responfixese in the promise resolution. Callback acts like invoke callback.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">client</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">message</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-</div>
 <div id="method_isConnected" class="method item">
     <h3 class="name"><code>isConnected</code></h3>
 
@@ -1385,7 +803,7 @@ returns the responfixese in the promise resolution. Callback acts like invoke ca
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l175"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:175</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l178"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:178</code></a>
         </p>
 
 
@@ -1403,97 +821,6 @@ returns the responfixese in the promise resolution. Callback acts like invoke ca
 
             <div class="returns-description">
                         <span class="type">Boolean</span>:
-            </div>
-        </div>
-
-
-</div>
-<div id="method_messageBuilderAugment" class="method item">
-    <h3 class="name"><code>messageBuilderAugment</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>dst</code>
-                </li>
-                <li class="arg">
-                        <code>action</code>
-                </li>
-                <li class="arg">
-                        <code>client</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type">Function</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l654"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:654</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Function generator. Generates API message formatting functions for a client-destination-action
-pairing. These are generated for bulk sending capabilities, since the message needs to be formatted
-but not transmitted until desired.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">dst</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">action</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">client</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Function</span>:
             </div>
         </div>
 
@@ -1552,6 +879,86 @@ object.</p>
             </ul>
         </div>
 
+
+
+</div>
+<div id="method_" class="method item inherited">
+    <h3 class="name"><code></code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>eventName</code>
+                </li>
+                <li class="arg">
+                        <code>event</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Object</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>Inherited from
+                <a href="../classes/ozpIwc.util.Event.html#method_">ozpIwc.util.Event</a>:
+        <a href="../files/src_js_common_events_event.js.html#l64"><code>src&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:64</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Fires an event that will be received by all handlers.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">eventName</code>
+                        <span class="type">String</span>
+
+
+                    <div class="param-description">
+                        <p>Name of the event.</p>
+
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">event</code>
+                        <span class="type">Object</span>
+
+
+                    <div class="param-description">
+                        <p>Event object to pass to the handlers.</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Object</span>:
+                    <p>The event after all handlers have processed it.</p>
+
+            </div>
+        </div>
 
 
 </div>
@@ -1718,7 +1125,7 @@ object.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l185"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:185</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l188"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:188</code></a>
         </p>
 
 
@@ -1772,7 +1179,7 @@ object.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l208"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:208</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l211"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:211</code></a>
         </p>
 
 
@@ -1829,7 +1236,7 @@ the callback for that reply is invoked.  Otherwise, it fires a receive event</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l52"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:52</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l55"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:55</code></a>
         </p>
 
 
@@ -1852,186 +1259,6 @@ the callback for that reply is invoked.  Otherwise, it fires a receive event</p>
 
                     <div class="param-description">
                          
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-</div>
-<div id="method_" class="method item inherited">
-    <h3 class="name"><code></code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>eventName</code>
-                </li>
-                <li class="arg">
-                        <code>event</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type">Object</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>Inherited from
-                <a href="../classes/ozpIwc.util.Event.html#method_">ozpIwc.util.Event</a>:
-        <a href="../files/src_js_common_events_event.js.html#l64"><code>src&#x2F;js&#x2F;common&#x2F;events&#x2F;event.js:64</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Fires an event that will be received by all handlers.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">eventName</code>
-                        <span class="type">String</span>
-
-
-                    <div class="param-description">
-                        <p>Name of the event.</p>
-
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">event</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        <p>Event object to pass to the handlers.</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Object</span>:
-                    <p>The event after all handlers have processed it.</p>
-
-            </div>
-        </div>
-
-
-</div>
-<div id="method_send" class="method item">
-    <h3 class="name"><code>send</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>fields</code>
-                </li>
-                <li class="arg">
-                        <code>callback</code>
-                </li>
-                <li class="arg">
-                        <code>preexistingPromiseRes</code>
-                </li>
-                <li class="arg">
-                        <code>preexistingPromiseRej</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l841"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:841</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Sends a packet through the IWC.
-Will call the participants sendImpl function.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">fields</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                        <p>properties of the send packet..</p>
-
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">callback</code>
-                        <span class="type">Function</span>
-
-
-                    <div class="param-description">
-                        <p>The Callback for any replies. The callback will be persisted if it returns a
-truth-like</p>
-
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">preexistingPromiseRes</code>
-                        <span class="type">Function</span>
-
-
-                    <div class="param-description">
-                        <p>If this send already has a promise resolve registration, use it
-rather than make a new one.</p>
-
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">preexistingPromiseRej</code>
-                        <span class="type">Function</span>
-
-
-                    <div class="param-description">
-                        <p>If this send already has a promise reject registration, use it
-rather than make a new one. value, canceled if it returns a false-like value.</p>
-
                     </div>
 
                 </li>
@@ -2124,7 +1351,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l126"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:126</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l129"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:129</code></a>
         </p>
 
 
@@ -2175,7 +1402,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l168"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:168</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l171"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:171</code></a>
         </p>
 
 
@@ -2200,7 +1427,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l147"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:147</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l150"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:150</code></a>
         </p>
 
 
@@ -2225,7 +1452,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l84"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:84</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l87"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:87</code></a>
         </p>
 
 
@@ -2239,62 +1466,6 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
 
 
 </div>
-<div id="property_packet" class="property item">
-    <h3 class="name"><code>packet</code></h3>
-    <span class="type">Object</span>
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l773"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:773</code></a>
-        </p>
-
-
-    </div>
-
-    <div class="description">
-        <p>Registers callbacks for API request callbacks and promises.</p>
-
-    </div>
-
-
-
-        <h4>Sub-properties:</h4>
-
-        <ul class="params-list">
-            <li class="param">
-                    <code class="param-name">callback</code>
-                    <span class="type">Function</span>
-
-                <div class="param-description">
-                    
-                </div>
-
-            </li>
-            <li class="param">
-                    <code class="param-name">promiseRes</code>
-                    <span class="type">Function</span>
-
-                <div class="param-description">
-                    
-                </div>
-
-            </li>
-            <li class="param">
-                    <code class="param-name">promiseRej</code>
-                    <span class="type">Function</span>
-
-                <div class="param-description">
-                    
-                </div>
-
-            </li>
-        </ul>
-</div>
 <div id="property_preconnectionQueue" class="property item">
     <h3 class="name"><code>preconnectionQueue</code></h3>
     <span class="type">Array</span>
@@ -2306,7 +1477,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l140"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:140</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l143"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:143</code></a>
         </p>
 
 
@@ -2331,7 +1502,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l77"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:77</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l80"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:80</code></a>
         </p>
 
 
@@ -2356,7 +1527,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l98"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:98</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l101"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:101</code></a>
         </p>
 
 
@@ -2381,7 +1552,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l91"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:91</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l94"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:94</code></a>
         </p>
 
 
@@ -2406,7 +1577,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l161"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:161</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l164"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:164</code></a>
         </p>
 
 
@@ -2431,7 +1602,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l112"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:112</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l115"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:115</code></a>
         </p>
 
 
@@ -2456,7 +1627,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l105"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:105</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l108"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:108</code></a>
         </p>
 
 
@@ -2481,7 +1652,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l119"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:119</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l122"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:122</code></a>
         </p>
 
 
@@ -2506,7 +1677,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l154"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:154</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l157"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:157</code></a>
         </p>
 
 
@@ -2531,7 +1702,7 @@ updateApi must be called to reflect said changes on the wrapper map.</p>
     <div class="meta">
                 <p>
                 Defined in
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l133"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:133</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l136"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:136</code></a>
         </p>
 
 

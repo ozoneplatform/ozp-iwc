@@ -43,7 +43,7 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
      * @param  {ozpIwc.transport.Participant} participant [description]
      * @param  {ozpIwc.transport.PacketContext.packet} packet      [description]
      */
-    var forwardPacket = function (participant, packet) {
+    var forwardPacket = function (participant, packet, event) {
         if (util.isIWCPacket(packet)) {
             participant.forwardFromPostMessage(packet, event);
         } else {
@@ -82,8 +82,11 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
                 break;
         }
 
-        listener.router.registerParticipant(participant, packet);
-        listener.participants.push(participant);
+        if (participant && !participant.invalid) {
+            listener.router.registerParticipant(participant, packet);
+            listener.participants.push(participant);
+            return participant;
+        }
     };
 
     /**
@@ -130,14 +133,16 @@ ozpIwc.transport.listener.PostMessage = (function (log, transport, util) {
             }
             // if this is a window who hasn't talked to us before, sign them up
             if (!participant) {
-                verifyParticipant(self,event).success(function() {
-                    genParticipant(self,event,packet);
-                    forwardPacket(packet);
+                verifyParticipant(listener, event).success(function() {
+                    participant = genParticipant(listener, event, packet);
+                    if(participant){
+                        forwardPacket(participant, packet, event);
+                    }
                 }).failure(function (err) {
                     log.error("Failed to connect. Could not authorize:", err);
                 });
             } else {
-                forwardPacket(participant, packet);
+                forwardPacket(participant, packet, event);
             }
 
         });
