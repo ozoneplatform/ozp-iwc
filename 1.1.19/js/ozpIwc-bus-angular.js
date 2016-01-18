@@ -3402,7 +3402,11 @@ ozpIwc.apiMap = {
      */
     "data.api": {
         'address': 'data.api',
+<<<<<<< HEAD
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "addChild", "removeChild"]
+=======
         'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "collect", "addChild", "removeChild"]
+>>>>>>> gh-pages
     },
 
     /**
@@ -3411,7 +3415,11 @@ ozpIwc.apiMap = {
      */
     "intents.api": {
         'address': 'intents.api',
+<<<<<<< HEAD
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "register", "invoke", "broadcast"]
+=======
         'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "collect", "register", "invoke", "broadcast"]
+>>>>>>> gh-pages
     },
 
     /**
@@ -3420,7 +3428,11 @@ ozpIwc.apiMap = {
      */
     "names.api": {
         'address': 'names.api',
+<<<<<<< HEAD
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet"]
+=======
         'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "collect"]
+>>>>>>> gh-pages
     },
 
     /**
@@ -3429,7 +3441,11 @@ ozpIwc.apiMap = {
      */
     "system.api": {
         'address': 'system.api',
+<<<<<<< HEAD
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "launch"]
+=======
         'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "collect", "launch"]
+>>>>>>> gh-pages
     },
 
     /**
@@ -3438,10 +3454,16 @@ ozpIwc.apiMap = {
      */
     "locks.api": {
         'address': 'locks.api',
+<<<<<<< HEAD
+        'actions': ["get", "watch", "unwatch", "list", "lock", "unlock"]
+    }
+};
+=======
         'actions': ["get", "watch", "unwatch", "list", "lock", "unlock", "collect", "bulkGet"]
     }
 };
 
+>>>>>>> gh-pages
 var ozpIwc = ozpIwc || {};
 ozpIwc.util = ozpIwc.util || {};
 
@@ -3732,9 +3754,18 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         // everything for the last api in the list
                         /*jshint loopfunc:true*/
                         (function (self, addr) {
+<<<<<<< HEAD
+                            self[apiFuncName] = function () {
+                                return self.api(addr);
+                            };
+                            self.apiMap[addr] = self.apiMap[addr] || {};
+                            self.apiMap[addr].functionName = apiFuncName;
+                            self.updateApi(addr);
+=======
                             self[apiFuncName] =  self.updateApi(addr);
                             self.apiMap[addr] = self.apiMap[addr] || {};
                             self.apiMap[addr].functionName = apiFuncName;
+>>>>>>> gh-pages
                         })(this, apiObj.address);
                     }
                 }
@@ -3961,6 +3992,184 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
              */
             updateApi: function (apiName) {
 
+<<<<<<< HEAD
+                /**
+                 * Augmentation for Intents Api register. Automatically invokes a registration if the invoke was passed
+                 * into the application opening.
+                 * @method intentRegisterAugment
+                 * @private
+                 * @static
+                 * @param client
+                 * @param message
+                 */
+                var intentRegisterAugment = function (client, message) {
+                    for (var i in client.launchedIntents) {
+                        var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
+                        if (message.packet.resource === loadedResource) {
+                            client.intentInvocationHandling(message.packet, client.launchedIntents[i], message.callback);
+                            delete client.launchedIntents[i];
+                        }
+                    }
+                };
+
+                /**
+                 * Augmentation for Intents Api invoke. Wraps callback to remove the callback when reaching
+                 * error/complete state.
+                 * @method intentRegisterAugment
+                 * @private
+                 * @static
+                 * @param client
+                 * @param message
+                 */
+                var intentInvokeAugment = function (message) {
+                    if (message.callback) {
+                        var wrappedCallback = message.callback;
+                        // Wrap the callback to make sure it is removed when the intent state machine stops.
+                        message.callback = function (reply, done) {
+                            wrappedCallback(reply, done);
+                            reply = reply || {};
+                            reply.entity = reply.entity || {};
+                            if (reply.entity.state === "error" || reply.entity.state === "complete") {
+                                done();
+                            }
+                        };
+                    }
+                };
+
+                /**
+                 * Augmentation for Intents Api broadcast. Compiles the results of all intent handlers and then,
+                 * returns the responfixese in the promise resolution. Callback acts like invoke callback.
+                 * @method intentRegisterAugment
+                 * @private
+                 * @static
+                 * @param client
+                 * @param message
+                 */
+                var intentBroadcastAugment = function (client, message) {
+                    var broadcastWrappedCallback = message.callback || function () {};
+                    var registeredCallbacks = client.registeredCallbacks;
+
+                    // Wrap the callback to filter out all of the "complete" messages from each handler sent
+                    // intended for a promise resolution. Also store all results for the promise resolution.
+                    message.callback = function (reply, done) {
+                        if (!registeredCallbacks[reply.replyTo]) {
+                            return;
+                        }
+                        var callback = registeredCallbacks[reply.replyTo];
+                        var handlers = callback.handlers;
+                        var attemptResolve = function (resource) {
+                            var handlerIndex = handlers.indexOf(resource);
+                            if (handlerIndex > -1) {
+                                handlers.splice(handlerIndex, 1);
+                            }
+                            if (handlers.length === 0) {
+                                callback.reply.entity = callback.results;
+                                callback.reply.response = "complete";
+                                callback.pRes(callback.reply);
+                                done();
+                            }
+                        };
+                        if (reply.response === "complete") {
+                            callback.results = callback.results || {};
+                            callback.results[reply.resource] = reply.entity;
+                            attemptResolve(reply.resource);
+
+                        } else if (reply.entity && reply.entity.state === "error" && client.registeredCallbacks[reply.replyTo]) {
+                            attemptResolve(reply.entity.handler.resource);
+                        } else {
+                            broadcastWrappedCallback(reply, done);
+                        }
+                    };
+                };
+
+                /**
+                 * Augmenters for Intent Api specific actions.
+                 * @method intentAugment
+                 * @private
+                 * @static
+                 * @param client
+                 * @param message {Object}
+                 */
+                var intentAugment = function (client, message) {
+                    switch (message.packet.action) {
+                        case "register":
+                            intentRegisterAugment(client, message);
+                            break;
+                        case "invoke":
+                            intentInvokeAugment(message);
+                            break;
+                        case "broadcast":
+                            intentBroadcastAugment(client, message);
+                            break;
+
+                    }
+                };
+
+                /**
+                 * Function generator. Generates API functions given a messageBuilder function.
+                 * @method augment
+                 * @param messageBuilder
+                 * @param client
+                 * @return {Function}
+                 */
+                var augment = function (messageBuilder, client) {
+                    return function (resource, fragment, otherCallback) {
+                        var message = messageBuilder(resource, fragment, otherCallback);
+
+
+                        if (message.packet.dst === "intents.api") {
+                            intentAugment(client, message);
+                        }
+                        return client.send(message.packet, message.callback);
+                    };
+                };
+
+                /**
+                 * Function generator. Generates API message formatting functions for a client-destination-action
+                 * pairing. These are generated for bulk sending capabilities, since the message needs to be formatted
+                 * but not transmitted until desired.
+                 *
+                 * @method messageBuilderAugment
+                 * @param dst
+                 * @param action
+                 * @param client
+                 * @return {Function}
+                 */
+                var messageBuilderAugment = function (dst, action, client) {
+                    return function (resource, fragment, otherCallback) {
+                        // If a fragment isn't supplied argument #2 should be a callback (if supplied)
+                        if (typeof fragment === "function") {
+                            otherCallback = fragment;
+                            fragment = {};
+                        }
+                        var packet = {
+                            'dst': dst,
+                            'action': action,
+                            'resource': resource,
+                            'entity': {}
+                        };
+                        for (var k in fragment) {
+                            packet[k] = fragment[k];
+                        }
+                        var resolve, reject;
+                        var sendData = new Promise(function (res, rej) {
+                            resolve = res;
+                            reject = rej;
+                        });
+
+                        sendData.packet = client.fixPacket(packet);
+                        sendData.callback = otherCallback;
+                        sendData.res = resolve;
+                        sendData.rej = reject;
+                        return sendData;
+                    };
+                };
+
+                var wrapper = this.wrapperMap[apiName] || {};
+                if (this.apiMap.hasOwnProperty(apiName)) {
+                    var api = this.apiMap[apiName];
+                    wrapper = {};
+=======
                 // wrapper is a function because pre 1.2.0 the syntax expected
                 // api's to be accessed through a function. The function returns
                 // itself so to support legacy but properties are on wrapper so
@@ -3973,6 +4182,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 if (this.apiMap.hasOwnProperty(apiName)) {
                     var api = this.apiMap[apiName];
                     var apiWrapper = this;
+>>>>>>> gh-pages
 
                     /**
                      *  All message formatting calls sits inside the API wrapper's messageBuilder object. These
@@ -4015,6 +4225,10 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         wrapper[action] = augment(wrapper.messageBuilder[action], this);
                     }
 
+<<<<<<< HEAD
+                    this.wrapperMap[apiName] = wrapper;
+                }
+=======
                     /**
                      * Creates a reference to the api node, but auto applies the given resource
                      * as well as applies default packet properties.
@@ -4101,6 +4315,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     };
                 }
 
+>>>>>>> gh-pages
                 wrapper.apiName = apiName;
                 return wrapper;
             },
@@ -4295,6 +4510,8 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
 //---------------------------------------------------------
 // Private Methods
 //---------------------------------------------------------
+<<<<<<< HEAD
+=======
     /**
      * Augmentation for Intents Api register. Automatically invokes a registration if the invoke was passed
      * into the application opening.
@@ -4523,6 +4740,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
             return sendData;
         };
     };
+>>>>>>> gh-pages
 
     /**
      * Handles packets received with a destination of "$bus.multicast".
@@ -14101,6 +14319,19 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
     };
 
     /**
+<<<<<<< HEAD
+     * Gathers the collection data for a node given its pattern only if it has a pattern.
+     * @method getCollection
+     * @param {String} pattern
+     * @return {Array}
+     */
+    Api.prototype.getCollection = function (pattern) {
+        if (pattern) {
+            return this.matchingNodes(pattern).filter(function (node) {
+                return !node.deleted;
+            }).map(function (node) {
+                return node.resource;
+=======
      * Gathers the collection resource data for a node given its pattern only
      * if it is in the collectors list
      * @method getCollectionResources
@@ -14118,11 +14349,16 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
             return this.matchingNodes(node.pattern).filter(function (matchedNode) {
                 // ignore deleted nodes
                 return !matchedNode.deleted;
+>>>>>>> gh-pages
             });
         } else {
             return [];
         }
     };
+<<<<<<< HEAD
+
+=======
+>>>>>>> gh-pages
 //--------------------------------------------------
 // Watch Functionality
 //--------------------------------------------------
@@ -14197,6 +14433,18 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      * @method addCollector
      * @param {Object} node
      */
+<<<<<<< HEAD
+    Api.prototype.addCollector = function (resource) {
+        var index = this.collectors.indexOf(resource);
+        if (index < 0) {
+            this.collectors.push(resource);
+        }
+        var node = this.data[resource];
+        if (node) {
+            updateCollectionNode(this, node);
+        }
+    };
+=======
     Api.prototype.addCollector = function (node) {
         var index = this.collectors.indexOf(node.resource);
         if (index < 0) {
@@ -14204,6 +14452,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         }
         updateCollectionNode(this, node);
    };
+>>>>>>> gh-pages
 
 
     /**
@@ -15053,20 +15302,31 @@ ozpIwc.api.base.Api = (function (Api) {
     Api.defaultHandler = {
         "get": function (packet, context, pathParams) {
             var p = context.node.toPacket();
+<<<<<<< HEAD
+            p.collection = this.getCollection(p.pattern);
+=======
             p.collection = this.getCollectionResources(p);
+>>>>>>> gh-pages
             return p;
         },
         "set": function (packet, context, pathParams) {
             context.node.set(packet);
+<<<<<<< HEAD
+            return {response: "ok"};
+=======
             return {
                 response: "ok",
                 entity: context.node.entity
             };
+>>>>>>> gh-pages
         },
         "delete": function (packet, context, pathParams) {
             if (context.node) {
                 context.node.markAsDeleted(packet);
+<<<<<<< HEAD
+=======
                 this.removeCollector(context.node);
+>>>>>>> gh-pages
             }
 
             return {response: "ok"};
@@ -15086,7 +15346,11 @@ ozpIwc.api.base.Api = (function (Api) {
             var self = this;
             var entity = this.matchingNodes(packet.resource).map(function (node) {
                 var p = node.toPacket();
+<<<<<<< HEAD
+                p.collection = self.getCollection(p.pattern);
+=======
                 p.collection = self.getCollectionResources(p);
+>>>>>>> gh-pages
                 return p;
             });
             // TODO: roll up the permissions of the nodes, as well
@@ -15095,6 +15359,24 @@ ozpIwc.api.base.Api = (function (Api) {
                 "entity": entity
             };
         },
+<<<<<<< HEAD
+        "watch": function (packet, context, pathParams) {
+            // If a watch with a collect flag comes in for a non-existent resource, create the resource and start
+            // the watch & collection. If a collect flag comes in for an existent resource, start collecting
+            // based on the resources pattern property or the pattern supplied.
+            if(!context.node && packet.collect){
+                context.node = this.createNode({
+                    resource: packet.resource,
+                    pattern: packet.pattern ?
+                            packet.pattern : (packet.resource === "/") ? "/" : packet.resource + "/"
+                });
+            } else if (context.node && packet.collect) {
+                context.node.set({
+                    pattern: packet.pattern ?
+                            packet.pattern : (packet.resource === "/") ? "/" : packet.resource + "/"
+                });
+            }
+=======
         "collect": function (packet, context, pathParams) {
             this.addCollector(context.node);
             var p = context.node.toPacket();
@@ -15103,13 +15385,21 @@ ozpIwc.api.base.Api = (function (Api) {
             return p;
         },
         "watch": function (packet, context, pathParams) {
+>>>>>>> gh-pages
 
             this.addWatcher(packet.resource, {
                 src: packet.src,
                 replyTo: packet.msgId
             });
 
+<<<<<<< HEAD
+            // addCollector will only succeed if the resource has a pattern set to it.
+            this.addCollector(packet.resource);
+
+            if(!context.node){
+=======
             if (!context.node){
+>>>>>>> gh-pages
                 return {response: "ok"};
             } else {
                 return context.node.toPacket();
@@ -15137,7 +15427,10 @@ ozpIwc.api.base.Api = (function (Api) {
 
     return Api;
 }(ozpIwc.api.base.Api || {}));
+<<<<<<< HEAD
+=======
 
+>>>>>>> gh-pages
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.error = ozpIwc.api.error || {};
@@ -15349,6 +15642,8 @@ ozpIwc.api.filter.base = (function (api, util) {
                             lifespan: packet.lifespan,
                             src: packet.src
                         });
+<<<<<<< HEAD
+=======
                     } else if (context.node.deleted){
                         context.node.set({
                             resource: packet.resource,
@@ -15356,6 +15651,7 @@ ozpIwc.api.filter.base = (function (api, util) {
                             lifespan: packet.lifespan,
                             src: packet.src
                         });
+>>>>>>> gh-pages
                     }
                     return next();
                 };
@@ -15383,6 +15679,15 @@ ozpIwc.api.filter.base = (function (api, util) {
         /**
          * Returns a filter function with the following features:
          * Adds the resource as a collector to the API, it will now get updates based on its pattern property.
+<<<<<<< HEAD
+         * @method markAsCollector
+         * @return {ozpIwc.api.filter.Function}
+         */
+        markAsCollector: function () {
+
+            return function markAsCollector (packet, context, pathParams, next) {
+                this.addCollector(packet.resource);
+=======
          * @method checkCollect
          * @return {ozpIwc.api.filter.Function}
          */
@@ -15430,6 +15735,7 @@ ozpIwc.api.filter.base = (function (api, util) {
                     this.addCollector(context.node);
                 }
 
+>>>>>>> gh-pages
                 return next();
             };
         },
@@ -15596,11 +15902,18 @@ ozpIwc.api.filter.standard = (function (filter) {
          */
         setFilters: function (nodeType, contentType) {
             return [
+<<<<<<< HEAD
+                filter.base.createResource(nodeType),
+                filter.base.checkAuthorization(),
+                filter.base.checkContentType(contentType),
+                filter.base.checkVersion(),
+=======
                 filter.base.checkAuthorization(),
                 filter.base.createResource(nodeType),
                 filter.base.checkContentType(contentType),
                 filter.base.checkVersion(),
                 filter.base.checkCollect(),
+>>>>>>> gh-pages
                 filter.base.markResourceAsChanged()
             ];
         },
@@ -15626,6 +15939,12 @@ ozpIwc.api.filter.standard = (function (filter) {
         getFilters: function () {
             return [
                 filter.base.requireResource(),
+<<<<<<< HEAD
+                filter.base.checkAuthorization()
+            ];
+        },
+
+=======
                 filter.base.checkAuthorization(),
                 filter.base.checkCollect()
             ];
@@ -15645,6 +15964,7 @@ ozpIwc.api.filter.standard = (function (filter) {
                 filter.base.checkCollect()
             ];
         },
+>>>>>>> gh-pages
         /**
          * Filters for set-like actions that need to mark the resource as a collector.
          * @method getFilters
@@ -15652,9 +15972,15 @@ ozpIwc.api.filter.standard = (function (filter) {
          */
         createAndCollectFilters: function (nodeType, contentType) {
             return [
+<<<<<<< HEAD
+                filter.base.fixPattern(),
+                filter.base.createResource(nodeType),
+                filter.base.checkAuthorization(),
+=======
                 filter.base.checkAuthorization(),
                 filter.base.createResource(nodeType),
                 filter.base.checkCollect(),
+>>>>>>> gh-pages
                 filter.base.checkContentType(contentType),
                 filter.base.checkVersion()
             ];
@@ -15663,7 +15989,10 @@ ozpIwc.api.filter.standard = (function (filter) {
 
     return standard;
 }(ozpIwc.api.filter));
+<<<<<<< HEAD
+=======
 
+>>>>>>> gh-pages
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.locks = ozpIwc.api.locks || {};
@@ -16472,6 +16801,12 @@ ozpIwc.api.data.Api = (function (api, DataApi) {
         });
         //Make sure the parent node has it's pattern set then replace the childs pattern at the end of the filter chain
         filters.push(function (packet, context, pathParams, next) {
+<<<<<<< HEAD
+            context.node.set({
+                pattern: packet.pattern
+            });
+=======
+>>>>>>> gh-pages
             packet.pattern = childData.pattern;
             packet.lifespan = childData.lifespan;
             return next();
@@ -16496,9 +16831,12 @@ ozpIwc.api.data.Api = (function (api, DataApi) {
             lifespan: packet.lifespan,
             src: packet.src
         }, api.data.node.Node);
+<<<<<<< HEAD
+=======
 
         // mark the parent as a collector
         this.addCollector(context.node);
+>>>>>>> gh-pages
         this.markForChange(childNode);
         childNode.set(packet);
 
@@ -16528,7 +16866,10 @@ ozpIwc.api.data.Api = (function (api, DataApi) {
 
     return DataApi;
 }(ozpIwc.api, ozpIwc.api.data.Api || {}));
+<<<<<<< HEAD
+=======
 
+>>>>>>> gh-pages
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.intents = ozpIwc.api.intents || {};
@@ -16669,7 +17010,11 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         });
 
         this.data[inflightNode.resource] = inflightNode;
+<<<<<<< HEAD
+        this.addCollector(inflightNode.resource);
+=======
         this.addCollector(inflightNode);
+>>>>>>> gh-pages
         updateInvoker(this, inflightNode);
         this.data[inflightNode.resource] = api.intents.FSM.transition(inflightNode);
         return this.handleInflightIntentState(inflightNode);
@@ -17386,7 +17731,11 @@ ozpIwc.api.intents.Api = (function (api, IntentsApi, log) {
      */
     var registerDefinitionFilter = function () {
         var setDefinition = function (packet, context, pathParams, next) {
+<<<<<<< HEAD
+            this.addCollector(context.node.resource);
+=======
             this.addCollector(context.node);
+>>>>>>> gh-pages
             return next();
         };
 
@@ -17595,7 +17944,10 @@ ozpIwc.api.intents.Api = (function (api, IntentsApi, log) {
 
     return IntentsApi;
 }(ozpIwc.api, ozpIwc.api.intents.Api || {}, ozpIwc.log));
+<<<<<<< HEAD
+=======
 
+>>>>>>> gh-pages
 var ozpIwc = ozpIwc || {};
 ozpIwc.api = ozpIwc.api || {};
 ozpIwc.api.names = ozpIwc.api.names || {};

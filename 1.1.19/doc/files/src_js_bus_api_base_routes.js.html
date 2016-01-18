@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.19</em>
+            <em>API Docs for: 1.2.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -239,7 +239,14 @@ ozpIwc.api.base.Api = (function (Api) {
             return {response: &quot;ok&quot;};
         },
         &quot;list&quot;: function (packet, context, pathParams) {
-            var entity = this.matchingNodes(packet.resource).filter(function (node) {
+            var pattern = packet.pattern || packet.resource;
+
+            // If listing on a node, list its children
+            if(context.node){
+                pattern = context.node.pattern;
+            }
+
+            var entity = this.matchingNodes(pattern).filter(function (node) {
                 return !node.deleted;
             }).map(function (node) {
                 return node.resource;
@@ -276,7 +283,7 @@ ozpIwc.api.base.Api = (function (Api) {
                 replyTo: packet.msgId
             });
 
-            if (!context.node){
+            if (!context.node) {
                 return {response: &quot;ok&quot;};
             } else {
                 return context.node.toPacket();

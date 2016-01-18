@@ -197,7 +197,7 @@ h1[class^="icon-"], h1[class*=" icon-"] {
 }
 
 /* ===================
-    ALL: 
+    ALL:
    =================== */
 
 .header-container,
@@ -234,6 +234,11 @@ h1[class^="icon-"], h1[class*=" icon-"] {
 
     .title img {
         padding-right: 5px;
+    }
+
+    .title span {
+        color: white;
+        font-size: 14px;
     }
 
 .section-container {
@@ -794,4 +799,15 @@ nav ul {
 
 .app-list a:hover{
     background-color: #f4f7f8;
+}
+.outdated-warning{
+    background-color: #f1bc55;
+    padding: 10px;
+}
+
+.no-bullet {
+}
+
+.no-bullet ul li {
+    list-style-type: none;
 }

@@ -589,6 +589,19 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
     };
 
     /**
+<<<<<<< HEAD
+     * Gathers the collection data for a node given its pattern only if it has a pattern.
+     * @method getCollection
+     * @param {String} pattern
+     * @return {Array}
+     */
+    Api.prototype.getCollection = function (pattern) {
+        if (pattern) {
+            return this.matchingNodes(pattern).filter(function (node) {
+                return !node.deleted;
+            }).map(function (node) {
+                return node.resource;
+=======
      * Gathers the collection resource data for a node given its pattern only
      * if it is in the collectors list
      * @method getCollectionResources
@@ -606,11 +619,16 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
             return this.matchingNodes(node.pattern).filter(function (matchedNode) {
                 // ignore deleted nodes
                 return !matchedNode.deleted;
+>>>>>>> gh-pages
             });
         } else {
             return [];
         }
     };
+<<<<<<< HEAD
+
+=======
+>>>>>>> gh-pages
 //--------------------------------------------------
 // Watch Functionality
 //--------------------------------------------------
@@ -685,6 +703,18 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      * @method addCollector
      * @param {Object} node
      */
+<<<<<<< HEAD
+    Api.prototype.addCollector = function (resource) {
+        var index = this.collectors.indexOf(resource);
+        if (index < 0) {
+            this.collectors.push(resource);
+        }
+        var node = this.data[resource];
+        if (node) {
+            updateCollectionNode(this, node);
+        }
+    };
+=======
     Api.prototype.addCollector = function (node) {
         var index = this.collectors.indexOf(node.resource);
         if (index < 0) {
@@ -692,6 +722,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         }
         updateCollectionNode(this, node);
    };
+>>>>>>> gh-pages
 
 
     /**

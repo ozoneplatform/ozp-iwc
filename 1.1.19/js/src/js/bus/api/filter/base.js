@@ -43,6 +43,8 @@ ozpIwc.api.filter.base = (function (api, util) {
                             lifespan: packet.lifespan,
                             src: packet.src
                         });
+<<<<<<< HEAD
+=======
                     } else if (context.node.deleted){
                         context.node.set({
                             resource: packet.resource,
@@ -50,6 +52,7 @@ ozpIwc.api.filter.base = (function (api, util) {
                             lifespan: packet.lifespan,
                             src: packet.src
                         });
+>>>>>>> gh-pages
                     }
                     return next();
                 };
@@ -77,6 +80,15 @@ ozpIwc.api.filter.base = (function (api, util) {
         /**
          * Returns a filter function with the following features:
          * Adds the resource as a collector to the API, it will now get updates based on its pattern property.
+<<<<<<< HEAD
+         * @method markAsCollector
+         * @return {ozpIwc.api.filter.Function}
+         */
+        markAsCollector: function () {
+
+            return function markAsCollector (packet, context, pathParams, next) {
+                this.addCollector(packet.resource);
+=======
          * @method checkCollect
          * @return {ozpIwc.api.filter.Function}
          */
@@ -124,6 +136,7 @@ ozpIwc.api.filter.base = (function (api, util) {
                     this.addCollector(context.node);
                 }
 
+>>>>>>> gh-pages
                 return next();
             };
         },
