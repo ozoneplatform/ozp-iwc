@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.19</em>
+            <em>API Docs for: 1.2.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -127,6 +127,7 @@
                                 <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
+                                <li><a href="../classes/ozpIwc.util.Reference.html">ozpIwc.util.Reference</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
                             </ul>
                 
@@ -290,15 +291,7 @@ during a transition of lock ownership all mutex clients related to the lock will
 
                     <ul class="index-list methods extends">
                             <li class="index-item method inherited">
-                                <a href="#method_afterConnected">afterConnected</a>
-
-                            </li>
-                            <li class="index-item method inherited">
                                 <a href="#method_api">api</a>
-
-                            </li>
-                            <li class="index-item method inherited">
-                                <a href="#method_augment">augment</a>
 
                             </li>
                             <li class="index-item method inherited">
@@ -329,7 +322,7 @@ during a transition of lock ownership all mutex clients related to the lock will
                                 <a href="#method_findParticipant">findParticipant</a>
 
                             </li>
-                            <li class="index-item method inherited inherited">
+                            <li class="index-item method inherited">
                                 <a href="#method_fixPacket">fixPacket</a>
 
                             </li>
@@ -378,10 +371,6 @@ during a transition of lock ownership all mutex clients related to the lock will
 
                             </li>
                             <li class="index-item method inherited">
-                                <a href="#method_messageBuilderAugment">messageBuilderAugment</a>
-
-                            </li>
-                            <li class="index-item method inherited">
                                 <a href="#method_off">off</a>
 
                             </li>
@@ -405,7 +394,7 @@ during a transition of lock ownership all mutex clients related to the lock will
                                 <a href="#method_receiveFromRouterImple">receiveFromRouterImple</a>
 
                             </li>
-                            <li class="index-item method inherited inherited">
+                            <li class="index-item method inherited">
                                 <a href="#method_send">send</a>
 
                             </li>
@@ -493,10 +482,6 @@ during a transition of lock ownership all mutex clients related to the lock will
 
                             </li>
                             <li class="index-item property inherited">
-                                <a href="#property_packet">packet</a>
-
-                            </li>
-                            <li class="index-item property inherited">
                                 <a href="#property_Participants">Participants</a>
 
                             </li>
@@ -573,46 +558,6 @@ during a transition of lock ownership all mutex clients related to the lock will
             <div id="methods" class="api-class-tabpanel">
                 <h2 class="off-left">Methods</h2>
 
-<div id="method_afterConnected" class="method item inherited">
-    <h3 class="name"><code>afterConnected</code></h3>
-
-        <span class="paren">()</span>
-
-        <span class="returns-inline">
-            <span class="type">Promise</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>Inherited from
-                <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#method_afterConnected">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l887"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:887</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        Generic handler for a bus connection to handle any queued messages & launch data after its connected.
-    </div>
-
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Promise</span>:
-            </div>
-        </div>
-
-
-</div>
 <div id="method_api" class="method item inherited">
     <h3 class="name"><code>api</code></h3>
 
@@ -672,81 +617,6 @@ If the wrapper does not exist it is created.
             <div class="returns-description">
                         <span class="type">Function</span>:
                     returns the wrapper call for the given api.
-            </div>
-        </div>
-
-
-</div>
-<div id="method_augment" class="method item inherited">
-    <h3 class="name"><code>augment</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>messageBuilder</code>
-                </li>
-                <li class="arg">
-                        <code>client</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type">Function</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>Inherited from
-                <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#method_augment">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l635"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:635</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        Function generator. Generates API functions given a messageBuilder function.
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">messageBuilder</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">client</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Function</span>:
             </div>
         </div>
 
@@ -996,7 +866,7 @@ Fires:
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#method_constructApiFunctions">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l274"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:274</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l277"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:277</code></a>
         </p>
 
 
@@ -1122,11 +992,8 @@ compare windows other than equality.</p>
 
 
     <div class="meta">
-            <p>Inherited from
-            <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#method_fixPacket">
-                ozpIwc.util.ApiPromiseMixin
-            </a>
-            but overwritten in
+                <p>Inherited from
+                <a href="../classes/ozpIwc.transport.participant.Base.html#method_fixPacket">ozpIwc.transport.participant.Base</a>:
         <a href="../files/src_js_bus_transport_participant_base.js.html#l295"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:295</code></a>
         </p>
 
@@ -1497,7 +1364,7 @@ state machine.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#method_isConnected">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l175"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:175</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l178"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:178</code></a>
         </p>
 
 
@@ -1700,96 +1567,6 @@ state machine.
 
 
 </div>
-<div id="method_messageBuilderAugment" class="method item inherited">
-    <h3 class="name"><code>messageBuilderAugment</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>dst</code>
-                </li>
-                <li class="arg">
-                        <code>action</code>
-                </li>
-                <li class="arg">
-                        <code>client</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type">Function</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>Inherited from
-                <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#method_messageBuilderAugment">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l654"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:654</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        Function generator. Generates API message formatting functions for a client-destination-action
-pairing. These are generated for bulk sending capabilities, since the message needs to be formatted
-but not transmitted until desired.
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">dst</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">action</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">client</code>
-                        <span class="type">Object</span>
-
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Function</span>:
-            </div>
-        </div>
-
-
-</div>
 <div id="method_off" class="method item inherited">
     <h3 class="name"><code>off</code></h3>
 
@@ -1941,7 +1718,7 @@ but not transmitted until desired.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#method_readLaunchParams">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l185"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:185</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l188"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:188</code></a>
         </p>
 
 
@@ -1994,7 +1771,7 @@ but not transmitted until desired.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#method_receive">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l208"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:208</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l211"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:211</code></a>
         </p>
 
 
@@ -2180,11 +1957,8 @@ forbidden.</p>
 
 
     <div class="meta">
-            <p>Inherited from
-            <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#method_send">
-                ozpIwc.util.ApiPromiseMixin
-            </a>
-            but overwritten in
+                <p>Inherited from
+                <a href="../classes/ozpIwc.transport.participant.Base.html#method_send">ozpIwc.transport.participant.Base</a>:
         <a href="../files/src_js_bus_transport_participant_base.js.html#l317"><code>src&#x2F;js&#x2F;bus&#x2F;transport&#x2F;participant&#x2F;base.js:317</code></a>
         </p>
 
@@ -2553,7 +2327,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_apiMap">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l126"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:126</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l129"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:129</code></a>
         </p>
 
 
@@ -2757,7 +2531,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_launchedIntents">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l168"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:168</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l171"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:171</code></a>
         </p>
 
 
@@ -2782,7 +2556,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_launchParams">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l147"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:147</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l150"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:150</code></a>
         </p>
 
 
@@ -2860,7 +2634,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_msgIdSequence">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l84"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:84</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l87"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:87</code></a>
         </p>
 
 
@@ -2899,61 +2673,6 @@ updateApi must be called to reflect said changes on the wrapper map.
         <p><strong>Default:</strong> &quot;&quot;</p>
 
 
-</div>
-<div id="property_packet" class="property item inherited">
-    <h3 class="name"><code>packet</code></h3>
-    <span class="type">Object</span>
-
-
-
-
-
-    <div class="meta">
-                <p>Inherited from
-                <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_packet">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l773"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:773</code></a>
-        </p>
-
-
-    </div>
-
-    <div class="description">
-        Registers callbacks for API request callbacks and promises.
-    </div>
-
-
-
-        <h4>Sub-properties:</h4>
-
-        <ul class="params-list">
-            <li class="param">
-                    <code class="param-name">callback</code>
-                    <span class="type">Function</span>
-
-                <div class="param-description">
-                     
-                </div>
-
-            </li>
-            <li class="param">
-                    <code class="param-name">promiseRes</code>
-                    <span class="type">Function</span>
-
-                <div class="param-description">
-                     
-                </div>
-
-            </li>
-            <li class="param">
-                    <code class="param-name">promiseRej</code>
-                    <span class="type">Function</span>
-
-                <div class="param-description">
-                     
-                </div>
-
-            </li>
-        </ul>
 </div>
 <div id="property_Participants" class="property item inherited">
     <h3 class="name"><code>Participants</code></h3>
@@ -3045,7 +2764,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_preconnectionQueue">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l140"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:140</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l143"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:143</code></a>
         </p>
 
 
@@ -3070,7 +2789,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_promiseCallbacks">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l77"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:77</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l80"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:80</code></a>
         </p>
 
 
@@ -3119,7 +2838,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_receivedBytes">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l98"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:98</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l101"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:101</code></a>
         </p>
 
 
@@ -3169,7 +2888,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_receivedPackets">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l91"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:91</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l94"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:94</code></a>
         </p>
 
 
@@ -3194,7 +2913,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_registeredCallbacks">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l161"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:161</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l164"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:164</code></a>
         </p>
 
 
@@ -3247,7 +2966,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_sentBytes">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l112"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:112</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l115"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:115</code></a>
         </p>
 
 
@@ -3272,7 +2991,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_sentPackets">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l105"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:105</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l108"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:108</code></a>
         </p>
 
 
@@ -3322,7 +3041,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_startTime">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l119"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:119</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l122"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:122</code></a>
         </p>
 
 
@@ -3346,7 +3065,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_watchMsgMap">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l154"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:154</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l157"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:157</code></a>
         </p>
 
 
@@ -3371,7 +3090,7 @@ updateApi must be called to reflect said changes on the wrapper map.
     <div class="meta">
                 <p>Inherited from
                 <a href="../classes/ozpIwc.util.ApiPromiseMixin.html#property_wrapperMap">ozpIwc.util.ApiPromiseMixin</a>:
-        <a href="../files/src_js_common_apiPromiseMixin.js.html#l133"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:133</code></a>
+        <a href="../files/src_js_common_apiPromiseMixin.js.html#l136"><code>src&#x2F;js&#x2F;common&#x2F;apiPromiseMixin.js:136</code></a>
         </p>
 
 

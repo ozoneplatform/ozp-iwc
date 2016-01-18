@@ -88,6 +88,7 @@ YUI.add("yuidoc-meta", function(Y) {
         "ozpIwc.util.CancelableEvent",
         "ozpIwc.util.Event",
         "ozpIwc.util.PacketRouter",
+        "ozpIwc.util.Reference",
         "ozpIwc.util.mutex",
         "ozpIwc.util.object",
         "ozpIwc.wiring"

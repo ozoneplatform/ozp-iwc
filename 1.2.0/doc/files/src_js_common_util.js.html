@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.19</em>
+            <em>API Docs for: 1.2.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -127,6 +127,7 @@
                                 <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
+                                <li><a href="../classes/ozpIwc.util.Reference.html">ozpIwc.util.Reference</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
                             </ul>
                 
@@ -707,6 +708,34 @@ ozpIwc.util = (function (util) {
         return new Promise(function (res) {
             setTimeout(function () { res();}, delay);
         });
+    };
+
+    /**
+     * Returns the specified default value if the given value is undefined. safer than &quot;x = x || 500&quot; because it checks
+     * for being defined, rather than its truly/falsey value.
+
+     * @method ifUndef
+     * @static
+     * @param {*} value
+     * @param {*} defaultVal
+     * @return {*}
+     */
+    util.ifUndef = function (value, defaultVal) {
+        return (typeof value === &#x27;undefined&#x27;) ? defaultVal : value;
+    };
+
+    /**
+     * IE 10 does not play well gathering location.origin.
+     * 
+     * @method getOrigin
+     * @static
+     * @return {String} The origin this script is running in
+     */
+    util.getOrigin = function() {
+        if (!location.origin) {
+          return location.protocol + &quot;//&quot; + location.hostname + (location.port ? &#x27;:&#x27; + location.port: &#x27;&#x27;);
+        }
+        return location.origin;
     };
     return util;
 }(ozpIwc.util || {}));
