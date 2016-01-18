@@ -13,10 +13,9 @@ ozpIwc.Debugger = (function (Client, util) {
      * @extends ozpIwc.Client
      */
     var Debugger = util.extend(Client, function (config) {
+        config.type = "debugger";
         Client.apply(this, arguments);
         var self = this;
-        this.type = "debugger";
-
         this.events.on('receive', function (packet) {
             switch (packet.resource) {
                 case "traffic":

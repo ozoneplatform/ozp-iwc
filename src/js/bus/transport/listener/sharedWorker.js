@@ -49,26 +49,15 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
         return function (event) {
             var port = event.ports[0];
 
-            var request = {
-                'subject': {'ozp:iwc:origin': event.origin},
-                'action': {'ozp:iwc:action': 'connect'},
-                'policies': listener.authorization.policySets.connectSet
-            };
-
             var config = {
                 'authorization': listener.authorization,
-                'origin': event.origin,
                 'router': listener.router,
                 'port': port,
                 'ready': listener.readyPromise
             };
 
-            listener.authorization.isPermitted(request).success(function () {
-                port.addEventListener('message', messageHandlerGen(listener, port, config));
-                port.start();
-            }).failure(function (err) {
-                log.error("Failed to connect. Could not authorize:", err);
-            });
+            port.addEventListener('message', messageHandlerGen(listener, port, config));
+            port.start();
         };
     };
 
@@ -83,9 +72,13 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
      */
     var messageHandlerGen = function (listener, port, config) {
         return function initMsg(evt) {
+
             // If the first message received is not noting the type of participant to create, kill the connection
+            // The first message notifies (1) the type of participant and (2)
+            // the origin that opened the IWC connection.
             if (evt.data && typeof(evt.data.type) === "string") {
                 var type = evt.data.type.trim();
+                config.origin = evt.data.proxyAs.origin.trim();
                 var participant;
                 switch (type.toLowerCase()) {
                     case "debugger":
@@ -95,7 +88,7 @@ ozpIwc.transport.listener.SharedWorker = (function (log, transport, util) {
                         participant = new transport.participant.SharedWorker(config);
                         break;
                 }
-                if (participant) {
+                if (participant && !participant.invalid) {
                     listener.router.registerParticipant(participant);
                     listener.participants.push(participant);
                 }

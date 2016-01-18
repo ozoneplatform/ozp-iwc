@@ -59,6 +59,46 @@ describe("Client Participant", function () {
             expect(participant.system()).toEqual(participant.api('system.api'));
             expect(participant.intents()).toEqual(participant.api('intents.api'));
         });
+
+        it("can reference api augmentations without the function call on creation", function(){
+            expect(participant.data).toEqual(participant.data());
+            expect(participant.names).toEqual(participant.names());
+            expect(participant.system).toEqual(participant.system());
+            expect(participant.intents).toEqual(participant.intents());
+        });
+
+        it("can create references to api nodes", function(){
+            var fooRef = new participant.data.Reference("/foo");
+            expect(fooRef.set).not.toBeUndefined();
+            expect(fooRef.get).not.toBeUndefined();
+            expect(fooRef.watch).not.toBeUndefined();
+            expect(fooRef.unwatch).not.toBeUndefined();
+            expect(fooRef.addChild).not.toBeUndefined();
+            expect(fooRef.removeChild).not.toBeUndefined();
+            expect(fooRef.delete).not.toBeUndefined();
+            expect(fooRef.bulkGet).not.toBeUndefined();
+        });
+
+        it("can utilize default packets on references", function(done){
+
+            spyOn(participant, 'sendImpl').and.callFake(function(packet){
+                expect(packet.lifespan).toEqual(defaultPacket.lifespan);
+                expect(packet.pattern).toEqual(defaultPacket.pattern);
+                expect(packet.permissions).toEqual(defaultPacket.permissions);
+                expect(packet.collect).toEqual(defaultPacket.collect);
+                expect(packet.entity).toEqual("TEST");
+                done();
+            });
+
+            var defaultPacket = {
+                permissions: { "readAs": "SuperUser!"},
+                lifespan: "Ephemeral",
+                pattern: "/foo/bar/",
+                collect: true
+            };
+            var fooRef = new participant.data.Reference("/foo", defaultPacket);
+            fooRef.set("TEST");
+        });
     });
 
     describe("Send Promise Structure", function () {

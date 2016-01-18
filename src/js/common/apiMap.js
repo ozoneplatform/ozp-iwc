@@ -19,7 +19,7 @@ ozpIwc.apiMap = {
      */
     "data.api": {
         'address': 'data.api',
-        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "addChild", "removeChild"]
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "collect", "addChild", "removeChild"]
     },
 
     /**
@@ -28,7 +28,7 @@ ozpIwc.apiMap = {
      */
     "intents.api": {
         'address': 'intents.api',
-        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "register", "invoke", "broadcast"]
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "collect", "register", "invoke", "broadcast"]
     },
 
     /**
@@ -37,7 +37,7 @@ ozpIwc.apiMap = {
      */
     "names.api": {
         'address': 'names.api',
-        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet"]
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "collect"]
     },
 
     /**
@@ -46,7 +46,7 @@ ozpIwc.apiMap = {
      */
     "system.api": {
         'address': 'system.api',
-        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "launch"]
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "collect", "launch"]
     },
 
     /**
@@ -55,6 +55,6 @@ ozpIwc.apiMap = {
      */
     "locks.api": {
         'address': 'locks.api',
-        'actions': ["get", "watch", "unwatch", "list", "lock", "unlock"]
+        'actions': ["get", "watch", "unwatch", "list", "lock", "unlock", "collect", "bulkGet"]
     }
 };

@@ -43,6 +43,13 @@ ozpIwc.api.filter.base = (function (api, util) {
                             lifespan: packet.lifespan,
                             src: packet.src
                         });
+                    } else if (context.node.deleted) {
+                        context.node.set({
+                            resource: packet.resource,
+                            pattern: packet.pattern,
+                            lifespan: packet.lifespan,
+                            src: packet.src
+                        });
                     }
                     return next();
                 };
@@ -70,13 +77,53 @@ ozpIwc.api.filter.base = (function (api, util) {
         /**
          * Returns a filter function with the following features:
          * Adds the resource as a collector to the API, it will now get updates based on its pattern property.
-         * @method markAsCollector
+         * @method checkCollect
          * @return {ozpIwc.api.filter.Function}
          */
-        markAsCollector: function () {
+        checkCollect: function () {
 
-            return function markAsCollector (packet, context, pathParams, next) {
-                this.addCollector(packet.resource);
+            return function checkCollect (packet, context, pathParams, next) {
+                var pattern = packet.pattern;
+                // If no pattern supplied in the packet determine the
+                // default pattern
+                if (!pattern) {
+                    if (packet.resource === "/") {
+                        pattern = packet.resource;
+                    } else if (packet.resource) {
+                        pattern = packet.resource + "/";
+                    } else {
+                        pattern = "/";
+                    }
+                }
+
+                // If the node exists and a new pattern is provided, update
+                // the pattern
+                if (context.node && packet.pattern) {
+                    if (context.node.pattern !== packet.pattern) {
+                        context.node.set({
+                            pattern: packet.pattern
+                        });
+                    }
+                } else if (context.node && !context.node.pattern) {
+                    //If the node exists and it doesn't have a pattern set it
+                    context.node.set({
+                        pattern: pattern
+                    });
+                }
+
+                // If no node and a collect is set, generate the node
+                if (!context.node && packet.collect) {
+                    context.node = this.createNode({
+                        resource: packet.resource,
+                        pattern: pattern
+                    });
+                }
+
+                // If collect was set (node now exists)
+                if (packet.collect) {
+                    this.addCollector(context.node);
+                }
+
                 return next();
             };
         },

@@ -134,20 +134,7 @@ ozpIwc.util = (function (util) {
      */
     util.localStorageKey = "ozp.iwc.transport.localStorage";
 
-    /**
-     * Returns the specified default value if the given value is undefined. safer than "x = x || 500" because it checks
-     * for being defined, rather than its truly/falsey value.
-
-     * @method ifUndef
-     * @static
-     * @param {*} value
-     * @param {*} defaultVal
-     * @return {*}
-     */
-    util.ifUndef = function (value, defaultVal) {
-        return (typeof value === 'undefined') ? defaultVal : value;
-    };
-    /**
+        /**
      * Returns an object representation of the content-type string
      * @method getFormattedContentType
      * @private

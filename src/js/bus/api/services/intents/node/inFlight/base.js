@@ -36,7 +36,7 @@ ozpIwc.api.intents.node.InFlightNode = (function (api, util) {
             throw new api.error.BadContentError("In flight intent requires an invocation packet");
         }
         if (!config.handlerChoices || Array.isArray(config.handlerChoices) && config.handlerChoices.length === 0) {
-            throw new api.error.BadContentError("No handlers available");
+            throw new api.error.NoResourceError("No handlers available");
         }
         /**
          * Extra information that isn't captured already by the base class, or that isn't captured adequately.

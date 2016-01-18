@@ -1,73 +1,37 @@
-##Common API Action: get(nodeKey)
-* `nodeKey`: **String** - the name of the API Node. ([What is an API Node?](../../resources.md))
- 
+##Common API Action: get()
+
 ###Applies to All IWC APIs
 
 ###Retrieves a Given Node
-    
-    
-To retrieve a node stored in an API the `get` action is used. The retrieval is asynchronous, and the response is
+
+
+To retrieve a node stored in an API the `get` action is used on
+**a reference to the node**. The retrieval is asynchronous, and the response is
 passed through the resolution of the action's promise.
 
 ```
-var dataApi = client.data();
+var ballRef = new client.data.Reference("/ball"); // generate the reference to the resource
+var ballVal;
 
-var foo;
-
-dataApi.get('/foo').then(function(res){
-        foo = res.entity;
+ballRef.get().then(function(value){
+    ballVal = value;
 });
 ```
 
-The value of `res`, the resolved object of the get request, is formatted as follows:
+The value of the promise resolution is the value assigned to the resource. The
+value can be any valid Javascript primitive or array.
 
-```
-{
-    "response":"ok",
-    "src":"data.api",
-    "dst":"4e31a811.31de4ddb",
-    "entity":{ 
-        "bar": 'buz' 
-    },
-    "ver":1,
-    "time":1424897872164,
-    "msgId":"i:33"
-    "replyTo":"p:7",
-}
-```
+If further detail is required on the IWC response, refer to the [Comprehensive
+IWC Requests]() section.
 
 ##Requesting a node that does not exist
- Requesting a node that does not exist is not an valid action, this will result in an promise rejection with a
-`'noResource'` response and an entity containing the request packet.
+Requesting a node that does not exist is not an valid action, this will result
+in an promise rejection with a containing the string `'noResource'`.
+
+Given that the resource `/ball` above does not exist in the IWC:
 
 ```
-var dataApi = client.data();
-
-dataApi.get('/a/nonexistant/resource').catch(function(err){
-        //err.response === "noResource"
+ballRef.get().catch(function(err){
+    console.log("Could not retrieve. Reason: ", err);
 });
-```
-
-The value of `err`, the rejected object of the get request, is formatted as follows:
-
-```
-{
-    "ver": 1,
-    "src": "data.api",
-    "msgId": "p:686",
-    "time": 1435674200150,
-    "response": "noResource",
-    "entity": {
-      "ver": 1,
-      "src": "c1f6b99e.21851da2",
-      "msgId": "p:692",
-      "time": 1435674200148,
-      "dst": "data.api",
-      "action": "get",
-      "resource": "/a/nonexistant/resource",
-      "entity": {}
-    },
-    "replyTo": "p:692",
-    "dst": "c1f6b99e.21851da2"
-}
 ```

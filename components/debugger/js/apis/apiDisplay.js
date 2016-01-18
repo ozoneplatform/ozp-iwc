@@ -1,5 +1,5 @@
 /* global debuggerModule */
-debuggerModule.controller("ApiDisplayCtrl", ["$scope", "$attrs", "iwcClient", "apiSettingService", function (scope, attrs, client, apiDat) {
+debuggerModule.controller("ApiDisplayCtrl", ["$scope", "$attrs", "iwcClient", "apiSettingService", "$log", function (scope, attrs, client, apiDat, log) {
     // IWC message parameters
     scope.msg = {
         api: 'data.api',  // data.api, system.api, etc
@@ -156,6 +156,8 @@ debuggerModule.controller("ApiDisplayCtrl", ["$scope", "$attrs", "iwcClient", "a
             if (scope.gridApi && scope.gridApi.core) {
                 scope.gridApi.core.handleWindowResize();
             }
+        }).catch(function(err){
+            log.error(err);
         });
 
     };

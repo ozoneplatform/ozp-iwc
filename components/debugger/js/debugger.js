@@ -59,7 +59,7 @@ debuggerModule.factory("iwcClient", function () {
 });
 
 
-debuggerModule.controller("debuggerController", ["$scope", "iwcClient", function (scope, client) {
+debuggerModule.controller("debuggerController", ["$scope", "iwcClient", "$log", function (scope, client, log) {
     scope.ozpIwc = ozpIwc;
     scope.tab = 'general';
     scope.loading = true;
@@ -71,6 +71,8 @@ debuggerModule.controller("debuggerController", ["$scope", "iwcClient", function
 
             scope.loading = false;
         });
+    }).catch(function(err) {
+        log.error(err);
     });
 
 }]);

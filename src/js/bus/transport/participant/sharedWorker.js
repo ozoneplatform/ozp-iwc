@@ -160,15 +160,19 @@ ozpIwc.transport.participant.SharedWorker = (function (log, transport, util) {
      * @param {Event} event
      */
     SharedWorker.prototype.forwardFromMessageChannel = function (packet, event) {
+        var workerProxy = packet.proxyAs || {};
+
         if (typeof(packet) !== "object") {
             log.error("Unknown packet received: " + JSON.stringify(packet));
             return;
         }
-        if (event.origin !== this.origin) {
+        if (workerProxy.origin !== this.origin) {
             /** @todo participant changing origins should set off more alarms, probably */
             if (this.metrics) {
                 this.metrics.counter("transport." + this.address + ".invalidSenderOrigin").inc();
             }
+            log.error("Message sender does not match this worker's application origin.",
+             "This worker's origin: [", this.origin, "] cannot accept sender origin: [", workerProxy.origin,"]");
             return;
         }
 
