@@ -589,6 +589,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
     };
 
     /**
+<<<<<<< HEAD
      * Gathers the collection data for a node given its pattern only if it has a pattern.
      * @method getCollection
      * @param {String} pattern
@@ -600,12 +601,34 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
                 return !node.deleted;
             }).map(function (node) {
                 return node.resource;
+=======
+     * Gathers the collection resource data for a node given its pattern only
+     * if it is in the collectors list
+     * @method getCollectionResources
+     * @param {Object} node
+     * @return {Array}
+     */
+    Api.prototype.getCollectionResources = function (node) {
+        return this.getCollectionData(node).map(function (matchedNode) {
+            return matchedNode.resource;
+        });
+    };
+
+    Api.prototype.getCollectionData = function (node) {
+        if (this.collectors.indexOf(node.resource) > -1){
+            return this.matchingNodes(node.pattern).filter(function (matchedNode) {
+                // ignore deleted nodes
+                return !matchedNode.deleted;
+>>>>>>> gh-pages
             });
         } else {
             return [];
         }
     };
+<<<<<<< HEAD
 
+=======
+>>>>>>> gh-pages
 //--------------------------------------------------
 // Watch Functionality
 //--------------------------------------------------
@@ -680,6 +703,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
      * @method addCollector
      * @param {Object} node
      */
+<<<<<<< HEAD
     Api.prototype.addCollector = function (resource) {
         var index = this.collectors.indexOf(resource);
         if (index < 0) {
@@ -690,6 +714,15 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
             updateCollectionNode(this, node);
         }
     };
+=======
+    Api.prototype.addCollector = function (node) {
+        var index = this.collectors.indexOf(node.resource);
+        if (index < 0) {
+            this.collectors.push(node.resource);
+        }
+        updateCollectionNode(this, node);
+   };
+>>>>>>> gh-pages
 
 
     /**

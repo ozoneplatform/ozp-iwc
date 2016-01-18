@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.19</em>
+            <em>API Docs for: 1.2.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -127,6 +127,7 @@
                                 <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
+                                <li><a href="../classes/ozpIwc.util.Reference.html">ozpIwc.util.Reference</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
                             </ul>
                 
@@ -231,7 +232,7 @@ ozpIwc.api.intents.Api = (function (api, IntentsApi, log) {
      */
     var registerDefinitionFilter = function () {
         var setDefinition = function (packet, context, pathParams, next) {
-            this.addCollector(context.node.resource);
+            this.addCollector(context.node);
             return next();
         };
 
@@ -440,6 +441,7 @@ ozpIwc.api.intents.Api = (function (api, IntentsApi, log) {
 
     return IntentsApi;
 }(ozpIwc.api, ozpIwc.api.intents.Api || {}, ozpIwc.log));
+
     </pre>
 </div>
                     </div>

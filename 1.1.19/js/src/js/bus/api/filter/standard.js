@@ -34,10 +34,18 @@ ozpIwc.api.filter.standard = (function (filter) {
          */
         setFilters: function (nodeType, contentType) {
             return [
+<<<<<<< HEAD
                 filter.base.createResource(nodeType),
                 filter.base.checkAuthorization(),
                 filter.base.checkContentType(contentType),
                 filter.base.checkVersion(),
+=======
+                filter.base.checkAuthorization(),
+                filter.base.createResource(nodeType),
+                filter.base.checkContentType(contentType),
+                filter.base.checkVersion(),
+                filter.base.checkCollect(),
+>>>>>>> gh-pages
                 filter.base.markResourceAsChanged()
             ];
         },
@@ -63,10 +71,32 @@ ozpIwc.api.filter.standard = (function (filter) {
         getFilters: function () {
             return [
                 filter.base.requireResource(),
+<<<<<<< HEAD
                 filter.base.checkAuthorization()
             ];
         },
 
+=======
+                filter.base.checkAuthorization(),
+                filter.base.checkCollect()
+            ];
+        },
+        watchFilters: function() {
+            return [
+                filter.base.checkAuthorization(),
+                filter.base.checkCollect()
+            ];
+        },
+        collectFilters: function(nodeType, contentType) {
+            return [
+                filter.base.checkAuthorization(),
+                filter.base.createResource(nodeType),
+                filter.base.checkContentType(contentType),
+                filter.base.checkVersion(),
+                filter.base.checkCollect()
+            ];
+        },
+>>>>>>> gh-pages
         /**
          * Filters for set-like actions that need to mark the resource as a collector.
          * @method getFilters
@@ -74,9 +104,15 @@ ozpIwc.api.filter.standard = (function (filter) {
          */
         createAndCollectFilters: function (nodeType, contentType) {
             return [
+<<<<<<< HEAD
                 filter.base.fixPattern(),
                 filter.base.createResource(nodeType),
                 filter.base.checkAuthorization(),
+=======
+                filter.base.checkAuthorization(),
+                filter.base.createResource(nodeType),
+                filter.base.checkCollect(),
+>>>>>>> gh-pages
                 filter.base.checkContentType(contentType),
                 filter.base.checkVersion()
             ];
@@ -84,4 +120,8 @@ ozpIwc.api.filter.standard = (function (filter) {
     };
 
     return standard;
+<<<<<<< HEAD
 }(ozpIwc.api.filter));
+=======
+}(ozpIwc.api.filter));
+>>>>>>> gh-pages

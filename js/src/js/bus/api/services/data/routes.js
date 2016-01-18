@@ -40,9 +40,6 @@ ozpIwc.api.data.Api = (function (api, DataApi) {
         });
         //Make sure the parent node has it's pattern set then replace the childs pattern at the end of the filter chain
         filters.push(function (packet, context, pathParams, next) {
-            context.node.set({
-                pattern: packet.pattern
-            });
             packet.pattern = childData.pattern;
             packet.lifespan = childData.lifespan;
             return next();
@@ -67,6 +64,9 @@ ozpIwc.api.data.Api = (function (api, DataApi) {
             lifespan: packet.lifespan,
             src: packet.src
         }, api.data.node.Node);
+
+        // mark the parent as a collector
+        this.addCollector(context.node);
         this.markForChange(childNode);
         childNode.set(packet);
 

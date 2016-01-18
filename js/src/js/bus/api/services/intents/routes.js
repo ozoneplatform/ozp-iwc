@@ -33,7 +33,7 @@ ozpIwc.api.intents.Api = (function (api, IntentsApi, log) {
      */
     var registerDefinitionFilter = function () {
         var setDefinition = function (packet, context, pathParams, next) {
-            this.addCollector(context.node.resource);
+            this.addCollector(context.node);
             return next();
         };
 

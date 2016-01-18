@@ -100576,7 +100576,7 @@ debuggerModule.factory("iwcClient", function () {
 });
 
 
-debuggerModule.controller("debuggerController", ["$scope", "iwcClient", function (scope, client) {
+debuggerModule.controller("debuggerController", ["$scope", "iwcClient", "$log", function (scope, client, log) {
     scope.ozpIwc = ozpIwc;
     scope.tab = 'general';
     scope.loading = true;
@@ -100588,6 +100588,8 @@ debuggerModule.controller("debuggerController", ["$scope", "iwcClient", function
 
             scope.loading = false;
         });
+    }).catch(function(err) {
+        log.error(err);
     });
 
 }]);
@@ -100626,7 +100628,7 @@ debuggerModule.service("apiSettingService", function () {
 });
 
 /* global debuggerModule */
-debuggerModule.controller("ApiDisplayCtrl", ["$scope", "$attrs", "iwcClient", "apiSettingService", function (scope, attrs, client, apiDat) {
+debuggerModule.controller("ApiDisplayCtrl", ["$scope", "$attrs", "iwcClient", "apiSettingService", "$log", function (scope, attrs, client, apiDat, log) {
     // IWC message parameters
     scope.msg = {
         api: 'data.api',  // data.api, system.api, etc
@@ -100783,6 +100785,8 @@ debuggerModule.controller("ApiDisplayCtrl", ["$scope", "$attrs", "iwcClient", "a
             if (scope.gridApi && scope.gridApi.core) {
                 scope.gridApi.core.handleWindowResize();
             }
+        }).catch(function(err){
+            log.error(err);
         });
 
     };
@@ -101592,7 +101596,7 @@ debuggerModule.directive("electionsToolbar", [function () {
 }]);
 
 /* global debuggerModule */
-debuggerModule.controller('GeneralCtrl', ['$scope', '$state', 'iwcClient', function (scope, state, client) {
+debuggerModule.controller('GeneralCtrl', ['$scope', '$state', 'iwcClient', "$log", function (scope, state, client, log) {
     scope.ozpIwc = ozpIwc;
 
     scope.endpointClicked = function (endpoint) {
@@ -101622,6 +101626,8 @@ debuggerModule.controller('GeneralCtrl', ['$scope', '$state', 'iwcClient', funct
                 scope.systemBuild = data.entity;
             });
         });
+    }).catch(function(err) {
+        log.error(err);
     });
 }]);
 
@@ -101655,6 +101661,7 @@ debuggerModule.directive("genAbout", [function () {
         templateUrl: 'templates/genAbout.tpl.html'
     };
 }]);
+
 /* global debuggerModule */
 debuggerModule.controller('HalBrowserCtrl', ['$scope', '$state', 'iwcClient', function (scope, state, client) {
     scope.$on('$stateChangeSuccess',
@@ -101665,7 +101672,7 @@ debuggerModule.controller('HalBrowserCtrl', ['$scope', '$state', 'iwcClient', fu
         });
 }]);
 /* global debuggerModule */
-debuggerModule.controller("metricsController", ['$scope', '$interval', '$filter', 'iwcClient', function (scope, $interval, $filter, client) {
+debuggerModule.controller("metricsController", ['$scope', '$interval', '$filter', 'iwcClient', "$log", function (scope, $interval, $filter, client, log) {
     var filter = $filter('filter');
     scope.updateFrequency = 1000;
     scope.metricWindow = 60000;
@@ -101732,6 +101739,8 @@ debuggerModule.controller("metricsController", ['$scope', '$interval', '$filter'
 
     client.connect().then(function () {
         scope.refresh();
+    }).catch(function(err) {
+        log.error(err);
     });
 
     var timer = null;

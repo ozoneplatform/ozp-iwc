@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.19</em>
+            <em>API Docs for: 1.2.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -127,6 +127,7 @@
                                 <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
+                                <li><a href="../classes/ozpIwc.util.Reference.html">ozpIwc.util.Reference</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
                             </ul>
                 
@@ -336,7 +337,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         });
 
         this.data[inflightNode.resource] = inflightNode;
-        this.addCollector(inflightNode.resource);
+        this.addCollector(inflightNode);
         updateInvoker(this, inflightNode);
         this.data[inflightNode.resource] = api.intents.FSM.transition(inflightNode);
         return this.handleInflightIntentState(inflightNode);
@@ -378,6 +379,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
      * @return {Promise} Resolves when either a preference is gathered or the intent chooser is opened.
      */
     Api.prototype.handleChoosing = function (node) {
+        var self = this;
 
         var useRegisteredChooser = function (intentNode) {
 
@@ -465,7 +467,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 return node;
             });
         };
-        var self = this;
+        
         updateInvoker(this, node);
         return this.getPreference(node.entity.intent.type + &quot;/&quot; + node.entity.intent.action).then(function (handlerResource) {
             if (handlerResource in self.data) {

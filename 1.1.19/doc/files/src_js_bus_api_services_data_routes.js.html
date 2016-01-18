@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.1.19</em>
+            <em>API Docs for: 1.2.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -127,6 +127,7 @@
                                 <li><a href="../classes/ozpIwc.util.mutex.html">ozpIwc.util.mutex</a></li>
                                 <li><a href="../classes/ozpIwc.util.object.html">ozpIwc.util.object</a></li>
                                 <li><a href="../classes/ozpIwc.util.PacketRouter.html">ozpIwc.util.PacketRouter</a></li>
+                                <li><a href="../classes/ozpIwc.util.Reference.html">ozpIwc.util.Reference</a></li>
                                 <li><a href="../classes/ozpIwc.wiring.html">ozpIwc.wiring</a></li>
                             </ul>
                 
@@ -238,9 +239,6 @@ ozpIwc.api.data.Api = (function (api, DataApi) {
         });
         //Make sure the parent node has it&#x27;s pattern set then replace the childs pattern at the end of the filter chain
         filters.push(function (packet, context, pathParams, next) {
-            context.node.set({
-                pattern: packet.pattern
-            });
             packet.pattern = childData.pattern;
             packet.lifespan = childData.lifespan;
             return next();
@@ -265,6 +263,9 @@ ozpIwc.api.data.Api = (function (api, DataApi) {
             lifespan: packet.lifespan,
             src: packet.src
         }, api.data.node.Node);
+
+        // mark the parent as a collector
+        this.addCollector(context.node);
         this.markForChange(childNode);
         childNode.set(packet);
 
@@ -294,6 +295,7 @@ ozpIwc.api.data.Api = (function (api, DataApi) {
 
     return DataApi;
 }(ozpIwc.api, ozpIwc.api.data.Api || {}));
+
     </pre>
 </div>
                     </div>

@@ -3401,7 +3401,11 @@ ozpIwc.apiMap = {
      */
     "data.api": {
         'address': 'data.api',
+<<<<<<< HEAD
         'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "addChild", "removeChild"]
+=======
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "collect", "addChild", "removeChild"]
+>>>>>>> gh-pages
     },
 
     /**
@@ -3410,7 +3414,11 @@ ozpIwc.apiMap = {
      */
     "intents.api": {
         'address': 'intents.api',
+<<<<<<< HEAD
         'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "register", "invoke", "broadcast"]
+=======
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "collect", "register", "invoke", "broadcast"]
+>>>>>>> gh-pages
     },
 
     /**
@@ -3419,7 +3427,11 @@ ozpIwc.apiMap = {
      */
     "names.api": {
         'address': 'names.api',
+<<<<<<< HEAD
         'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet"]
+=======
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "collect"]
+>>>>>>> gh-pages
     },
 
     /**
@@ -3428,7 +3440,11 @@ ozpIwc.apiMap = {
      */
     "system.api": {
         'address': 'system.api',
+<<<<<<< HEAD
         'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "launch"]
+=======
+        'actions': ["get", "set", "delete", "watch", "unwatch", "list", "bulkGet", "collect", "launch"]
+>>>>>>> gh-pages
     },
 
     /**
@@ -3437,9 +3453,16 @@ ozpIwc.apiMap = {
      */
     "locks.api": {
         'address': 'locks.api',
+<<<<<<< HEAD
         'actions': ["get", "watch", "unwatch", "list", "lock", "unlock"]
     }
 };
+=======
+        'actions': ["get", "watch", "unwatch", "list", "lock", "unlock", "collect", "bulkGet"]
+    }
+};
+
+>>>>>>> gh-pages
 var ozpIwc = ozpIwc || {};
 ozpIwc.util = ozpIwc.util || {};
 
@@ -3730,12 +3753,18 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         // everything for the last api in the list
                         /*jshint loopfunc:true*/
                         (function (self, addr) {
+<<<<<<< HEAD
                             self[apiFuncName] = function () {
                                 return self.api(addr);
                             };
                             self.apiMap[addr] = self.apiMap[addr] || {};
                             self.apiMap[addr].functionName = apiFuncName;
                             self.updateApi(addr);
+=======
+                            self[apiFuncName] =  self.updateApi(addr);
+                            self.apiMap[addr] = self.apiMap[addr] || {};
+                            self.apiMap[addr].functionName = apiFuncName;
+>>>>>>> gh-pages
                         })(this, apiObj.address);
                     }
                 }
@@ -3962,6 +3991,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
              */
             updateApi: function (apiName) {
 
+<<<<<<< HEAD
                 /**
                  * Augmentation for Intents Api register. Automatically invokes a registration if the invoke was passed
                  * into the application opening.
@@ -4138,6 +4168,20 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 if (this.apiMap.hasOwnProperty(apiName)) {
                     var api = this.apiMap[apiName];
                     wrapper = {};
+=======
+                // wrapper is a function because pre 1.2.0 the syntax expected
+                // api's to be accessed through a function. The function returns
+                // itself so to support legacy but properties are on wrapper so
+                // functional access is not neccessary. -KJK
+                var wrapper = function(){
+                    return wrapper;
+                };
+
+                this.wrapperMap[apiName] = wrapper;
+                if (this.apiMap.hasOwnProperty(apiName)) {
+                    var api = this.apiMap[apiName];
+                    var apiWrapper = this;
+>>>>>>> gh-pages
 
                     /**
                      *  All message formatting calls sits inside the API wrapper's messageBuilder object. These
@@ -4180,8 +4224,97 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                         wrapper[action] = augment(wrapper.messageBuilder[action], this);
                     }
 
+<<<<<<< HEAD
                     this.wrapperMap[apiName] = wrapper;
                 }
+=======
+                    /**
+                     * Creates a reference to the api node, but auto applies the given resource
+                     * as well as applies default packet properties.
+                     *
+                     * @class Reference
+                     * @constructor
+                     * @param  {String} resource      The resource path to reference
+                     * @param  {Object} defaultPacket Default values for the packets sent to the node
+                     * @return {Object}               an augmented reference to the api resource.
+                     */
+                    wrapper.Reference = function(resource, defaultPacket){
+
+                        this.resource = resource;
+                        this.apiWrapper = apiWrapper;
+                        this.defaultPacket = {
+                            resource: this.resource
+                        };
+                        this.messageBuilder = {};
+                        for(var j in defaultPacket){
+                            this.defaultPacket[j] = defaultPacket[j];
+                        }
+
+                        for (var i = 0; i < api.actions.length; ++i) {
+                            var action = api.actions[i];
+                            this.messageBuilder[action] = messageBuilderRefAugment(api.address, action, this.defaultPacket, this.apiWrapper);
+                            this[action] = augment(this.messageBuilder[action], this);
+                        }
+                    };
+
+                    /**
+                     * A modified send for References. Returns only the direct
+                     * entity of a response as apposed to the whole packet by
+                     * default
+                     * @method send
+                     * @param  {Object|Function}   fields   packet properties for transmit
+                     * @param  {Function} callback          callback function for watched functionality
+                     * @return {Promise}    The promise to be resolved
+                     */
+                    wrapper.Reference.prototype.send = function (fields, callback) {
+                        var self = this;
+                        var entityPromiseRes, entityPromiseRej;
+                        var promise = new Promise(function(res,rej){
+                            entityPromiseRes = res;
+                            entityPromiseRej = rej;
+                        });
+                        var entityCallback = function(response,done){
+                            var value = (self.defaultPacket.fullCallback) ?
+                                    response : response.entity;
+
+                            // If this is an intent invocation, collecting doesn't apply
+                            // If not collecting, only trigger on value change
+                            if (!response.invokePacket && !self.defaultPacket.collect){
+                                if (response.entity.newValue !== response.entity.oldValue){
+                                    callback(value, done);
+                                }
+                            } else {
+                                callback(value, done);
+                            }
+                        };
+
+                        this.apiWrapper.send(fields, entityCallback, entityPromiseRes, entityPromiseRej);
+
+                        return promise.then(function(response){
+                            return (self.defaultPacket.fullResponse) ? response : response.entity;
+                        },function(err){
+                            throw (self.defaultPacket.fullResponse) ? err : err.response;
+                        });
+                    };
+
+                    /**
+                     * Updates the default parameters of a Reference. Can be used
+                     * to reassign defaults of a Reference
+                     * @method updateDefaults
+                     * @param  {Object} config configuration properties of Reference to update
+                     * @return {Object}        The Reference
+                     */
+                    wrapper.Reference.prototype.updateDefaults = function(config){
+                        if (typeof config === "object"){
+                            for(var i in config){
+                                this.defaultPacket[i] = config[i];
+                            }
+                        }
+                            return this;
+                    };
+                }
+
+>>>>>>> gh-pages
                 wrapper.apiName = apiName;
                 return wrapper;
             },
@@ -4376,6 +4509,237 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
 //---------------------------------------------------------
 // Private Methods
 //---------------------------------------------------------
+<<<<<<< HEAD
+=======
+    /**
+     * Augmentation for Intents Api register. Automatically invokes a registration if the invoke was passed
+     * into the application opening.
+     * @method intentRegisterAugment
+     * @private
+     * @static
+     * @param client
+     * @param message
+     */
+    var intentRegisterAugment = function (client, message) {
+        for (var i in client.launchedIntents) {
+            var loadedResource = '/' + client.launchedIntents[i].entity.intent.type + '/' + client.launchedIntents[i].entity.intent.action;
+            if (message.packet.resource === loadedResource) {
+                client.intentInvocationHandling(message.packet, client.launchedIntents[i], message.callback);
+                delete client.launchedIntents[i];
+            }
+        }
+    };
+
+
+    /**
+     * Augmentation for Intents Api invoke. Wraps callback to remove the callback when reaching
+     * error/complete state.
+     * @method intentRegisterAugment
+     * @private
+     * @static
+     * @param client
+     * @param message
+     */
+    var intentInvokeAugment = function (message) {
+        if (message.callback) {
+            var wrappedCallback = message.callback;
+            // Wrap the callback to make sure it is removed when the intent state machine stops.
+            message.callback = function (reply, done) {
+                wrappedCallback(reply, done);
+                reply = reply || {};
+                reply.entity = reply.entity || {};
+                if (reply.entity.state === "error" || reply.entity.state === "complete") {
+                    done();
+                }
+            };
+        }
+    };
+
+    /**
+     * Augmentation for Intents Api broadcast. Compiles the results of all intent handlers and then,
+     * returns the responfixese in the promise resolution. Callback acts like invoke callback.
+     * @method intentRegisterAugment
+     * @private
+     * @static
+     * @param client
+     * @param message
+     */
+    var intentBroadcastAugment = function (client, message) {
+        var broadcastWrappedCallback = message.callback || function () {};
+        var registeredCallbacks = client.registeredCallbacks;
+
+        // Wrap the callback to filter out all of the "complete" messages from each handler sent
+        // intended for a promise resolution. Also store all results for the promise resolution.
+        message.callback = function (reply, done) {
+            if (!registeredCallbacks[reply.replyTo]) {
+                return;
+            }
+            var callback = registeredCallbacks[reply.replyTo];
+            var handlers = callback.handlers;
+            var attemptResolve = function (resource) {
+                var handlerIndex = handlers.indexOf(resource);
+                if (handlerIndex > -1) {
+                    handlers.splice(handlerIndex, 1);
+                }
+                if (handlers.length === 0) {
+                    callback.reply.entity = callback.results;
+                    callback.reply.response = "complete";
+                    callback.pRes(callback.reply);
+                    done();
+                }
+            };
+            if (reply.response === "complete") {
+                callback.results = callback.results || {};
+                callback.results[reply.resource] = reply.entity;
+                attemptResolve(reply.resource);
+
+            } else if (reply.entity && reply.entity.state === "error" && client.registeredCallbacks[reply.replyTo]) {
+                attemptResolve(reply.entity.handler.resource);
+            } else {
+                broadcastWrappedCallback(reply, done);
+            }
+        };
+    };
+
+    /**
+     * Augmenters for Intent Api specific actions.
+     * @method intentAugment
+     * @private
+     * @static
+     * @param client
+     * @param message {Object}
+     */
+    var intentAugment = function (client, message) {
+        switch (message.packet.action) {
+            case "register":
+                intentRegisterAugment(client, message);
+                break;
+            case "invoke":
+                intentInvokeAugment(message);
+                break;
+            case "broadcast":
+                intentBroadcastAugment(client, message);
+                break;
+
+        }
+    };
+
+    /**
+     * Function generator. Generates API functions given a messageBuilder function.
+     * @method augment
+     * @private
+     * @static
+     * @param messageBuilder
+     * @param client
+     * @return {Function}
+     */
+    var augment = function (messageBuilder, client) {
+        return function () {
+            // Augmentation clarification: If using 1.2.0 references, messageBuilder
+            // is generated in messageBuilderRefAugment and expects 2 parameters
+            // (1) entity, (2) callback. Follows original messageBuilder in
+            // handling callback as first parameter. -KJK
+            var message = messageBuilder.apply(this,arguments);
+
+
+            if (message.packet.dst === "intents.api") {
+                intentAugment(client, message);
+            }
+            return client.send(message.packet, message.callback);
+        };
+    };
+
+
+
+    /**
+     * Function generator. Generates API message formatting functions for a client-destination-action
+     * pairing. These are generated for bulk sending capabilities, since the message needs to be formatted
+     * but not transmitted until desired.
+     *
+     * @method messageBuilderAugment
+     * @private
+     * @static
+     * @param dst
+     * @param action
+     * @param client
+     * @return {Function}
+     */
+    var messageBuilderAugment = function (dst, action, client) {
+        return function (param1, param2, param3) {
+            var callback = param3;
+            var fragment = param2;
+
+            if (typeof param2 === "function") {
+                callback = param2;
+                fragment = {};
+            }
+
+            var packet = {
+                'dst': dst,
+                'action': action,
+                'resource': param1,
+                'entity': {}
+            };
+
+            for (var k in fragment) {
+                packet[k] = fragment[k];
+            }
+
+            var resolve, reject;
+            var sendData = new Promise(function (res, rej) {
+                resolve = res;
+                reject = rej;
+            });
+
+            sendData.packet = client.fixPacket(packet);
+            sendData.callback = callback;
+            sendData.res = resolve;
+            sendData.rej = reject;
+            return sendData;
+        };
+    };
+
+    /**
+     * A factory for generating messages for a given API & Action.
+     * @method messageBuilderRefAugment
+     * @private
+     * @static
+     * @param  {String} dst           [description]
+     * @param  {String} action        [description]
+     * @param  {Object} defaultPacket [description]
+     * @param  {Object} client        [description]
+     * @return {Function}             Returns a funciton that when called returns formatted packet,callback, and promise resolution calls.
+     */
+    var messageBuilderRefAugment = function (dst, action, defaultPacket, client) {
+        return function(param1, param2) {
+            var body = param1;
+            var callback = param2;
+
+            // If a fragment isn't supplied argument #2 should be a callback (if supplied)
+            if (typeof param1 === "function") {
+                callback = param1;
+                body = undefined;
+            }
+
+            var packet = defaultPacket;
+            packet.dst = dst;
+            packet.action = action;
+            packet.entity = body;
+
+            var resolve, reject;
+            var sendData = new Promise(function (res, rej) {
+                resolve = res;
+                reject = rej;
+            });
+
+            sendData.packet = client.fixPacket(packet);
+            sendData.callback = callback;
+            sendData.res = resolve;
+            sendData.rej = reject;
+            return sendData;
+        };
+    };
+>>>>>>> gh-pages
 
     /**
      * Handles packets received with a destination of "$bus.multicast".
