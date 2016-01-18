@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.2.0</em>
+            <em>API Docs for: 1.1.19</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -379,7 +379,6 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
      * @return {Promise} Resolves when either a preference is gathered or the intent chooser is opened.
      */
     Api.prototype.handleChoosing = function (node) {
-        var self = this;
 
         var useRegisteredChooser = function (intentNode) {
 
@@ -467,7 +466,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
                 return node;
             });
         };
-        
+        var self = this;
         updateInvoker(this, node);
         return this.getPreference(node.entity.intent.type + &quot;/&quot; + node.entity.intent.action).then(function (handlerResource) {
             if (handlerResource in self.data) {

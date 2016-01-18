@@ -138,11 +138,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         });
 
         this.data[inflightNode.resource] = inflightNode;
-<<<<<<< HEAD
-        this.addCollector(inflightNode.resource);
-=======
         this.addCollector(inflightNode);
->>>>>>> gh-pages
         updateInvoker(this, inflightNode);
         this.data[inflightNode.resource] = api.intents.FSM.transition(inflightNode);
         return this.handleInflightIntentState(inflightNode);

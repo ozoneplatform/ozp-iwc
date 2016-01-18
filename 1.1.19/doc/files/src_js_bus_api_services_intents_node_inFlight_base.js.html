@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.2.0</em>
+            <em>API Docs for: 1.1.19</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -235,7 +235,7 @@ ozpIwc.api.intents.node.InFlightNode = (function (api, util) {
             throw new api.error.BadContentError(&quot;In flight intent requires an invocation packet&quot;);
         }
         if (!config.handlerChoices || Array.isArray(config.handlerChoices) &amp;&amp; config.handlerChoices.length === 0) {
-            throw new api.error.NoResourceError(&quot;No handlers available&quot;);
+            throw new api.error.BadContentError(&quot;No handlers available&quot;);
         }
         /**
          * Extra information that isn&#x27;t captured already by the base class, or that isn&#x27;t captured adequately.
@@ -272,7 +272,6 @@ ozpIwc.api.intents.node.InFlightNode = (function (api, util) {
     InFlightNode.serializedContentType = &quot;application/vnd.ozp-inflight-intent-v1+json&quot;;
     return InFlightNode;
 }(ozpIwc.api, ozpIwc.util));
-
     </pre>
 </div>
                     </div>

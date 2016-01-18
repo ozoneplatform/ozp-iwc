@@ -40,12 +40,6 @@ ozpIwc.api.data.Api = (function (api, DataApi) {
         });
         //Make sure the parent node has it's pattern set then replace the childs pattern at the end of the filter chain
         filters.push(function (packet, context, pathParams, next) {
-<<<<<<< HEAD
-            context.node.set({
-                pattern: packet.pattern
-            });
-=======
->>>>>>> gh-pages
             packet.pattern = childData.pattern;
             packet.lifespan = childData.lifespan;
             return next();
@@ -70,12 +64,9 @@ ozpIwc.api.data.Api = (function (api, DataApi) {
             lifespan: packet.lifespan,
             src: packet.src
         }, api.data.node.Node);
-<<<<<<< HEAD
-=======
 
         // mark the parent as a collector
         this.addCollector(context.node);
->>>>>>> gh-pages
         this.markForChange(childNode);
         childNode.set(packet);
 
@@ -104,8 +95,4 @@ ozpIwc.api.data.Api = (function (api, DataApi) {
     });
 
     return DataApi;
-<<<<<<< HEAD
 }(ozpIwc.api, ozpIwc.api.data.Api || {}));
-=======
-}(ozpIwc.api, ozpIwc.api.data.Api || {}));
->>>>>>> gh-pages

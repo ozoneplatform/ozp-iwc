@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.2.0</em>
+            <em>API Docs for: 1.1.19</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -212,9 +212,10 @@ ozpIwc.Debugger = (function (Client, util) {
      * @extends ozpIwc.Client
      */
     var Debugger = util.extend(Client, function (config) {
-        config.type = &quot;debugger&quot;;
         Client.apply(this, arguments);
         var self = this;
+        this.type = &quot;debugger&quot;;
+
         this.events.on(&#x27;receive&#x27;, function (packet) {
             switch (packet.resource) {
                 case &quot;traffic&quot;:
@@ -323,7 +324,6 @@ ozpIwc.Debugger = (function (Client, util) {
 
     return Debugger;
 }(ozpIwc.Client, ozpIwc.util));
-
     </pre>
 </div>
                     </div>

@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.2.0</em>
+            <em>API Docs for: 1.1.19</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -244,10 +244,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
         participant.constructApiFunctions();
 
         if (autoConnect) {
-            participant.connect().catch(function(err) {
-                // Supress the error here, the application will get it from its
-                // connect() call.
-            });
+            participant.connect();
         }
     };
 
@@ -723,7 +720,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 // api&#x27;s to be accessed through a function. The function returns
                 // itself so to support legacy but properties are on wrapper so
                 // functional access is not neccessary. -KJK
-                var wrapper = function() {
+                var wrapper = function(){
                     return wrapper;
                 };
 
@@ -738,7 +735,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                      *  (e.g: data().messageBuilder.set)
                      */
                     wrapper.messageBuilder = {};
-                    wrapper.messageBuilder.bulkSend = function(messages, otherCallback) {
+                    wrapper.messageBuilder.bulkSend = function (messages, otherCallback) {
                         var packet = {
                             &#x27;dst&#x27;: api.address,
                             &#x27;action&#x27;: &quot;bulkSend&quot;,
@@ -757,7 +754,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                      * then send them to the router.
                      * (e.g: data().set)
                      */
-                    wrapper.bulkSend = (function(bulkMessageBuilder, client) {
+                    wrapper.bulkSend = (function (bulkMessageBuilder, client) {
                         return function (messages) {
                             var message = bulkMessageBuilder(messages);
                             return client.send(message.packet, message.callback);
@@ -783,7 +780,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                      * @param  {Object} defaultPacket Default values for the packets sent to the node
                      * @return {Object}               an augmented reference to the api resource.
                      */
-                    wrapper.Reference = function(resource, defaultPacket) {
+                    wrapper.Reference = function(resource, defaultPacket){
 
                         this.resource = resource;
                         this.apiWrapper = apiWrapper;
@@ -791,7 +788,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                             resource: this.resource
                         };
                         this.messageBuilder = {};
-                        for (var j in defaultPacket) {
+                        for(var j in defaultPacket){
                             this.defaultPacket[j] = defaultPacket[j];
                         }
 
@@ -814,33 +811,30 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     wrapper.Reference.prototype.send = function (fields, callback) {
                         var self = this;
                         var entityPromiseRes, entityPromiseRej;
-                        var promise = new Promise(function(res,rej) {
+                        var promise = new Promise(function(res,rej){
                             entityPromiseRes = res;
                             entityPromiseRej = rej;
                         });
-                        var entityCallback = function(response,done) {
-                            var value = (self.defaultPacket.fullCallback ) ?
+                        var entityCallback = function(response,done){
+                            var value = (self.defaultPacket.fullCallback) ?
                                     response : response.entity;
 
                             // If this is an intent invocation, collecting doesn&#x27;t apply
-                            // If its an update about an intent invocation trigger change
                             // If not collecting, only trigger on value change
-                            if (response.response !== &quot;complete&quot; &amp;&amp; response.response !== &quot;update&quot; &amp;&amp; !response.invokePacket &amp;&amp;
-                                !self.defaultPacket.collect) {
-
+                            if (!response.invokePacket &amp;&amp; !self.defaultPacket.collect){
                                 if (response.entity.newValue !== response.entity.oldValue){
-                                    return callback(value, done, response);
+                                    callback(value, done);
                                 }
                             } else {
-                                return callback(value, done, response);
+                                callback(value, done);
                             }
                         };
 
                         this.apiWrapper.send(fields, entityCallback, entityPromiseRes, entityPromiseRej);
 
-                        return promise.then(function(response) {
+                        return promise.then(function(response){
                             return (self.defaultPacket.fullResponse) ? response : response.entity;
-                        }, function(err) {
+                        },function(err){
                             throw (self.defaultPacket.fullResponse) ? err : err.response;
                         });
                     };
@@ -852,13 +846,13 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                      * @param  {Object} config configuration properties of Reference to update
                      * @return {Object}        The Reference
                      */
-                    wrapper.Reference.prototype.updateDefaults = function(config) {
-                        if (typeof config === &quot;object&quot;) {
-                            for (var i in config) {
+                    wrapper.Reference.prototype.updateDefaults = function(config){
+                        if (typeof config === &quot;object&quot;){
+                            for(var i in config){
                                 this.defaultPacket[i] = config[i];
                             }
                         }
-                        return this;
+                            return this;
                     };
                 }
 
@@ -882,7 +876,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 };
 
                 for (var k in fields) {
-                    packet[k] = util.ifUndef(fields[k], packet[k]);
+                    packet[k] = fields[k] || packet[k];
                 }
 
                 if (packet.src === &quot;$nobody&quot;) {
@@ -905,21 +899,16 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 var self = this;
                 if (callback) {
                     this.registeredCallbacks[packet.msgId] = function (reply, done) {
-
                         // We&#x27;ve received a message that was a promise response but we&#x27;ve aready handled our promise
                         // response.
                         if (/(ok).*/.test(reply.response) || /(bad|no).*/.test(reply.response)) {
-
                             // Do nothing and let it get sent to the event handler (this is to filter out registration
                             // of callback responses)
                             return false;
                         } else if (reply.entity &amp;&amp; reply.entity.inFlightIntent) {
                             self.intentInvocationHandling(packet, reply.entity.inFlightIntent, callback);
                         } else {
-
-                            // reply passed twice to adhere to
-                            // References internal callback signature.
-                            callback(reply, done, reply);
+                            callback(reply, done);
                         }
                         return true;
                     };
@@ -1004,7 +993,6 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 }
                 var packet = this.fixPacket(fields);
                 this.registerResponses(packet, callback, promiseRes, promiseRej);
-                fixBulkSend(packet);
                 this.sendImpl(packet);
                 this.sentBytes += packet.length;
                 this.sentPackets++;
@@ -1121,11 +1109,11 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
 
         // Wrap the callback to filter out all of the &quot;complete&quot; messages from each handler sent
         // intended for a promise resolution. Also store all results for the promise resolution.
-        message.callback = function (reply, done, fullReply) {
-            if (!registeredCallbacks[fullReply.replyTo]) {
+        message.callback = function (reply, done) {
+            if (!registeredCallbacks[reply.replyTo]) {
                 return;
             }
-            var callback = registeredCallbacks[fullReply.replyTo];
+            var callback = registeredCallbacks[reply.replyTo];
             var handlers = callback.handlers;
             var attemptResolve = function (resource) {
                 var handlerIndex = handlers.indexOf(resource);
@@ -1139,15 +1127,15 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                     done();
                 }
             };
-            if (fullReply.response === &quot;complete&quot;) {
+            if (reply.response === &quot;complete&quot;) {
                 callback.results = callback.results || {};
-                callback.results[fullReply.resource] = fullReply.entity;
-                attemptResolve(fullReply.resource);
+                callback.results[reply.resource] = reply.entity;
+                attemptResolve(reply.resource);
 
-            } else if (fullReply.entity &amp;&amp; fullReply.entity.state === &quot;error&quot; &amp;&amp; client.registeredCallbacks[fullReply.replyTo]) {
-                attemptResolve(fullReply.entity.handler.resource);
+            } else if (reply.entity &amp;&amp; reply.entity.state === &quot;error&quot; &amp;&amp; client.registeredCallbacks[reply.replyTo]) {
+                attemptResolve(reply.entity.handler.resource);
             } else {
-                broadcastWrappedCallback(fullReply, done);
+                broadcastWrappedCallback(reply, done);
             }
         };
     };
@@ -1161,16 +1149,15 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
      * @param message {Object}
      */
     var intentAugment = function (client, message) {
-        var clientRef = client.apiWrapper || client;
         switch (message.packet.action) {
             case &quot;register&quot;:
-                intentRegisterAugment(clientRef, message);
+                intentRegisterAugment(client, message);
                 break;
             case &quot;invoke&quot;:
                 intentInvokeAugment(message);
                 break;
             case &quot;broadcast&quot;:
-                intentBroadcastAugment(clientRef, message);
+                intentBroadcastAugment(client, message);
                 break;
 
         }
@@ -1186,7 +1173,7 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
      * @return {Function}
      */
     var augment = function (messageBuilder, client) {
-        return function() {
+        return function () {
             // Augmentation clarification: If using 1.2.0 references, messageBuilder
             // is generated in messageBuilderRefAugment and expects 2 parameters
             // (1) entity, (2) callback. Follows original messageBuilder in
@@ -1312,27 +1299,6 @@ ozpIwc.util.ApiPromiseMixin = (function (apiMap, log, util) {
                 mixer.events.trigger(&quot;addressDisconnects&quot;, packet.entity.address, packet);
                 return true;
         }
-    };
-
-
-    /**
-     * A fix for bulkSend functionality, Filters out promise functionality
-     * so structured clones apply to bulkSends.
-     * @method fixBulkSend
-     * @private
-     * @static     *
-     * @param  {Object} packet
-     * @return {Object}        a reference to the packet.
-     */
-    var fixBulkSend = function(packet) {
-        if (packet.action === &quot;bulkSend&quot;) {
-            packet.entity = packet.entity.map(function(message) {
-                return {
-                    packet: message.packet
-                };
-            });
-        }
-        return packet;
     };
 
     return ApiPromiseMixin;

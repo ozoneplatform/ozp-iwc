@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.2.0</em>
+            <em>API Docs for: 1.1.19</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -220,22 +220,6 @@ ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport
          *
          */
         var Debugger = util.extend(Base, function (config) {
-            var localOrigin = util.getOrigin();
-            if(config.origin !== localOrigin){
-                var error = &quot;Debugger participants are only permitted on&quot; +
-                &quot; Bus-domain applications. Debugger creation attempted from &quot; +
-                &quot;Application-domain: [&quot; + config.origin  +
-                &quot;] while Bus-domain is: [&quot; + localOrigin + &quot;]&quot;;
-                log.error(error);
-
-                this.invalid = true;
-                util.safePostMessage(config.port, {
-                    iwcInit: true,
-                    error: error
-                });
-                return;
-            }
-
             Base.apply(this, arguments);
             this.name = &quot;DebuggerParticipant&quot;;
             this.router = config.router;
@@ -531,7 +515,6 @@ ozpIwc.transport.participant = (function (log, ozpConfig, participant, transport
 
     return participant;
 }(ozpIwc.log, ozpIwc.config, ozpIwc.transport.participant || {}, ozpIwc.transport, ozpIwc.util, ozpIwc.wiring));
-
     </pre>
 </div>
                     </div>

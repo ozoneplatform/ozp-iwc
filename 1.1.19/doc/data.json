@@ -2,7 +2,7 @@
     "project": {
         "name": "ozpIwc",
         "description": "",
-        "version": "1.2.0",
+        "version": "1.1.19",
         "url": ""
     },
     "files": {
@@ -3756,7 +3756,7 @@
             "submodule": "ozpIwc.util",
             "namespace": "ozpIwc.util",
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 577,
+            "line": 574,
             "description": "Creates a reference to the api node, but auto applies the given resource\nas well as applies default packet properties.",
             "is_constructor": 1,
             "params": [
@@ -4246,7 +4246,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 289,
+            "line": 287,
             "description": "Generates a unique key with the given prefix.",
             "params": [
                 {
@@ -4266,7 +4266,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 303,
+            "line": 301,
             "description": "A handler function for when a node is created. Can be overridden by inherited APIs.",
             "itemtype": "method",
             "name": "onNodeCreated",
@@ -4284,7 +4284,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 313,
+            "line": 311,
             "description": "A handler function called after a node is changed but before it's watchers are notified. Can be overridden by\ninherited APIs.",
             "itemtype": "method",
             "name": "onNodeChanged",
@@ -4312,7 +4312,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 329,
+            "line": 327,
             "description": "Gathers the desired preference from the data API.",
             "itemtype": "method",
             "name": "getPreference",
@@ -4334,7 +4334,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 346,
+            "line": 344,
             "description": "Maps a content-type to an IWC Node type. Overriden in APIs.",
             "itemtype": "method",
             "name": "findNodeType",
@@ -4369,7 +4369,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 358,
+            "line": 356,
             "description": "Creates a node appropriate for the given config, puts it into this.data,\nand fires off the right events.",
             "itemtype": "method",
             "name": "createNode",
@@ -4391,7 +4391,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 378,
+            "line": 376,
             "description": "Creates a node appropriate for the given config.  This does\nNOT add the node to this.data.  Default implementation returns\na plain ozpIwc.api.base.Node.\n\n__Intended to be overridden by subclasses__\n\nSubsclasses can override this for custom node types that may vary\nfrom resource to resource.",
             "itemtype": "method",
             "name": "createNodeObject",
@@ -4418,7 +4418,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 404,
+            "line": 402,
             "description": "A handler method for the API's acquisition of the mutex.\n * An api will initialize any state passed on from the last leader (received as a broadcasted deathscream).\n * If no initial state passed and backend connnectivity is configured, the backend will be reached for\npersistent state.\n * Handle any requests during the transition to being the active API.\n * Call the API's onStart method to handle any custom API init functionality.",
             "itemtype": "method",
             "name": "onLock",
@@ -4429,7 +4429,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 424,
+            "line": 422,
             "description": "A handler method for the API's release of the mutex.",
             "itemtype": "method",
             "name": "onRelease",
@@ -4440,7 +4440,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 434,
+            "line": 432,
             "description": "Called when the API begins operation as leader. To be overriden by inherited APIs.",
             "itemtype": "method",
             "name": "onStart",
@@ -4451,7 +4451,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 442,
+            "line": 440,
             "description": "Called when the API ends operation as leader. To be overriden by inherited APIs.",
             "itemtype": "method",
             "name": "onStart",
@@ -4462,7 +4462,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 453,
+            "line": 451,
             "itemtype": "method",
             "name": "transitionToLoading",
             "access": "private",
@@ -4478,7 +4478,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 468,
+            "line": 466,
             "itemtype": "method",
             "name": "transitionToLeader",
             "access": "private",
@@ -4490,7 +4490,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 488,
+            "line": 485,
             "itemtype": "method",
             "name": "transitionFromLeader",
             "class": "ozpIwc.api.base.Api",
@@ -4500,7 +4500,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 503,
+            "line": 500,
             "itemtype": "method",
             "name": "transitionToMemberReady",
             "access": "private",
@@ -4523,7 +4523,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 519,
+            "line": 516,
             "itemtype": "method",
             "name": "transitionToMemberDormant",
             "access": "private",
@@ -4539,7 +4539,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 537,
+            "line": 534,
             "description": "Broadcasts to other instances of this API on the bus that it is ready to lead.",
             "itemtype": "method",
             "name": "broadcastLeaderReady",
@@ -4550,7 +4550,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 548,
+            "line": 545,
             "description": "Broadcasts to other instances of this API on the bus this APIs state.",
             "itemtype": "method",
             "name": "broadcastDeathScream",
@@ -4568,7 +4568,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 566,
+            "line": 563,
             "description": "Authorize the request for the given node.",
             "itemtype": "method",
             "name": "checkAuthorization",
@@ -4605,7 +4605,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 581,
+            "line": 578,
             "description": "Returns a list of nodes that start with the given prefix.",
             "itemtype": "method",
             "name": "matchingNodes",
@@ -4627,7 +4627,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 594,
+            "line": 591,
             "description": "Gathers the collection resource data for a node given its pattern only\nif it is in the collectors list",
             "itemtype": "method",
             "name": "getCollectionResources",
@@ -4649,7 +4649,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 621,
+            "line": 618,
             "description": "Marks that a node has changed and that change notices may need to\nbe sent out after the request completes.",
             "itemtype": "method",
             "name": "markForChange",
@@ -4667,7 +4667,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 646,
+            "line": 643,
             "description": "Marks that a node has changed and that change notices may need to\nbe sent out after the request completes.",
             "itemtype": "method",
             "name": "addWatcher",
@@ -4707,7 +4707,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 666,
+            "line": 663,
             "description": "Removes mark that a node has changed and that change notices may need to\nbe sent out after the request completes.",
             "itemtype": "method",
             "name": "removeWatcher",
@@ -4742,7 +4742,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 686,
+            "line": 683,
             "description": "Adds the given node to the collector list. It's collection list will be updated on api data changes.",
             "itemtype": "method",
             "name": "addCollector",
@@ -4760,7 +4760,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 700,
+            "line": 697,
             "description": "Removes the given node from the collector list. It's collection list will no longer be updated on api data\nchanges.",
             "itemtype": "method",
             "name": "removeCollector",
@@ -4778,7 +4778,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 714,
+            "line": 711,
             "description": "Itterates over all collectors of the API for updates",
             "itemtype": "method",
             "name": "updateCollections",
@@ -4789,7 +4789,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 729,
+            "line": 726,
             "description": "Sends packets of data from this API to other parts of the IWC bus.",
             "params": [
                 {
@@ -4809,7 +4809,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 740,
+            "line": 737,
             "description": "Routes a packet received from the participant.",
             "itemtype": "property",
             "name": "packetContext",
@@ -4823,7 +4823,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 760,
+            "line": 757,
             "description": "Any request packet that does not match a route ends up here.  By default,\nit replies with BadAction, BadResource, or BadRequest, as appropriate.",
             "itemtype": "method",
             "name": "receivePacketContext",
@@ -4846,7 +4846,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 781,
+            "line": 778,
             "description": "Enables the API's request queue, all requests will be held until deliverRequestQueue or flushRequestQueue is\ncalled.",
             "itemtype": "method",
             "name": "enableRequestQueue",
@@ -4859,7 +4859,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 792,
+            "line": 789,
             "description": "Routes all queued packets and turns off request queueing.",
             "itemtype": "method",
             "name": "deliverRequestQueue",
@@ -4872,7 +4872,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 809,
+            "line": 806,
             "description": "Empties the queue of requests without processing and turns off queuing.",
             "itemtype": "method",
             "name": "flushRequestQueue",
@@ -4885,7 +4885,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 820,
+            "line": 817,
             "description": "Enables API's sending queue. This is to prevent an API from communicating given some state (Used for consensus\ninitialization).",
             "itemtype": "method",
             "name": "enableSendQueue",
@@ -4898,7 +4898,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 832,
+            "line": 829,
             "description": "Delivers and disables API's sending queue.",
             "itemtype": "method",
             "name": "deliverSendQueue",
@@ -4911,7 +4911,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 844,
+            "line": 841,
             "description": "Empties and disables API's sending queue.",
             "itemtype": "method",
             "name": "flushSendQueue",
@@ -4924,7 +4924,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 859,
+            "line": 856,
             "description": "A handler function called when a participant has disconnected from the bus.\nEach node in the API is checked to see if its lifespan was tied to said participant, and if the lifespan deems\nnecessary, removes the node.\nCan be overridden by inherited APIs.",
             "itemtype": "method",
             "name": "onClientDisconnect",
@@ -4942,7 +4942,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 880,
+            "line": 877,
             "description": "A handler function called when a participant connects to the bus. Intended to be overridden by inheriting APIs.",
             "params": [
                 {
@@ -4957,7 +4957,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 907,
+            "line": 904,
             "description": "A static utility method that notifies watchers of changes of the resource since the given snapshot.",
             "itemtype": "method",
             "name": "resolveChangedNode",
@@ -4993,7 +4993,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 962,
+            "line": 959,
             "description": "A static utility method called after an api request is complete to send out change notifications.",
             "itemtype": "method",
             "name": "resolveChangedNodes",
@@ -5019,7 +5019,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 979,
+            "line": 976,
             "description": "A static utility method that removes the collector node from the collectors list if deleted.\nRemoves references to nodes in the given collectors collection property if said referenced node is deleted.\nAdds newly created nodes to the collection property if said node's resource matches the collection nodes pattern\nproperty.",
             "itemtype": "method",
             "name": "updateCollectionNode",
@@ -5045,7 +5045,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 1017,
+            "line": 1014,
             "description": "If the the given address is watching a resource, it will be removed from the watch list. Router addresses will\nremove all of its participants watch registrations.",
             "itemtype": "method",
             "name": "removeDeadWatchers",
@@ -5071,7 +5071,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 1038,
+            "line": 1035,
             "description": "Handles packets received regarding leadership actions.",
             "itemtype": "method",
             "name": "receiveCoordinationPacket",
@@ -5101,7 +5101,7 @@
         },
         {
             "file": "src/js/bus/api/base/api.js",
-            "line": 1060,
+            "line": 1057,
             "description": "Routes a request to the proper handler and takes care of overhead\nsuch as change requests.",
             "itemtype": "property",
             "name": "{Object} packetContext",
@@ -5572,7 +5572,7 @@
         },
         {
             "file": "src/js/bus/api/base/routes.js",
-            "line": 105,
+            "line": 98,
             "description": "A list of all of the default actions.",
             "itemtype": "property",
             "name": "allActions",
@@ -7123,7 +7123,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/api.js",
-            "line": 292,
+            "line": 291,
             "description": "A handler for the \"delivering\" state of an in-flight intent node.\nSends a packet to the chosen handler.",
             "todo": [
                 "should resolve on response from the handler that transitions the node to \"running\"."
@@ -7144,7 +7144,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/api.js",
-            "line": 314,
+            "line": 313,
             "description": "A handler for the \"complete\" state of an in-flight intent node.\nSends notification to the invoker that the intent was handled & deletes the in-flight intent node as it is no\nlonger needed.",
             "itemtype": "method",
             "name": "handleComplete",
@@ -7162,7 +7162,7 @@
         },
         {
             "file": "src/js/bus/api/services/intents/api.js",
-            "line": 336,
+            "line": 335,
             "description": "A handler for the \"error\" state of an in-flight intent node.\nSends notification to the invoker that the intent was handled & deletes the in-flight intent node as it is no\nlonger needed.",
             "itemtype": "method",
             "name": "handleError",
@@ -10595,7 +10595,7 @@
         },
         {
             "file": "src/js/bus/transport/listener/postMessage.js",
-            "line": 92,
+            "line": 89,
             "description": "When receiving a \"message\" event from an unknown source, check against\nthe permissions to see if a participant can be made for the sender.\nReturns an asyncAction that will succeed if the permissions allow.",
             "static": 1,
             "access": "private",
@@ -10625,7 +10625,7 @@
         },
         {
             "file": "src/js/bus/transport/listener/postMessage.js",
-            "line": 112,
+            "line": 109,
             "itemtype": "method",
             "name": "registration",
             "override": "",
@@ -10677,7 +10677,7 @@
         },
         {
             "file": "src/js/bus/transport/listener/sharedWorker.js",
-            "line": 64,
+            "line": 75,
             "description": "Generates an init message handler for the sharedWorkerListener's connection of a participant.\nHandler destroyed after first message (connect message) as the participant opens its own message handler.",
             "itemtype": "method",
             "name": "messageHandlerGen",
@@ -11253,7 +11253,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/debugger.js",
-            "line": 65,
+            "line": 49,
             "description": "A utility for the debugger to respond to whom sent it a packet.",
             "itemtype": "method",
             "name": "debuggerResponse",
@@ -11279,7 +11279,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/debugger.js",
-            "line": 84,
+            "line": 68,
             "description": "Handler method for $transport packets of resource \"traffic\".",
             "itemtype": "method",
             "name": "handleTrafficPacket",
@@ -11303,7 +11303,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/debugger.js",
-            "line": 109,
+            "line": 93,
             "description": "Starts the debugger participant sending packet logs.",
             "itemtype": "method",
             "name": "enableLogging",
@@ -11329,7 +11329,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/debugger.js",
-            "line": 130,
+            "line": 114,
             "description": "Stops the debugger participant from sending packet logs.",
             "itemtype": "method",
             "name": "disableLogging",
@@ -11355,7 +11355,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/debugger.js",
-            "line": 157,
+            "line": 141,
             "description": "Routing of $transport packets for the resource \"apis\"",
             "itemtype": "method",
             "name": "handleApiPacket",
@@ -11381,7 +11381,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/debugger.js",
-            "line": 176,
+            "line": 160,
             "description": "A handler for the $transport packet action \"getEndpoints\" on resource \"apis\"",
             "itemtype": "method",
             "name": "handleEndpointGather",
@@ -11407,7 +11407,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/debugger.js",
-            "line": 209,
+            "line": 193,
             "description": "Routing of $transport packets for the resource \"metrics\"",
             "itemtype": "method",
             "name": "handleMetricPacket",
@@ -11433,7 +11433,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/debugger.js",
-            "line": 227,
+            "line": 211,
             "description": "A handler for the $transport packet action \"getAll\" on resource \"metrics\"",
             "itemtype": "method",
             "name": "handleEndpointGather",
@@ -11459,7 +11459,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/debugger.js",
-            "line": 246,
+            "line": 230,
             "description": "Routing of $transport packets for the resource \"config\"",
             "itemtype": "method",
             "name": "handleConfigPacket",
@@ -11485,7 +11485,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/debugger.js",
-            "line": 264,
+            "line": 248,
             "description": "A handler for the $transport packet action \"getAll\" on resource \"config\".\nSends a copy of the ozpIwc.config to the client-side debugger.",
             "itemtype": "method",
             "name": "handleConfigGather",
@@ -11511,7 +11511,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/debugger.js",
-            "line": 280,
+            "line": 264,
             "description": "Handles $transport packets from the participant.",
             "itemtype": "method",
             "name": "handleTransportPacket",
@@ -11535,7 +11535,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/debugger.js",
-            "line": 310,
+            "line": 294,
             "description": "Receives a packet on behalf of this participant and forwards it via SharedWorker.",
             "itemtype": "method",
             "name": "receiveFromRouterImpl",
@@ -12279,7 +12279,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/sharedWorker.js",
-            "line": 170,
+            "line": 168,
             "class": "ozpIwc.transport.participant.SharedWorker",
             "module": "ozpIwc.transport",
             "submodule": "ozpIwc.transport.participant",
@@ -12287,7 +12287,7 @@
         },
         {
             "file": "src/js/bus/transport/participant/sharedWorker.js",
-            "line": 189,
+            "line": 185,
             "description": "A handler for forwarded events from this participants corresponding window.",
             "todo": [
                 "Currently just the event type is passed"
@@ -13376,6 +13376,33 @@
         {
             "file": "src/js/bus/util/util.js",
             "line": 137,
+            "description": "Returns the specified default value if the given value is undefined. safer than \"x = x || 500\" because it checks\nfor being defined, rather than its truly/falsey value.",
+            "itemtype": "method",
+            "name": "ifUndef",
+            "static": 1,
+            "params": [
+                {
+                    "name": "value",
+                    "description": "",
+                    "type": "*"
+                },
+                {
+                    "name": "defaultVal",
+                    "description": "",
+                    "type": "*"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ozpIwc.alert",
+            "module": "ozpIwc",
+            "namespace": "ozpIwc"
+        },
+        {
+            "file": "src/js/bus/util/util.js",
+            "line": 150,
             "description": "Returns an object representation of the content-type string",
             "itemtype": "method",
             "name": "getFormattedContentType",
@@ -13399,7 +13426,7 @@
         },
         {
             "file": "src/js/bus/util/util.js",
-            "line": 168,
+            "line": 181,
             "description": "Returns the content-types for all node types in a node namespace.",
             "itemtype": "method",
             "name": "genContentTypeMappings",
@@ -13893,7 +13920,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 143,
+            "line": 139,
             "description": "Generates the Iframe for the client for IWC bus-domain communication.\nDue to race condition issues with Chrome, this is an asynchronous task with a slight delay to prevent\nbroken bus connections with Chrome/SharedWorker.",
             "itemtype": "method",
             "name": "createIframeShim",
@@ -13907,7 +13934,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 182,
+            "line": 180,
             "description": "Generates the Peer URL checking logic based on the data type received.",
             "itemtype": "method",
             "name": "genPeerUrlCheck",
@@ -13932,7 +13959,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 209,
+            "line": 207,
             "itemtype": "property",
             "name": "peerUrlCheck",
             "type": "String",
@@ -13942,7 +13969,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 219,
+            "line": 217,
             "description": "Meta-data for registration to function with SharedWorkers.",
             "access": "private",
             "tagname": "",
@@ -13956,7 +13983,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 232,
+            "line": 230,
             "description": "A utility method for Clients to register to handle application & intent-chooser launching.",
             "itemtype": "method",
             "name": "registerIntentHandlers",
@@ -13976,7 +14003,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 278,
+            "line": 273,
             "description": "Disconnects the client from the IWC bus.",
             "itemtype": "method",
             "name": "disconnect",
@@ -13986,7 +14013,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 306,
+            "line": 299,
             "description": "Connects the client from the IWC bus.\nFires: {{#crossLink \"ozpIwc.Client/connected:event\"}}{{/crossLink}}",
             "itemtype": "method",
             "name": "connect",
@@ -13996,7 +14023,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 316,
+            "line": 309,
             "description": "Promise to chain off of for client connection asynchronous actions.",
             "itemtype": "property",
             "name": "connectPromise",
@@ -14007,7 +14034,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 335,
+            "line": 328,
             "description": "Creates an invisible iFrame Peer for IWC bus communication. Resolves when iFrame communication has been\ninitialized.",
             "itemtype": "method",
             "name": "createIframePeer",
@@ -14021,7 +14048,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 358,
+            "line": 351,
             "description": "Client to Bus sending implementation. Not to be used directly.",
             "access": "private",
             "tagname": "",
@@ -14040,7 +14067,7 @@
         },
         {
             "file": "src/js/client/client.js",
-            "line": 368,
+            "line": 361,
             "description": "Gathers the launch data passed to the opened application. Launch data can be passed as a query parameter, inside\nwindow.name, or inside window.hash as long as it's key is \"launchData\".\n\nPromise resolve with the launchData object.",
             "itemtype": "method",
             "name": "getLaunchData",
@@ -14054,7 +14081,7 @@
         },
         {
             "file": "src/js/client/debugger.js",
-            "line": 45,
+            "line": 46,
             "description": "Enables logging of packets on the IWC bus. Calls the callback with the packet that passed through the IWC.\n\nPromise resolves with the ID needed to stop logging with cancelLogTraffic",
             "itemtype": "method",
             "name": "logTraffic",
@@ -14075,7 +14102,7 @@
         },
         {
             "file": "src/js/client/debugger.js",
-            "line": 72,
+            "line": 73,
             "description": "Disables a registration for packet logging from the IWC Bus.",
             "itemtype": "method",
             "name": "cancelLogTraffic",
@@ -14096,7 +14123,7 @@
         },
         {
             "file": "src/js/client/debugger.js",
-            "line": 92,
+            "line": 93,
             "description": "Gathers the API Endpoint map from the IWC Bus",
             "itemtype": "method",
             "name": "getApiEndpoints",
@@ -14110,7 +14137,7 @@
         },
         {
             "file": "src/js/client/debugger.js",
-            "line": 103,
+            "line": 104,
             "description": "Gathers a snapshot of the metrics registry on the IWC Bus",
             "itemtype": "method",
             "name": "getMetrics",
@@ -14124,7 +14151,7 @@
         },
         {
             "file": "src/js/client/debugger.js",
-            "line": 114,
+            "line": 115,
             "description": "Gathers a snapshot of the IWC Bus config settings",
             "itemtype": "method",
             "name": "getConfig",
@@ -14346,7 +14373,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 55,
+            "line": 52,
             "description": "Registers event listeners for the participant.  Listens for the following events: disconnect.",
             "itemtype": "method",
             "name": "registerEvents",
@@ -14365,7 +14392,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 70,
+            "line": 67,
             "description": "A factory for the apiPromise functionality.",
             "itemtype": "method",
             "name": "getCore",
@@ -14381,7 +14408,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 80,
+            "line": 77,
             "itemtype": "property",
             "name": "promiseCallbacks",
             "type": "Object",
@@ -14393,7 +14420,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 87,
+            "line": 84,
             "itemtype": "property",
             "name": "msgIdSequence",
             "type": "Number",
@@ -14405,7 +14432,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 94,
+            "line": 91,
             "itemtype": "property",
             "name": "receivedPackets",
             "type": "Number",
@@ -14417,7 +14444,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 101,
+            "line": 98,
             "itemtype": "property",
             "name": "receivedBytes",
             "type": "Number",
@@ -14429,7 +14456,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 108,
+            "line": 105,
             "itemtype": "property",
             "name": "sentPackets",
             "type": "Number",
@@ -14441,7 +14468,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 115,
+            "line": 112,
             "itemtype": "property",
             "name": "sentBytes",
             "type": "Number",
@@ -14453,7 +14480,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 122,
+            "line": 119,
             "description": "The epoch time the Client was instantiated.",
             "itemtype": "property",
             "name": "startTime",
@@ -14465,7 +14492,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 129,
+            "line": 126,
             "description": "A map of available apis and their actions.",
             "itemtype": "property",
             "name": "apiMap",
@@ -14477,7 +14504,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 136,
+            "line": 133,
             "itemtype": "property",
             "name": "wrapperMap",
             "type": "Object",
@@ -14489,7 +14516,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 143,
+            "line": 140,
             "itemtype": "property",
             "name": "preconnectionQueue",
             "type": "Array",
@@ -14501,7 +14528,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 150,
+            "line": 147,
             "itemtype": "property",
             "name": "launchParams",
             "type": "Object",
@@ -14513,7 +14540,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 157,
+            "line": 154,
             "itemtype": "property",
             "name": "watchMsgMap",
             "type": "Object",
@@ -14525,7 +14552,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 164,
+            "line": 161,
             "itemtype": "property",
             "name": "registeredCallbacks",
             "type": "Object",
@@ -14537,7 +14564,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 171,
+            "line": 168,
             "itemtype": "property",
             "name": "launchedIntents",
             "type": "Array",
@@ -14549,7 +14576,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 178,
+            "line": 175,
             "description": "Returns whether or not the participant is connected to the IWC bus.",
             "itemtype": "method",
             "name": "isConnected",
@@ -14564,7 +14591,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 188,
+            "line": 185,
             "description": "Parses launch parameters based on the raw string input it receives.",
             "itemtype": "method",
             "name": "readLaunchParams",
@@ -14582,7 +14609,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 211,
+            "line": 208,
             "description": "Receive a packet from the connected peer.  If the packet is a reply, then\nthe callback for that reply is invoked.  Otherwise, it fires a receive event\n\nFires:\n    - {{#crossLink \"ozpIwc.Client/receive:event}}{{/crossLink}}",
             "itemtype": "method",
             "name": "receive",
@@ -14602,7 +14629,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 277,
+            "line": 274,
             "description": "Builds the client api calls from the values in client.apiMap",
             "itemtype": "method",
             "name": "constructApiFunctions",
@@ -14613,7 +14640,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 302,
+            "line": 299,
             "description": "Calls the names.api to gather the /api/* resources to gain knowledge of available api actions of the\ncurrent bus.",
             "itemtype": "method",
             "name": "gatherApiInformation",
@@ -14628,7 +14655,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 345,
+            "line": 342,
             "description": "Cancel a reply callback registration.",
             "itemtype": "method",
             "name": "cancelPromiseCallback",
@@ -14649,7 +14676,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 361,
+            "line": 358,
             "description": "Cancel a watch callback registration.",
             "itemtype": "method",
             "name": "cancelRegisteredCallback",
@@ -14670,7 +14697,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 379,
+            "line": 376,
             "description": "Registers callbacks",
             "itemtype": "method",
             "name": "on",
@@ -14693,7 +14720,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 395,
+            "line": 392,
             "description": "De-registers callbacks",
             "itemtype": "method",
             "name": "off",
@@ -14716,7 +14743,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 407,
+            "line": 404,
             "description": "Handles intent invocation packets. Communicates back with the intents.api to operate the in flight\nintent\nstate machine.",
             "itemtype": "method",
             "name": "intentInvocationHandling",
@@ -14748,7 +14775,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 502,
+            "line": 499,
             "description": "Calls the specific api wrapper given an api name specified.\nIf the wrapper does not exist it is created.",
             "itemtype": "method",
             "name": "api",
@@ -14770,7 +14797,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 513,
+            "line": 510,
             "description": "Updates the wrapper map for api use. Whenever functionality is added or removed from the apiMap the\nupdateApi must be called to reflect said changes on the wrapper map.",
             "itemtype": "method",
             "name": "updateApi",
@@ -14792,7 +14819,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 536,
+            "line": 533,
             "description": "All message formatting calls sits inside the API wrapper's messageBuilder object. These\ncalls will return a formatted message ready to be sent.\n(e.g: data().messageBuilder.set)",
             "class": "ozpIwc.util.ApiPromiseMixin",
             "module": "ozpIwc",
@@ -14801,7 +14828,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 556,
+            "line": 553,
             "description": "All function calls are on the root level of the API wrapper. These calls will format messages and\nthen send them to the router.\n(e.g: data().set)",
             "class": "ozpIwc.util.ApiPromiseMixin",
             "module": "ozpIwc",
@@ -14810,7 +14837,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 568,
+            "line": 565,
             "description": "Iterate over all mapped function calls and augment their message formatter and function call.",
             "class": "ozpIwc.util.ApiPromiseMixin",
             "module": "ozpIwc",
@@ -14819,7 +14846,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 606,
+            "line": 603,
             "description": "A modified send for References. Returns only the direct\nentity of a response as apposed to the whole packet by\ndefault",
             "itemtype": "method",
             "name": "send",
@@ -14846,7 +14873,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 649,
+            "line": 643,
             "description": "Updates the default parameters of a Reference. Can be used\nto reassign defaults of a Reference",
             "itemtype": "method",
             "name": "updateDefaults",
@@ -14868,7 +14895,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 670,
+            "line": 664,
             "description": "Applies necessary properties to the packet to be transmitted through the router.",
             "itemtype": "method",
             "name": "fixPacket",
@@ -14890,7 +14917,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 696,
+            "line": 690,
             "description": "Registers callbacks for API request callbacks and promises.",
             "itemtype": "property",
             "name": "packet",
@@ -14919,7 +14946,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 769,
+            "line": 758,
             "description": "Sends a packet through the IWC.\nWill call the participants sendImpl function.",
             "itemtype": "method",
             "name": "send",
@@ -14952,7 +14979,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 816,
+            "line": 804,
             "description": "Generic handler for a bus connection to handle any queued messages & launch data after its connected.",
             "itemtype": "method",
             "name": "afterConnected",
@@ -14967,7 +14994,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 866,
+            "line": 854,
             "description": "Augmentation for Intents Api register. Automatically invokes a registration if the invoke was passed\ninto the application opening.",
             "itemtype": "method",
             "name": "intentRegisterAugment",
@@ -14991,7 +15018,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 886,
+            "line": 874,
             "description": "Augmentation for Intents Api invoke. Wraps callback to remove the callback when reaching\nerror/complete state.",
             "itemtype": "method",
             "name": "intentRegisterAugment",
@@ -15015,7 +15042,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 910,
+            "line": 898,
             "description": "Augmentation for Intents Api broadcast. Compiles the results of all intent handlers and then,\nreturns the responfixese in the promise resolution. Callback acts like invoke callback.",
             "itemtype": "method",
             "name": "intentRegisterAugment",
@@ -15039,7 +15066,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 956,
+            "line": 944,
             "description": "Augmenters for Intent Api specific actions.",
             "itemtype": "method",
             "name": "intentAugment",
@@ -15064,7 +15091,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 980,
+            "line": 967,
             "description": "Function generator. Generates API functions given a messageBuilder function.",
             "itemtype": "method",
             "name": "augment",
@@ -15092,7 +15119,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 1007,
+            "line": 994,
             "description": "Function generator. Generates API message formatting functions for a client-destination-action\npairing. These are generated for bulk sending capabilities, since the message needs to be formatted\nbut not transmitted until desired.",
             "itemtype": "method",
             "name": "messageBuilderAugment",
@@ -15124,7 +15151,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 1055,
+            "line": 1042,
             "description": "A factory for generating messages for a given API & Action.",
             "itemtype": "method",
             "name": "messageBuilderRefAugment",
@@ -15164,7 +15191,7 @@
         },
         {
             "file": "src/js/common/apiPromiseMixin.js",
-            "line": 1096,
+            "line": 1083,
             "description": "Handles packets received with a destination of \"$bus.multicast\".\nIf the packet action isn't handled, the function will return falsy.",
             "itemtype": "method",
             "name": "handleBusPacket",
@@ -15186,31 +15213,6 @@
             "return": {
                 "description": "",
                 "type": "*"
-            },
-            "class": "ozpIwc.util.Reference",
-            "module": "ozpIwc",
-            "submodule": "ozpIwc.util",
-            "namespace": "ozpIwc.util"
-        },
-        {
-            "file": "src/js/common/apiPromiseMixin.js",
-            "line": 1119,
-            "description": "A fix for bulkSend functionality, Filters out promise functionality\nso structured clones apply to bulkSends.",
-            "itemtype": "method",
-            "name": "fixBulkSend",
-            "access": "private",
-            "tagname": "",
-            "static": "*",
-            "params": [
-                {
-                    "name": "packet",
-                    "description": "",
-                    "type": "Object"
-                }
-            ],
-            "return": {
-                "description": "a reference to the packet.",
-                "type": "Object"
             },
             "class": "ozpIwc.util.Reference",
             "module": "ozpIwc",
@@ -16135,48 +16137,6 @@
             "return": {
                 "description": "",
                 "type": "Promise"
-            },
-            "class": "ozpIwc.util",
-            "module": "ozpIwc",
-            "namespace": "ozpIwc"
-        },
-        {
-            "file": "src/js/common/util.js",
-            "line": 514,
-            "description": "Returns the specified default value if the given value is undefined. safer than \"x = x || 500\" because it checks\nfor being defined, rather than its truly/falsey value.",
-            "itemtype": "method",
-            "name": "ifUndef",
-            "static": 1,
-            "params": [
-                {
-                    "name": "value",
-                    "description": "",
-                    "type": "*"
-                },
-                {
-                    "name": "defaultVal",
-                    "description": "",
-                    "type": "*"
-                }
-            ],
-            "return": {
-                "description": "",
-                "type": "*"
-            },
-            "class": "ozpIwc.util",
-            "module": "ozpIwc",
-            "namespace": "ozpIwc"
-        },
-        {
-            "file": "src/js/common/util.js",
-            "line": 528,
-            "description": "IE 10 does not play well gathering location.origin.",
-            "itemtype": "method",
-            "name": "getOrigin",
-            "static": 1,
-            "return": {
-                "description": "The origin this script is running in",
-                "type": "String"
             },
             "class": "ozpIwc.util",
             "module": "ozpIwc",
@@ -17191,7 +17151,7 @@
     "warnings": [
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/bus/api/base/api.js:346"
+            "line": " src/js/bus/api/base/api.js:344"
         },
         {
             "message": "replacing incorrect tag: returns with return",
@@ -17291,7 +17251,7 @@
         },
         {
             "message": "unknown tag: override",
-            "line": " src/js/bus/transport/listener/postMessage.js:112"
+            "line": " src/js/bus/transport/listener/postMessage.js:109"
         },
         {
             "message": "unknown tag: override",
@@ -17299,7 +17259,7 @@
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/bus/transport/listener/sharedWorker.js:64"
+            "line": " src/js/bus/transport/listener/sharedWorker.js:75"
         },
         {
             "message": "unknown tag: mixes",
@@ -17315,7 +17275,7 @@
         },
         {
             "message": "unknown tag: override",
-            "line": " src/js/bus/transport/participant/debugger.js:280"
+            "line": " src/js/bus/transport/participant/debugger.js:264"
         },
         {
             "message": "unknown tag: defualt",
@@ -17339,11 +17299,11 @@
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/bus/util/util.js:137"
+            "line": " src/js/bus/util/util.js:150"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/bus/util/util.js:168"
+            "line": " src/js/bus/util/util.js:181"
         },
         {
             "message": "replacing incorrect tag: returns with return",
@@ -17359,35 +17319,35 @@
         },
         {
             "message": "unknown tag: properties",
-            "line": " src/js/client/client.js:143"
+            "line": " src/js/client/client.js:139"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/client/client.js:335"
+            "line": " src/js/client/client.js:328"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/client/client.js:368"
+            "line": " src/js/client/client.js:361"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/client/debugger.js:45"
+            "line": " src/js/client/debugger.js:46"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/client/debugger.js:72"
+            "line": " src/js/client/debugger.js:73"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/client/debugger.js:92"
+            "line": " src/js/client/debugger.js:93"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/client/debugger.js:103"
+            "line": " src/js/client/debugger.js:104"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/js/client/debugger.js:114"
+            "line": " src/js/client/debugger.js:115"
         },
         {
             "message": "replacing incorrect tag: returns with return",
@@ -17399,15 +17359,15 @@
         },
         {
             "message": "Missing item type\nGenerates a unique key with the given prefix.",
-            "line": " src/js/bus/api/base/api.js:289"
+            "line": " src/js/bus/api/base/api.js:287"
         },
         {
             "message": "Missing item type\nSends packets of data from this API to other parts of the IWC bus.",
-            "line": " src/js/bus/api/base/api.js:729"
+            "line": " src/js/bus/api/base/api.js:726"
         },
         {
             "message": "Missing item type\nA handler function called when a participant connects to the bus. Intended to be overridden by inheriting APIs.",
-            "line": " src/js/bus/api/base/api.js:880"
+            "line": " src/js/bus/api/base/api.js:877"
         },
         {
             "message": "Missing item type\n}\n* @class DefinitionNode\n* @namespace ozpIwc.api.intents.node\n* @extends ozpIwc.api.base.Node\n* @constructor",
@@ -17455,7 +17415,7 @@
         },
         {
             "message": "Missing item type",
-            "line": " src/js/bus/transport/participant/sharedWorker.js:170"
+            "line": " src/js/bus/transport/participant/sharedWorker.js:168"
         },
         {
             "message": "Missing item type\nReceive a packet from the peer.\n\n**Emits**: {{#crossLink \"ozpIwc.transport.Router/prePeerReceive:event\"}}{{/crossLink}}",
@@ -17479,15 +17439,15 @@
         },
         {
             "message": "Missing item type\nAll message formatting calls sits inside the API wrapper's messageBuilder object. These\ncalls will return a formatted message ready to be sent.\n(e.g: data().messageBuilder.set)",
-            "line": " src/js/common/apiPromiseMixin.js:536"
+            "line": " src/js/common/apiPromiseMixin.js:533"
         },
         {
             "message": "Missing item type\nAll function calls are on the root level of the API wrapper. These calls will format messages and\nthen send them to the router.\n(e.g: data().set)",
-            "line": " src/js/common/apiPromiseMixin.js:556"
+            "line": " src/js/common/apiPromiseMixin.js:553"
         },
         {
             "message": "Missing item type\nIterate over all mapped function calls and augment their message formatter and function call.",
-            "line": " src/js/common/apiPromiseMixin.js:568"
+            "line": " src/js/common/apiPromiseMixin.js:565"
         },
         {
             "message": "Missing item type\nThe default scope of the router.",

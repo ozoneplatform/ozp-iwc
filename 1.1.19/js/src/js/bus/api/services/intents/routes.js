@@ -33,11 +33,7 @@ ozpIwc.api.intents.Api = (function (api, IntentsApi, log) {
      */
     var registerDefinitionFilter = function () {
         var setDefinition = function (packet, context, pathParams, next) {
-<<<<<<< HEAD
-            this.addCollector(context.node.resource);
-=======
             this.addCollector(context.node);
->>>>>>> gh-pages
             return next();
         };
 
@@ -245,8 +241,4 @@ ozpIwc.api.intents.Api = (function (api, IntentsApi, log) {
     });
 
     return IntentsApi;
-<<<<<<< HEAD
 }(ozpIwc.api, ozpIwc.api.intents.Api || {}, ozpIwc.log));
-=======
-}(ozpIwc.api, ozpIwc.api.intents.Api || {}, ozpIwc.log));
->>>>>>> gh-pages

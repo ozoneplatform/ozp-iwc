@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.2.0</em>
+            <em>API Docs for: 1.1.19</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -333,7 +333,20 @@ ozpIwc.util = (function (util) {
      */
     util.localStorageKey = &quot;ozp.iwc.transport.localStorage&quot;;
 
-        /**
+    /**
+     * Returns the specified default value if the given value is undefined. safer than &quot;x = x || 500&quot; because it checks
+     * for being defined, rather than its truly/falsey value.
+
+     * @method ifUndef
+     * @static
+     * @param {*} value
+     * @param {*} defaultVal
+     * @return {*}
+     */
+    util.ifUndef = function (value, defaultVal) {
+        return (typeof value === &#x27;undefined&#x27;) ? defaultVal : value;
+    };
+    /**
      * Returns an object representation of the content-type string
      * @method getFormattedContentType
      * @private

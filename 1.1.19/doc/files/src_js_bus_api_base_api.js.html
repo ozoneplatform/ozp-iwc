@@ -17,7 +17,7 @@
                 <h1><img src="../assets/css/logo.png" title="ozpIwc" width="117" height="52"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 1.2.0</em>
+            <em>API Docs for: 1.1.19</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -467,8 +467,6 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
     Api.prototype.shutdown = function () {
         if (this.leaderState === &quot;leader&quot;) {
             this.broadcastDeathScream(this.createDeathScream());
-        } else if (this.leaderState === &quot;member&quot; &amp;&amp; this.deathScream) {
-            this.broadcastDeathScream(this.deathScream);
         }
 
         //@TODO: The api deathscream would be included with the unlock but race conditions caused this to not be
@@ -674,7 +672,6 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         }
         log.debug(this.logPrefix + &quot;transitioning to leader&quot;);
 
-        this.deathScream = undefined;
         this.leaderState = &quot;leader&quot;;
         this.broadcastLeaderReady();
         this.deliverRequestQueue();
@@ -724,7 +721,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
         if (this.leaderState !== &quot;member&quot;) {
             return;
         }
-        this.deathScream = undefined;
+        this.deathScream = null;
         this.flushRequestQueue();
         return Promise.resolve();
     };
@@ -804,7 +801,7 @@ ozpIwc.api.base.Api = (function (api, log, transport, util) {
     };
 
     Api.prototype.getCollectionData = function (node) {
-        if (this.collectors.indexOf(node.resource) &gt; -1) {
+        if (this.collectors.indexOf(node.resource) &gt; -1){
             return this.matchingNodes(node.pattern).filter(function (matchedNode) {
                 // ignore deleted nodes
                 return !matchedNode.deleted;
