@@ -1,7 +1,7 @@
 ---
 layout: old_tutorial
 title: Setup and Key Terms
-permalink: "/1.2.1/tutorial/index.html"
+permalink: "/1.2.0/tutorial/index.html"
 category: basic
 tag: 1.2.0
 ---
