@@ -273,7 +273,7 @@ ozpIwc.api.intents.Api = (function (api, log, ozpConfig, util) {
         };
 
         updateInvoker(this, node);
-        return this.getPreference(node.entity.intent.type + "/" + node.entity.intent.action).then(function (handlerResource) {
+        return this.getPreference(node.entity.invokePacket.src + "/" + node.entity.intent.type + "/" + node.entity.intent.action).then(function (handlerResource) {
             if (handlerResource in self.data) {
                 node = api.intents.FSM.transition(node, {
                     entity: {
