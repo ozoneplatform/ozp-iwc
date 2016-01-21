@@ -34,6 +34,6 @@ gh-pages to ensure latest IWC bus is used (`/iframe_peer.html`).
 * Replace `layout: tutorials` with  `layout: old_examples` for all markdowns in the `examples` directory of the now old version.
 * Replace `layout: default` with `layout: old_default` for `index.html`
 * Remove `redirect_from` from all markdowns in the old version. These files contain it:
-  * index.html
-  * tutorial/00_index.md
-  * examples/00_sharedControl.md
+  * `index.html`
+  * `tutorial/00_index.md`
+  * `examples/00_sharedControl.md`
