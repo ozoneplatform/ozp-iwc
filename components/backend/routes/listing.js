@@ -121,8 +121,9 @@ try {
 fs.writeFileSync('db/listing', '');
 
 //Populate with listing files
-glob("../../bower_components/ozp-demo/**/listing*.json", {}, function (er, files) {
-    console.log(files);
+console.log("GETTING APPS");
+glob("../../bower_components/ozp-demo/app/**/listing*.json", {}, function (er, files) {
+    console.log(er, files);
     files.forEach(function (file) {
         fsGetListing(file, dbStoreListing);
     });
