@@ -1,10 +1,9 @@
 ---
-layout: old_examples
+layout: examples
 title: Shared Control
-permalink: "1.2.1/examples/index.html"
-redirect_from: "/examples/"
+permalink: "1.2.0/examples/index.html"
 category: basic
-tag: 1.2.0
+tag: 1.2.1
 ---
 
 # Shared Control

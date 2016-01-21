@@ -1,8 +1,8 @@
 ---
-layout: old_examples
+layout: examples
 title: Shared Functionality
 category: basic
-tag: 1.2.0
+tag: 1.2.1
 ---
 
 # Intents: Remote Functionality

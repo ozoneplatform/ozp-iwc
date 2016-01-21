@@ -1,8 +1,8 @@
 ---
-layout: old_tutorial
+layout: tutorial
 title: Shared Functions Overview
 category: intermediate
-tag: 1.2.0
+tag: 1.2.1
 ---
 # Intents
 In the **IWC**, an **intent** is a function of an application registered to

@@ -1,8 +1,8 @@
 ---
-layout: old_tutorial
+layout: tutorial
 title: Using References
 category: basic
-tag: 1.2.0
+tag: 1.2.1
 ---
 
 # Quick Start

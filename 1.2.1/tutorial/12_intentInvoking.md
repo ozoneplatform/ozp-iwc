@@ -1,8 +1,8 @@
 ---
-layout: old_tutorial
+layout: tutorial
 title: Invoking an Intent (Shared Function)
 category: intermediate
-tag: 1.2.0
+tag: 1.2.1
 ---
 # Invoking
 In the IWC, to **invoke** an intent, is to call the shared functionality
