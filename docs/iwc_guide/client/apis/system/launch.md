@@ -4,7 +4,7 @@
 * `[nodeValue.entity]`: **Object** - data to pass to the launched application. Obtainable in the launched application's
 connected client in the `launchParams` property.
 
- 
+
 ###Applies to only the System API
 
 ###Launch an Application Through the System API
@@ -17,7 +17,7 @@ To launch an application, simply call the `launch` action on the corresponding r
 ```
 var systemApi = client.system();
 
-systemApi.launch("/application/ea0c6018-4f12-410d-93b7-fe925b3a6ca2");
+systemApi.launch("/application/com.ozp.bouncingBalls");
 ```
 
 To launch an application with data passed to it:
@@ -25,7 +25,7 @@ To launch an application with data passed to it:
 var data = {
     "Hello": "world!"
 };
-systemApi.launch("/application/ea0c6018-4f12-410d-93b7-fe925b3a6ca2",{entity: data});
+systemApi.launch("/application/com.ozp.bouncingBalls",{entity: data});
 ```
 
 The launched application can gather the launch data using the `getLaunchData` method. It uses promises to resolve after
@@ -37,7 +37,7 @@ client.getLaunchData().then(function(data){
 });
 ```
 ###Passing launch parameters Without using the System API
-Alternatively, launch data can be passed to the opening application in the following places so long as the `key` is 
+Alternatively, launch data can be passed to the opening application in the following places so long as the `key` is
 `ozpIwc.launchData`:
 
 * window.name
@@ -45,7 +45,7 @@ Alternatively, launch data can be passed to the opening application in the follo
     * LaunchData persists through browser refresh (good for when sharing a URL of a application occurs).
 * Url hash: `(#launchData=<stringified & URIencoded  object>)`
     * LaunchData does not persist through browser refresh (good for when launching an application to handle the launch data for a unique one-time need).
-    
+
 To stringify and URI-encode a value in javascript:
 ```
 var obj = {'a': 1};

@@ -52,7 +52,10 @@ ozpIwc.api.system.node.ApplicationNode = (function (api, util) {
      * @return String
      */
     Node.prototype.resourceFallback = function (serializedForm) {
-        if (serializedForm.id) {
+        /*jshint camelcase: false */
+        if (serializedForm.unique_name) {
+            return "/application/" + serializedForm.unique_name;
+        } else if (serializedForm.id) {
             return "/application/" + serializedForm.id;
         }
     };

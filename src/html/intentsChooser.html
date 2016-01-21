@@ -119,6 +119,7 @@
             word-wrap: break-word;
             text-align: center;
             margin: 0;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -145,7 +146,7 @@
         <p>Use Once</p>
     </div>
     <div id="alwaysButton" class="footButton">
-        <p>Use Always</p>
+        <p>Use While Open</p>
     </div>
 </div>
 
@@ -241,14 +242,14 @@
         if (element) {
             element.setAttribute("class", "entry selected");
             onceButton.style.visibility = "visible";
-            //alwaysButton.style.visibility = "visible"; //@TODO: enable when persistence implemented
+            alwaysButton.style.visibility = "visible";
         }
     }
 
     function showHandlers(handlers) {
 
         onceButton.style.visibility = "hidden";
-        //alwaysButton.style.visibility = "hidden"; //@TODO: enable when persistence implemented
+        alwaysButton.style.visibility = "hidden"; 
         document.getElementById("handlerList").innerHTML = "";
         document.getElementById("launcherList").innerHTML = "";
         document.getElementById("launcherTitle").innerHTML = "";
@@ -294,7 +295,21 @@
     function showFooter(intentInvocation) {
         alwaysButton = document.getElementById("alwaysButton");
         alwaysButton.addEventListener("click", function () {
-            //@TODO: implement with persistence
+            var invoker = intentInvocation.entity.invokePacket.src;
+            var handler = selection.entity.invokeIntent.dst;
+            var intent = intentInvocation.entity.intent;
+
+            var resource = "/ozp/iwc/intents.api/" + invoker + "/" + intent.type +
+                           "/" + intent.action;
+
+            var prefRef = new client.data.Reference(resource,{
+                lifespan:{
+                    'bound': handler
+                }
+            });
+
+            prefRef.set(selection.resource);
+            handleSelection(selection, intentInvocation);
         });
 
         cancelButton = document.getElementById("cancelButton");
