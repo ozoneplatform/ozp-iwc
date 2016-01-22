@@ -1,0 +1,16 @@
+<div ng-class="{ 'sortable': sortable }">
+    <div class="ui-grid-cell-contents button-padding" col-index="renderIndex">
+        <!--Added Refresh All button to the first column header-->
+        <div class="btn-group-vertical">
+            <button type="button" class="btn btn-sm btn-primary" ng-click="grid.appScope.refresh(grid.appScope.gridOptions.columnDefs[1].filter.term)">
+                Refresh All
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" ng-click="grid.appScope.watchFiltered()">
+                Watch Filtered
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" ng-click="grid.appScope.unwatchFiltered()">
+                Unwatch Filtered
+            </button>
+        </div>
+</div>
+</div>
