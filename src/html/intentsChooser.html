@@ -249,7 +249,7 @@
     function showHandlers(handlers) {
 
         onceButton.style.visibility = "hidden";
-        alwaysButton.style.visibility = "hidden"; 
+        alwaysButton.style.visibility = "hidden";
         document.getElementById("handlerList").innerHTML = "";
         document.getElementById("launcherList").innerHTML = "";
         document.getElementById("launcherTitle").innerHTML = "";
@@ -278,6 +278,7 @@
                 if (selection) {
                     removeHighlight(selection);
                 }
+                client.intents.invoke('/application/ozp-iwc/highlight/'+h.entity.invokeIntent.dst);
                 selection = handler;
                 addHighlight(selection);
             });

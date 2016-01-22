@@ -265,6 +265,16 @@ ozpIwc.Client = (function (util) {
             var launcherResource = '/application/vnd.ozp-iwc-launch-data-v1+json/run/' + client.address;
             client.intents().register(launcherResource, sharedWorkerRegistrationData, sharedWorkerLauncher);
 
+
+            //-----------------------------------------
+            // Application Highlight Intent Handler
+            //-----------------------------------------
+            var highlightHandler = function (data, inFlightIntent) {
+                util.pulseWindow(client);
+                util.pulseTitle(client);
+            };
+            var hilightResource = '/application/ozp-iwc/highlight/' + client.address;
+            client.intents().register(hilightResource, sharedWorkerRegistrationData, highlightHandler);
         }).catch(function(err) {
             // Supress the error here, the application will get it from its
             // connect() call.

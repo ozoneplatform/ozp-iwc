@@ -198,5 +198,113 @@ ozpIwc.util = (function (util) {
         return path.split('/').slice(0,-2).join('/');
     }());
 
+
+    /**
+     * A css injection to produce the util.pulseWindow animation
+     */
+     var css =
+     ".ozp-iwc-pulse {  " +
+         "pointer-events: none; " +
+         "position: fixed; " +
+         "top: 0; " +
+         "left: 0; " +
+         "z-index: 5; " +
+         "width: 100%; " +
+         "height: 100%; " +
+         "-webkit-animation: ozp-iwc-pulse 1s linear; " +
+         "-moz-animation: ozp-iwc-pulse 1s linear; " +
+         "-ms-animation: ozp-iwc-pulse 1s linear; " +
+         "animation: ozp-iwc-pulse 1s linear; " +
+     "}" +
+     '@keyframes "ozp-iwc-pulse" {' +
+         "0% {background: rgba(210, 88, 40, 0);} " +
+         "25% {background: rgba(210, 88, 40, 0.9);} " +
+         "50% {background: rgba(210, 88, 40, 0.5);} " +
+         "75% {background: rgba(210, 88, 40, 0.9);} " +
+         "100% {background: rgba(210, 88, 40, 0);} " +
+     "}" +
+
+     '@-moz-keyframes "ozp-iwc-pulse" {' +
+         "0% {background: rgba(210, 88, 40, 0);} " +
+         "25% {background: rgba(210, 88, 40, 0.9);} " +
+         "50% {background: rgba(210, 88, 40, 0.5);} " +
+         "75% {background: rgba(210, 88, 40, 0.9);} " +
+         "100% {background: rgba(210, 88, 40, 0);} " +
+     "}" +
+
+     '@-webkit-keyframes "ozp-iwc-pulse" {' +
+         "0% {background: rgba(210, 88, 40, 0);} " +
+         "25% {background: rgba(210, 88, 40, 0.9);} " +
+         "50% {background: rgba(210, 88, 40, 0.5);} " +
+         "75% {background: rgba(210, 88, 40, 0.9);} " +
+         "100% {background: rgba(210, 88, 40, 0);} " +
+     "}" +
+     '@-ms-keyframes "ozp-iwc-pulse" {' +
+         "0% {background: rgba(210, 88, 40, 0);} " +
+         "25% {background: rgba(210, 88, 40, 0.9);} " +
+         "50% {background: rgba(210, 88, 40, 0.5);} " +
+         "75% {background: rgba(210, 88, 40, 0.9);} " +
+         "100% {background: rgba(210, 88, 40, 0);} " +
+     "}";
+     var head = document.head || document.getElementsByTagName('head')[0];
+     var style = document.createElement('style');
+
+     style.type = 'text/css';
+     if (style.styleSheet){
+       style.styleSheet.cssText =css;
+     } else {
+       style.appendChild(document.createTextNode(css));
+     }
+
+     head.appendChild(style);
+
+     /**
+      * Pulses the Client's browser window with a non-intrusive flashing overlay.
+      * @static
+      * @method pulseWindow
+      * @param  {Object} client
+      */
+      util.pulseWindow = function(client){
+        var overlay = document.getElementById("ozpIwcOverlay."+client.address);
+        if(!overlay){
+            overlay = document.createElement('div');
+            overlay.id = "ozpIwcOverlay."+client.address;
+            overlay.className = "ozp-iwc-pulse";
+            document.body.appendChild(overlay);
+            setTimeout(function(){
+                overlay.parentNode.removeChild(overlay);
+            },1010);
+        }
+    };
+
+    var isAnimating = false;
+    /**
+     * Temporarily changes the Client's browser window title to the given
+     * message.
+     * @static
+     * @method pulseTitle
+     * @param  {Object} client
+     * @param  {String} message The message to put as the title
+     */
+    util.pulseTitle = function(client, message) {
+        if(!isAnimating){
+            isAnimating = true;
+            var oldTitle = document.title;
+            var animTitle = message || "IWC Selected";
+            var setAnim = function(){
+                document.title = animTitle;
+            };
+            var setOrig = function(){
+                document.title = oldTitle;
+            };
+
+            setAnim();
+            setTimeout(function(){
+                setOrig();
+                isAnimating = false;
+            }, 1000);
+        }
+    };
+
     return util;
 }(ozpIwc.util));
