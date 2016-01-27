@@ -13,7 +13,7 @@ This allows watch actions to be stopped **outside of the registered application*
 To utilize this, the reference used for registration needs to have its
 `fullResponse`  property of its configuration set to true:
 ```
-var fooRef = new client.data.Reference("/foo",{fullResponse: true});
+var fooRef = new iwc.data.Reference("/foo",{fullResponse: true});
 ```
 
 When registering a watch, 2 important properties are returned in the

@@ -1,8 +1,9 @@
+##OUTDATED: These documents pertain to the IWC before References were introduced.
 ### API Functionality
-All IWC APIs utilize promises to make asynchronous access easier. In addition some API actions use callbacks for event 
-based operations. 
+All IWC APIs utilize promises to make asynchronous access easier. In addition some API actions use callbacks for event
+based operations.
 
-A promise resolution is a function call with the response of the IWC Bus processing the action: 
+A promise resolution is a function call with the response of the IWC Bus processing the action:
 
 A `get` resolves with the value the IWC bus has stored for the given node.
 ```

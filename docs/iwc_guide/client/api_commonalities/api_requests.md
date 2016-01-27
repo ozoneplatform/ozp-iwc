@@ -1,3 +1,4 @@
+##OUTDATED: These documents pertain to the IWC before References were introduced.
 ##API Requests
 Making an api request uses the following structure:
 
@@ -33,4 +34,3 @@ client.${Api}().${Action}( ${Path}, [Callback], [Value] );
 ```
 
 ***
-

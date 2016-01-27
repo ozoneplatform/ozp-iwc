@@ -10,7 +10,7 @@ To retrieve a node stored in an API the `get` action is used on
 passed through the resolution of the action's promise.
 
 ```
-var ballRef = new client.data.Reference("/ball"); // generate the reference to the resource
+var ballRef = new iwc.data.Reference("/ball"); // generate the reference to the resource
 var ballVal;
 
 ballRef.get().then(function(value){

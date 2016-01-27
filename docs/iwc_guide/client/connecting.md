@@ -3,11 +3,9 @@ To use IWC between applications, IWC client connections must be added to each ap
 These clients connect to an IWC bus that is bound by the browser as well as the domain it is obtained from.
 
 ```
-var client = new ozpIwc.Client({
-    peerUrl: "http://localhost:13000"
-});
+var iwc = new ozpIwc.Client("http://localhost:13000");
 
-client.connect().then(function(){
+iwc.connect().then(function(){
    /* client use goes here */
 });
 ```
@@ -17,7 +15,7 @@ The actual javascript that makes up the bus is gathered from that url and ran lo
 
 All aspects of the client use promises to simplify integration with asynchronous applications.
 
-When connecting to a platform hosts bus, the host should provide documention on where to connect. In many cases it may 
+When connecting to a platform hosts bus, the host should provide documention on where to connect. In many cases it may
 not be the root path of a domain.
 
 ***
@@ -26,12 +24,9 @@ not be the root path of a domain.
 Disconnecting an application from the IWC bus is as simple as calling `disconnect().`
 
 ```
-var client = new ozpIwc.Client({
-    peerUrl: "http://localhost:13000"
-});
+var iwc = new ozpIwc.Client("http://localhost:13000");
 
-client.connect().then(function(){
-    client.disconnect();
+iwc.connect().then(function(){
+    iwc.disconnect();
 });
 ```
-

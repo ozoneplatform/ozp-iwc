@@ -1,9 +1,6 @@
-##System API Action: launch(nodeKey,nodeValue)
-* `nodeKey`: **String** - the name of the API Node. ([What is an API Node?](../../resources.md))
-* `nodeValue`: **Object** - the settings to store the node.
-* `[nodeValue.entity]`: **Object** - data to pass to the launched application. Obtainable in the launched application's
+##System API Action: launch(nodeValue)
+* `nodeValue`: **Object** - data to pass to the launched application. Obtainable in the launched application's
 connected client in the `launchParams` property.
-
 
 ###Applies to only the System API
 
@@ -12,12 +9,12 @@ Applications have the possibility to launch other applications in the IWC. Rathe
 the System API can be used to pass important information to the launching application much like how Android allows
 passing serialized data to new activities.
 
-To launch an application, simply call the `launch` action on the corresponding resource.
+To launch an application, simply call the `launch` action on the corresponding resource **reference**.
 
 ```
-var systemApi = client.system();
+var bouncingBallsRef = new iwc.system.Reference("/applicatin/com.ozp.bouncingBalls");
 
-systemApi.launch("/application/com.ozp.bouncingBalls");
+bouncingBallsRef.launch();
 ```
 
 To launch an application with data passed to it:
@@ -25,14 +22,15 @@ To launch an application with data passed to it:
 var data = {
     "Hello": "world!"
 };
-systemApi.launch("/application/com.ozp.bouncingBalls",{entity: data});
+
+bouncingBallsRef.launch(data);
 ```
 
 The launched application can gather the launch data using the `getLaunchData` method. It uses promises to resolve after
 the client has connected:
 ```
 var launchData = {};
-client.getLaunchData().then(function(data){
+iwc.getLaunchData().then(function(data){
     launchData= data;
 });
 ```

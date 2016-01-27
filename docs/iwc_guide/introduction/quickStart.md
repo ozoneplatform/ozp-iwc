@@ -34,13 +34,13 @@ Connecting a Javascript entity to the Bus
 2. Create a IWC client. In your application's javascript instantiate a new `ozpIwc.Client`. The peerUrl is the path to
 the hosted bus, `grunt serve` hosts an example bus locally on port 13000.
     ```
-    var client = new ozpIwc.Client({ peerUrl: "http://localhost:13000"});
+    var iwc = new ozpIwc.Client("http://localhost:13000");
     ```
 
 3. Test that the client can connect. Add the following to your application's javascript and see if the console responds
 with the connected address. If so, your application is configured to use the sample IWC bus hosted on your machine.
     ```
-    client.connect().then(function(){
+    iwc.connect().then(function(){
         console.log("IWC Client connected with address:", client.address);
     }).catch(function(err){
         console.log("IWC Client failed to connect:", err);
@@ -50,7 +50,7 @@ with the connected address. If so, your application is configured to use the sam
 Referencing a IWC Data resource
 --------------
 ```
-var tshirtRef = new client.data.Reference("/t-shirt");
+var tshirtRef = new iwc.data.Reference("/t-shirt");
 ```
 Key-Value capabilities
 --------------
@@ -84,7 +84,7 @@ Key-Value capabilities
 Referencing a IWC Intent Resource (Remote Functionality)
 --------------
 ```
-var funcRef = new client.intents.Reference("/text/plain/print");
+var funcRef = new iwc.intents.Reference("/text/plain/print");
 ```
 
 Intent capabilities
@@ -118,7 +118,7 @@ Intent capabilities
 Referencing a IWC System Resource (Application awareness: requires dedicated backend configuration)
 --------------
 ```
-var appRef = new client.system.Reference("/application/com.ozone.bouncingBalls");
+var appRef = new iwc.system.Reference("/application/com.ozone.bouncingBalls");
 ```
 
 1. Launching application (in new window)

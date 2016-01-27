@@ -1,3 +1,4 @@
+##OUTDATED: These documents pertain to the IWC before References were introduced.
 ###Example
 This snippit is an example of using the **Data API** through an already connected client.
 

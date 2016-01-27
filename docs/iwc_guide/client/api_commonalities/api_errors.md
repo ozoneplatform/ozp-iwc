@@ -1,3 +1,4 @@
+##OUTDATED: These documents pertain to the IWC before References were introduced.
 ##Error Handling
 Not all requests are valid. In the event that a request cannot be handled, or should not be allowed, the promise will
 reject. This allows for a clean separation for error handling. The value of **errRes** follows the same format of
@@ -31,4 +32,3 @@ dataApi.get().then(function(res){
     // handle the error here.
 });
 ```
-    

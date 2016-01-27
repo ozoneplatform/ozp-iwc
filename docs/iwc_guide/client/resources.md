@@ -19,7 +19,7 @@ To generate a reference, use the `Reference` constructor of the desired API
 on the IWC client:
 
 ```
-var fooRef = new client.data.Reference("/foo");
+var fooRef = new iwc.data.Reference("/foo");
 ```
 
 The object `fooRef` now contains a set of functions to access/modify the data api

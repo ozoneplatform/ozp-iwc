@@ -14,7 +14,7 @@ connected to the IWC. These resources are labeled as `/api/{address}`
 (/api/data.api, /api/names.api, ...).
 
 ```
-var apiRef = new client.names.Reference("/api/");
+var apiRef = new iwc.names.Reference("/api/");
 var apiPaths;
 
 apiRef.list().then(function(paths){

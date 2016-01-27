@@ -10,7 +10,7 @@ reference to the node. The action is asynchronous, and returns a promise that
 resolves if successful. No value is returned to the resolved promise.
 
 ```
-var fooRef = new client.data.Reference("/foo");
+var fooRef = new iwc.data.Reference("/foo");
 fooRef.set("Hello World!");
 ```
 ##Creating/Updating a Read-Only Node
@@ -18,7 +18,7 @@ Requesting to create/update a node in a read-only API will result in a `noPermis
 **System API and Names API both contain read-only resources**
 
 ```
-var myApp = new client.system.Reference("/application/com.ozone.myApp");
+var myApp = new iwc.system.Reference("/application/com.ozone.myApp");
 
 myApp.set("random value").catch(function(err){
     //err === "noPermission"

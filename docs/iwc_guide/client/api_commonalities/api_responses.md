@@ -1,3 +1,4 @@
+##OUTDATED: These documents pertain to the IWC before References were introduced.
 ##API Responses
 Since the IWC operates asynchronously, all requests receive a response sent back to a client that resolves the actions
 promise.

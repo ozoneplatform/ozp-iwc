@@ -24,7 +24,7 @@ var config = {
     respondOn: "none"
 };
 
-var fooRef = new client.data.Reference("/foo",config);
+var fooRef = new iwc.data.Reference("/foo",config);
 ```
 
 While the purpose of references is to reduce the footprint of code on the

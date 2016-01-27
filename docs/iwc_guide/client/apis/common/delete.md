@@ -10,7 +10,7 @@ the node. The action is asynchronous and the promise will resolve without a
 response if successful.
 
 ```
-var fooRef = new client.data.Reference("/foo");
+var fooRef = new iwc.data.Reference("/foo");
 fooRef.delete();
 ```
 
@@ -24,7 +24,7 @@ Requesting to delete a node in a read-only API will result in a `noPermission` e
 
 ```
 
-var apiRef = new client.names.Reference("/api/data.api");
+var apiRef = new iwc.names.Reference("/api/data.api");
 apiRef.delete().catch(function(err){
     //err === "noPermission"
 });

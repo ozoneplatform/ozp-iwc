@@ -4,16 +4,23 @@ The Names API does not load persistent data from the backend, all nodes are gene
 
 ***
 
-### Accessing the System API
-The Intents API is accessed by calling the `names()` property of a connected IWC Client.
+### Accessing the Names API
+The Names API is accessed through the `names` property of a connected IWC Client.
 
 ```
-var client = new ozpIwc.Client({ peerUrl: "http://localhost:13000});
-client.connect().then(function(){
+var iwc = new ozpIwc.Client("http://localhost:13000);
+var names = iwc.names;
+```
 
-    var namesApi = client.names();
+### Referencing Names API Nodes
+The IWC uses the concept of **references** when accessing resources. References
+are objects with auto-generated functionality to perform **actions** on
+a given resource.
 
-});
+To create a reference to a resource, use the `Reference` constructor of the
+desired api, `names` in this case, with a string of the resource path:
+```
+var routerRef = new iwc.names.Reference("/router");
 ```
 
 ### Names API Actions
@@ -29,19 +36,19 @@ client.connect().then(function(){
 
 
 ###Names API node structure
-The Names API relies on the path-level separation node scheme to easily separate differences in resources. 
+The Names API relies on the path-level separation node scheme to easily separate differences in resources.
 
 The table below breaks down the differences in each level.
 
-All of the following node keys can be gathered as collections using the list action (see 
+All of the following node keys can be gathered as collections using the list action (see
 [Listing Resources](../common/listing.md))
 
 **/api/{address}**: An API on the bus. Contains an array of actions pertaining to the API.
 
-**/address/{address}**: A connection to the bus. All components of the IWC bus have an assigned address. Contains 
+**/address/{address}**: A connection to the bus. All components of the IWC bus have an assigned address. Contains
 information on the component assigned to the address.
 
-**/multicast/{group}/{member}**: A group-specific multicast member. Multicast messages are distributed to all members 
+**/multicast/{group}/{member}**: A group-specific multicast member. Multicast messages are distributed to all members
 of the group (internal messaging not client messaging). Contains information on the component assigned to the address.
 
 **/router/{address}**: A router connected to the IWC bus. Each window has a router to distribute messages amongst its
@@ -54,26 +61,5 @@ participants. Contains information on its participants.
 | /multicast/{group}/{member} | application/vnd.ozp-iwc-multicast-address-v1+json | no  | yes | no     |
 | /router/{address}           | application/vnd.ozp-iwc-router-v1+json            | no  | yes | no     |
 
-Requesting an action on a node that does not fit the given node structure will result in a response of 
-"badResource":
-```
-{
-    "ver": 1,
-    "src": "names.api",
-    "msgId": "p:95269",
-    "time": 1435697461893,
-    "response": "badResource",
-    "entity": {
-        "ver": 1,
-        "src": "3de31e8b.a5efe614",
-        "msgId": "p:88546",
-        "time": 1435697461811,
-        "dst": "names.api",
-        "action": "get",
-        "resource": "/hello",
-        "entity": {}
-    },
-    "replyTo": "p:88546",
-    "dst": "3de31e8b.a5efe614"
-}
-```
+Requesting an action on a node that does not fit the given node structure will result in a response of
+`"badResource"`;

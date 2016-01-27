@@ -14,7 +14,7 @@ that when calling `bulkGet`, all resource pathed under `/api/` will be returned.
 
 
 ```
-var apiRef = new client.names.Reference("/api");
+var apiRef = new iwc.names.Reference("/api");
 var apiMap = {}
 
 apiRef.bulkGet().then(function(values){

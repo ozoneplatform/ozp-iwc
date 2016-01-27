@@ -7,10 +7,11 @@ future sessions.
 
 ### Accessing the Data API
 The Data API is accessed by accessing the `data` property of a connected IWC Client.
+**References** are created through the `data` property.
 
 ```
-var client = new ozpIwc.Client({ peerUrl: "http://localhost:13000});
-var dataApi = client.data;
+var iwc = new ozpIwc.Client("http://localhost:13000);
+var dataApi = iwc.data;
 ```
 
 ### Referencing Data API Nodes
@@ -21,7 +22,7 @@ a given resource.
 To create a reference to a resource, use the `Reference` constructor of the
 desired api, `data` in this case, with a string of the resource path:
 ```
-var ballRef = new client.data.Reference("/ball");
+var ballRef = new iwc.data.Reference("/ball");
 ```
 
 ### Data API Actions

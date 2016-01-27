@@ -29,7 +29,7 @@ This example watches the `/foo` node in the Data API. It stops its callback from
 firing once the value of the entity of
 `/foo` is `2`.
 ```
-var fooRef = new client.data.Reference("/foo");
+var fooRef = new iwc.data.Reference("/foo");
 
 fooRef.watch(function(change,done){
     var newVal = change.newValue;
@@ -58,7 +58,7 @@ var config = {
     collect: true,
     fullResponse: true
 };
-var ballsRef = new client.data.Reference("/balls",config);
+var ballsRef = new iwc.data.Reference("/balls",config);
 
 var onBallsChanged=function(change) {
     change.newCollection.forEach(function(b) {
