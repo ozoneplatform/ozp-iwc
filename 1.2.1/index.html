@@ -1,7 +1,5 @@
 ---
-
-redirect_from: "/"
-layout: default
+layout: old_default
 tag: 1.2.1
 releases:
     - 1.2.0
@@ -116,13 +114,13 @@ releases:
         <h1>Looking for Previous Release Documentation?</h1>
         <p>The IWC is an evergrowing effort, and with that documentation, tutorials, and examples must grow as well. The content hosted on this website pertains to <b> the latest release
         of the IWC </b>. If working with a previous version, refer to the documentation below:</p>
-        {% for releases in page.releases %}
+        {% for release in page.releases %}
         <div class="col3 no-bullet" style="border:0px">
-            <h3> <a href = "{{site.baseurl}}/{{tag}}">{{tag}}</a> </h3>
+            <h3> <a href = "{{site.baseurl}}/{{release}}">{{release}}</a> </h3>
             <ul>
-                <li><a href = "{{site.baseurl}}/{{releases}}/tutorial/">Tutorials</a></li>
-                <li><a href = "{{site.baseurl}}/{{releases}}/examples/">Examples</a></li>
-                <li><a href = "{{site.baseurl}}/{{releases}}/gitbook/">Gitbook</a></li>
+                <li><a href = "{{site.baseurl}}/{{release}}/tutorial/">Tutorials</a></li>
+                <li><a href = "{{site.baseurl}}/{{release}}/examples/">Examples</a></li>
+                <li><a href = "{{site.baseurl}}/{{release}}/gitbook/">Gitbook</a></li>
             </ul>
         </div>
         {% endfor %}

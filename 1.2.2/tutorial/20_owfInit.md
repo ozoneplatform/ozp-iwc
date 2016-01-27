@@ -1,8 +1,8 @@
 ---
-layout: old_tutorial
+layout: tutorial
 title: Application Setup
 category: owf
-tag: 1.2.1
+tag: 1.2.2
 ---
 # Migration from OWF to IWC
 This tutorial is for developers who are migrating applications previously

@@ -1,8 +1,8 @@
 ---
-layout: old_tutorial
+layout: tutorial
 title: Location Analyzer
 category: advanced
-tag: 1.2.1
+tag: 1.2.2
 ---
 
 To understand this tutorial, understanding how to create & connect an IWC client

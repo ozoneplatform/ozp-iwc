@@ -1,8 +1,8 @@
 ---
-layout: old_tutorial
+layout: tutorial
 title: Registering an Intent (Shared Function)
 category: intermediate
-tag: 1.2.1
+tag: 1.2.2
 ---
 
 # Registering an Intent on the Intents API

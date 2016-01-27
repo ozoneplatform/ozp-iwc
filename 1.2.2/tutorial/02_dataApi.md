@@ -1,8 +1,8 @@
 ---
-layout: old_tutorial
+layout: tutorial
 title: Basic Data Sharing
 category: basic
-tag: 1.2.1
+tag: 1.2.2
 ---
 
 # Sharing Data with the Data API
