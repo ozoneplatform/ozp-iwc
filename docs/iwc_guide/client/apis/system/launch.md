@@ -12,7 +12,7 @@ passing serialized data to new activities.
 To launch an application, simply call the `launch` action on the corresponding resource **reference**.
 
 ```
-var bouncingBallsRef = new iwc.system.Reference("/applicatin/com.ozp.bouncingBalls");
+var bouncingBallsRef = new iwc.system.Reference("/application/com.ozp.bouncingBalls");
 
 bouncingBallsRef.launch();
 ```
