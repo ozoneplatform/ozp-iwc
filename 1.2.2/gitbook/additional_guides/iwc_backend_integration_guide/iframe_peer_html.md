@@ -25,7 +25,7 @@ Below is an example of a configured iframe_peer.html.
 
 **Overview**
 
-An iframe_peer.html file is necessary for an IWC deployment. When a client application opens a connection to the IWC bus, it opens the domains `iframe_peer.html`. For an IWC client to connect to a deployed bus, **the iframe_peer.html file location decides the path the client connects to**. 
+An iframe_peer.html file is necessary for an IWC deployment. When a client application opens a connection to the IWC bus, it opens the domains `iframe_peer.html`. For an IWC client to connect to a deployed bus, **the iframe_peer.html file location decides the path the client connects to**.
 
 ***
 
@@ -33,7 +33,7 @@ An iframe_peer.html file is necessary for an IWC deployment. When a client appli
 
 If the iframe_peer.html file is located at `http://ozone-development.github.io/iwc/iframe_peer.html` a client application can connect to the IWC bus with a peerUrl of `http://ozone-development.github.io/iwc`. See the example connection below:
 ```
-var client = new ozpIwc.client({peerUrl: "http://ozone-development.github.io/iwc");
+var iwc = new ozpIwc.Client("http://ozone-development.github.io/iwc");
 ```
 For more information on IWC client aspects see [[IWC App Integration]]
 
@@ -46,7 +46,7 @@ The ozpIwc-bus.js & defaultInit.js files can be hosted anywhere else on server s
 
 
 **Configuration**
-The following IWC bus properties can be configured in the iframe_peer.html. Note that by file hierarchy iframe_peer.html is the first loaded entity of the IWC bus, thus declaring the `ozpIwc` namespace is necessary for configurations. 
+The following IWC bus properties can be configured in the iframe_peer.html. Note that by file hierarchy iframe_peer.html is the first loaded entity of the IWC bus, thus declaring the `ozpIwc` namespace is necessary for configurations.
 
 Property | Type | Default Value | Definition
 ---------|------|----------------|-----------
