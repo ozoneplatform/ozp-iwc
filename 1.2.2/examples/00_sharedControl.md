@@ -1,7 +1,8 @@
 ---
 layout: examples
 title: Shared Control
-permalink: "1.2.1/examples/index.html"
+permalink: "1.2.2/examples/index.html"
+redirect_from: /examples/
 category: basic
 tag: 1.2.2
 ---
