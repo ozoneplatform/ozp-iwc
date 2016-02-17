@@ -12,6 +12,8 @@ the data and services offered by others to enrich their own user experience.
 *An example of two applications utilizing the IWC to communicate.*
 The IWC provides lightweight browser-side application integration.
 --------------
+![img](https://cloud.githubusercontent.com/assets/8047457/13112417/8f38f60e-d558-11e5-964d-77481832b677.png)
+--------------
 Today’s rich web applications tend to carry more state than a simple link can convey, and componentized development
 allows UI elements to be embedded, but at the cost of maintenance and application size. The IWC allows application
 frontends to expose data and services to other applications within the browser. Just like services on an ESB, these
