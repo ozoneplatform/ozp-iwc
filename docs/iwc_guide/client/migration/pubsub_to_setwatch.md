@@ -58,9 +58,9 @@ See the [lifespan](../core_apis/common/storing.md) documentation for further inf
 * **Channel name (OWF) and Resource name (IWC) differences**: IWC bases its resources off of the URI pathing, so the
 resource `/ClockChannel` is a relative path to where it would be accessed if persisted to the backend:
 `<user's data api URL path>/ClockChannel`. The concept of relative resources should be pathed based on forward slashes
-`/`, as to promote better data separation. For example, all data.api resources for some widget `MyWidget` may be pathed
- as `/MyWidget/<resource name>`. This also allows for advanced resource gathering actions based on common paths (listing
- all resources who's relative path begins with `/MyWidget/clocks/`  would gather `/MyWidget/clocks/1`, `/MyWidget/clocks/2`, ... .
+`/`, as to promote better data separation. For example, all data.api resources for some application `MyApp` may be pathed
+ as `/MyApp/<resource name>`. This also allows for advanced resource gathering actions based on common paths (listing
+ all resources who's relative path begins with `/MyApp/clocks/`  would gather `/MyApp/clocks/1`, `/MyApp/clocks/2`, ... .
 
 * **IWC Set requires the value wrapped in `entity`**: This is because IWC action's allow for more than just the value of
  the resource to be modified. For data storing and sharing purposes, consider the `{entity: value}` structure to

@@ -11,10 +11,10 @@
 To register to handle an intent, the `register` action is used.
 When registering an intent handler, two entity properties are used to make choosing a handler easier for the end user:
 
-1.  **label**: A short string noting the widget handling the intent (typically the widget title).
-2.  **icon**: A url path to a icon to use for the widget.
+1.  **label**: A short string noting the application handling the intent (typically the application title).
+2.  **icon**: A url path to a icon to use for the application.
 
-When a label/icon is not provided, the page title of the widget is used as the label and the icon will default to a
+When a label/icon is not provided, the page title of the application is used as the label and the icon will default to a
 predefined default icon.
 
 ```
@@ -25,7 +25,7 @@ var config = {
 };
 
 var onInvoke = function(payload) {
-    return someWidgetFunction(payload);
+    return someAppFunction(payload);
 };
 
 var viewRef = new iwc.intents.Reference("/application/json/view");
