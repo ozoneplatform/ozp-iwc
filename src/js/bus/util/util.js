@@ -95,7 +95,7 @@ ozpIwc.util = (function (util) {
             // set this.alerts[message].silence if the user silenced the alerts
 
             // Temporary placement: all alerts are silenced after first instance, but since this is not in data.api its
-            // on a widget basis.
+            // on an application basis.
             this.alerts[message].silence = true;
             ozpIwc.log.log(message, errorObject);
         }

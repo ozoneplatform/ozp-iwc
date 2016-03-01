@@ -3,7 +3,7 @@
 
 ###[Visit the IWC Website for Tutorials and Docs](http://ozone-development.github.io/ozp-iwc/)
 
-The Ozone Platform's Inter-Widget Communications (IWC) enables loosely coupled integration of web applications by
+The Ozone Platform's Inter-Window Communications (IWC) enables loosely coupled integration of web applications by
 applying the best practices of enterprise service buses and service-oriented architecture to a completely
 in-browser system that works across multiple tabs and windows. Applications can share data and services then use
 the data and services offered by others to enrich their own user experience.

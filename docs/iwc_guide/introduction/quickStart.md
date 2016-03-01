@@ -26,7 +26,7 @@ Connecting a Javascript entity to the Bus
     ```
 
     **Non-bower**: Download the latest [IWC release](https://github.com/ozone-development/ozp-iwc/releases) and copy
-    the client library (dist/js/ozpIwc-client.min.js) into your widget's project and refer to it with the script tag.
+    the client library (dist/js/ozpIwc-client.min.js) into your application's project and refer to it with the script tag.
     ```      
     <script src="<relative pathing for project>/ozpIwc-client.min.js"></script>
     ```    

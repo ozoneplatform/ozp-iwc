@@ -5,7 +5,7 @@ certain intents (ex. graphing data, displaying HTML) as well as emit intents to 
 Like android, the IWC Intents api presents the user with a dialog to choose what application should handle their request.
 
 ![img](../../../assets/intent_chooser.gif)
-_Widgets in the [OZONE Webtop](https://github.com/ozone-development/ozp-webtop) using intents to handle mapping data.
+_Applications in the [OZONE Webtop](https://github.com/ozone-development/ozp-webtop) using intents to handle mapping data.
 The modal opened is Webtop's unique IWC dialog to make intent handler decisions. IWC used outside of Webtop utilizes a
 popup window to make intent handler decisions._
 

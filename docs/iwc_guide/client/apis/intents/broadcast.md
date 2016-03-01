@@ -6,9 +6,9 @@
 
 ###Broadcast an intent to be Handled by all IWC Intent Registration
 
-When a widget wants to offload operations to other widgets on the bus, intent invocations are used. Much like
+When an application wants to offload operations to other applications on the bus, intent invocations are used. Much like
 Android intents, a payload is not a requirement to send with the intent but is an added benefit. Intents can be used
-for notifications (broadcast to all widgets on the bus), triggering some background operation (shutdown utilities),
+for notifications (broadcast to all applications on the bus), triggering some background operation (shutdown utilities),
 offloading common tasks (visualizing data, compiling output files, converting documents), and much more.
 
 

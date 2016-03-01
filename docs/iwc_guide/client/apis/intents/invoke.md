@@ -6,9 +6,9 @@
 
 ###Invoke an intent to be Handled by some IWC Intent Registration
 
-When a widget wants to offload operations to other widgets on the bus, intent invocations are used. Much like
+When an application wants to offload operations to other applications on the bus, intent invocations are used. Much like
 Android intents, a payload is not a requirement to send with the intent but is an added benefit. Intents can be used
-for notifications (broadcast to all widgets on the bus), triggering some background operation (shutdown utilities),
+for notifications (broadcast to all applications on the bus), triggering some background operation (shutdown utilities),
 offloading common tasks (visualizing data, compiling output files, converting documents), and much more.
 
 
@@ -56,7 +56,7 @@ handle the desired invocation.
 
 ###What if there is more than one handler?
 If more than one handler is available, the user is prompted with an "intent chooser" that allows a decision to be made
-by the user for which handler (widget) should accept the invocation.
+by the user for which handler (application) should accept the invocation.
 
 User preferences on intent handlers is currently in development. The user will be able to save handler choices so that
 they do not use an "intent chooser" unless the IWC can't find a preference.

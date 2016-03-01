@@ -6,7 +6,7 @@ The IWC is composed of two components, a **client** and a **bus**.
 ####Client
 The client component of the IWC is standard amongst all IWC instances. It is a library that applications use to connect 
 to and make requests on any given bus. To connect to a bus, the client library opens the desired
-bus in an invisible iFrame. In order to talk across the domain of the widget and the domain of the bus, the client and
+bus in an invisible iFrame. In order to talk across the domain of the application and the domain of the bus, the client and
 bus components have a defined protocol for making cross origin requests. 
 
 The client component resides in the domain of the application, while the bus component resides in the domain hosting 
@@ -27,9 +27,9 @@ component.
 backend, configure deployments, and enforce policies.**
 
 A running bus component communicates with its remote server to gather information regarding available applications, 
-preferences, persisted data and permission level to enhance functionality of clients (widgets) connected. More 
+preferences, persisted data and permission level to enhance functionality of clients (applications) connected. More 
 information on communication with the remote server can be found in the [Server communications](serverComms.md) section.
 
-A client (widget) can only communicate with other clients(widgets) connected to the same bus, this is due to the 
+A client (application) can only communicate with other clients(applications) connected to the same bus, this is due to the 
 security measures put in place for [cross-origin resource sharing(CORS)] (http://www.w3.org/TR/cors/). Bridging two
 buses together (joining two bridge domains) is possible, but not implemented at this time.
