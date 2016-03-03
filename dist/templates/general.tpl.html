@@ -1,0 +1,26 @@
+<style>
+    .tab-pane {
+        border-left: 1px solid #ddd;
+        border-right: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
+        max-height:80vh;
+        overflow:auto
+    }
+</style>
+<div class="app-tab">
+    <tabset>
+        <tab heading="About" id="test">
+            <gen-about></gen-about>
+        </tab>
+
+        <tab heading="User">
+            <gen-user></gen-user>
+        </tab>
+        <tab heading="Build">
+            <gen-build></gen-build>
+        </tab>
+        <tab heading="Endpoints">
+            <gen-endpoints></gen-endpoints>
+        </tab>
+    </tabset>
+</div>
