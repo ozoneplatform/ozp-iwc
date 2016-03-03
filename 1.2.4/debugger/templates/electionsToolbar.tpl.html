@@ -1,0 +1,20 @@
+<form class="form-inline">
+    <div class="btn-group">
+        <button class="btn" ng-class="{true:'btn-danger',false:'btn-primary'}[logging]"
+                ng-disabled="blockBtns"
+                ng-click="logToggle()"
+                tooltip-placement="bottom" tooltip="Start/Stop continuous metrics updates.">
+            {{ logging ? 'Enabled' : 'Disabled' }}
+        </button>
+        <button class="btn" ng-class="{true:'btn-danger',false:'btn-primary'}[recvToggle]"
+                btn-checkbox ng-model="recvToggle"
+                ng-disabled="!logging"
+                tooltip-placement="bottom" tooltip="Plot receive packets.">
+            Plot Received Packet
+        </button>
+        <button class="btn btn-primary" ng-click="clear()"
+                tooltip-placement="bottom" tooltip="Clear the timeline.">
+            Clear
+        </button>
+    </div>
+</form>
