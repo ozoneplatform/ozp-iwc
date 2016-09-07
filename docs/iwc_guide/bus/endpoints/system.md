@@ -15,8 +15,8 @@ The following content-types can be handled if linked under the `ozp:system` endp
 
 | Content-Type| Description|
 |-------------|------------|
-|application/json| The IWC's current corresponding ozone backend [ozp-rest](https://github.com/ozone-development/ozp-rest) matches this content-type.|
-|application/vnd.ozp-iwc-system+json;version=2| Used in the new ozone backend [ozp-backend](https://github.com/ozone-development/ozp-backend).|
+|application/json| The IWC's current corresponding ozone backend [ozp-rest](https://github.com/aml-development/ozp-rest) matches this content-type.|
+|application/vnd.ozp-iwc-system+json;version=2| Used in the new ozone backend [ozp-backend](https://github.com/ozoneplatform/ozp-backend).|
 
 ***
 ###User Node Resources

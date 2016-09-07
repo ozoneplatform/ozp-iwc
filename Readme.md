@@ -1,7 +1,7 @@
-[ozp-iwc](http://ozone-development.github.io/ozp-iwc/) [![Build Status](https://travis-ci.org/ozone-development/ozp-iwc.svg?branch=master)](https://travis-ci.org/ozone-development/ozp-iwc)
+[ozp-iwc](http://ozoneplatform.github.io/ozp-iwc/)
 ==============================
 
-###[Visit the IWC Website for Tutorials and Docs](http://ozone-development.github.io/ozp-iwc/)
+###[Visit the IWC Website for Tutorials and Docs](http://ozoneplatform.github.io/ozp-iwc/)
 
 The Ozone Platform's Inter-Window Communications (IWC) enables loosely coupled integration of web applications by
 applying the best practices of enterprise service buses and service-oriented architecture to a completely
@@ -27,20 +27,25 @@ presentation, including a tiny client library that adds a single, invisible elem
 1.2.0 has been Released
 --------------
 * **New Developer API**: Reference objects introduced to greatly simplify resource interaction.
-* **Breaking Changes from 1.1.x**: 
-    * The use of `pattern` to trigger collections was removed and replaced with `collect:true`. All other syntax remains valid, to migrate simply add a `collect:true` to all IWC client action calls that specify a resources `pattern` property. The collection setup process has been greatly simplified, and developers are encouraged to migrate to the new References approach. Check the [tutorials](http://ozone-development.github.io/ozp-iwc/tutorial) for more info.
+* **Breaking Changes from 1.1.x**:
+    * The use of `pattern` to trigger collections was removed and replaced with
+        `collect:true`. All other syntax remains valid, to migrate simply add a
+        `collect:true` to all IWC client action calls that specify a resources
+        `pattern` property. The collection setup process has been greatly
+        simplified, and developers are encouraged to migrate to the new
+        References approach. Check the [tutorials](http://ozoneplatform.github.io/ozp-iwc/tutorial) for more info.
       ```
       // before
       client.data().set("/location/listings", {pattern: "/location/listings/"});
-      
+
       // now
       client.data().set("/location/listings", {pattern: "/location/listings/", collect: true});
       ```
-      
+
 
 Demo
 ---------------
-The [IWC website](http://ozone-development.github.io/ozp-iwc/) contains a set of demo applications as well as a publicly available IWC Bus.
+The [IWC website](http://ozoneplatform.github.io/ozp-iwc/) contains a set of demo applications as well as a publicly available IWC Bus.
 
 For private development, the IWC is bundled with a persistent data backend & demo applications. Simply follow these steps to deploy an example
 IWC environment:
@@ -50,6 +55,6 @@ npm install && bower install
 grunt serve
 ```
 
-A list of IWC registered applications can be found under the "My Apps" tab of the system.api page in the 
+A list of IWC registered applications can be found under the "My Apps" tab of the system.api page in the
 [IWC Debugger](http://localhost:13000/debugger/index.html#/system-api) once the server is running.
 

@@ -7,13 +7,13 @@ this endpoint is set by the [configuration parameter](../busConfiguration.md) `o
 
 * If an endpoint discussed is mentioned as `/data` and the `ozpIwc.config.apiRootUrl` equals `/api`, the endpoint path
 (from the root of the domain) is `/api/data`.
-* The IWC uses custom link relations to access an API's endpoint at run time. This covered in more depth in the root 
-endpoint section, but the purpose is to give a common static-name (ozp:user-data) to a runtime determined endpoint 
+* The IWC uses custom link relations to access an API's endpoint at run time. This covered in more depth in the root
+endpoint section, but the purpose is to give a common static-name (ozp:user-data) to a runtime determined endpoint
 (/data for example). All variable path endpoints are referred to by their link relation in this document.
 
 ####The IWC Bus Schemas are Written for HAL Data
 The IWC expects data to be provided in [HAL format](http://stateless.co/hal_specification.html). This allows backend
-developers to utilize flexibility in endpoint data producing. HAL allows embedding of link related data in responses. 
+developers to utilize flexibility in endpoint data producing. HAL allows embedding of link related data in responses.
 In other terms, in producing the root IWC endpoint (`/`) data, the backend can embed the System API User Information
 Nodes (ozp:user) to reduce the need for the IWC bus to make an additional HTTP request to gather it.
 
@@ -23,7 +23,7 @@ Nodes (ozp:user) to reduce the need for the IWC bus to make an additional HTTP r
 #### The root endpoint of the IWC Bus. Path set by `ozpIwc.config.apiRootUrl`
 **Purpose**: This endpoint provides the IWC bus with the pairing of link relations to their specific endpoint path.
 
-**Schema**: [vnd.ozp-iwc-root-v1+json](https://github.com/ozone-development/ozp-data-schemas/blob/master/mock/api/index.json) **TODO:Undocumented linked to mock** 
+**Schema**: [vnd.ozp-iwc-root-v1+json](https://github.com/aml-development/ozp-data-schemas/blob/master/mock/api/index.json) **TODO:Undocumented linked to mock**
 
 **Required to provide**:
 
@@ -33,7 +33,7 @@ Nodes (ozp:user) to reduce the need for the IWC bus to make an additional HTTP r
     * **ozp:user** endpoint relation link
     * **ozp:system** endpoint relation link
     * **ozp:intent** endpoint relation link
-    
+
 **GET response(sample):**
 ```
 {
@@ -89,14 +89,14 @@ Nodes (ozp:user) to reduce the need for the IWC bus to make an additional HTTP r
 ### ozp:user-data (Data API Nodes)
 **Purpose**: Provides the IWC Bus with a list of Data API Node links for gathering.
 
-**Schema**:  [vnd.ozp-iwc-list-v1+json](https://github.com/ozone-development/ozp-data-schemas/blob/master/mock/api/profile/v1/exampleUser/index.json) **TODO:Undocumented linked to mock** 
+**Schema**:  [vnd.ozp-iwc-list-v1+json](https://github.com/aml-development/ozp-data-schemas/blob/master/mock/api/profile/v1/exampleUser/index.json) **TODO:Undocumented linked to mock**
 
 **Required to provide**:
 
 * _links
-    * **item** Array of object-wrapped href's for Data API Nodes 
+    * **item** Array of object-wrapped href's for Data API Nodes
     * **self** An object-wrapped href to this resource
-    
+
 **GET Response (sample):**
 ```
 {
@@ -122,20 +122,20 @@ Nodes (ozp:user) to reduce the need for the IWC bus to make an additional HTTP r
 }
 ```
 
-**See [Data API Nodes](data.md) for GET/PUT format on individual nodes** 
+**See [Data API Nodes](data.md) for GET/PUT format on individual nodes**
 
 ***
 ### ozp:application (System API: Application Nodes)
 **Purpose**: Provides the IWC Bus with a list of System API Application Node links for gathering.
 
-**Schema**:  [vnd.ozp-iwc-list-v1+json](https://github.com/ozone-development/ozp-data-schemas/blob/master/mock/api/profile/v1/exampleUser/application/index.json) **TODO:Undocumented linked to mock** 
+**Schema**:  [vnd.ozp-iwc-list-v1+json](https://github.com/aml-development/ozp-data-schemas/blob/master/mock/api/profile/v1/exampleUser/application/index.json) **TODO:Undocumented linked to mock**
 
 **Required to provide**:
 
 * _links
-    * **item** Array of object-wrapped href's for System API Application Nodes 
+    * **item** Array of object-wrapped href's for System API Application Nodes
     * **self** An object-wrapped href to this resource
-    
+
 **GET Response (sample):**
 ```
 {
@@ -158,19 +158,19 @@ Nodes (ozp:user) to reduce the need for the IWC bus to make an additional HTTP r
 }
 ```
 
-**See [System API Application Nodes](application.md) for GET format on individual nodes** 
+**See [System API Application Nodes](application.md) for GET format on individual nodes**
 
 ***
 ### ozp:user (System API: User Information Nodes)
 **Purpose**: Provides the IWC Bus with a list of System API User Node links for gathering.
 
-**Schema**: [vnd.ozp-profile-v1+json](https://github.com/ozone-development/ozp-data-schemas/blob/master/schema/vnd.ozp-profile-v1%2Bjson.json)
+**Schema**: [vnd.ozp-profile-v1+json](https://github.com/aml-development/ozp-data-schemas/blob/master/schema/vnd.ozp-profile-v1%2Bjson.json)
 
 **Required to provide**:
 * _links
     * **self** An object-wrapped href to this resource
 
-    
+
 **GET Response (sample):**
 ```
 {
@@ -196,14 +196,14 @@ Nodes (ozp:user) to reduce the need for the IWC bus to make an additional HTTP r
 ### ozp:system (System API: Platform Information Node)
 **Purpose**: Provides the IWC Bus with a System API Platform Information Node for gathering.
 
-**Schema**: [vnd.ozp-server-v1+json](https://github.com/ozone-development/ozp-data-schemas/blob/master/mock/api/system/v1/index.json) **TODO: undocumented liked to mock**
+**Schema**: [vnd.ozp-server-v1+json](https://github.com/aml-development/ozp-data-schemas/blob/master/mock/api/system/v1/index.json) **TODO: undocumented liked to mock**
 
 **Required to provide**:
-* **version** A string representation of the version of backend 
+* **version** A string representation of the version of backend
 * **name** A string representation of the name of backend
 * _links
-    * **item** Array of object-wrapped href's for System API Platform Information Nodes 
-    
+    * **item** Array of object-wrapped href's for System API Platform Information Nodes
+
 **GET Response (sample):**
 ```
 {
@@ -218,7 +218,7 @@ Nodes (ozp:user) to reduce the need for the IWC bus to make an additional HTTP r
 ```
 ***
 ### ozp:intent (Intents API Common Handler Definition Nodes)
-#### Future implementation: Not used in current IWC version. 
+#### Future implementation: Not used in current IWC version.
 **Purpose**: Provides the IWC Bus with a list of Intents API Common Handler Definition Node links for gathering. These
 nodes will fill the IWC bus with commonly used Intent definitions to aid the user when prompted to make a decision.
 
@@ -227,7 +227,7 @@ nodes will fill the IWC bus with commonly used Intent definitions to aid the use
 **Required to provide**:
 
 * _links
-    * **item** Array of object-wrapped href's for Intent API Nodes 
+    * **item** Array of object-wrapped href's for Intent API Nodes
     * **self** An object-wrapped href to this resource
 
 **GET Response (sample):**
@@ -248,4 +248,4 @@ nodes will fill the IWC bus with commonly used Intent definitions to aid the use
   }
 }
 ```
-**See [Intents API Handler Definition Nodes](application.md) for GET format on individual nodes** 
+**See [Intents API Handler Definition Nodes](application.md) for GET format on individual nodes**

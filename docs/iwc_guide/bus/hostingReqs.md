@@ -14,8 +14,8 @@ JavaScript/HTML, as well as notify its users of the URL to connect their clients
 ####Required files
 To host the IWC, grab the latest release of the IWC via either:
 
-* [github](https://github.com/ozone-development/ozp-iwc/releases)
-* bower: `bower install ozone-development/ozp-iwc`
+* [github](https://github.com/ozoneplatform/ozp-iwc/releases)
+* bower: `bower install ozoneplatform/ozp-iwc`
 
 
 From the gathered ozp-iwc directory, the `dist` directory contains everything needed to be statically served. Make the
@@ -51,7 +51,7 @@ _modified ozpIwc.conf.js_
 
 ###Hosting With Backend API Connections
 Hosting with backend API connections requires all the steps taken for hosting without backend API connections above,
-as well as:  
+as well as:
 * configuring the `ozpIwc.conf.js` to enable backend connections.
 * configuring the `ozpIwc.conf.js` to set a root API url.
 * meeting api requirements on backend.
