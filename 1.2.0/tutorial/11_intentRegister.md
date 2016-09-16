@@ -24,21 +24,21 @@ Documentation on public /type/sub-type paths are developed based on community
 support. As the IWC is in its infant years of use, if you can't find
 documentation on your desired data type, it is very well possible you are the
 first to use it. Open an
-[issue](http://www.github.com/ozone-development/ozp-iwc/issues) with the data
+[issue](http://www.github.com/ozoneplatform/ozp-iwc/issues) with the data
 type/subtype, proposed schema, and a description. The IWC
-[Community Intent Book](https://github.com/ozone-development/ozp-iwc/wiki/Community-Intent-Book)
+[Community Intent Book](https://github.com/ozoneplatform/ozp-iwc/wiki/Community-Intent-Book)
 is a community driven set of data type documents used as a centralized resource
 for developers.
 
 ## What is the Action this Function Handles?
 The action is the verb of the handler, it should be a single word describing
 what the intent handler does (print, graph, map, ect). As stated above, check
-the [Community Intent Book](https://github.com/ozone-development/ozp-iwc/wiki/Community-Intent-Book)
+the [Community Intent Book](https://github.com/ozoneplatform/ozp-iwc/wiki/Community-Intent-Book)
 for community-driven formatting and actions.
 
 ## What if the /type/sub-type/action I want to use is already in the Community Intent Book?
 **This is ideal!** If your desired /type/sub-type/action exists in the
-[Community Intent Book](https://github.com/ozone-development/ozp-iwc/wiki/Community-Intent-Book),
+[Community Intent Book](https://github.com/ozoneplatform/ozp-iwc/wiki/Community-Intent-Book),
 this does not mean your application isn't desired. This means the functionality
 you would like to produce has been developed by others. If their functionality
 doesn't meet your needs or you would like your own version, as long as you
@@ -46,7 +46,7 @@ maintain the defined data schema, then developers and users can use your
 application interchangeably.
 
 **Don't agree with a defined format?** If you have supporting reason to modify
-the schema open an [issue](http://www.github.com/ozone-development/ozp-iwc/issues)
+the schema open an [issue](http://www.github.com/ozoneplatform/ozp-iwc/issues)
 and address the creator of the format. If there is enough community support
 it will be considered for  modification. This will push the new data type to a
 versioned name (ex. `/json/location/` would become `/json/location;version=2`).
@@ -59,7 +59,7 @@ client is needed. This follows the same format as the **Data Api**, the
 `intents` reference can come from the same client object as `data` references.
 
 ``` js
-var iwc = new ozpIwc.Client("http://ozone-development.github.io/ozp-iwc");
+var iwc = new ozpIwc.Client("http://ozoneplatform.github.io/ozp-iwc");
 var functionRef = iwc.intents.Reference("/application/json/print");
 ```
 ***

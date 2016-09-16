@@ -13,7 +13,7 @@ terms in this tutorial are defined in the
 [Location Lister](30_locationLister.html) tutorial. Refer to that tutorial prior
 to this one.
 
-The full application source can be found [here](https://github.com/ozone-development/ozp-demo/tree/master/app/locationViewer). This application was built
+The full application source can be found [here](https://github.com/ozoneplatform/ozp-demo/tree/master/app/locationViewer). This application was built
 using JQuery and Open Layers.
 
 ***

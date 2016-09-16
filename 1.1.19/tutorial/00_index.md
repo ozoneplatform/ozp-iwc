@@ -23,7 +23,7 @@ The library can be gathered in the following ways.
 ### Bower
 
 ``` bash
-   bower install ozone-development/ozp-iwc
+   bower install ozoneplatform/ozp-iwc
 ```
 When gathering the IWC through bower, the client library will be located at  `bower_components/ozp-iwc/dist/js/ozpIwc-client.min.js`.
 
@@ -34,11 +34,11 @@ Include it in your applications HTML as so:
 ```
 
 ### Github
-Distributions of the IWC can be downloaded as a zip/tar.gz from the [github releases page](https://github.com/ozone-development/ozp-iwc/releases).
+Distributions of the IWC can be downloaded as a zip/tar.gz from the [github releases page](https://github.com/ozoneplatform/ozp-iwc/releases).
 In the unarchived directory, the library is located  at `/dist/js/ozpIwc-client.min.js`.
 
 ### Remotely
-The latest release of the IWC library is available here on github at `http://ozone-development.github.io/ozp-iwc/js/ozpIwc-client.js`.
+The latest release of the IWC library is available here on github at `http://ozoneplatform.github.io/ozp-iwc/js/ozpIwc-client.js`.
 
 ***
 
@@ -47,11 +47,11 @@ The IWC library uses the `ozpIwc` namespace. To create a connection, a  **Client
 the IWC **Bus** (common domain) must be specified in the `peerUrl` property.
 
 ``` js
- var client = new ozpIwc.Client({ peerUrl: "http://ozone-development.github.io/ozp-iwc"});
+ var client = new ozpIwc.Client({ peerUrl: "http://ozoneplatform.github.io/ozp-iwc"});
 ```
 
 An IWC bus is a location where all of the IWC distributables can be gathered,
-`http://ozone-development.github.io/ozp-iwc`, for example. The bus does not run any functionality on a server, rather
+`http://ozoneplatform.github.io/ozp-iwc`, for example. The bus does not run any functionality on a server, rather
 provides the files necessary for in-browser communication over the given domain. This means, for all applications open
 with a given browser on a user's computer (different tabs, different windows, embedded in pages, ect.). If all of the
 applications connect to the same IWC bus, then they can all communicate locally.

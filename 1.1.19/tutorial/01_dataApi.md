@@ -23,7 +23,7 @@ the various publish/subscribe libraries available in javascript because of the f
 Covered in the [Quick Start](index.html) tutorial, an IWC client is needed to access the Data Api.
 
 ``` js
- var client = new ozpIwc.Client({ peerUrl: "http://ozone-development.github.io/ozp-iwc"});
+ var client = new ozpIwc.Client({ peerUrl: "http://ozoneplatform.github.io/ozp-iwc"});
  var iwcData = client.data();
 ```
 

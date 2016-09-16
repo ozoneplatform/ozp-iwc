@@ -19,7 +19,7 @@ If your intent use is private to your applications, utilize `/application/vnd.{u
 
 Documentation on /type/sub-type paths are developed based on community support. As the IWC is in its infant years of
 community use, if you can't find documentation on your desired data type, it is very well possible you are the first
-to use it. Open an [issue](http://www.github.com/ozone-development/ozp-iwc/issues) with the data type/subtype,
+to use it. Open an [issue](http://www.github.com/ozoneplatform/ozp-iwc/issues) with the data type/subtype,
 proposed schema, and a description. The IWC [Community Intent Book](about:blank) is a community driven
 set of data type documents used as a centralized resource for developers.
 
@@ -34,7 +34,7 @@ their functionality doesn't meet your needs or you would like your own version a
 data schema developers and users can use your application interchangeably.
 
 **Don't agree with a defined format?** If you have supporting reason to modify the schema open an
-[issue](http://www.github.com/ozone-development/ozp-iwc/issues). If there is enough community support we will consider
+[issue](http://www.github.com/ozoneplatform/ozp-iwc/issues). If there is enough community support we will consider
 the modification. This will push the new data type to a versioned name (ex. `/json/location` would become `/json/location;version=2`).
 
 ***
@@ -44,7 +44,7 @@ To register a function, a reference to the **Intents Api** from the client is ne
 the **Data Api**, the `intents` reference can come from the same client object as `data`.
 
 ``` js
-var client = new ozpIwc.Client({peerUrl: "http://ozone-development.github.io/ozp-iwc"});
+var client = new ozpIwc.Client({peerUrl: "http://ozoneplatform.github.io/ozp-iwc"});
 var intents = client.intents();
 ```
 ***

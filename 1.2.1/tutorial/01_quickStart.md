@@ -23,7 +23,7 @@ Naming of the client variable is irrelevant, for these tutorials we will label
 it `iwc` as it is our local instantiated connection to the IWC Bus.
 
 ``` js
- var iwc = new ozpIwc.Client("http://ozone-development.github.io/ozp-iwc");
+ var iwc = new ozpIwc.Client("http://ozoneplatform.github.io/ozp-iwc");
 ```
 
 The path of the **IWC Bus** is a path to the directory containing a special HTML
@@ -42,8 +42,8 @@ based permissions and user data persistence. See our gitbook for
 [hosting documentation]({{site.baseurl}}/{{page.tag}}/gitbook/bus/overview.html), tutorials will
 be produced on this matter at a later date as well.
 
-The use of http://ozone-development.github.io/ozp-iwc instead of
-http://ozone-development.github.io/ozp-iwc/1.2.0 for the **IWC Bus**  is because all
+The use of http://ozoneplatform.github.io/ozp-iwc instead of
+http://ozoneplatform.github.io/ozp-iwc/1.2.0 for the **IWC Bus**  is because all
 releases of IWC 1 (`1.x.y`) can communicate with backwards compatibility. This
 means developers can utilize a specific version of IWC for it's client API, but
 communicate with all IWC applications regardless of version.

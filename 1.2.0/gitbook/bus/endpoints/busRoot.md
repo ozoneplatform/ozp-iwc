@@ -2,7 +2,7 @@
 #### The root endpoint of the IWC Bus. Path set by `ozpIwc.config.apiRootUrl`
 **Purpose**: This endpoint provides the IWC bus with the pairing of link relations to their specific endpoint path.
 
-####[vnd.ozp-iwc-root-v1+json](https://github.com/ozone-development/ozp-data-schemas/blob/master/mock/api/index.json) **TODO:Undocumented linked to mock** 
+####[vnd.ozp-iwc-root-v1+json](https://github.com/aml-development/ozp-data-schemas/blob/master/mock/api/index.json) **TODO:Undocumented linked to mock** 
 **Resource**
 
 | property | type    | description                               |

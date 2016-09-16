@@ -17,7 +17,7 @@ to this one.
 **This tutorial does not cover the framework used to create the application
 (AngularJS) nor the styling applied (Bootstrap). The purpose is to show the
 connectivity of IWC to the applications components. The code has been
-generalized, the actual angular application can be found [here](https://github.com/ozone-development/ozp-demo/tree/master/app/locationAnalyzer)**
+generalized, the actual angular application can be found [here](https://github.com/ozoneplatform/ozp-demo/tree/master/app/locationAnalyzer)**
 
 ***
 #Location Analyzer

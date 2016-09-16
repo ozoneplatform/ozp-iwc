@@ -25,7 +25,7 @@ to access the Data API, and to access a resource of the Data API a reference is
 used.
 
 ``` js
- var iwc = new ozpIwc.Client("http://ozone-development.github.io/ozp-iwc");
+ var iwc = new ozpIwc.Client("http://ozoneplatform.github.io/ozp-iwc");
  var fooRef = new client.data.Reference("/foo");
 ```
 

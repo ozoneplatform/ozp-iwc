@@ -25,7 +25,7 @@ The library can be gathered in the following ways.
 ### Bower
 
 ``` bash
-   bower install ozone-development/ozp-iwc
+   bower install ozoneplatform/ozp-iwc
 ```
 When gathering the IWC through bower, the client library will be located at  `bower_components/ozp-iwc/dist/js/ozpIwc-client.min.js`.
 
@@ -36,12 +36,12 @@ Include it in your applications HTML as so:
 ```
 
 ### Github
-Distributions of the IWC can be downloaded as a zip/tar.gz from the [github releases page](https://github.com/ozone-development/ozp-iwc/releases).
+Distributions of the IWC can be downloaded as a zip/tar.gz from the [github releases page](https://github.com/ozoneplatform/ozp-iwc/releases).
 In the unarchived directory, the library is located  at `/dist/js/ozpIwc-client.min.js`.
 
 ### Remotely
-The 1.2.0 release of the IWC client library is available here on github at `http://ozone-development.github.io/ozp-iwc/1.2.0/js/ozpIwc-client.js`.
-The latest release is also regularly updated here on github at `http://ozone-development.github.io/ozp-iwc/js/ozpIwc-client.js`.
+The 1.2.0 release of the IWC client library is available here on github at `http://ozoneplatform.github.io/ozp-iwc/1.2.0/js/ozpIwc-client.js`.
+The latest release is also regularly updated here on github at `http://ozoneplatform.github.io/ozp-iwc/js/ozpIwc-client.js`.
 
 ***
 
