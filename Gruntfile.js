@@ -158,8 +158,8 @@ module.exports = function(grunt) {
                 '<%= src.testUnit %>'
             ],
             testIntegrationClient: [
-                '<%= output.clientJs %>',
                 'test/lib/testTools.js',
+                '<%= output.clientJs %>',
                 'test/lib/jasmine-promises.js',
                 'test/mockParticipant/js/mockParticipant.js',
                 '<%= src.testIntegrationClient %>'
@@ -527,7 +527,7 @@ module.exports = function(grunt) {
         },
         karma: {
             options:{
-                browsers: ['Firefox']
+                browsers: ['PhantomJS']
             },
             unit: {
                 options: {
