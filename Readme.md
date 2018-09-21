@@ -30,13 +30,9 @@ presentation, including a tiny client library that adds a single, invisible elem
 1.2.0 has been Released
 --------------
 * **New Developer API**: Reference objects introduced to greatly simplify resource interaction.
-* **Breaking Changes from 1.1.x**:
-    * The use of `pattern` to trigger collections was removed and replaced with
-        `collect:true`. All other syntax remains valid, to migrate simply add a
-        `collect:true` to all IWC client action calls that specify a resources
-        `pattern` property. The collection setup process has been greatly
-        simplified, and developers are encouraged to migrate to the new
-        References approach. Check the [tutorials](http://ozoneplatform.github.io/ozp-iwc/tutorial) for more info.
+* **Breaking Changes from 1.1.x**: 
+    * The use of `pattern` to trigger collections was removed and replaced with `collect:true`. All other syntax remains valid, to migrate simply add a `collect:true` to all IWC client action calls that specify a resources `pattern` property. The collection setup process has been greatly simplified, and developers are encouraged to migrate to the new References approach. Check the [tutorials](http://aml-development.github.io/ozp-iwc/tutorial) for more info.
+
       ```
       // before
       client.data().set("/location/listings", {pattern: "/location/listings/"});

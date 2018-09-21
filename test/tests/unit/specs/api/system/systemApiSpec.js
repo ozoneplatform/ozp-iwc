@@ -182,7 +182,10 @@ describe("System API", function () {
                             'entity': {
                                 'url': "http://localhost:15000/?color=blue",
                                 "applicationId": "/application/abcApp",
-                                "launchData": "Hello World"
+                                "launchData": {
+                                    "hi": "Hello World",
+                                    "openInNewWindow": true
+                                }
                             }
                         }
                     }
