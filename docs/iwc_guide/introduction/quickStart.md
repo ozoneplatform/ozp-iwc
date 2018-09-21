@@ -5,7 +5,7 @@ Building and Running the Bus (includes a static mock-backend)
 --------------
 1.  Install node.js.
 2.  sudo npm install -g grunt-cli bower
-3.  git clone git@github.com:ozone-development/ozp-iwc.git
+3.  git clone git@github.com:ozoneplatform/ozp-iwc.git
 4.  cd ozp-iwc
 6.  npm install && bower install
 7.  grunt serve
@@ -25,11 +25,11 @@ Connecting a Javascript entity to the Bus
     <script src="<relative pathing for project's bower_components>/ozp-iwc/dist/js/ozpIwc-client.min.js"></script>
     ```
 
-    **Non-bower**: Download the latest [IWC release](https://github.com/ozone-development/ozp-iwc/releases) and copy
+    **Non-bower**: Download the latest [IWC release](https://github.com/ozoneplatform/ozp-iwc/releases) and copy
     the client library (dist/js/ozpIwc-client.min.js) into your application's project and refer to it with the script tag.
-    ```      
+    ```
     <script src="<relative pathing for project>/ozpIwc-client.min.js"></script>
-    ```    
+    ```
 
 2. Create a IWC client. In your application's javascript instantiate a new `ozpIwc.Client`. The peerUrl is the path to
 the hosted bus, `grunt serve` hosts an example bus locally on port 13000.

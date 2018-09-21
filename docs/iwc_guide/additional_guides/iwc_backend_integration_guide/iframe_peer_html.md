@@ -31,9 +31,9 @@ An iframe_peer.html file is necessary for an IWC deployment. When a client appli
 
 **File location**
 
-If the iframe_peer.html file is located at `http://ozone-development.github.io/iwc/iframe_peer.html` a client application can connect to the IWC bus with a peerUrl of `http://ozone-development.github.io/iwc`. See the example connection below:
+If the iframe_peer.html file is located at `http://ozoneplatform.github.io/iwc/iframe_peer.html` a client application can connect to the IWC bus with a peerUrl of `http://ozoneplatform.github.io/iwc`. See the example connection below:
 ```
-var iwc = new ozpIwc.Client("http://ozone-development.github.io/iwc");
+var iwc = new ozpIwc.Client("http://ozoneplatform.github.io/iwc");
 ```
 For more information on IWC client aspects see [[IWC App Integration]]
 

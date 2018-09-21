@@ -576,7 +576,7 @@ module.exports = function(grunt) {
                 output: "gh-pages/<%= pkg.version %>/gitbook",
                 input: "./docs/iwc_guide",
                 title: "Inter-Window Communication (IWC)",
-                github: "ozone-development/ozp-iwc"
+                github: "ozoneplatform/ozp-iwc"
             }
         },
         'gh-pages': {
